@@ -1,0 +1,25 @@
+PHASE 2 SCAN NOTES
+==================
+
+Total conversations scanned: 761
+Total events analyzed: 23754
+
+Event Type Distribution:
+  EXPLICIT_STATEMENT: 15318
+  CORRECTION: 4322
+  CLARIFICATION_REQUEST: 2904
+  EXPLICIT_SUCCESS_MARKER: 468
+  GOAL_CHANGE: 376
+  EXPLICIT_FAILURE_MARKER: 366
+
+
+Theme Distribution:
+  Other/Miscellaneous: 653 conversations
+  Product Information: 40 conversations
+  Investigative/Analysis: 19 conversations
+  Religious/Biblical: 16 conversations
+  Technology/Social Media: 12 conversations
+  Personal Development/ADHD: 11 conversations
+  Legal/Consumer Rights: 5 conversations
+  Technical/Setup: 3 conversations
+  Technical Explanation: 2 conversations
