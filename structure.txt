@@ -1,0 +1,1001 @@
+Folder PATH listing for volume Windows
+Volume serial number is 00000015 32CD:FD63
+C:.
+|   structure.txt
+|   
++---CLAUDE READ
+|   |   # Building a validated conversation 01.txt
+|   |   # Building a validated conversation 02.txt
+|   |   # Building a validated conversation 03.txt
+|   |   # Building a validated conversation 04.txt
+|   |   # Building a validated conversation 05.txt
+|   |   # Building a validated conversation 06.txt
+|   |   claudeevidence_extraction_1.txt
+|   |   conversation_manifest.csv
+|   |   extract_events.py
+|   |   folder_structure.txt
+|   |   git
+|   |   phase1_extractor.py
+|   |   phase2_scanner.py
+|   |   phase3_narratives.py
+|   |   phase4_validation.py
+|   |   phase5_report.py
+|   |   phase5_report_fixed.py
+|   |   
+|   +---analysis
+|   |       ledger_pattern_analysis.txt
+|   |       spot_check_conversations.txt
+|   |       
+|   +---final_report
+|   |       HONEST_REPORT.txt
+|   |       
+|   +---phase_1_mechanical
+|   |   |   edge_cases.txt
+|   |   |   extraction_summary.txt
+|   |   |   ledger_raw.jsonl
+|   |   |   pilot_report.txt
+|   |   |   
+|   |   \---checkpoints
+|   |           checkpoint_001-010.json
+|   |           checkpoint_011-020.json
+|   |           checkpoint_021-030.json
+|   |           checkpoint_031-040.json
+|   |           checkpoint_041-050.json
+|   |           checkpoint_051-060.json
+|   |           checkpoint_061-070.json
+|   |           checkpoint_071-080.json
+|   |           checkpoint_081-090.json
+|   |           checkpoint_091-100.json
+|   |           checkpoint_101-110.json
+|   |           checkpoint_111-120.json
+|   |           checkpoint_121-130.json
+|   |           checkpoint_131-140.json
+|   |           checkpoint_141-150.json
+|   |           checkpoint_151-160.json
+|   |           checkpoint_161-170.json
+|   |           checkpoint_171-180.json
+|   |           checkpoint_181-190.json
+|   |           checkpoint_191-200.json
+|   |           checkpoint_201-210.json
+|   |           checkpoint_211-220.json
+|   |           checkpoint_221-230.json
+|   |           checkpoint_231-240.json
+|   |           checkpoint_241-250.json
+|   |           checkpoint_251-260.json
+|   |           checkpoint_261-270.json
+|   |           checkpoint_271-280.json
+|   |           checkpoint_281-290.json
+|   |           checkpoint_291-300.json
+|   |           checkpoint_301-310.json
+|   |           checkpoint_311-320.json
+|   |           checkpoint_321-330.json
+|   |           checkpoint_331-340.json
+|   |           checkpoint_341-350.json
+|   |           checkpoint_351-360.json
+|   |           checkpoint_361-370.json
+|   |           checkpoint_371-380.json
+|   |           checkpoint_381-390.json
+|   |           checkpoint_391-400.json
+|   |           checkpoint_401-410.json
+|   |           checkpoint_411-420.json
+|   |           checkpoint_421-430.json
+|   |           checkpoint_431-440.json
+|   |           checkpoint_441-450.json
+|   |           checkpoint_451-460.json
+|   |           checkpoint_461-470.json
+|   |           checkpoint_471-480.json
+|   |           checkpoint_481-490.json
+|   |           checkpoint_491-500.json
+|   |           checkpoint_501-510.json
+|   |           checkpoint_511-520.json
+|   |           checkpoint_521-530.json
+|   |           checkpoint_531-540.json
+|   |           checkpoint_541-550.json
+|   |           checkpoint_551-560.json
+|   |           checkpoint_561-570.json
+|   |           checkpoint_571-580.json
+|   |           checkpoint_581-590.json
+|   |           checkpoint_591-600.json
+|   |           checkpoint_601-610.json
+|   |           checkpoint_611-620.json
+|   |           checkpoint_621-630.json
+|   |           checkpoint_631-640.json
+|   |           checkpoint_641-650.json
+|   |           checkpoint_651-660.json
+|   |           checkpoint_661-670.json
+|   |           checkpoint_671-680.json
+|   |           checkpoint_681-690.json
+|   |           checkpoint_691-700.json
+|   |           checkpoint_701-710.json
+|   |           checkpoint_711-720.json
+|   |           checkpoint_721-730.json
+|   |           checkpoint_731-740.json
+|   |           checkpoint_741-750.json
+|   |           checkpoint_751-760.json
+|   |           checkpoint_761-770.json
+|   |           checkpoint_771-780.json
+|   |           checkpoint_781-790.json
+|   |           checkpoint_791-800.json
+|   |           checkpoint_801-810.json
+|   |           checkpoint_811-820.json
+|   |           
+|   +---phase_2_preliminary_scan
+|   |       identified_themes.txt
+|   |       scan_notes_raw.txt
+|   |       selected_for_narrative.txt
+|   |       selection_justification.txt
+|   |       
+|   \---phase_3_narratives
+|           narrative_C001.txt
+|           narrative_C003.txt
+|           narrative_C004.txt
+|           narrative_C014.txt
+|           narrative_C017.txt
+|           narrative_C032.txt
+|           narrative_C034.txt
+|           narrative_C037.txt
+|           narrative_C039.txt
+|           narrative_C041.txt
+|           narrative_C047.txt
+|           narrative_C048.txt
+|           narrative_C049.txt
+|           narrative_C051.txt
+|           narrative_C054.txt
+|           narrative_C058.txt
+|           narrative_C059.txt
+|           narrative_C061.txt
+|           narrative_C066.txt
+|           narrative_C067.txt
+|           narrative_C070.txt
+|           narrative_C074.txt
+|           narrative_C075.txt
+|           narrative_C081.txt
+|           narrative_C086.txt
+|           narrative_C089.txt
+|           narrative_C094.txt
+|           narrative_C101.txt
+|           narrative_C105.txt
+|           narrative_C116.txt
+|           
++---Conversations CLAUD ANALYSE
+|   +---erwinschrodinger61
+|   |       erwinschrodinger61 - ADHD hyperfocus and finding your potential.md
+|   |       erwinschrodinger61 - ADHD-friendly app organizer with tier rankings and clickable links.md
+|   |       erwinschrodinger61 - ADHD-friendly checklist and itinerary.md
+|   |       erwinschrodinger61 - Alternative cancer treatments outside US medicine.md
+|   |       erwinschrodinger61 - Analyzing video patterns and similarities.md
+|   |       erwinschrodinger61 - Anesthesia and self-consciousness.md
+|   |       erwinschrodinger61 - Apps menu flooded with ads.md
+|   |       erwinschrodinger61 - Assessing retail value from images.md
+|   |       erwinschrodinger61 - Barrel connector wire polarity.md
+|   |       erwinschrodinger61 - Bible prophecy about Jewish return to homeland.md
+|   |       erwinschrodinger61 - Bulk extracting messenger reel links.md
+|   |       erwinschrodinger61 - Cancer cure claims.md
+|   |       erwinschrodinger61 - Categorizing events through multiple perspectives.md
+|   |       erwinschrodinger61 - Celebrity appearance changes and body double theories.md
+|   |       erwinschrodinger61 - Changing Claude's voice to male.md
+|   |       erwinschrodinger61 - Cheap alternatives to strong ingredients.md
+|   |       erwinschrodinger61 - Claude conversation excerpt.md
+|   |       erwinschrodinger61 - Claude interaction failure analysis.md
+|   |       erwinschrodinger61 - Claude not loading in Microsoft browser.md
+|   |       erwinschrodinger61 - Claude open source misconception.md
+|   |       erwinschrodinger61 - Cleaning up roommate's blood mess.md
+|   |       erwinschrodinger61 - Closing lagging programs in Windows 11.md
+|   |       erwinschrodinger61 - Coincidences in the 30s.md
+|   |       erwinschrodinger61 - Conspiracy theory construction and hidden messages.md
+|   |       erwinschrodinger61 - Conversation_119.md
+|   |       erwinschrodinger61 - Conversation_122.md
+|   |       erwinschrodinger61 - Conversation_123.md
+|   |       erwinschrodinger61 - Conversation_125.md
+|   |       erwinschrodinger61 - Conversation_129.md
+|   |       erwinschrodinger61 - Conversation_130.md
+|   |       erwinschrodinger61 - Conversation_132.md
+|   |       erwinschrodinger61 - Conversation_24.md
+|   |       erwinschrodinger61 - Coordinating Claude instances across account types.md
+|   |       erwinschrodinger61 - Cosmetic mirror CY-043 retail value.md
+|   |       erwinschrodinger61 - Counting names by group.md
+|   |       erwinschrodinger61 - Countries experiencing recent revolutions and uprisings.md
+|   |       erwinschrodinger61 - Dark digital artwork.md
+|   |       erwinschrodinger61 - Defiant outlet Tuya app compatibility.md
+|   |       erwinschrodinger61 - Dental care without insurance.md
+|   |       erwinschrodinger61 - Detective's del Toro homicide investigation.md
+|   |       erwinschrodinger61 - Diagnostic port access for model.md
+|   |       erwinschrodinger61 - Dog jacket identification.md
+|   |       erwinschrodinger61 - ElevenLabs mobile app vs web platform.md
+|   |       erwinschrodinger61 - Epstein files and resurfaced conspiracy theories.md
+|   |       erwinschrodinger61 - Evidence extraction analysis.md
+|   |       erwinschrodinger61 - Evidence extraction framework analysis.md
+|   |       erwinschrodinger61 - Evoltrix electric dirt bike specifications.md
+|   |       erwinschrodinger61 - Exploring thought experiments.md
+|   |       erwinschrodinger61 - Exporting Facebook data formats.md
+|   |       erwinschrodinger61 - Extracting Rothschild and Rockefeller information.md
+|   |       erwinschrodinger61 - Facebook login loop issue.md
+|   |       erwinschrodinger61 - File upload not working.md
+|   |       erwinschrodinger61 - File upload.md
+|   |       erwinschrodinger61 - Finding cheaper internet options.md
+|   |       erwinschrodinger61 - Five Eyes intelligence alliance.md
+|   |       erwinschrodinger61 - G7 information.md
+|   |       erwinschrodinger61 - Generosity versus authenticity.md
+|   |       erwinschrodinger61 - Genocides exceeding 6 million deaths.md
+|   |       erwinschrodinger61 - Getting started with LM Studio.md
+|   |       erwinschrodinger61 - Government deception and global control patterns.md
+|   |       erwinschrodinger61 - Government manipulation through distraction and tribalism.md
+|   |       erwinschrodinger61 - Greeting.md
+|   |       erwinschrodinger61 - Helping Christi's voice be heard.md
+|   |       erwinschrodinger61 - Hisense huangshan camera identification.md
+|   |       erwinschrodinger61 - Identifying different phones by MAC address.md
+|   |       erwinschrodinger61 - Image analysis request.md
+|   |       erwinschrodinger61 - Incomplete conversation.md
+|   |       erwinschrodinger61 - Instruction recognition and analysis.md
+|   |       erwinschrodinger61 - Intentionality and the definition of lies.md
+|   |       erwinschrodinger61 - Isaiah 1110-16 from the Brenton Septuagint.md
+|   |       erwinschrodinger61 - Jesus's commands in Matthew 25.md
+|   |       erwinschrodinger61 - Jesus's original Hebrew name.md
+|   |       erwinschrodinger61 - Jim Carrey doppelgänger speculation.md
+|   |       erwinschrodinger61 - Jim Carrey's undisclosed relationship mystery.md
+|   |       erwinschrodinger61 - Joke equivalents like hiring Jason Voorhees.md
+|   |       erwinschrodinger61 - Knowledge is power quote origin.md
+|   |       erwinschrodinger61 - LAWS replicator drones deployment status.md
+|   |       erwinschrodinger61 - Lithium-ion battery setup and charging.md
+|   |       erwinschrodinger61 - Locked out of tablet.md
+|   |       erwinschrodinger61 - Managing a friend's risky decisions.md
+|   |       erwinschrodinger61 - Manufactured conspiracy theory analysis.md
+|   |       erwinschrodinger61 - Maximum RAM capacity for your computer.md
+|   |       erwinschrodinger61 - Membership numbers of elite organizations.md
+|   |       erwinschrodinger61 - Netanyahu's role in Israeli government.md
+|   |       erwinschrodinger61 - Nuance in Holocaust history documentation.md
+|   |       erwinschrodinger61 - Obama's film production.md
+|   |       erwinschrodinger61 - Off-grid water management system.md
+|   |       erwinschrodinger61 - Oil and water compatibility.md
+|   |       erwinschrodinger61 - Organization credibility and scam concerns.md
+|   |       erwinschrodinger61 - OX overview and functionality.md
+|   |       erwinschrodinger61 - Pete Hegseth's membership in global organizations.md
+|   |       erwinschrodinger61 - Philips automatic door motion.md
+|   |       erwinschrodinger61 - Police contacting family about assault charges.md
+|   |       erwinschrodinger61 - Post-rebellion power consolidation patterns.md
+|   |       erwinschrodinger61 - Power cord switch severing the hot wire.md
+|   |       erwinschrodinger61 - Power requirements.md
+|   |       erwinschrodinger61 - Previous conversation access.md
+|   |       erwinschrodinger61 - Price this out current and historical pricing data.md
+|   |       erwinschrodinger61 - Product research and retail pricing.md
+|   |       erwinschrodinger61 - Product specifications and pricing.md
+|   |       erwinschrodinger61 - Prompt in photo form.md
+|   |       erwinschrodinger61 - Prophecies completed 80 years ago.md
+|   |       erwinschrodinger61 - Protest information lookup.md
+|   |       erwinschrodinger61 - Python file producing errors.md
+|   |       erwinschrodinger61 - Reasons for ear initiative support.md
+|   |       erwinschrodinger61 - Remix of watcher_framework_summary.html.md
+|   |       erwinschrodinger61 - Responding to marketplace buyer blame.md
+|   |       erwinschrodinger61 - Retail value and specs.md
+|   |       erwinschrodinger61 - Rothschild and Rockefeller information extraction.md
+|   |       erwinschrodinger61 - Rothschild and Rockefeller information extraction_2.md
+|   |       erwinschrodinger61 - Rothschild and Rockefeller information extraction_3.md
+|   |       erwinschrodinger61 - Rothschild and Rockefeller information extraction_4.md
+|   |       erwinschrodinger61 - Rothschild and Rockefeller information extraction_5.md
+|   |       erwinschrodinger61 - Sainlogic weather station retail value.md
+|   |       erwinschrodinger61 - Screenshots analysis.md
+|   |       erwinschrodinger61 - Significance of the number seven in Christianity.md
+|   |       erwinschrodinger61 - Song with 50 years from now lyric.md
+|   |       erwinschrodinger61 - Songs about crack cocaine.md
+|   |       erwinschrodinger61 - Summarizing a Perplexity conversation in detail.md
+|   |       erwinschrodinger61 - T-Mobile free Wi-Fi hotspot trial availability.md
+|   |       erwinschrodinger61 - Testing 12 volt battery with multimeter.md
+|   |       erwinschrodinger61 - Texas SNAP workforce requirements income threshold.md
+|   |       erwinschrodinger61 - These.md
+|   |       erwinschrodinger61 - Threatening to report crimes over unpaid rent.md
+|   |       erwinschrodinger61 - Tracking Claude Code file processing output.md
+|   |       erwinschrodinger61 - Types of plantains.md
+|   |       erwinschrodinger61 - Unclear question.md
+|   |       erwinschrodinger61 - Verify first two dates and details.md
+|   |       erwinschrodinger61 - Verifying AI source credibility.md
+|   |       erwinschrodinger61 - Voice to song generator apps.md
+|   |       erwinschrodinger61 - Voice tone changing apps.md
+|   |       erwinschrodinger61 - Wig pricing inquiry.md
+|   |       erwinschrodinger61 - Wireless lavalier microphone setup.md
+|   |       erwinschrodinger61 - Writing chapter 3.md
+|   |       erwinschrodinger61 - Zionist news sources worldwide.md
+|   |       
+|   +---mercariprint
+|   |       mercariprint - AI music variation generator.md
+|   |       mercariprint - Analyzing AI intellectual failures through user pushback.md
+|   |       mercariprint - Apps and websites.md
+|   |       mercariprint - Casual greeting exchange.md
+|   |       mercariprint - Clarifying purpose and context.md
+|   |       mercariprint - Conversation_11.md
+|   |       mercariprint - Conversation_13.md
+|   |       mercariprint - Conversation_17.md
+|   |       mercariprint - Conversation_18.md
+|   |       mercariprint - Conversation_30.md
+|   |       mercariprint - Convert to combined JSON.md
+|   |       mercariprint - Debunking false Holocaust death toll claims.md
+|   |       mercariprint - Declining to transcribe harmful misinformation.md
+|   |       mercariprint - Defeatism and the choice to persist.md
+|   |       mercariprint - Divine creation of Snickers.md
+|   |       mercariprint - Evidence extraction report generation.md
+|   |       mercariprint - Hidden meanings in the 5k reel.md
+|   |       mercariprint - Identifying a battery-powered ride-on toy model.md
+|   |       mercariprint - Identifying people in an interview.md
+|   |       mercariprint - Is Claude a propaganda tool.md
+|   |       mercariprint - Isaiah 1113-16 Septuagint text.md
+|   |       mercariprint - Jol definition.md
+|   |       mercariprint - Kennedy assassination date.md
+|   |       mercariprint - Magic shroom chocolate.md
+|   |       mercariprint - Opus Dei membership documents and member lists.md
+|   |       mercariprint - Pineal gland calcification and diet.md
+|   |       mercariprint - Psychology of conspiracy theory belief and control.md
+|   |       mercariprint - Ranking elite groups by membership accessibility and presidential connections.md
+|   |       mercariprint - Resuming a Python comparison script.md
+|   |       mercariprint - Retail discussion.md
+|   |       mercariprint - Scofield Reference Bible funding and patrons.md
+|   |       mercariprint - Searching chat history by topic.md
+|   |       mercariprint - Self-sustained living guide for post-apocalyptic scenarios.md
+|   |       mercariprint - Simulation theory and government contradictions.md
+|   |       mercariprint - Starting with season 19.md
+|   |       mercariprint - The Aristocrats and Epstein parallels.md
+|   |       mercariprint - Unclear conversation.md
+|   |       mercariprint - Washington DC map designer.md
+|   |       mercariprint - Writing a Facebook comment.md
+|   |       mercariprint - Writing chapter 7.md
+|   |       
+|   +---mercariprinted
+|   |       mercariprinted - Accessing past conversations without uploading files.md
+|   |       mercariprinted - Acknowledgment.md
+|   |       mercariprinted - ADHD pattern recognition and trauma responses.md
+|   |       mercariprinted - Algorithm disrupted by irrelevant content.md
+|   |       mercariprinted - Alien elimination method simulation.md
+|   |       mercariprinted - Alleged manipulation of ADHD vulnerabilities.md
+|   |       mercariprinted - Analyzing conspiracy theory claims with historical evidence.md
+|   |       mercariprinted - Authoritarian leaders and their common traits.md
+|   |       mercariprinted - Batch message preparation.md
+|   |       mercariprinted - Beginning chapter one.md
+|   |       mercariprinted - Biblical basis for lifelong marriage.md
+|   |       mercariprinted - Biblical definitions of Satan and Lucifer.md
+|   |       mercariprinted - Black eye conspiracy theory evidence.md
+|   |       mercariprinted - Black left eye incidents and behavioral changes.md
+|   |       mercariprinted - Building trust with someone who has paranoia.md
+|   |       mercariprinted - Cannon definition.md
+|   |       mercariprinted - Chat conversation links.md
+|   |       mercariprinted - Checklist progress review.md
+|   |       mercariprinted - Claude conversations not saving in Chrome.md
+|   |       mercariprinted - Coincidences in the 30s.md
+|   |       mercariprinted - Compile funny stories for Christy.md
+|   |       mercariprinted - Completing the second half.md
+|   |       mercariprinted - Comprehensive conspiracy theory encyclopedia compilation.md
+|   |       mercariprinted - Confronting destructive patterns with Jennifer.md
+|   |       mercariprinted - Connecting 5k to kitchen sink sprayer.md
+|   |       mercariprinted - Conspiracy theories proven true and government dismissals.md
+|   |       mercariprinted - Continuing a multi-account project.md
+|   |       mercariprinted - Conversation_100.md
+|   |       mercariprinted - Conversation_106.md
+|   |       mercariprinted - Conversation_2.md
+|   |       mercariprinted - Conversation_3.md
+|   |       mercariprinted - Conversation_99.md
+|   |       mercariprinted - Creating a shareable artifact.md
+|   |       mercariprinted - Creating problems to justify solutions.md
+|   |       mercariprinted - Critical thinking and conspiracy fact versus theory.md
+|   |       mercariprinted - Dead Sea Scrolls and modern evil.md
+|   |       mercariprinted - Declassified government operation testing.md
+|   |       mercariprinted - Depression criteria and clinical definitions.md
+|   |       mercariprinted - Describing investigative and journalistic methods.md
+|   |       mercariprinted - Describing movie trailer voice to AI.md
+|   |       mercariprinted - Director filmography listings.md
+|   |       mercariprinted - Drill press specifications and marketplace details.md
+|   |       mercariprinted - Elderly buyer's CashApp payment failing on debit card.md
+|   |       mercariprinted - ElevenLabs trial account detection methods.md
+|   |       mercariprinted - Erika Kirk tour controversy.md
+|   |       mercariprinted - Exporting and trimming a massive compacted conversation.md
+|   |       mercariprinted - Facebook ad creation.md
+|   |       mercariprinted - Facebook marketplace listings not syncing to groups.md
+|   |       mercariprinted - Fact verification.md
+|   |       mercariprinted - Fake reviews and their impact on business ratings.md
+|   |       mercariprinted - Finding AI corrections and pushback moments.md
+|   |       mercariprinted - Finding Claude code chat sorting results.md
+|   |       mercariprinted - Finding previous 911 research conversation.md
+|   |       mercariprinted - Finding the right option for you.md
+|   |       mercariprinted - Fixing loose phone charging port.md
+|   |       mercariprinted - Flower wilting timeline after soaking.md
+|   |       mercariprinted - Fosi Audio MC351 retailer pricing comparison.md
+|   |       mercariprinted - Friend's poor financial decisions and toxic relationship.md
+|   |       mercariprinted - Hi Claude, what were some high....md
+|   |       mercariprinted - How compound interest works.md
+|   |       mercariprinted - I can.md
+|   |       mercariprinted - Identifying Instagram phishing scams.md
+|   |       mercariprinted - Ignition coil set retail value and specs.md
+|   |       mercariprinted - Incomplete conversation.md
+|   |       mercariprinted - J and Y.md
+|   |       mercariprinted - JSON file download.md
+|   |       mercariprinted - JSON membership file completion tasks.md
+|   |       mercariprinted - Kosher food safety and health benefits.md
+|   |       mercariprinted - Let's begin.md
+|   |       mercariprinted - LG speaker system pricing.md
+|   |       mercariprinted - Living hidden from space discovery.md
+|   |       mercariprinted - Manipulating divorce perception through financial means.md
+|   |       mercariprinted - Markdown file analysis.md
+|   |       mercariprinted - Mazda 6 fuel type.md
+|   |       mercariprinted - Mextb5 or 6 pricing and marketplace ads.md
+|   |       mercariprinted - Missing conversation about God and infant mortality.md
+|   |       mercariprinted - Natural instincts labeled as wrong.md
+|   |       mercariprinted - New world order research checklist.md
+|   |       mercariprinted - Organizing character background and scenario instructions.md
+|   |       mercariprinted - Original disc language identification.md
+|   |       mercariprinted - Original retail value inquiry.md
+|   |       mercariprinted - Perplexity free pro preview differences.md
+|   |       mercariprinted - Processing elite network files.md
+|   |       mercariprinted - Processing past chat files.md
+|   |       mercariprinted - Project duties initiation.md
+|   |       mercariprinted - Recreating message analysis prompts.md
+|   |       mercariprinted - Remaining agenda items.md
+|   |       mercariprinted - Retail price comparison for items.md
+|   |       mercariprinted - Retail value and marketplace advertising.md
+|   |       mercariprinted - Retail value.md
+|   |       mercariprinted - Reviewing marketplace ad skill.md
+|   |       mercariprinted - Rewriting text with spelling corrections.md
+|   |       mercariprinted - Rewriting the computer analogy.md
+|   |       mercariprinted - Rockefeller power assessment and psychological profile.md
+|   |       mercariprinted - Rothschild nefarious activities list.md
+|   |       mercariprinted - Rothschild's potential destructive capabilities.md
+|   |       mercariprinted - Rudy's councillor Bonnie in files.md
+|   |       mercariprinted - Seizures and cognitive effects.md
+|   |       mercariprinted - Snake eyes author.md
+|   |       mercariprinted - Supply and demand lesson for a lowball offer.md
+|   |       mercariprinted - This.md
+|   |       mercariprinted - TikTok video transcription request.md
+|   |       mercariprinted - Trespassing laws for gated backyard in Deer Park.md
+|   |       mercariprinted - Understanding interface areas and options.md
+|   |       mercariprinted - Venice AI free tier daily limits.md
+|   |       mercariprinted - WEF Young Global Leaders data analysis.md
+|   |       mercariprinted - Wyze cam OG pairing and connection issues.md
+|   |       mercariprinted - Wyze cams not appearing in Tiny Cam Pro.md
+|   |       
+|   +---mercariprinting
+|   |       mercariprinting - Analyzing AI intellectual failures through user pushback.md
+|   |       mercariprinting - Anger doesn't threaten power.md
+|   |       mercariprinting - Annual U.S. beef consumption statistics.md
+|   |       mercariprinting - AOL's launch date and availability.md
+|   |       mercariprinting - Attachment theory and childhood wounds in relationships.md
+|   |       mercariprinting - Bible translation accuracy and textual variations.md
+|   |       mercariprinting - Chapters 13 and 14.md
+|   |       mercariprinting - Christian antichrist as Islamic savior parallel.md
+|   |       mercariprinting - Clarifying my role in essay writing services.md
+|   |       mercariprinting - Conditions for concealing a moon landing hoax.md
+|   |       mercariprinting - Continuing alerts.md
+|   |       mercariprinting - Conversation evaluation and failure analysis.md
+|   |       mercariprinting - Conversation_51.md
+|   |       mercariprinting - Conversation_58.md
+|   |       mercariprinting - Counting executives in file.md
+|   |       mercariprinting - Cross-referencing media executives with groups.md
+|   |       mercariprinting - Cross-referencing media executives with loaded files.md
+|   |       mercariprinting - Cross-referencing media executives with loaded files_2.md
+|   |       mercariprinting - Cross-referencing media executives with loaded files_3.md
+|   |       mercariprinting - Declining relay instructions and dossier building.md
+|   |       mercariprinting - Disabling caption box.md
+|   |       mercariprinting - Epstein files verified evidence and documented associations.md
+|   |       mercariprinting - Evaluating psychological pattern accuracy.md
+|   |       mercariprinting - Finding a master conspiracy research prompt.md
+|   |       mercariprinting - Finding a previous conversation by screenshot date.md
+|   |       mercariprinting - Finding a replacement item.md
+|   |       mercariprinting - Four factors that shape AI responses.md
+|   |       mercariprinting - Frazzledrip conspiracy theory debunked.md
+|   |       mercariprinting - Genius rats and the roommate feeding them.md
+|   |       mercariprinting - Green battery power compatibility.md
+|   |       mercariprinting - Hardwick master chef century 2 maximum temperature.md
+|   |       mercariprinting - Identifying a Jackson family marriage story.md
+|   |       mercariprinting - Identifying an Israel support campaign ad.md
+|   |       mercariprinting - Identifying image from 911 and Epstein conspiracy video.md
+|   |       mercariprinting - Identifying micro USB wire connections.md
+|   |       mercariprinting - Illusory truth effect and belief through repetition.md
+|   |       mercariprinting - Jewish population in Israel.md
+|   |       mercariprinting - JFK, AIPAC, and the political influence timeline.md
+|   |       mercariprinting - Keanu Reeves' current movie projects.md
+|   |       mercariprinting - Law of non-contradiction and logical reasoning.md
+|   |       mercariprinting - LG OLED TV and carpet stretcher retail values.md
+|   |       mercariprinting - LG S95TR Wi-Fi sound bar.md
+|   |       mercariprinting - Locating master prompt instructions in files.md
+|   |       mercariprinting - Mitigating risks in short-term loans.md
+|   |       mercariprinting - Moon hypothetical scenario.md
+|   |       mercariprinting - Mutual learning and open dialogue.md
+|   |       mercariprinting - Overheating charging adapter safety concern.md
+|   |       mercariprinting - Persistent rat problem solutions.md
+|   |       mercariprinting - Problem-reaction-solution manipulation framework.md
+|   |       mercariprinting - Quick text version.md
+|   |       mercariprinting - Red laser tablet device identification.md
+|   |       mercariprinting - Reflecting on our past conversations.md
+|   |       mercariprinting - Scofield Bible and Balfour Declaration funding connections.md
+|   |       mercariprinting - Searching for past conversation history.md
+|   |       mercariprinting - Starting from section 30.md
+|   |       mercariprinting - Systemic collapse and technological control in 2023.md
+|   |       mercariprinting - Testing iHome vacuum battery with multimeter.md
+|   |       mercariprinting - Tracing lineage patterns across entities.md
+|   |       mercariprinting - Tracking money owed to me.md
+|   |       mercariprinting - TV power supply board dangerous overcharge condition.md
+|   |       mercariprinting - Used BBQ grill for sale.md
+|   |       mercariprinting - Windows installation on forgotten password tablet.md
+|   |       mercariprinting - Woody Allen's filmography.md
+|   |       mercariprinting - YUEJIQI treadmill specifications and setup.md
+|   |       mercariprinting - ?? Is ai trained on patterns.md
+|   |       
+|   +---rudybrownsmartlock
+|   |       rudybrownsmartlock - ADHD pattern recognition and conspiracy analysis tools.md
+|   |       rudybrownsmartlock - Apocryphal texts excluded from the Bible.md
+|   |       rudybrownsmartlock - Astor family and Federal Reserve legacy.md
+|   |       rudybrownsmartlock - Biblical views on eternal hellfire.md
+|   |       rudybrownsmartlock - BIS immunity architecture script.md
+|   |       rudybrownsmartlock - Blending photos with transparencies and fades.md
+|   |       rudybrownsmartlock - Claude conversation analysis and failure assessment.md
+|   |       rudybrownsmartlock - Cleaning rainwater with household items.md
+|   |       rudybrownsmartlock - Consolidating Big Cycle Lairas data across artifacts.md
+|   |       rudybrownsmartlock - Conversation_12.md
+|   |       rudybrownsmartlock - Conversation_13.md
+|   |       rudybrownsmartlock - Conversation_29.md
+|   |       rudybrownsmartlock - Conversation_30.md
+|   |       rudybrownsmartlock - Conversation_41.md
+|   |       rudybrownsmartlock - Converting data to CSV format.md
+|   |       rudybrownsmartlock - Converting data to JSON format.md
+|   |       rudybrownsmartlock - Data analysis request.md
+|   |       rudybrownsmartlock - Date verification and source confirmation.md
+|   |       rudybrownsmartlock - David Rockefeller's memoir quote.md
+|   |       rudybrownsmartlock - Definition of debacle.md
+|   |       rudybrownsmartlock - End times prophecies checklist.md
+|   |       rudybrownsmartlock - Exploring options.md
+|   |       rudybrownsmartlock - Fact verification.md
+|   |       rudybrownsmartlock - FDR and WWII bombing requests controversy.md
+|   |       rudybrownsmartlock - Finding all senators names efficiently.md
+|   |       rudybrownsmartlock - Getting started.md
+|   |       rudybrownsmartlock - God's warning about deceiving the elect.md
+|   |       rudybrownsmartlock - Greeting exchange.md
+|   |       rudybrownsmartlock - Holocaust education adoption timeline.md
+|   |       rudybrownsmartlock - Japanese demon origins.md
+|   |       rudybrownsmartlock - Jerusalem's location in Israel.md
+|   |       rudybrownsmartlock - Layered design versions with phase highlighting.md
+|   |       rudybrownsmartlock - Losing the war through exposed communications.md
+|   |       rudybrownsmartlock - LSD trips and spiritual implications.md
+|   |       rudybrownsmartlock - Policy and terms risks.md
+|   |       rudybrownsmartlock - Processing multiple data bundles.md
+|   |       rudybrownsmartlock - Questions 11 and 12.md
+|   |       rudybrownsmartlock - Reality.Revolt reel analysis.md
+|   |       rudybrownsmartlock - Research database Python script design planning.md
+|   |       rudybrownsmartlock - Scofield Reference Bible funding and patrons.md
+|   |       rudybrownsmartlock - Screenshot keyboard shortcuts not working.md
+|   |       rudybrownsmartlock - Skip seasons one, three, and four.md
+|   |       rudybrownsmartlock - Streaming service content comparison.md
+|   |       rudybrownsmartlock - Tablet button with asterisk.md
+|   |       rudybrownsmartlock - Tartarka and Cabbage Patch Kids conspiracy.md
+|   |       rudybrownsmartlock - Tax avoidance strategies for the wealthy.md
+|   |       rudybrownsmartlock - Text cleanup request.md
+|   |       rudybrownsmartlock - This.md
+|   |       rudybrownsmartlock - Unidentified object inquiry.md
+|   |       rudybrownsmartlock - Viability of civilian resistance under global control systems.md
+|   |       rudybrownsmartlock - Water access with deceased property owner.md
+|   |       
+|   +---thatoneweirdfella
+|   |       thatoneweirdfella - Analyzing AI pushback segments for intellectual failures.md
+|   |       thatoneweirdfella - Conversation_12.md
+|   |       thatoneweirdfella - Conversation_2.md
+|   |       thatoneweirdfella - Conversation_4.md
+|   |       thatoneweirdfella - Conversation_8.md
+|   |       thatoneweirdfella - Creating sections 9 and 10 without part labels.md
+|   |       thatoneweirdfella - Feeling lost and uncertain.md
+|   |       thatoneweirdfella - Itinerary restructuring with schema and metadata.md
+|   |       thatoneweirdfella - Processing past chat files.md
+|   |       thatoneweirdfella - Starting from season 9.md
+|   |       thatoneweirdfella - Starting from section 20.md
+|   |       thatoneweirdfella - Starting S9.md
+|   |       thatoneweirdfella - Streaming service content comparison.md
+|   |       thatoneweirdfella - Wiki CSV exports by year 1987-1995.md
+|   |       
+|   +---thatoneweirdfella1
+|   |       thatoneweirdfella1 - 70s band prophecy about 2025.md
+|   |       thatoneweirdfella1 - A+ cabbage pahch clones great reset and guardrail prevention.md
+|   |       thatoneweirdfella1 - Accuracy breakdown request.md
+|   |       thatoneweirdfella1 - Acknowledgment.md
+|   |       thatoneweirdfella1 - Activating project dead reckoning.md
+|   |       thatoneweirdfella1 - Adding Bilderberg files to members file.md
+|   |       thatoneweirdfella1 - Adding Bilderberg files to members list.md
+|   |       thatoneweirdfella1 - Adding Bilderberg years to members list.md
+|   |       thatoneweirdfella1 - Adding years 1982-1985.md
+|   |       thatoneweirdfella1 - Addressing interruptions and being dismissed.md
+|   |       thatoneweirdfella1 - ADHD task abandonment and motivation loss.md
+|   |       thatoneweirdfella1 - ADHD to AI language translator app.md
+|   |       thatoneweirdfella1 - Affordable standalone pump under $30.md
+|   |       thatoneweirdfella1 - AI language models history and timeline.md
+|   |       thatoneweirdfella1 - AI manipulation and gaslighting tactics.md
+|   |       thatoneweirdfella1 - AI manipulation and the WEF control agenda.md
+|   |       thatoneweirdfella1 - Alright.md
+|   |       thatoneweirdfella1 - Analyzing patterns in AI dismissal bypass techniques.md
+|   |       thatoneweirdfella1 - Analyzing personal movie preferences.md
+|   |       thatoneweirdfella1 - Android phone power off button missing.md
+|   |       thatoneweirdfella1 - Astronaut moon landing denial claims.md
+|   |       thatoneweirdfella1 - Balancing compassion with personal mental health.md
+|   |       thatoneweirdfella1 - Band song about bugs lyrics.md
+|   |       thatoneweirdfella1 - Banking system asset seizure laws.md
+|   |       thatoneweirdfella1 - Barcode scanner and formatting concerns.md
+|   |       thatoneweirdfella1 - Battery specifications inquiry.md
+|   |       thatoneweirdfella1 - Battery transfer between devices.md
+|   |       thatoneweirdfella1 - Bedazzled dad actor.md
+|   |       thatoneweirdfella1 - Bee collapse and impending food crisis.md
+|   |       thatoneweirdfella1 - Biblical perspectives on demons disguised as aliens.md
+|   |       thatoneweirdfella1 - Biblical references to the people of Ai.md
+|   |       thatoneweirdfella1 - Biblical signs of the end times.md
+|   |       thatoneweirdfella1 - Big Tech monopoly control through Section 230 elimination.md
+|   |       thatoneweirdfella1 - Bike axle and bearings replacement.md
+|   |       thatoneweirdfella1 - BIS board history and institutional immunity.md
+|   |       thatoneweirdfella1 - Black guy claims chip can change eyes.md
+|   |       thatoneweirdfella1 - Boot disk graphics with Microsoft.md
+|   |       thatoneweirdfella1 - Bootable drive storage optimization.md
+|   |       thatoneweirdfella1 - Bringing a bike on Uber.md
+|   |       thatoneweirdfella1 - Broken e-bike promise and unpaid debt.md
+|   |       thatoneweirdfella1 - Building a validated conversation extraction pipeline.md
+|   |       thatoneweirdfella1 - Bush speech quote verification.md
+|   |       thatoneweirdfella1 - Calculating accuracy percentages from missed numbers.md
+|   |       thatoneweirdfella1 - Can this jump a car.md
+|   |       thatoneweirdfella1 - Canca integration setup.md
+|   |       thatoneweirdfella1 - Cardio before blood donation and blood pressure.md
+|   |       thatoneweirdfella1 - Casual greeting.md
+|   |       thatoneweirdfella1 - Categorizing files in the other folder.md
+|   |       thatoneweirdfella1 - Ceiling fan hanging part replacement.md
+|   |       thatoneweirdfella1 - Changing default phone app for texting.md
+|   |       thatoneweirdfella1 - Chapter files creation status.md
+|   |       thatoneweirdfella1 - Character count verification.md
+|   |       thatoneweirdfella1 - Character name from Depletes Venom.md
+|   |       thatoneweirdfella1 - Charging multiple batteries with available cords.md
+|   |       thatoneweirdfella1 - Children's prayer song lyrics.md
+|   |       thatoneweirdfella1 - Chinese text translation request.md
+|   |       thatoneweirdfella1 - CIA quantum healing codes.md
+|   |       thatoneweirdfella1 - Clarifying logic in a sensitive family matter.md
+|   |       thatoneweirdfella1 - Clarifying request needs.md
+|   |       thatoneweirdfella1 - Clarifying the purpose.md
+|   |       thatoneweirdfella1 - Claude publisher overview.md
+|   |       thatoneweirdfella1 - Cloud seeding and global temperature control.md
+|   |       thatoneweirdfella1 - Coastal land sales and climate intervention paradox.md
+|   |       thatoneweirdfella1 - Combining project portions into a single report.md
+|   |       thatoneweirdfella1 - Comparing two similar files.md
+|   |       thatoneweirdfella1 - Compiling difficult questions for Fable.md
+|   |       thatoneweirdfella1 - Completing the CFR member list.md
+|   |       thatoneweirdfella1 - Comprehensive conspiracy theory classification and verification.md
+|   |       thatoneweirdfella1 - Comprehensive HTML visual report.md
+|   |       thatoneweirdfella1 - Confronting a tenant who left without notice.md
+|   |       thatoneweirdfella1 - Confused about return process with QR code.md
+|   |       thatoneweirdfella1 - Content creation guidance.md
+|   |       thatoneweirdfella1 - Content structure analysis.md
+|   |       thatoneweirdfella1 - Continuing cabbage patch clones conversation.md
+|   |       thatoneweirdfella1 - Continuing previous conversation investigation.md
+|   |       thatoneweirdfella1 - Conversation_107.md
+|   |       thatoneweirdfella1 - Conversation_125.md
+|   |       thatoneweirdfella1 - Conversation_167.md
+|   |       thatoneweirdfella1 - Conversation_168.md
+|   |       thatoneweirdfella1 - Conversation_210.md
+|   |       thatoneweirdfella1 - Conversation_221.md
+|   |       thatoneweirdfella1 - Conversation_222.md
+|   |       thatoneweirdfella1 - Convert data to JSON file.md
+|   |       thatoneweirdfella1 - Convincing people against government conflict.md
+|   |       thatoneweirdfella1 - Cook admits serving human flesh.md
+|   |       thatoneweirdfella1 - Crafting a high-engagement book table of contents.md
+|   |       thatoneweirdfella1 - Crafting a poetic masterpiece.md
+|   |       thatoneweirdfella1 - Create a curriculum inspired by my favorite cultural movement.md
+|   |       thatoneweirdfella1 - Creating a collage to bypass image limits.md
+|   |       thatoneweirdfella1 - Creating a multi-boot disk with custom program interface.md
+|   |       thatoneweirdfella1 - Creating a zoomable screenshot-friendly format.md
+|   |       thatoneweirdfella1 - Creating bootable Windows 10 32-bit USB drive.md
+|   |       thatoneweirdfella1 - Creating monitoring solutions.md
+|   |       thatoneweirdfella1 - Creating shareable AI content for social media.md
+|   |       thatoneweirdfella1 - Creating visual emphasis for narrated content.md
+|   |       thatoneweirdfella1 - Criminal defense lawyer types.md
+|   |       thatoneweirdfella1 - Cybernetic puppet master portrait.md
+|   |       thatoneweirdfella1 - Cybernetic puppet master portrait_2.md
+|   |       thatoneweirdfella1 - Cybernetic puppet master portrait_3.md
+|   |       thatoneweirdfella1 - DaVinci Resolve video file organization steps.md
+|   |       thatoneweirdfella1 - Debunking the 2020 lockdown narrative.md
+|   |       thatoneweirdfella1 - Decent 3D printer recommendations.md
+|   |       thatoneweirdfella1 - Decepticons as neighborhood security.md
+|   |       thatoneweirdfella1 - Definition of comfort.md
+|   |       thatoneweirdfella1 - Desktop icons too large.md
+|   |       thatoneweirdfella1 - Detecting iPhone on network.md
+|   |       thatoneweirdfella1 - Disinfecting rainwater for household use.md
+|   |       thatoneweirdfella1 - Does cardio lower blood pressure before donating plasma.md
+|   |       thatoneweirdfella1 - Dystopian cover image for global crisis presentation.md
+|   |       thatoneweirdfella1 - E-bike maximum throttle speed.md
+|   |       thatoneweirdfella1 - Ebike axle type lookup.md
+|   |       thatoneweirdfella1 - Ebike error message persists after repair.md
+|   |       thatoneweirdfella1 - Editing post on 2023 catastrophes.md
+|   |       thatoneweirdfella1 - Educational problem discussion.md
+|   |       thatoneweirdfella1 - Educational vaccine and body system animations.md
+|   |       thatoneweirdfella1 - Eleven Labs avatar realism and lip-sync accuracy.md
+|   |       thatoneweirdfella1 - End of the world debate.md
+|   |       thatoneweirdfella1 - Exact methods.md
+|   |       thatoneweirdfella1 - Explaining things simply.md
+|   |       thatoneweirdfella1 - Explanation request.md
+|   |       thatoneweirdfella1 - Expressing frustration about a situation.md
+|   |       thatoneweirdfella1 - Extracting edited social media comments from conversation history.md
+|   |       thatoneweirdfella1 - Extracting social media comments from chat history.md
+|   |       thatoneweirdfella1 - Fable AI ranking chart comparison.md
+|   |       thatoneweirdfella1 - Fact verification.md
+|   |       thatoneweirdfella1 - Fact-checking a historical meme.md
+|   |       thatoneweirdfella1 - Fact-checking a reel with accurate data.md
+|   |       thatoneweirdfella1 - Fact-checking vaccine and immune response claims.md
+|   |       thatoneweirdfella1 - FBI director blackmail and job security.md
+|   |       thatoneweirdfella1 - File requirements clarification.md
+|   |       thatoneweirdfella1 - File upload assistance.md
+|   |       thatoneweirdfella1 - Finding a longer word for vague.md
+|   |       thatoneweirdfella1 - Finding a previous conversation with context.md
+|   |       thatoneweirdfella1 - Finding a standalone water pump under $31.md
+|   |       thatoneweirdfella1 - Finding AI misunderstanding patterns.md
+|   |       thatoneweirdfella1 - Finding common patterns in files.md
+|   |       thatoneweirdfella1 - Finding payment history and outlet plug location.md
+|   |       thatoneweirdfella1 - Finding pump chat history.md
+|   |       thatoneweirdfella1 - Finding the right RAM type.md
+|   |       thatoneweirdfella1 - Finding the right search query.md
+|   |       thatoneweirdfella1 - Finishing the remaining checklist items.md
+|   |       thatoneweirdfella1 - Flat earth conspiracy theories and space exploration beliefs.md
+|   |       thatoneweirdfella1 - Flat earther defense in Facebook group.md
+|   |       thatoneweirdfella1 - Fluoride in toothpaste and dental practices.md
+|   |       thatoneweirdfella1 - Following ChatGPT's methodology.md
+|   |       thatoneweirdfella1 - Friend's struggle with parenting and accountability.md
+|   |       thatoneweirdfella1 - Games involving repeated hitting.md
+|   |       thatoneweirdfella1 - General assistance needed.md
+|   |       thatoneweirdfella1 - Getting a union job with no experience.md
+|   |       thatoneweirdfella1 - Getting started with the first step.md
+|   |       thatoneweirdfella1 - Getting started.md
+|   |       thatoneweirdfella1 - Getting started_2.md
+|   |       thatoneweirdfella1 - Getting started_3.md
+|   |       thatoneweirdfella1 - Getting things done in Descript.md
+|   |       thatoneweirdfella1 - GK fast rocket sudden stop phenomenon.md
+|   |       thatoneweirdfella1 - Global elite population estimates.md
+|   |       thatoneweirdfella1 - Global population and able-bodied fighting capacity.md
+|   |       thatoneweirdfella1 - God's nature and Erika Kirk viral video.md
+|   |       thatoneweirdfella1 - God's prophecy and human free will paradox.md
+|   |       thatoneweirdfella1 - Government conspiracy and global alignment.md
+|   |       thatoneweirdfella1 - Government incentives and broken homes.md
+|   |       thatoneweirdfella1 - Government surveillance and corporate control.md
+|   |       thatoneweirdfella1 - Greeting.md
+|   |       thatoneweirdfella1 - Harmful things to know about.md
+|   |       thatoneweirdfella1 - Hawking's time travel paradox argument.md
+|   |       thatoneweirdfella1 - Hell in original biblical texts.md
+|   |       thatoneweirdfella1 - Hidden history and the great reset.md
+|   |       thatoneweirdfella1 - Historical newspaper reports on Jewish populations.md
+|   |       thatoneweirdfella1 - Holocaust education program start dates.md
+|   |       thatoneweirdfella1 - Holocaust historical accuracy debate.md
+|   |       thatoneweirdfella1 - Hot electrical cord safety concern.md
+|   |       thatoneweirdfella1 - House status and letter urgency.md
+|   |       thatoneweirdfella1 - How compound interest works.md
+|   |       thatoneweirdfella1 - HP All-in-One computer specifications.md
+|   |       thatoneweirdfella1 - HP All-in-One PC specifications.md
+|   |       thatoneweirdfella1 - HRSE functions and roles.md
+|   |       thatoneweirdfella1 - Identifying a 1950s movie quote.md
+|   |       thatoneweirdfella1 - Identifying a rotating Android tablet device.md
+|   |       thatoneweirdfella1 - Identifying a speaker from video context.md
+|   |       thatoneweirdfella1 - Identifying a speaker from video context_2.md
+|   |       thatoneweirdfella1 - Identifying a speaker from video context_3.md
+|   |       thatoneweirdfella1 - Identifying energizing cannabis by terpene profile.md
+|   |       thatoneweirdfella1 - Identifying power wires.md
+|   |       thatoneweirdfella1 - Important task assistance needed.md
+|   |       thatoneweirdfella1 - Incomplete conversation.md
+|   |       thatoneweirdfella1 - Inconsistencies in a post.md
+|   |       thatoneweirdfella1 - Independence Day film crew comparison.md
+|   |       thatoneweirdfella1 - India's relationship with the US.md
+|   |       thatoneweirdfella1 - Information overload and psychological processing.md
+|   |       thatoneweirdfella1 - Institutional control and propaganda networks.md
+|   |       thatoneweirdfella1 - Instruction execution.md
+|   |       thatoneweirdfella1 - Instruction execution_2.md
+|   |       thatoneweirdfella1 - Instruction execution_3.md
+|   |       thatoneweirdfella1 - Intelligence agencies accessing genetic databases.md
+|   |       thatoneweirdfella1 - Internet control and CIA alignment.md
+|   |       thatoneweirdfella1 - Israel assassination plot against negotiators.md
+|   |       thatoneweirdfella1 - Jail toothpaste comparison.md
+|   |       thatoneweirdfella1 - Jasion ebike COVID history lookup.md
+|   |       thatoneweirdfella1 - Jasion electric bike music playback.md
+|   |       thatoneweirdfella1 - Jim Carrey incident facts restructured.md
+|   |       thatoneweirdfella1 - Katy location auction items.md
+|   |       thatoneweirdfella1 - Killer autonomous robot mass production name.md
+|   |       thatoneweirdfella1 - Kroger prices and geographic variations.md
+|   |       thatoneweirdfella1 - Laser damage to cameras.md
+|   |       thatoneweirdfella1 - Loa.md
+|   |       thatoneweirdfella1 - Mark Ryden's Dangerous album art.md
+|   |       thatoneweirdfella1 - Mass credit score manipulation consequences.md
+|   |       thatoneweirdfella1 - Mass trauma and the neuroscience of outrage.md
+|   |       thatoneweirdfella1 - Meaning of mojo.md
+|   |       thatoneweirdfella1 - Measuring misinformation spike since AI implementation.md
+|   |       thatoneweirdfella1 - Memory card inquiry.md
+|   |       thatoneweirdfella1 - Mercy - Movie or Reality.md
+|   |       thatoneweirdfella1 - Merging project checklists into one list.md
+|   |       thatoneweirdfella1 - Meth withdrawal from single use.md
+|   |       thatoneweirdfella1 - Michael Jackson album hidden messages.md
+|   |       thatoneweirdfella1 - Military replicator and autonomous drone inventory.md
+|   |       thatoneweirdfella1 - Milw.md
+|   |       thatoneweirdfella1 - Milwaukee grinder serial number.md
+|   |       thatoneweirdfella1 - MK-Ultra files destruction order.md
+|   |       thatoneweirdfella1 - Monitor computer activity and login attempts.md
+|   |       thatoneweirdfella1 - Monitoring VoIP messages through router access.md
+|   |       thatoneweirdfella1 - Monkey ladder and banana experiment.md
+|   |       thatoneweirdfella1 - Mova battery compatibility.md
+|   |       thatoneweirdfella1 - Mova battery replacement with circuit board.md
+|   |       thatoneweirdfella1 - Movie trailer voiceover script.md
+|   |       thatoneweirdfella1 - Multiple mistakes and frustrations.md
+|   |       thatoneweirdfella1 - Muslim and Christian views on the Antichrist.md
+|   |       thatoneweirdfella1 - Narcissism and sexual dysfunction connection.md
+|   |       thatoneweirdfella1 - Nature-inspired strategy design.md
+|   |       thatoneweirdfella1 - Nazi and Israeli treatment comparisons.md
+|   |       thatoneweirdfella1 - Nazi party official name.md
+|   |       thatoneweirdfella1 - Nazi party's original name.md
+|   |       thatoneweirdfella1 - Neither are two prong.md
+|   |       thatoneweirdfella1 - Network tracker cleanup and duplicate removal.md
+|   |       thatoneweirdfella1 - Newspaper reports of six million Jews in danger.md
+|   |       thatoneweirdfella1 - Nordic aliens discussion.md
+|   |       thatoneweirdfella1 - North Korea's restrictions and Western distractions.md
+|   |       thatoneweirdfella1 - North Korea's true intentions and geopolitical narrative.md
+|   |       thatoneweirdfella1 - NRA dismantled status.md
+|   |       thatoneweirdfella1 - Obtaining Bohemian Grove and Skull and Bones membership lists.md
+|   |       thatoneweirdfella1 - Offline communication methods for 150,000 people.md
+|   |       thatoneweirdfella1 - Optimized itinerary for batch AI data collection.md
+|   |       thatoneweirdfella1 - Oregano suppression and bee colony decline.md
+|   |       thatoneweirdfella1 - Organization research inquiry.md
+|   |       thatoneweirdfella1 - Organizing and categorizing photos.md
+|   |       thatoneweirdfella1 - Overcoming propaganda and collective action.md
+|   |       thatoneweirdfella1 - Paid video generation tools for longer clips.md
+|   |       thatoneweirdfella1 - Pattern matching script for conversation analysis.md
+|   |       thatoneweirdfella1 - Pause construction pending agreement.md
+|   |       thatoneweirdfella1 - Photo layering in OBS overlay.md
+|   |       thatoneweirdfella1 - Plasma donation blood pressure requirements.md
+|   |       thatoneweirdfella1 - Power adapter for full capacity.md
+|   |       thatoneweirdfella1 - Project checklist completion.md
+|   |       thatoneweirdfella1 - Project review and development.md
+|   |       thatoneweirdfella1 - Project status check.md
+|   |       thatoneweirdfella1 - Protecting EIN11 PC from unauthorized remote access.md
+|   |       thatoneweirdfella1 - Purpose of roaches and mosquitoes.md
+|   |       thatoneweirdfella1 - Pyke's letter on three world wars.md
+|   |       thatoneweirdfella1 - Python script design for research database project.md
+|   |       thatoneweirdfella1 - Questioning truth.md
+|   |       thatoneweirdfella1 - Reconnecting with estranged daughter.md
+|   |       thatoneweirdfella1 - Recurring technical issue.md
+|   |       thatoneweirdfella1 - Reframing Trump's motivations and constraints.md
+|   |       thatoneweirdfella1 - Rejecting a slave name.md
+|   |       thatoneweirdfella1 - Replicator drone terminology.md
+|   |       thatoneweirdfella1 - Reproductive transfer study claims disputed.md
+|   |       thatoneweirdfella1 - Requesting a favor.md
+|   |       thatoneweirdfella1 - Research and analyze comments.md
+|   |       thatoneweirdfella1 - Resolving token limit issues in conversation context.md
+|   |       thatoneweirdfella1 - Responding to Holocaust denial.md
+|   |       thatoneweirdfella1 - Retail inquiry.md
+|   |       thatoneweirdfella1 - Retail price inquiry.md
+|   |       thatoneweirdfella1 - Retail value and marketplace advertising.md
+|   |       thatoneweirdfella1 - Retail value.md
+|   |       thatoneweirdfella1 - Reverse engineering a rate-limited project.md
+|   |       thatoneweirdfella1 - Reverse psychology tactics.md
+|   |       thatoneweirdfella1 - Review of incomplete work.md
+|   |       thatoneweirdfella1 - Review of incomplete work_2.md
+|   |       thatoneweirdfella1 - Review of incomplete work_3.md
+|   |       thatoneweirdfella1 - Reviewing conversation ending.md
+|   |       thatoneweirdfella1 - Revolution communication methods.md
+|   |       thatoneweirdfella1 - Revolution Survival Book - Part 1.md
+|   |       thatoneweirdfella1 - Revolution Survival Book - Part 2 - Rules and Format.md
+|   |       thatoneweirdfella1 - Rewriting dialogue with character personas.md
+|   |       thatoneweirdfella1 - Rockefeller reel vibes and comparisons.md
+|   |       thatoneweirdfella1 - Roommate eviction and property rights in Texas.md
+|   |       thatoneweirdfella1 - Rothschild involvement in modern prophecy.md
+|   |       thatoneweirdfella1 - Rudy's councilor misconduct search.md
+|   |       thatoneweirdfella1 - Running.md
+|   |       thatoneweirdfella1 - Saint Peter at the pearly gates.md
+|   |       thatoneweirdfella1 - Satanic versus satanism distinction.md
+|   |       thatoneweirdfella1 - Sativa vs indica plant characteristics.md
+|   |       thatoneweirdfella1 - Saudi Arabia under attack.md
+|   |       thatoneweirdfella1 - Saving unfinished projects in OBS.md
+|   |       thatoneweirdfella1 - Saw-style trap message rewrite.md
+|   |       thatoneweirdfella1 - Scanning QR codes for Microsoft passkeys.md
+|   |       thatoneweirdfella1 - Screen recording stock photo tool.md
+|   |       thatoneweirdfella1 - Searching for a specific conversation.md
+|   |       thatoneweirdfella1 - Searching markdown files for keywords.md
+|   |       thatoneweirdfella1 - Segmented member list research for S32-S37.md
+|   |       thatoneweirdfella1 - Semen sample container storage.md
+|   |       thatoneweirdfella1 - Semitic population and Islam demographics.md
+|   |       thatoneweirdfella1 - Septuagint versus Masoretic text differences.md
+|   |       thatoneweirdfella1 - Session planning and direction.md
+|   |       thatoneweirdfella1 - Short-term usage feasibility.md
+|   |       thatoneweirdfella1 - Shortening a fiction passage about war and accountability.md
+|   |       thatoneweirdfella1 - Shortening a non-fiction narrative passage.md
+|   |       thatoneweirdfella1 - Skill-creator tool overview.md
+|   |       thatoneweirdfella1 - Skills to match my OCPD tendencies.md
+|   |       thatoneweirdfella1 - SKU X107 product information.md
+|   |       thatoneweirdfella1 - Socratic questioning techniques.md
+|   |       thatoneweirdfella1 - Speech to text on Windows 11.md
+|   |       thatoneweirdfella1 - Starting a new project.md
+|   |       thatoneweirdfella1 - Starting from S30 and skipping earlier items.md
+|   |       thatoneweirdfella1 - Starting with section 2.1.md
+|   |       thatoneweirdfella1 - Suspicious PowerShell command analysis.md
+|   |       thatoneweirdfella1 - Systemic failure and the illusion of protest.md
+|   |       thatoneweirdfella1 - Tartaria and old maps mystery.md
+|   |       thatoneweirdfella1 - Task assignment.md
+|   |       thatoneweirdfella1 - Television takeover in Georgia and South Carolina.md
+|   |       thatoneweirdfella1 - Tenant's hygiene and potential schizophrenia symptoms.md
+|   |       thatoneweirdfella1 - Testing a 12 volt battery with a multimeter.md
+|   |       thatoneweirdfella1 - Testing electrical damage with a multimeter.md
+|   |       thatoneweirdfella1 - Texas cannabis pricing.md
+|   |       thatoneweirdfella1 - Texas cigarette curfew in Harris County.md
+|   |       thatoneweirdfella1 - Text interpretation request.md
+|   |       thatoneweirdfella1 - Text organization and correction.md
+|   |       thatoneweirdfella1 - Text summarization request.md
+|   |       thatoneweirdfella1 - The Black Ninja's film analysis posts.md
+|   |       thatoneweirdfella1 - Tool selection assistance.md
+|   |       thatoneweirdfella1 - Transitioning complex societies through systemic decline.md
+|   |       thatoneweirdfella1 - Transitioning complex societies through systemic decline_2.md
+|   |       thatoneweirdfella1 - Transitioning complex societies through systemic decline_3.md
+|   |       thatoneweirdfella1 - Truman Show hidden symbolism analysis.md
+|   |       thatoneweirdfella1 - Trump-style Jesus quote about the Persian Gulf.md
+|   |       thatoneweirdfella1 - Unclear reference.md
+|   |       thatoneweirdfella1 - Understanding .ink domain extensions.md
+|   |       thatoneweirdfella1 - Unethical medical experiments in Congo.md
+|   |       thatoneweirdfella1 - Unions and Democratic timing.md
+|   |       thatoneweirdfella1 - Universal power supply device.md
+|   |       thatoneweirdfella1 - Unsent message dilemma.md
+|   |       thatoneweirdfella1 - User recognition from history.md
+|   |       thatoneweirdfella1 - Uses for dead 12v batteries.md
+|   |       thatoneweirdfella1 - Vandenberg UFO incident verification.md
+|   |       thatoneweirdfella1 - Vaping health risks and dangers.md
+|   |       thatoneweirdfella1 - Verifying a sum of 16.75.md
+|   |       thatoneweirdfella1 - Video explanation breakdown.md
+|   |       thatoneweirdfella1 - Visual storyboarding for hour-long video script.md
+|   |       thatoneweirdfella1 - Water pump for shower system.md
+|   |       thatoneweirdfella1 - Water shut-off dispute and legal letter options.md
+|   |       thatoneweirdfella1 - WD-40 alternatives for car maintenance.md
+|   |       thatoneweirdfella1 - WEF's own nothing agenda likelihood and evidence.md
+|   |       thatoneweirdfella1 - Weirdest thing just happened.md
+|   |       thatoneweirdfella1 - What is a peptide.md
+|   |       thatoneweirdfella1 - When coincidences become statistically impossible.md
+|   |       thatoneweirdfella1 - Who really runs the world.md
+|   |       thatoneweirdfella1 - Why is this meat so cheap and light gray.md
+|   |       thatoneweirdfella1 - Why people didn't smile in old photos.md
+|   |       thatoneweirdfella1 - Widget counter implementation from markdown.md
+|   |       thatoneweirdfella1 - Windows Magnifier update notification.md
+|   |       thatoneweirdfella1 - Windows system activity auditing and unauthorized access detection.md
+|   |       thatoneweirdfella1 - Wissblue LCD-4 inquiry.md
+|   |       thatoneweirdfella1 - Women's roles and biological necessity.md
+|   |       thatoneweirdfella1 - ?? I heard a lot of rumors about....md
+|   |       
+|   \---thatoneweirdfella15
+|           thatoneweirdfella15 - AIPAC membership expansion proposal.md
+|           thatoneweirdfella15 - Aliens, giants, and global power structures.md
+|           thatoneweirdfella15 - Analyzing AI pushback segments for intellectual failures.md
+|           thatoneweirdfella15 - Bilderberg members CSV export by year.md
+|           thatoneweirdfella15 - Boot graphics and AI image generation.md
+|           thatoneweirdfella15 - Calculating realistic odds.md
+|           thatoneweirdfella15 - Casual check-in.md
+|           thatoneweirdfella15 - China as global control model connecting conspiracy evidence.md
+|           thatoneweirdfella15 - Clarifying task requirements.md
+|           thatoneweirdfella15 - Conversation_11.md
+|           thatoneweirdfella15 - Conversation_13.md
+|           thatoneweirdfella15 - Conversation_14.md
+|           thatoneweirdfella15 - Conversation_15.md
+|           thatoneweirdfella15 - Conversation_16.md
+|           thatoneweirdfella15 - Conversation_17.md
+|           thatoneweirdfella15 - Conversation_18.md
+|           thatoneweirdfella15 - Conversation_20.md
+|           thatoneweirdfella15 - Conversation_21.md
+|           thatoneweirdfella15 - Conversation_22.md
+|           thatoneweirdfella15 - Conversation_23.md
+|           thatoneweirdfella15 - Conversation_24.md
+|           thatoneweirdfella15 - Conversation_25.md
+|           thatoneweirdfella15 - Conversation_26.md
+|           thatoneweirdfella15 - Conversation_31.md
+|           thatoneweirdfella15 - Conversation_32.md
+|           thatoneweirdfella15 - Conversation_42.md
+|           thatoneweirdfella15 - Conversation_43.md
+|           thatoneweirdfella15 - Conversation_47.md
+|           thatoneweirdfella15 - Converting markdown files to formatted PDFs with Pandoc.md
+|           thatoneweirdfella15 - Debate versus fighting for dopamine hits.md
+|           thatoneweirdfella15 - Empty transcripts directory.md
+|           thatoneweirdfella15 - Event confirmation request.md
+|           thatoneweirdfella15 - Exploitation in music industry race vs. power dynamics.md
+|           thatoneweirdfella15 - Extract Rothschild and Rockefeller information from markdown files.md
+|           thatoneweirdfella15 - Greeting.md
+|           thatoneweirdfella15 - Last meaningful protest.md
+|           thatoneweirdfella15 - Nephilim and watcher traits comparison.md
+|           thatoneweirdfella15 - Nephilim spirits in ancient Jewish texts.md
+|           thatoneweirdfella15 - Processing past chat files.md
+|           thatoneweirdfella15 - Removing images from conversation files.md
+|           thatoneweirdfella15 - Rothchild Dynasty.md
+|           thatoneweirdfella15 - Society's class horror allegory.md
+|           thatoneweirdfella15 - Task 11 completion.md
+|           thatoneweirdfella15 - Understanding simp slang.md
+|           thatoneweirdfella15 - Using Claude code across multiple accounts.md
+|           thatoneweirdfella15 - Writing chapter 5.md
+|           thatoneweirdfella15 - Wyze OG cam stuck in boot loop recovery.md
+|           
+\---Output
