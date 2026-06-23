@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ADHD-to-AI Translator — Fluent/Microsoft Style</title>
+<style>
+  :root {
+    --bg: #faf9f8;
+    --surface: #ffffff;
+    --surface-alt: #f3f2f1;
+    --border: #e1dfdd;
+    --text: #201f1e;
+    --text-secondary: #605e5c;
+    --accent: #0078d4;
+    --accent-hover: #106ebe;
+    --accent-light: #deecf9;
+    --success: #107c10;
+    --success-light: #dff6dd;
+    --warning: #797673;
+    --shadow: 0 1.6px 3.6px rgba(0,0,0,0.13), 0 0.3px 0.9px rgba(0,0,0,0.1);
+    --shadow-card: 0 0.6px 1.8px rgba(0,0,0,0.108), 0 3.2px 7.2px rgba(0,0,0,0.132);
+    --font: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  .titlebar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 20px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .titlebar-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .app-icon {
+    width: 20px; height: 20px;
+    background: linear-gradient(135deg, #0078d4, #00bcf2);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; color: white; font-weight: 600;
+  }
+
+  .titlebar-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .titlebar-sub {
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  .ribbon {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 20px;
+    display: flex;
+    gap: 4px;
+  }
+
+  .ribbon-btn {
+    font-size: 12px;
+    color: var(--text-secondary);
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .ribbon-btn:hover { background: var(--surface-alt); }
+  .ribbon-btn.active { background: var(--accent-light); color: var(--accent); }
+
+  .content {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 32px 24px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    box-shadow: var(--shadow-card);
+    margin-bottom: 16px;
+  }
+
+  .card-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--success);
+  }
+
+  .card-body { padding: 18px; }
+
+  textarea {
+    width: 100%;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text);
+    resize: none;
+    min-height: 80px;
+    font-family: var(--font);
+  }
+
+  .input-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 0 18px 16px;
+  }
+
+  .btn {
+    font-size: 13px;
+    font-weight: 600;
+    padding: 6px 16px;
+    border-radius: 2px;
+    cursor: pointer;
+    border: 1px solid transparent;
+  }
+
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-secondary { background: var(--surface); border-color: var(--border); color: var(--text); }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+  }
+
+  .info-cell {
+    background: var(--surface);
+    padding: 14px 16px;
+  }
+
+  .info-label {
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 4px;
+  }
+
+  .info-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .info-value.accent { color: var(--accent); }
+
+  .question-list {
+    padding: 4px 18px 18px;
+  }
+
+  .question-item {
+    display: flex;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--surface-alt);
+    font-size: 13.5px;
+  }
+
+  .question-item:last-child { border-bottom: none; }
+
+  .q-number {
+    width: 20px; height: 20px;
+    background: var(--accent-light);
+    color: var(--accent);
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .q-text { color: var(--text); flex: 1; }
+  .q-model {
+    font-size: 11px;
+    color: var(--text-secondary);
+    background: var(--surface-alt);
+    padding: 2px 8px;
+    border-radius: 10px;
+    height: fit-content;
+    white-space: nowrap;
+  }
+
+  .progress-track {
+    height: 4px;
+    background: var(--surface-alt);
+    border-radius: 2px;
+    overflow: hidden;
+    margin: 4px 18px 18px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--success);
+    width: 84%;
+  }
+
+  .technique-grid {
+    display: flex;
+    gap: 8px;
+    padding: 0 18px 18px;
+    flex-wrap: wrap;
+  }
+
+  .technique-pill {
+    background: var(--success-light);
+    color: var(--success);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 12px;
+  }
+
+  .answer-card .card-body {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text);
+  }
+
+  .feedback-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 18px;
+    border-top: 1px solid var(--border);
+    background: var(--surface-alt);
+  }
+
+  .feedback-text {
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  .feedback-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .icon-btn {
+    width: 28px; height: 28px;
+    border-radius: 2px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+  }
+
+  .icon-btn:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+
+  .footer-note {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 11.5px;
+    margin-top: 20px;
+  }
+</style>
+</head>
+<body>
+
+<div class="titlebar">
+  <div class="titlebar-left">
+    <div class="app-icon">AI</div>
+    <span class="titlebar-title">ADHD Translator</span>
+  </div>
+  <span class="titlebar-sub">Connected · Opus-Fast</span>
+</div>
+
+<div class="ribbon">
+  <div class="ribbon-btn active">📝 Compose</div>
+  <div class="ribbon-btn">📊 History</div>
+  <div class="ribbon-btn">⚙️ Settings</div>
+  <div class="ribbon-btn">📁 Techniques</div>
+</div>
+
+<div class="content">
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title"><span class="status-dot"></span> Your input</span>
+    </div>
+    <div class="card-body">
+      <textarea readonly>okay so like ive been thinking about the architecture problem but also i notice the logging is weird and do the models handle like edge cases for the thing, and also im overthinking this but which model should i even use</textarea>
+    </div>
+    <div class="input-actions">
+      <button class="btn btn-secondary">Edit</button>
+      <button class="btn btn-primary">Translate →</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Translation results</span>
+      <span class="info-value accent">84% confidence</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill"></div></div>
+    <div class="question-list">
+      <div class="question-item">
+        <span class="q-number">1</span>
+        <span class="q-text">How should the architecture handle the logging issue?</span>
+        <span class="q-model">Opus-Fast</span>
+      </div>
+      <div class="question-item">
+        <span class="q-number">2</span>
+        <span class="q-text">Which model best handles edge cases for this use case?</span>
+        <span class="q-model">Haiku</span>
+      </div>
+      <div class="question-item">
+        <span class="q-number">3</span>
+        <span class="q-text">Should model choice depend on the problem or on cost/time?</span>
+        <span class="q-model">Haiku</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Techniques applied</span>
+    </div>
+    <div class="technique-grid">
+      <span class="technique-pill">Chain-of-Thought</span>
+      <span class="technique-pill">Scope Limitation</span>
+      <span class="technique-pill">Quote-First</span>
+    </div>
+  </div>
+
+  <div class="card answer-card">
+    <div class="card-header">
+      <span class="card-title">Answer</span>
+    </div>
+    <div class="card-body">
+      Route the logging fix and architecture question to a model with reasoning depth — that's a structural decision, not a lookup. The edge-case comparison and the "which model" decision are both fast, low-ambiguity questions once separated from the architecture question. Splitting them is what actually fixes the overthinking: one hard question, two easy ones, instead of one tangled one.
+    </div>
+    <div class="feedback-bar">
+      <span class="feedback-text">Was this helpful?</span>
+      <div class="feedback-actions">
+        <button class="icon-btn">👍</button>
+        <button class="icon-btn">👎</button>
+        <button class="icon-btn">💬</button>
+      </div>
+    </div>
+  </div>
+
+  <p class="footer-note">ADHD Translator v1.0 · All data processed locally before routing</p>
+
+</div>
+
+</body>
+</html>
