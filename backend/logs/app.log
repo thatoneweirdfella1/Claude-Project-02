@@ -1,0 +1,13 @@
+2026-06-23 04:45:29,882 - services.database_service - INFO - Database initialized successfully
+2026-06-23 04:45:29,883 - stages.stage1_translation - INFO - Detected gap category: GapCategory.TANGENTIAL_PREAMBLE (confidence: 0.20)
+2026-06-23 04:45:29,883 - stages.stage2_routing - INFO - Rule 20 (Default Fallback) matched with confidence 50
+2026-06-23 04:45:29,884 - stages.stage3_technique_selection - INFO - Scored 18 techniques
+2026-06-23 04:45:29,884 - stages.stage3_technique_selection - INFO - Selected 6 techniques for opus_fast
+2026-06-23 04:45:29,884 - stages.stage3_technique_selection - INFO - Scored 18 techniques
+2026-06-23 04:45:29,885 - stages.stage3_technique_selection - INFO - Selected 6 techniques for opus_fast
+2026-06-23 04:45:29,885 - stages.stage4_composition - INFO - Composed prompt: 178 tokens, valid=False, errors=1
+2026-06-23 04:45:29,885 - stages.stage1_translation - INFO - Detected gap category: GapCategory.COMPOUND_BURIED (confidence: 0.12)
+2026-06-23 04:45:29,886 - stages.stage2_routing - INFO - Rule 3 (Simple Factual) matched with confidence 85
+2026-06-23 04:45:29,886 - stages.stage3_technique_selection - INFO - Scored 18 techniques
+2026-06-23 04:45:29,886 - stages.stage3_technique_selection - INFO - Selected 6 techniques for haiku
+2026-06-23 04:45:29,887 - stages.stage4_composition - INFO - Composed prompt: 142 tokens, valid=False, errors=1

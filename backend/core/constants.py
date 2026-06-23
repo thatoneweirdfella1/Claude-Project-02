@@ -325,7 +325,7 @@ TECHNIQUES_METADATA: Dict[str, Dict] = {
         "model_compatibility": {ModelTier.HAIKU: 0.7, ModelTier.OPUS_FAST: 0.85, ModelTier.OPUS_THINKING: 0.9},
         "question_type_effectiveness": {
             QuestionType.FACTUAL: 0.95,
-            QuestionType.RESEARCH: 0.95,
+            QuestionType.ANALYTICAL: 0.9,
             QuestionType.HEALTH_MEDICAL: 0.9,
         },
     },

@@ -13,17 +13,34 @@ class APIClient:
     """Unified client for multiple AI providers."""
 
     def __init__(self):
-        self.anthropic_client = anthropic.Anthropic(
-            api_key=settings.ANTHROPIC_API_KEY
-        )
-        self.openai_client = openai.OpenAI(
-            api_key=settings.OPENAI_API_KEY
-        )
-        # Perplexity uses OpenAI-compatible API
-        self.perplexity_client = openai.OpenAI(
-            api_key=settings.PERPLEXITY_API_KEY,
-            base_url="https://api.perplexity.ai",
-        )
+        self._anthropic_client = None
+        self._openai_client = None
+        self._perplexity_client = None
+
+    @property
+    def anthropic_client(self):
+        if self._anthropic_client is None:
+            self._anthropic_client = anthropic.Anthropic(
+                api_key=settings.ANTHROPIC_API_KEY or "dummy"
+            )
+        return self._anthropic_client
+
+    @property
+    def openai_client(self):
+        if self._openai_client is None and settings.OPENAI_API_KEY:
+            self._openai_client = openai.OpenAI(
+                api_key=settings.OPENAI_API_KEY
+            )
+        return self._openai_client
+
+    @property
+    def perplexity_client(self):
+        if self._perplexity_client is None and settings.PERPLEXITY_API_KEY:
+            self._perplexity_client = openai.OpenAI(
+                api_key=settings.PERPLEXITY_API_KEY,
+                base_url="https://api.perplexity.ai",
+            )
+        return self._perplexity_client
 
     def call_claude(
         self,
