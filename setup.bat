@@ -1,8 +1,8 @@
 @echo off
-REM ADHD-to-AI Translator: Windows Setup Script
+REM NeuroDivergenceAI: Windows Setup Script
 
 echo ================================
-echo ADHD-to-AI Translator Setup
+echo NeuroDivergenceAI Setup
 echo ================================
 echo.
 
@@ -10,71 +10,81 @@ REM Check Python
 python --version >nul 2>&1
 if errorlevel 1 (
     echo ERROR: Python 3.11+ is required but not installed
+    echo Please install Python from https://www.python.org/downloads/
     pause
     exit /b 1
 )
 
-for /f "tokens=2" %%i in ('python --version 2^>^&1') do set PYTHON_VERSION=%%i
-echo [OK] Python %PYTHON_VERSION% found
+python --version
+echo [OK] Python found
+
+REM Check Node.js
+node --version >nul 2>&1
+if errorlevel 1 (
+    echo WARNING: Node.js not found - frontend will not run
+    echo Install from https://nodejs.org/ if needed
+) else (
+    node --version
+    echo [OK] Node.js found
+)
 
 REM Backend setup
 echo.
 echo Setting up Backend...
 cd backend
 
-REM Create virtual environment
 if not exist "venv" (
     echo Creating virtual environment...
     python -m venv venv
 )
 
-REM Activate virtual environment
+echo Activating virtual environment...
 call venv\Scripts\activate.bat
 
-REM Install dependencies
-echo Installing Python dependencies...
-pip install --upgrade pip >nul 2>&1
-pip install -q -r requirements.txt
+echo Installing dependencies...
+python -m pip install --upgrade pip
+pip install -r requirements.txt
 
-REM Create .env if needed
 if not exist ".env" (
     echo Creating .env file...
     copy .env.example .env
-    echo.
-    echo WARNING: Please edit backend\.env and add your API keys
-    echo   ANTHROPIC_API_KEY=sk-ant-...
-    pause
+    echo [IMPORTANT] Edit backend\.env and add your API keys before running
 )
 
-REM Create directories
 if not exist "logs" mkdir logs
-if not exist "..\data" mkdir ..\data
 
-REM Run tests
-echo.
-echo Running tests...
-python tests\test_integration_spec.py
-
-REM Return to root
 cd ..
+
+REM Frontend setup
+if exist "frontend\package.json" (
+    echo.
+    echo Setting up Frontend...
+    cd frontend
+
+    if not exist "node_modules" (
+        echo Installing frontend dependencies...
+        call npm install
+    )
+
+    cd ..
+    echo [OK] Frontend ready
+)
 
 echo.
 echo ================================
 echo Setup Complete!
 echo ================================
 echo.
-echo Next steps:
+echo To start the application:
 echo.
-echo 1. Start Backend:
-echo    cd backend
-echo    venv\Scripts\activate.bat
-echo    python app.py
+echo Backend:
+echo   cd backend
+echo   python app.py
 echo.
-echo 2. Start Frontend (new terminal):
-echo    cd frontend
-echo    npm start
+echo Frontend (in a new terminal):
+echo   cd frontend
+echo   npm start
 echo.
-echo 3. Open in Browser:
-echo    http://localhost:3000
+echo Then open: http://localhost:3000
 echo.
 pause
