@@ -10,7 +10,9 @@ from stages.stage3_technique_selection import TechniqueSelectionService, Techniq
 from stages.stage4_composition import CompositionService, CompositionInput
 from stages.stage5_execution import ExecutionService, ExecutionInput
 from services.database_service import db_service
+from services.multi_ai_service import multi_ai_service
 from analysis.pattern_analyzer import PatternAnalyzer
+from models.enums import DialogueMode, ModelTier
 from core.config import settings
 from core.logger import get_logger
 
@@ -211,6 +213,98 @@ async def get_interactions(user_id: str, limit: int = 50):
     except Exception as e:
         logger.error(f"Query error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============= PHASE 11: MULTI-AI DIALOGUE ENDPOINTS =============
+
+@app.post("/multi-ai/debate")
+async def multi_ai_debate(request: APIRequest):
+    """Phase 11: Debate mode - get 3 opposing perspectives."""
+    try:
+        question = request.raw_input
+        logger.info(f"Starting debate mode for: {question[:50]}...")
+
+        dialogue = multi_ai_service.debate(question, ModelTier.OPUS_FAST)
+
+        return {
+            "dialogue_id": dialogue.id,
+            "mode": "debate",
+            "question": dialogue.question,
+            "responses": [
+                {"model": r.model, "response": r.response, "tokens": r.tokens_used}
+                for r in dialogue.responses
+            ],
+            "synthesis": dialogue.synthesis,
+        }
+    except Exception as e:
+        logger.error(f"Debate error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/multi-ai/consensus")
+async def multi_ai_consensus(request: APIRequest):
+    """Phase 11: Consensus mode - find agreement."""
+    try:
+        question = request.raw_input
+        logger.info(f"Starting consensus mode for: {question[:50]}...")
+
+        dialogue = multi_ai_service.consensus(question, ModelTier.OPUS_FAST)
+
+        return {
+            "dialogue_id": dialogue.id,
+            "mode": "consensus",
+            "question": dialogue.question,
+            "responses": [
+                {"model": r.model, "response": r.response, "tokens": r.tokens_used}
+                for r in dialogue.responses
+            ],
+            "synthesis": dialogue.synthesis,
+        }
+    except Exception as e:
+        logger.error(f"Consensus error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/multi-ai/synthesis")
+async def multi_ai_synthesis(request: APIRequest):
+    """Phase 11: Synthesis mode - discover deeper principles."""
+    try:
+        question = request.raw_input
+        logger.info(f"Starting synthesis mode for: {question[:50]}...")
+
+        dialogue = multi_ai_service.synthesis(question, ModelTier.OPUS_THINKING)
+
+        return {
+            "dialogue_id": dialogue.id,
+            "mode": "synthesis",
+            "question": dialogue.question,
+            "responses": [
+                {"model": r.model, "response": r.response, "tokens": r.tokens_used}
+                for r in dialogue.responses
+            ],
+            "synthesis": dialogue.synthesis,
+        }
+    except Exception as e:
+        logger.error(f"Synthesis error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/multi-ai/accounts")
+async def get_account_status():
+    """Get account pool status."""
+    accounts = multi_ai_service.engine.account_pool.accounts
+    return {
+        "total_accounts": len(accounts),
+        "accounts": [
+            {
+                "name": name,
+                "provider": info["provider"].value,
+                "tokens_remaining": info["tokens_remaining"],
+                "status": info["status"],
+            }
+            for name, info in accounts.items()
+        ],
+    }
 
 
 if __name__ == "__main__":
