@@ -11,3 +11,32 @@
 2026-06-23 04:45:29,886 - stages.stage3_technique_selection - INFO - Scored 18 techniques
 2026-06-23 04:45:29,886 - stages.stage3_technique_selection - INFO - Selected 6 techniques for haiku
 2026-06-23 04:45:29,887 - stages.stage4_composition - INFO - Composed prompt: 142 tokens, valid=False, errors=1
+2026-06-23 04:46:25,013 - stages.stage1_translation - INFO - Detected gap category: GapCategory.TYPO_PRONOUN_WRAPPER (confidence: 0.28)
+2026-06-23 04:46:25,013 - stages.stage1_translation - INFO - Detected gap category: GapCategory.EMOTIONAL_INTENSITY (confidence: 0.62)
+2026-06-23 04:46:25,014 - stages.stage1_translation - INFO - Detected gap category: GapCategory.COMPOUND_BURIED (confidence: 0.53)
+2026-06-23 04:46:25,014 - stages.stage1_translation - INFO - Detected gap category: GapCategory.NONE (confidence: 0.00)
+2026-06-23 04:46:25,014 - stages.stage1_translation - INFO - Detected gap category: GapCategory.COMPOUND_BURIED (confidence: 0.26)
+2026-06-23 04:46:25,014 - stages.stage2_routing - INFO - Rule 3 (Simple Factual) matched with confidence 85
+2026-06-23 04:46:25,015 - stages.stage2_routing - INFO - Rule 13 (Code Simple) matched with confidence 75
+2026-06-23 04:46:25,015 - stages.stage2_routing - INFO - Rule 18 (High Certainty Simple) matched with confidence 75
+2026-06-23 04:46:25,015 - stages.stage2_routing - INFO - Rule 2 (Consequence Gate) matched with confidence 95
+2026-06-23 04:46:25,015 - stages.stage2_routing - INFO - Rule 3 (Simple Factual) matched with confidence 85
+2026-06-23 04:46:25,015 - stages.stage3_technique_selection - INFO - Scored 18 techniques
+2026-06-23 04:46:25,015 - stages.stage3_technique_selection - INFO - Selected 6 techniques for haiku
+2026-06-23 04:46:25,015 - stages.stage3_technique_selection - INFO - Scored 18 techniques
+2026-06-23 04:46:25,016 - stages.stage3_technique_selection - INFO - Selected 6 techniques for opus_fast
+2026-06-23 04:46:25,016 - stages.stage3_technique_selection - INFO - Scored 18 techniques
+2026-06-23 04:46:25,016 - stages.stage3_technique_selection - INFO - Selected 6 techniques for opus_thinking
+2026-06-23 04:46:25,016 - stages.stage3_technique_selection - INFO - Scored 18 techniques
+2026-06-23 04:46:25,016 - stages.stage3_technique_selection - INFO - Selected 6 techniques for opus_fast
+2026-06-23 04:46:25,016 - stages.stage3_technique_selection - INFO - Scored 18 techniques
+2026-06-23 04:46:25,016 - stages.stage3_technique_selection - INFO - Selected 6 techniques for opus_thinking
+2026-06-23 04:46:25,016 - stages.stage3_technique_selection - INFO - Scored 18 techniques
+2026-06-23 04:46:25,017 - stages.stage3_technique_selection - INFO - Selected 6 techniques for haiku
+2026-06-23 04:46:25,017 - stages.stage4_composition - INFO - Composed prompt: 131 tokens, valid=False, errors=1
+2026-06-23 04:46:25,017 - stages.stage3_technique_selection - INFO - Scored 18 techniques
+2026-06-23 04:46:25,017 - stages.stage3_technique_selection - INFO - Selected 6 techniques for opus_fast
+2026-06-23 04:46:25,018 - stages.stage4_composition - INFO - Composed prompt: 172 tokens, valid=False, errors=1
+2026-06-23 04:46:25,018 - stages.stage3_technique_selection - INFO - Scored 18 techniques
+2026-06-23 04:46:25,018 - stages.stage3_technique_selection - INFO - Selected 6 techniques for opus_thinking
+2026-06-23 04:46:25,019 - stages.stage4_composition - INFO - Composed prompt: 172 tokens, valid=False, errors=1
