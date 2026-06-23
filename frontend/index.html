@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ADHD-to-AI Translator</title>
+<style>
+  :root {
+    --bg: #faf9f8;
+    --surface: #ffffff;
+    --surface-alt: #f3f2f1;
+    --border: #e1dfdd;
+    --text: #201f1e;
+    --text-secondary: #605e5c;
+    --accent: #0078d4;
+    --accent-hover: #106ebe;
+    --accent-light: #deecf9;
+    --success: #107c10;
+    --success-light: #dff6dd;
+    --error: #a4262c;
+    --error-light: #fde7e9;
+    --shadow-card: 0 0.6px 1.8px rgba(0,0,0,0.108), 0 3.2px 7.2px rgba(0,0,0,0.132);
+    --font: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    min-height: 100vh;
+  }
+
+  .titlebar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 20px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .titlebar-left { display: flex; align-items: center; gap: 10px; }
+
+  .app-icon {
+    width: 20px; height: 20px;
+    background: linear-gradient(135deg, #0078d4, #00bcf2);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; color: white; font-weight: 600;
+  }
+
+  .titlebar-title { font-size: 13px; font-weight: 600; }
+
+  #connection-status {
+    font-size: 12px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #ccc;
+  }
+
+  .status-dot.connected { background: var(--success); }
+  .status-dot.error { background: var(--error); }
+
+  .ribbon {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 20px;
+    display: flex;
+    gap: 4px;
+  }
+
+  .ribbon-btn {
+    font-size: 12px;
+    color: var(--text-secondary);
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .ribbon-btn:hover { background: var(--surface-alt); }
+  .ribbon-btn.active { background: var(--accent-light); color: var(--accent); }
+
+  .content { max-width: 760px; margin: 0 auto; padding: 32px 24px; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    box-shadow: var(--shadow-card);
+    margin-bottom: 16px;
+  }
+
+  .card-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .card-title { font-size: 13px; font-weight: 600; }
+
+  .card-body { padding: 18px; }
+
+  textarea {
+    width: 100%;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text);
+    resize: none;
+    min-height: 80px;
+    font-family: var(--font);
+    background: transparent;
+  }
+
+  .input-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 0 18px 16px;
+  }
+
+  .btn {
+    font-size: 13px;
+    font-weight: 600;
+    padding: 6px 16px;
+    border-radius: 2px;
+    cursor: pointer;
+    border: 1px solid transparent;
+  }
+
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-secondary { background: var(--surface); border-color: var(--border); color: var(--text); }
+
+  .confidence-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 18px 14px;
+  }
+
+  .progress-track {
+    flex: 1;
+    height: 4px;
+    background: var(--surface-alt);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill { height: 100%; background: var(--success); transition: width 0.3s; }
+
+  .confidence-label { font-size: 12px; color: var(--accent); font-weight: 600; white-space: nowrap; }
+
+  .question-list { padding: 4px 18px 18px; }
+
+  .question-item {
+    display: flex;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--surface-alt);
+    font-size: 13.5px;
+    align-items: flex-start;
+  }
+
+  .question-item:last-child { border-bottom: none; }
+
+  .q-number {
+    width: 20px; height: 20px;
+    background: var(--accent-light);
+    color: var(--accent);
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .q-text { color: var(--text); flex: 1; }
+
+  .error-banner {
+    background: var(--error-light);
+    color: var(--error);
+    border: 1px solid #f1c8ca;
+    border-radius: 4px;
+    padding: 12px 16px;
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+
+  .hidden { display: none; }
+
+  .footer-note {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 11.5px;
+    margin-top: 20px;
+  }
+</style>
+</head>
+<body>
+
+<div class="titlebar">
+  <div class="titlebar-left">
+    <div class="app-icon">AI</div>
+    <span class="titlebar-title">ADHD Translator</span>
+  </div>
+  <div id="connection-status">
+    <span class="status-dot" id="status-dot"></span>
+    <span id="status-text">Connecting...</span>
+  </div>
+</div>
+
+<div class="ribbon">
+  <div class="ribbon-btn active">Compose</div>
+  <div class="ribbon-btn">History</div>
+  <div class="ribbon-btn">Settings</div>
+</div>
+
+<div class="content">
+
+  <div id="error-banner" class="error-banner hidden"></div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Your input</span>
+    </div>
+    <div class="card-body">
+      <textarea id="user-input" placeholder="Type your question here, as rambling as you need..." rows="4"></textarea>
+    </div>
+    <div class="input-actions">
+      <button class="btn btn-secondary" id="clear-btn">Clear</button>
+      <button class="btn btn-primary" id="translate-btn">Translate</button>
+    </div>
+  </div>
+
+  <div class="card hidden" id="results-card">
+    <div class="card-header">
+      <span class="card-title">Translation results</span>
+    </div>
+    <div class="confidence-row">
+      <div class="progress-track"><div class="progress-fill" id="confidence-bar"></div></div>
+      <span class="confidence-label" id="confidence-label"></span>
+    </div>
+    <div class="question-list" id="question-list"></div>
+  </div>
+
+  <p class="footer-note">ADHD Translator v1.0 · Requests proxied to backend on port 3001</p>
+</div>
+
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>
