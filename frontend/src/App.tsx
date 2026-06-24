@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { DefaultButton, TextField, ProgressIndicator, MessageBar, MessageBarType, ChoiceGroup, IChoiceGroupOption, Stack, PrimaryButton, SecondaryButton } from '@fluentui/react';
+import { useState, useEffect } from 'react';
+import { DefaultButton, TextField, MessageBar, MessageBarType, PrimaryButton } from '@fluentui/react';
 import { apiService } from './services/api';
 import { TranslationResult, RoutingResult, CompositionResult, AskResult, Translation } from './types';
 import './styles/App.css';
@@ -54,7 +54,7 @@ export default function App() {
         selectedTranslation: result.translations[0],
       }));
       setStep('translation');
-    } catch (err) {
+    } catch (err: unknown) {
       setError(`Translation error: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
       setLoading(false);
@@ -76,7 +76,7 @@ export default function App() {
       );
       setSession(prev => ({ ...prev, routing: result }));
       setStep('routing');
-    } catch (err) {
+    } catch (err: unknown) {
       setError(`Routing error: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
       setLoading(false);
@@ -139,7 +139,7 @@ export default function App() {
       setStep('input');
       setRawInput('');
       setSession({} as Session);
-    } catch (err) {
+    } catch (err: unknown) {
       setError(`Feedback error: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
   };
@@ -194,15 +194,15 @@ export default function App() {
               rows={6}
               placeholder="e.g., 'okay so like i've been thinking about the architecture problem but also i notice the logging is weird and do the models handle like edge cases for the thing, and also im overthinking this but which model should i even use'"
               value={rawInput}
-              onChange={(e, value) => setRawInput(value || '')}
+              onChange={(_e, value) => setRawInput(value || '')}
             />
             <div className="button-group">
               <PrimaryButton onClick={handleTranslate} disabled={loading || !backendConnected}>
                 {loading ? 'Translating...' : 'Translate'}
               </PrimaryButton>
-              <SecondaryButton onClick={() => setStep('settings')}>
+              <DefaultButton onClick={() => setStep('settings')}>
                 Settings
-              </SecondaryButton>
+              </DefaultButton>
             </div>
           </div>
         )}
@@ -214,7 +214,7 @@ export default function App() {
             <div className="original-text">{session.translation.original_input}</div>
 
             <p className="label">Translated Question:</p>
-            {session.translation.translations.map((translation, idx) => (
+            {session.translation.translations.map((translation) => (
               <div key={translation.id} className="translation-item">
                 <div className="translation-text">{translation.translated_text}</div>
                 <div className="translation-meta">
@@ -238,9 +238,9 @@ export default function App() {
               <PrimaryButton onClick={handleAcceptTranslation} disabled={loading}>
                 {loading ? 'Processing...' : 'Accept & Continue'}
               </PrimaryButton>
-              <SecondaryButton onClick={() => setStep('input')}>
+              <DefaultButton onClick={() => setStep('input')}>
                 Start Over
-              </SecondaryButton>
+              </DefaultButton>
             </div>
           </div>
         )}
@@ -269,9 +269,9 @@ export default function App() {
               <PrimaryButton onClick={handleConfirmRouting} disabled={loading}>
                 {loading ? 'Processing...' : 'Continue'}
               </PrimaryButton>
-              <SecondaryButton onClick={() => setStep('translation')}>
+              <DefaultButton onClick={() => setStep('translation')}>
                 Back
-              </SecondaryButton>
+              </DefaultButton>
             </div>
           </div>
         )}
@@ -303,9 +303,9 @@ export default function App() {
               <PrimaryButton onClick={handleSubmitPrompt} disabled={loading || !apiKey}>
                 {loading ? 'Getting Answer...' : 'Get Answer'}
               </PrimaryButton>
-              <SecondaryButton onClick={() => setStep('routing')}>
+              <DefaultButton onClick={() => setStep('routing')}>
                 Back
-              </SecondaryButton>
+              </DefaultButton>
             </div>
           </div>
         )}
@@ -334,7 +334,7 @@ export default function App() {
               label="Anthropic API Key"
               type="password"
               value={apiKey}
-              onChange={(e, value) => setApiKey(value || '')}
+              onChange={(_e, value) => setApiKey(value || '')}
             />
             <p className="help-text">Your API key is stored locally and never sent to our servers.</p>
 
@@ -342,9 +342,9 @@ export default function App() {
               <PrimaryButton onClick={saveApiKey}>
                 Save Settings
               </PrimaryButton>
-              <SecondaryButton onClick={() => setStep('input')}>
+              <DefaultButton onClick={() => setStep('input')}>
                 Cancel
-              </SecondaryButton>
+              </DefaultButton>
             </div>
           </div>
         )}
