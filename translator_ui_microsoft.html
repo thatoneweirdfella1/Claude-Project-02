@@ -298,6 +298,67 @@
     font-size: 11.5px;
     margin-top: 20px;
   }
+
+  textarea.editable {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 12px;
+    transition: border-color 0.15s;
+  }
+  textarea.editable:focus { border-color: var(--accent); }
+
+  .btn:disabled { opacity: 0.5; cursor: default; }
+
+  .hidden { display: none !important; }
+
+  .field { margin-bottom: 14px; }
+  .field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+  }
+  .field input, .field select {
+    width: 100%;
+    font-size: 13px;
+    font-family: var(--font);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 8px 10px;
+    outline: none;
+  }
+  .field input:focus, .field select:focus { border-color: var(--accent); }
+  .field-hint { font-size: 11.5px; color: var(--text-secondary); margin-top: 6px; }
+
+  .mode-banner {
+    font-size: 12px;
+    padding: 8px 18px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
+  }
+  .mode-banner b { color: var(--text); }
+
+  .spinner {
+    width: 14px; height: 14px;
+    border: 2px solid var(--accent-light);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    display: inline-block;
+    vertical-align: middle;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error-text { color: #a4262c; font-size: 12.5px; }
+
+  .icon-btn.active {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
 </style>
 </head>
 <body>
@@ -307,87 +368,430 @@
     <div class="app-icon">AI</div>
     <span class="titlebar-title">ADHD Translator</span>
   </div>
-  <span class="titlebar-sub">Connected · Opus-Fast</span>
+  <span class="titlebar-sub" id="connStatus">Local mode · no key</span>
 </div>
 
 <div class="ribbon">
-  <div class="ribbon-btn active">📝 Compose</div>
-  <div class="ribbon-btn">📊 History</div>
-  <div class="ribbon-btn">⚙️ Settings</div>
-  <div class="ribbon-btn">📁 Techniques</div>
+  <div class="ribbon-btn active" data-tab="compose">📝 Compose</div>
+  <div class="ribbon-btn" data-tab="settings">⚙️ Settings</div>
 </div>
 
-<div class="content">
+<div class="mode-banner" id="modeBanner"></div>
+
+<!-- COMPOSE TAB -->
+<div class="content" id="tab-compose">
 
   <div class="card">
     <div class="card-header">
       <span class="card-title"><span class="status-dot"></span> Your input</span>
     </div>
     <div class="card-body">
-      <textarea readonly>okay so like ive been thinking about the architecture problem but also i notice the logging is weird and do the models handle like edge cases for the thing, and also im overthinking this but which model should i even use</textarea>
+      <textarea id="inputText" class="editable" placeholder="Brain-dump here — messy, tangled, half-formed thoughts are fine. e.g. okay so ive been thinking about the architecture problem but also the logging is weird and do the models handle edge cases and im overthinking which model to even use"></textarea>
     </div>
     <div class="input-actions">
-      <button class="btn btn-secondary">Edit</button>
-      <button class="btn btn-primary">Translate →</button>
+      <button class="btn btn-secondary" id="clearBtn">Clear</button>
+      <button class="btn btn-secondary" id="sampleBtn">Use sample</button>
+      <button class="btn btn-primary" id="translateBtn">Translate →</button>
     </div>
   </div>
 
-  <div class="card">
-    <div class="card-header">
-      <span class="card-title">Translation results</span>
-      <span class="info-value accent">84% confidence</span>
-    </div>
-    <div class="progress-track"><div class="progress-fill"></div></div>
-    <div class="question-list">
-      <div class="question-item">
-        <span class="q-number">1</span>
-        <span class="q-text">How should the architecture handle the logging issue?</span>
-        <span class="q-model">Opus-Fast</span>
-      </div>
-      <div class="question-item">
-        <span class="q-number">2</span>
-        <span class="q-text">Which model best handles edge cases for this use case?</span>
-        <span class="q-model">Haiku</span>
-      </div>
-      <div class="question-item">
-        <span class="q-number">3</span>
-        <span class="q-text">Should model choice depend on the problem or on cost/time?</span>
-        <span class="q-model">Haiku</span>
-      </div>
-    </div>
+  <div id="errorBox" class="card hidden">
+    <div class="card-body"><span class="error-text" id="errorMsg"></span></div>
   </div>
 
-  <div class="card">
-    <div class="card-header">
-      <span class="card-title">Techniques applied</span>
+  <div id="results" class="hidden">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Translation results</span>
+        <span class="info-value accent" id="confidenceLabel">—</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="question-list" id="questionList"></div>
     </div>
-    <div class="technique-grid">
-      <span class="technique-pill">Chain-of-Thought</span>
-      <span class="technique-pill">Scope Limitation</span>
-      <span class="technique-pill">Quote-First</span>
-    </div>
-  </div>
 
-  <div class="card answer-card">
-    <div class="card-header">
-      <span class="card-title">Answer</span>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Techniques applied</span>
+      </div>
+      <div class="technique-grid" id="techniqueGrid"></div>
     </div>
-    <div class="card-body">
-      Route the logging fix and architecture question to a model with reasoning depth — that's a structural decision, not a lookup. The edge-case comparison and the "which model" decision are both fast, low-ambiguity questions once separated from the architecture question. Splitting them is what actually fixes the overthinking: one hard question, two easy ones, instead of one tangled one.
-    </div>
-    <div class="feedback-bar">
-      <span class="feedback-text">Was this helpful?</span>
-      <div class="feedback-actions">
-        <button class="icon-btn">👍</button>
-        <button class="icon-btn">👎</button>
-        <button class="icon-btn">💬</button>
+
+    <div class="card answer-card">
+      <div class="card-header">
+        <span class="card-title">Answer</span>
+      </div>
+      <div class="card-body" id="answerBody"></div>
+      <div class="feedback-bar">
+        <span class="feedback-text" id="feedbackText">Was this helpful?</span>
+        <div class="feedback-actions">
+          <button class="icon-btn" data-vote="up">👍</button>
+          <button class="icon-btn" data-vote="down">👎</button>
+        </div>
       </div>
     </div>
   </div>
 
-  <p class="footer-note">ADHD Translator v1.0 · All data processed locally before routing</p>
+  <p class="footer-note">ADHD Translator v1.1 · Local heuristics by default · Claude (Opus 4.8) when a key is set</p>
 
 </div>
+
+<!-- SETTINGS TAB -->
+<div class="content hidden" id="tab-settings">
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">⚙️ Settings</span>
+    </div>
+    <div class="card-body">
+      <div class="field">
+        <label for="apiKey">Anthropic API key (optional)</label>
+        <input type="password" id="apiKey" placeholder="sk-ant-..." autocomplete="off" spellcheck="false">
+        <div class="field-hint">Stored only in this browser (localStorage). Leave blank to use the built-in local translator — no key required.</div>
+      </div>
+      <div class="field">
+        <label for="modelSelect">Model</label>
+        <select id="modelSelect">
+          <option value="claude-opus-4-8">Claude Opus 4.8 (most capable)</option>
+          <option value="claude-sonnet-4-6">Claude Sonnet 4.6 (balanced)</option>
+          <option value="claude-haiku-4-5">Claude Haiku 4.5 (fastest)</option>
+        </select>
+      </div>
+      <div class="input-actions" style="padding-left:0;padding-right:0;">
+        <button class="btn btn-secondary" id="clearKeyBtn">Remove key</button>
+        <button class="btn btn-primary" id="saveSettingsBtn">Save</button>
+      </div>
+      <div class="field-hint" id="settingsSaved" style="margin-top:10px;"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var SAMPLE = "okay so like ive been thinking about the architecture problem but also i notice the logging is weird and do the models handle like edge cases for the thing, and also im overthinking this but which model should i even use";
+
+  var els = {
+    input: document.getElementById("inputText"),
+    translateBtn: document.getElementById("translateBtn"),
+    clearBtn: document.getElementById("clearBtn"),
+    sampleBtn: document.getElementById("sampleBtn"),
+    results: document.getElementById("results"),
+    confidence: document.getElementById("confidenceLabel"),
+    progress: document.getElementById("progressFill"),
+    questionList: document.getElementById("questionList"),
+    techniqueGrid: document.getElementById("techniqueGrid"),
+    answer: document.getElementById("answerBody"),
+    feedbackText: document.getElementById("feedbackText"),
+    errorBox: document.getElementById("errorBox"),
+    errorMsg: document.getElementById("errorMsg"),
+    conn: document.getElementById("connStatus"),
+    banner: document.getElementById("modeBanner"),
+    apiKey: document.getElementById("apiKey"),
+    modelSelect: document.getElementById("modelSelect"),
+    saveSettingsBtn: document.getElementById("saveSettingsBtn"),
+    clearKeyBtn: document.getElementById("clearKeyBtn"),
+    settingsSaved: document.getElementById("settingsSaved")
+  };
+
+  // ---- Settings persistence ----
+  function getKey() { return localStorage.getItem("adhd_api_key") || ""; }
+  function getModel() { return localStorage.getItem("adhd_model") || "claude-opus-4-8"; }
+
+  function refreshMode() {
+    var key = getKey();
+    if (key) {
+      els.conn.textContent = "Connected · " + getModel();
+      els.banner.innerHTML = "Mode: <b>Claude API</b> (" + getModel() + "). Your input is sent to Anthropic for translation.";
+    } else {
+      els.conn.textContent = "Local mode · no key";
+      els.banner.innerHTML = "Mode: <b>Local translator</b> — runs entirely in your browser, no key needed. Add a key in Settings to use Claude.";
+    }
+  }
+
+  // ---- Tab switching ----
+  document.querySelectorAll(".ribbon-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".ribbon-btn").forEach(function (b) { b.classList.remove("active"); });
+      btn.classList.add("active");
+      var tab = btn.getAttribute("data-tab");
+      document.getElementById("tab-compose").classList.toggle("hidden", tab !== "compose");
+      document.getElementById("tab-settings").classList.toggle("hidden", tab !== "settings");
+    });
+  });
+
+  els.saveSettingsBtn.addEventListener("click", function () {
+    var k = els.apiKey.value.trim();
+    if (k) { localStorage.setItem("adhd_api_key", k); }
+    else { localStorage.removeItem("adhd_api_key"); }
+    localStorage.setItem("adhd_model", els.modelSelect.value);
+    els.settingsSaved.textContent = "Saved.";
+    setTimeout(function () { els.settingsSaved.textContent = ""; }, 2000);
+    refreshMode();
+  });
+
+  els.clearKeyBtn.addEventListener("click", function () {
+    localStorage.removeItem("adhd_api_key");
+    els.apiKey.value = "";
+    els.settingsSaved.textContent = "Key removed.";
+    setTimeout(function () { els.settingsSaved.textContent = ""; }, 2000);
+    refreshMode();
+  });
+
+  // ---- Input helpers ----
+  els.clearBtn.addEventListener("click", function () {
+    els.input.value = "";
+    els.results.classList.add("hidden");
+    els.errorBox.classList.add("hidden");
+    els.input.focus();
+  });
+  els.sampleBtn.addEventListener("click", function () { els.input.value = SAMPLE; });
+
+  // ---- Rendering ----
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  function render(result) {
+    var conf = Math.max(0, Math.min(100, Math.round(result.confidence)));
+    els.confidence.textContent = conf + "% confidence";
+    els.progress.style.width = conf + "%";
+
+    els.questionList.innerHTML = "";
+    result.questions.forEach(function (q, i) {
+      var row = document.createElement("div");
+      row.className = "question-item";
+      row.innerHTML =
+        '<span class="q-number">' + (i + 1) + "</span>" +
+        '<span class="q-text">' + escapeHtml(q.text) + "</span>" +
+        '<span class="q-model">' + escapeHtml(q.model || "—") + "</span>";
+      els.questionList.appendChild(row);
+    });
+
+    els.techniqueGrid.innerHTML = "";
+    result.techniques.forEach(function (t) {
+      var pill = document.createElement("span");
+      pill.className = "technique-pill";
+      pill.textContent = t;
+      els.techniqueGrid.appendChild(pill);
+    });
+
+    els.answer.textContent = result.answer;
+    els.feedbackText.textContent = "Was this helpful?";
+    document.querySelectorAll(".icon-btn").forEach(function (b) { b.classList.remove("active"); });
+    els.results.classList.remove("hidden");
+  }
+
+  // ---- Local heuristic translator (no key needed) ----
+  function localTranslate(text) {
+    // Split a run-on brain-dump into distinct concerns.
+    var cleaned = text.replace(/\s+/g, " ").trim();
+    var segments = cleaned
+      .split(/\s*(?:,|;|\.|\band also\b|\bbut also\b|\band\b|\bbut\b|\balso\b|\bplus\b)\s*/i)
+      .map(function (s) { return s.trim(); })
+      .filter(function (s) { return s.length > 8; });
+
+    // Dedupe near-identical fragments.
+    var seen = {}, parts = [];
+    segments.forEach(function (s) {
+      var k = s.toLowerCase().slice(0, 40);
+      if (!seen[k]) { seen[k] = true; parts.push(s); }
+    });
+    if (parts.length === 0) { parts = [cleaned]; }
+
+    function toQuestion(frag) {
+      var f = frag.trim();
+      // Strip a chain of leading filler words ("so like ive been thinking about ...").
+      var prev;
+      do {
+        prev = f;
+        f = f.replace(/^(i think|i feel|like|so|okay|ok|um|honestly|i guess|maybe|just|really|kinda|sorta)\b[\s,]*/i, "");
+        f = f.replace(/^(im|i'm|ive|i've)\s+(been\s+)?(thinking|wondering|worrying)\s+(about|whether|if)\s+/i, "");
+        f = f.replace(/^(thinking|wondering)\s+(about|whether|if)\s+/i, "");
+      } while (f !== prev && f.length);
+      // Feelings of being stuck/overwhelmed → reframe as a "move forward" question.
+      var feeling = f.match(/^(?:im|i'm|ive|i've)\s+(overthink\w*|overwhelm\w*|worry\w*|worried|stuck|confus\w*|stress\w*|anxious|paralyz\w*)\b(.*)$/i);
+      if (feeling) {
+        return "How do I move past " + feeling[1].toLowerCase() + "?";
+      }
+      f = f.replace(/^(im|i'm|ive|i've)\s+/i, "I am ").trim();
+      if (!f) { f = frag.trim(); }
+      var lower = f.toLowerCase();
+      if (/\b(which|what|how|should|do|does|can|why|when|where|is|are)\b/.test(lower)) {
+        f = f.charAt(0).toUpperCase() + f.slice(1);
+        if (!/[?]$/.test(f)) { f += "?"; }
+        return f;
+      }
+      return "How should I handle the " + f.replace(/^(the|a|an)\s+/i, "") + "?";
+    }
+
+    function routeModel(q) {
+      var l = q.toLowerCase();
+      // Stems (no trailing \b) so "architecture", "structural", "designing" all match.
+      if (/(architect|design|trade-?off|strateg|refactor|\bwhy\b|root cause|approach|structur|decid|plan\b)/.test(l)) {
+        return "Opus 4.8";
+      }
+      if (/(which model|cost|fast|quick|simple|format|\blist\b|lookup|name\b)/.test(l)) {
+        return "Haiku 4.5";
+      }
+      return "Sonnet 4.6";
+    }
+
+    var questions = parts.slice(0, 6).map(function (p) {
+      var q = toQuestion(p);
+      return { text: q, model: routeModel(q) };
+    });
+
+    var techniques = ["Scope Limitation"];
+    if (questions.length > 1) { techniques.push("Decomposition"); }
+    if (/\boverthink|tangled|confus|stuck\b/i.test(cleaned)) { techniques.push("Quote-First"); }
+    if (questions.some(function (q) { return /Opus/.test(q.model); })) { techniques.push("Chain-of-Thought"); }
+
+    var hard = questions.filter(function (q) { return /Opus/.test(q.model); }).length;
+    var easy = questions.length - hard;
+    var answer =
+      "Your brain-dump untangles into " + questions.length + " distinct question" +
+      (questions.length === 1 ? "" : "s") + ". " +
+      (hard > 0
+        ? "The " + hard + " structural one" + (hard === 1 ? "" : "s") + " (routed to a reasoning-depth model) need" + (hard === 1 ? "s" : "") + " careful thought; "
+        : "") +
+      (easy > 0
+        ? "the " + easy + " remaining " + (easy === 1 ? "is a fast, low-ambiguity lookup" : "are fast, low-ambiguity lookups") + ". "
+        : "") +
+      "Separating them is what dissolves the overwhelm: tackle one question at a time instead of one tangled knot.";
+
+    // Confidence: higher when we cleanly separated multiple concerns.
+    var confidence = 60 + Math.min(30, questions.length * 8) + (techniques.length * 2);
+    confidence = Math.min(95, confidence);
+
+    return { questions: questions, techniques: techniques, answer: answer, confidence: confidence };
+  }
+
+  // ---- Claude API translator ----
+  var SYSTEM_PROMPT =
+    "You are the ADHD-to-AI Translator. A user gives you a messy, scattered, run-on brain-dump " +
+    "(the kind an ADHD mind produces — multiple tangled concerns in one breath). Your job:\n" +
+    "1. Separate it into distinct, clearly-worded questions.\n" +
+    "2. For each question, pick the best Claude model to answer it: 'Opus 4.8' for deep/structural/reasoning " +
+    "questions, 'Haiku 4.5' for fast simple lookups, 'Sonnet 4.6' for everything in between.\n" +
+    "3. List the prompting techniques you applied (e.g. Decomposition, Scope Limitation, Chain-of-Thought, Quote-First).\n" +
+    "4. Write a short, calming synthesized answer that helps the user see the structure and reduces overwhelm.\n" +
+    "5. Give a confidence score 0-100 for how cleanly you separated the concerns.";
+
+  var SCHEMA = {
+    type: "object",
+    properties: {
+      questions: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            text: { type: "string" },
+            model: { type: "string" }
+          },
+          required: ["text", "model"],
+          additionalProperties: false
+        }
+      },
+      techniques: { type: "array", items: { type: "string" } },
+      answer: { type: "string" },
+      confidence: { type: "number" }
+    },
+    required: ["questions", "techniques", "answer", "confidence"],
+    additionalProperties: false
+  };
+
+  function claudeTranslate(text, key, model) {
+    return fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-api-key": key,
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true"
+      },
+      body: JSON.stringify({
+        model: model,
+        max_tokens: 2048,
+        system: SYSTEM_PROMPT,
+        output_config: { format: { type: "json_schema", schema: SCHEMA } },
+        messages: [{ role: "user", content: "Translate this brain-dump:\n\n" + text }]
+      })
+    }).then(function (res) {
+      return res.json().then(function (data) {
+        if (!res.ok) {
+          var msg = (data && data.error && data.error.message) || ("HTTP " + res.status);
+          throw new Error(msg);
+        }
+        if (data.stop_reason === "refusal") {
+          throw new Error("The model declined to process this input.");
+        }
+        var block = (data.content || []).find(function (b) { return b.type === "text"; });
+        if (!block) { throw new Error("No text returned by the model."); }
+        return JSON.parse(block.text);
+      });
+    });
+  }
+
+  // ---- Translate orchestration ----
+  function setLoading(on) {
+    els.translateBtn.disabled = on;
+    els.translateBtn.innerHTML = on ? '<span class="spinner"></span> Translating…' : "Translate →";
+  }
+
+  function showError(msg) {
+    els.errorMsg.textContent = msg;
+    els.errorBox.classList.remove("hidden");
+  }
+
+  els.translateBtn.addEventListener("click", function () {
+    var text = els.input.value.trim();
+    els.errorBox.classList.add("hidden");
+    if (!text) {
+      showError("Please type a brain-dump first (or click “Use sample”).");
+      return;
+    }
+
+    var key = getKey();
+    if (!key) {
+      // Local mode — instant.
+      try { render(localTranslate(text)); }
+      catch (e) { showError("Local translation failed: " + e.message); }
+      return;
+    }
+
+    setLoading(true);
+    claudeTranslate(text, key, getModel())
+      .then(function (result) { render(result); })
+      .catch(function (e) {
+        showError("Claude request failed: " + e.message + ". Showing local translation instead.");
+        try { render(localTranslate(text)); } catch (e2) { /* ignore */ }
+      })
+      .then(function () { setLoading(false); });
+  });
+
+  // ---- Feedback buttons ----
+  document.querySelectorAll(".icon-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var vote = btn.getAttribute("data-vote");
+      document.querySelectorAll(".icon-btn").forEach(function (b) { b.classList.remove("active"); });
+      btn.classList.add("active");
+      els.feedbackText.textContent = vote === "up" ? "Thanks — glad it helped!" : "Thanks — feedback noted.";
+      try {
+        var log = JSON.parse(localStorage.getItem("adhd_feedback") || "[]");
+        log.push({ vote: vote, at: new Date().toISOString() });
+        localStorage.setItem("adhd_feedback", JSON.stringify(log));
+      } catch (e) { /* ignore */ }
+    });
+  });
+
+  // ---- Init ----
+  els.apiKey.value = getKey();
+  els.modelSelect.value = getModel();
+  refreshMode();
+})();
+</script>
 
 </body>
 </html>
