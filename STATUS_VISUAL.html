@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ADHD Translator — Status at a Glance</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    background: #0f1117;
+    color: #e8eaed;
+    line-height: 1.5;
+    padding: 24px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  h1 { font-size: 1.8rem; margin-bottom: 4px; }
+  .sub { color: #9aa0a6; font-size: 0.95rem; margin-bottom: 28px; }
+
+  /* Progress bar */
+  .progress-wrap { margin-bottom: 36px; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 6px; color: #9aa0a6; }
+  .bar { height: 28px; border-radius: 14px; background: #1c1f2a; overflow: hidden; display: flex; }
+  .bar .done { background: linear-gradient(90deg,#2dd36f,#1fa55a); width: 40%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8rem; color: #042; }
+  .bar .left { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: #9aa0a6; }
+
+  /* Zones */
+  .zone { border-radius: 16px; padding: 20px 22px; margin-bottom: 20px; border-left: 6px solid; }
+  .zone h2 { font-size: 1.15rem; margin-bottom: 4px; display: flex; align-items: center; gap: 10px; }
+  .zone .tag { font-size: 0.95rem; color: #9aa0a6; margin-bottom: 14px; }
+
+  .done-zone { background: #122019; border-color: #2dd36f; }
+  .you-zone  { background: #201a12; border-color: #f5a623; }
+  .me-zone   { background: #121a20; border-color: #4a9eff; }
+
+  .item { display: flex; align-items: flex-start; gap: 12px; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .item:last-child { border-bottom: none; }
+  .icon { font-size: 1.2rem; flex-shrink: 0; width: 24px; text-align: center; }
+  .item .txt { flex: 1; }
+  .item .txt b { display: block; font-size: 0.98rem; }
+  .item .txt span { font-size: 0.85rem; color: #9aa0a6; }
+  .pill { font-size: 0.7rem; padding: 3px 9px; border-radius: 20px; font-weight: 700; white-space: nowrap; align-self: center; }
+  .pill.green { background: #1fa55a; color: #042; }
+  .pill.blue  { background: #4a9eff; color: #021; }
+  .pill.amber { background: #f5a623; color: #210; }
+
+  .legend { display: flex; gap: 20px; flex-wrap: wrap; margin: 28px 0 10px; font-size: 0.85rem; }
+  .legend div { display: flex; align-items: center; gap: 8px; }
+  .dot { width: 14px; height: 14px; border-radius: 4px; }
+
+  .bigq { background: #1c1f2a; border-radius: 16px; padding: 18px 22px; margin-top: 8px; font-size: 0.95rem; }
+  .bigq b { color: #4a9eff; }
+</style>
+</head>
+<body>
+
+<h1>🧠 ADHD Translator — Where Things Stand</h1>
+<p class="sub">One screen. Three colors. No scrolling marathon.</p>
+
+<div class="progress-wrap">
+  <div class="progress-label"><span>Whole project</span><span>~40% built · 60% can get stronger</span></div>
+  <div class="bar">
+    <div class="done">DONE 40%</div>
+    <div class="left">room to grow →</div>
+  </div>
+</div>
+
+<!-- ============ DONE ============ -->
+<div class="zone done-zone">
+  <h2>✅ DONE — already working, tested, pushed</h2>
+  <div class="tag">You don't have to think about any of this. It's locked in.</div>
+
+  <div class="item">
+    <span class="icon">🛑</span>
+    <div class="txt"><b>Flow Preservation</b><span>Stops the AI from interrupting your hyperfocus to "confess" it drifted.</span></div>
+    <span class="pill green">9 tests ✓</span>
+  </div>
+  <div class="item">
+    <span class="icon">✂️</span>
+    <div class="txt"><b>Response Formatter</b><span>Chunks answers, leads with the point, adds white space.</span></div>
+    <span class="pill green">tested ✓</span>
+  </div>
+  <div class="item">
+    <span class="icon">🛡️</span>
+    <div class="txt"><b>RSD Trigger Detector</b><span>Catches & rewrites "you should have…" before it reaches you.</span></div>
+    <span class="pill green">tested ✓</span>
+  </div>
+  <div class="item">
+    <span class="icon">⚖️</span>
+    <div class="txt"><b>Cognitive Load Meter</b><span>Measures overwhelm and auto-simplifies when it's too much.</span></div>
+    <span class="pill green">15 tests ✓</span>
+  </div>
+  <div class="item">
+    <span class="icon">📚</span>
+    <div class="txt"><b>ADHD Knowledge Base + 4 core engines</b><span>The "encyclopedia" + translate/route/compose/learn brains.</span></div>
+    <span class="pill green">built ✓</span>
+  </div>
+</div>
+
+<!-- ============ I HANDLE ============ -->
+<div class="zone me-zone">
+  <h2>🤖 CAN GET STRONGER — I do it, you do nothing</h2>
+  <div class="tag">Just say "go." This is most of what's left.</div>
+
+  <div class="item">
+    <span class="icon">🔌</span>
+    <div class="txt"><b>Wire the new engines into live responses</b><span>The 3 new engines exist but aren't plugged into the running app yet.</span></div>
+    <span class="pill blue">I handle</span>
+  </div>
+  <div class="item">
+    <span class="icon">🧬</span>
+    <div class="txt"><b>Phase 2B — deeper ADHD-aware routing</b><span>Route by your mood/energy, not just question type.</span></div>
+    <span class="pill blue">I handle</span>
+  </div>
+  <div class="item">
+    <span class="icon">🚫</span>
+    <div class="txt"><b>Anti-kiss-ass / anti-hallucination mode</b><span>Your insight: cut pleasantries, prioritize blunt honesty.</span></div>
+    <span class="pill blue">I handle</span>
+  </div>
+  <div class="item">
+    <span class="icon">🧪</span>
+    <div class="txt"><b>More tests + simplification engine fix</b><span>One simplifier needs sharpening; the rest just need coverage.</span></div>
+    <span class="pill blue">I handle</span>
+  </div>
+</div>
+
+<!-- ============ NEEDS YOU ============ -->
+<div class="zone you-zone">
+  <h2>🙋 NEEDS YOU — small, only when you're ready</h2>
+  <div class="tag">Tiny inputs. Nothing technical. No rush.</div>
+
+  <div class="item">
+    <span class="icon">🎯</span>
+    <div class="txt"><b>Tell me your gather→evaluate signal</b><span>How do I know when you're done exploring and want me to "check if it's real"? A word, a phrase — your call.</span></div>
+    <span class="pill amber">1 answer</span>
+  </div>
+  <div class="item">
+    <span class="icon">👀</span>
+    <div class="txt"><b>Use it & react</b><span>Just talk to it. Tell me "too long," "felt patronizing," "lost focus." I tune from that.</span></div>
+    <span class="pill amber">feedback</span>
+  </div>
+  <div class="item">
+    <span class="icon">🏪</span>
+    <div class="txt"><b>Decide: keep personal or Play Store</b><span>Only matters later. Affects polish & accounts, not the brain.</span></div>
+    <span class="pill amber">later</span>
+  </div>
+</div>
+
+<div class="legend">
+  <div><span class="dot" style="background:#2dd36f"></span> Done — ignore it</div>
+  <div><span class="dot" style="background:#4a9eff"></span> I do it solo</div>
+  <div><span class="dot" style="background:#f5a623"></span> Needs a bit of you</div>
+</div>
+
+<div class="bigq">
+  <b>The one-sentence version:</b> 40% is built and bulletproof, ~55% I can finish without bugging you, and only ~5% needs you — and that 5% is just <i>"tell me your one signal word"</i> and <i>"use it and complain when it annoys you."</i>
+</div>
+
+</body>
+</html>
