@@ -1,0 +1,246 @@
+/* Dark mode Claude-style theme */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.app {
+  background-color: #0a0e27;
+  color: #ececf1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  padding: 2rem;
+  border-bottom: 1px solid #2d2d44;
+  background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+}
+
+.app-header h1 {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #ffffff;
+}
+
+.subtitle {
+  color: #9ca3af;
+  font-size: 0.95rem;
+}
+
+.app-main {
+  flex: 1;
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.input-box {
+  margin-bottom: 2rem;
+}
+
+.input-box textarea {
+  width: 100%;
+  min-height: 150px;
+  padding: 1rem;
+  background-color: #16213e;
+  border: 1px solid #2d2d44;
+  border-radius: 8px;
+  color: #ececf1;
+  font-size: 1rem;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.input-box textarea:focus {
+  outline: none;
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+.input-box button {
+  margin-top: 1rem;
+  padding: 0.75rem 1.5rem;
+  background-color: #7c3aed;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.input-box button:hover:not(:disabled) {
+  background-color: #6d28d9;
+}
+
+.input-box button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pipeline-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.pipeline-section {
+  background-color: #1a1f3a;
+  border: 1px solid #2d2d44;
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.pipeline-section h2 {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  color: #ffffff;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  background-color: #0f172a;
+  border: 1px solid #2d2d44;
+  border-radius: 6px;
+  padding: 1rem;
+}
+
+.card h3 {
+  color: #7c3aed;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.card p {
+  color: #d1d5db;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.confidence-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background-color: #1f2937;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  color: #10b981;
+  margin-left: 0.5rem;
+}
+
+.feedback-box {
+  background-color: #0f172a;
+  border: 1px solid #2d2d44;
+  border-radius: 6px;
+  padding: 1.5rem;
+}
+
+.feedback-box textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 0.75rem;
+  background-color: #16213e;
+  border: 1px solid #2d2d44;
+  border-radius: 4px;
+  color: #ececf1;
+  margin-bottom: 1rem;
+}
+
+.feedback-buttons {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.feedback-buttons button {
+  padding: 0.5rem 1rem;
+  background-color: #7c3aed;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.feedback-buttons button:hover {
+  background-color: #6d28d9;
+}
+
+.stars {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.star {
+  font-size: 2rem;
+  cursor: pointer;
+  color: #4b5563;
+  transition: color 0.2s;
+}
+
+.star:hover,
+.star.active {
+  color: #fbbf24;
+}
+
+.error-box {
+  background-color: #7f1d1d;
+  border: 1px solid #dc2626;
+  border-radius: 6px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  color: #fee2e2;
+}
+
+.complete-box {
+  background-color: #064e3b;
+  border: 1px solid #10b981;
+  border-radius: 6px;
+  padding: 2rem;
+  text-align: center;
+  color: #d1fae5;
+}
+
+.complete-box button {
+  margin-top: 1rem;
+  padding: 0.75rem 1.5rem;
+  background-color: #10b981;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.complete-box button:hover {
+  background-color: #059669;
+}
+
+@media (max-width: 768px) {
+  .app-header { padding: 1.5rem; }
+  .app-header h1 { font-size: 1.5rem; }
+  .app-main { padding: 1rem; }
+  .card-grid { grid-template-columns: 1fr; }
+}
