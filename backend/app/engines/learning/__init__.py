@@ -71,60 +71,127 @@ def record_feedback(answer_id: str, rating: str, notes: str = "") -> None:
 
 def get_insights() -> Dict[str, Any]:
     """
-    Analyze patterns after 50+ questions.
+    Analyze patterns after 10+ questions.
     Returns insights about model performance, technique effectiveness, recommendations.
     Includes rule refinement suggestions based on observed patterns.
     """
     patterns = get_feedback_patterns()
 
     insights = {
+        "summary": {},
         "model_performance": {},
+        "model_win_conditions": {},
         "patterns": [],
         "recommendations": [],
         "rule_refinements": [],
+        "statistics": {}
     }
 
     # Calculate success rates by model
+    total_questions = 0
+    successful_questions = 0
+
     for model, ratings in patterns.items():
         total = sum(ratings.values())
-        if total > 0:
-            good_pct = (ratings.get("good", 0) / total) * 100
-            insights["model_performance"][model] = {
-                "total_questions": total,
-                "success_rate": round(good_pct, 1)
-            }
+        if total == 0:
+            continue
 
-    # Detect patterns
+        total_questions += total
+        good_count = ratings.get("good", 0)
+        successful_questions += good_count
+        good_pct = (good_count / total) * 100
+        bad_pct = (ratings.get("bad", 0) / total) * 100
+        mixed_pct = (ratings.get("mixed", 0) / total) * 100
+
+        insights["model_performance"][model] = {
+            "total_questions": total,
+            "success_rate": round(good_pct, 1),
+            "good": good_count,
+            "mixed": ratings.get("mixed", 0),
+            "bad": ratings.get("bad", 0),
+            "bad_rate": round(bad_pct, 1)
+        }
+
+    # Summary statistics
+    if total_questions > 0:
+        insights["summary"]["total_questions_analyzed"] = total_questions
+        insights["summary"]["overall_success_rate"] = round((successful_questions / total_questions) * 100, 1)
+
+    # Detect patterns and model win conditions
     if insights["model_performance"]:
-        best_model = max(
+        sorted_models = sorted(
             insights["model_performance"].items(),
-            key=lambda x: x[1]["success_rate"]
-        )
-        insights["patterns"].append(
-            f"Best performing model: {best_model[0]} with {best_model[1]['success_rate']}% success rate"
+            key=lambda x: x[1]["success_rate"],
+            reverse=True
         )
 
-        worst_model = min(
-            insights["model_performance"].items(),
-            key=lambda x: x[1]["success_rate"]
+        best_model = sorted_models[0]
+        worst_model = sorted_models[-1]
+
+        insights["patterns"].append(
+            f"Best performing model: {best_model[0]} with {best_model[1]['success_rate']}% success rate ({best_model[1]['good']}/{best_model[1]['total_questions']} good)"
         )
-        insights["recommendations"].append(
-            f"Consider using {best_model[0]} more often instead of {worst_model[0]} for better results"
-        )
+
+        if worst_model[1]["success_rate"] < best_model[1]["success_rate"]:
+            insights["patterns"].append(
+                f"Worst performing model: {worst_model[0]} with {worst_model[1]['success_rate']}% success rate ({worst_model[1]['bad']} failures)"
+            )
+
+        # Win conditions: when each model excels
+        for model, perf in sorted_models:
+            if perf['total_questions'] > 5:  # Only if we have enough data
+                insights["model_win_conditions"][model] = {
+                    "success_rate": perf['success_rate'],
+                    "data_points": perf['total_questions'],
+                    "recommendation": f"Use {model} when you need {'fast answers with high accuracy' if perf['success_rate'] > 85 else 'reliable but thoughtful responses' if perf['success_rate'] > 70 else 'complex reasoning and verification'}"
+                }
+
+        # Recommendations
+        if best_model[1]["success_rate"] > worst_model[1]["success_rate"] + 10:
+            insights["recommendations"].append(
+                f"Use {best_model[0]} more often - it performs {round(best_model[1]['success_rate'] - worst_model[1]['success_rate'], 1)}% better than {worst_model[0]}"
+            )
+
+        if len(sorted_models) > 1 and sorted_models[1][1]["success_rate"] > 75:
+            insights["recommendations"].append(
+                f"{sorted_models[1][0]} is a strong secondary choice with {sorted_models[1][1]['success_rate']}% success rate"
+            )
 
     # Suggest rule refinements based on observed performance
-    if len(patterns) > 2:  # Only suggest if we have multiple models to compare
+    if len(patterns) >= 2:
         models_by_performance = sorted(
             insights["model_performance"].items(),
             key=lambda x: x[1]["success_rate"],
             reverse=True
         )
 
-        if models_by_performance[0][1]["success_rate"] - models_by_performance[-1][1]["success_rate"] > 15:
+        performance_gap = models_by_performance[0][1]["success_rate"] - models_by_performance[-1][1]["success_rate"]
+
+        if performance_gap > 20:
             insights["rule_refinements"].append({
                 "type": "model_preference",
-                "suggestion": f"Routing rules may need adjustment. {models_by_performance[0][0]} significantly outperforms other models.",
-                "action": "Consider lowering complexity threshold for routing to higher-performing model"
+                "priority": "high",
+                "suggestion": f"Significant performance gap ({performance_gap:.1f}%) detected between {models_by_performance[0][0]} and {models_by_performance[-1][0]}",
+                "action": "Review and adjust routing rules to favor higher-performing model in appropriate conditions"
             })
+
+        if models_by_performance[0][1]["bad_rate"] > 15:
+            insights["rule_refinements"].append({
+                "type": "quality_concern",
+                "priority": "medium",
+                "suggestion": f"Even best model ({models_by_performance[0][0]}) has {models_by_performance[0][1]['bad_rate']}% failure rate",
+                "action": "Review composition techniques and prompt templates for this model"
+            })
+
+        if len(models_by_performance) >= 2 and models_by_performance[1][1]["success_rate"] < 50:
+            insights["rule_refinements"].append({
+                "type": "under_performer",
+                "priority": "medium",
+                "suggestion": f"{models_by_performance[-1][0]} underperforming ({models_by_performance[-1][1]['success_rate']}%)",
+                "action": "Consider if this model is being misrouted or if technique selection needs adjustment"
+            })
+
+    insights["statistics"]["recommendation_count"] = len(insights["recommendations"])
+    insights["statistics"]["refinement_count"] = len(insights["rule_refinements"])
 
     return insights
