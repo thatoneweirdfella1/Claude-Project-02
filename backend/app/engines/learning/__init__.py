@@ -72,14 +72,16 @@ def record_feedback(answer_id: str, rating: str, notes: str = "") -> None:
 def get_insights() -> Dict[str, Any]:
     """
     Analyze patterns after 50+ questions.
-    Returns insights about model performance, technique effectiveness, etc.
+    Returns insights about model performance, technique effectiveness, recommendations.
+    Includes rule refinement suggestions based on observed patterns.
     """
     patterns = get_feedback_patterns()
 
     insights = {
         "model_performance": {},
         "patterns": [],
-        "recommendations": []
+        "recommendations": [],
+        "rule_refinements": [],
     }
 
     # Calculate success rates by model
@@ -92,7 +94,7 @@ def get_insights() -> Dict[str, Any]:
                 "success_rate": round(good_pct, 1)
             }
 
-    # Simple patterns
+    # Detect patterns
     if insights["model_performance"]:
         best_model = max(
             insights["model_performance"].items(),
@@ -107,7 +109,22 @@ def get_insights() -> Dict[str, Any]:
             key=lambda x: x[1]["success_rate"]
         )
         insights["recommendations"].append(
-            f"Consider using {best_model[0]} more often for better results"
+            f"Consider using {best_model[0]} more often instead of {worst_model[0]} for better results"
         )
+
+    # Suggest rule refinements based on observed performance
+    if len(patterns) > 2:  # Only suggest if we have multiple models to compare
+        models_by_performance = sorted(
+            insights["model_performance"].items(),
+            key=lambda x: x[1]["success_rate"],
+            reverse=True
+        )
+
+        if models_by_performance[0][1]["success_rate"] - models_by_performance[-1][1]["success_rate"] > 15:
+            insights["rule_refinements"].append({
+                "type": "model_preference",
+                "suggestion": f"Routing rules may need adjustment. {models_by_performance[0][0]} significantly outperforms other models.",
+                "action": "Consider lowering complexity threshold for routing to higher-performing model"
+            })
 
     return insights

@@ -2,6 +2,8 @@ import uuid
 from typing import Dict, List, Any
 from .composer import select_techniques, build_prompt, estimate_tokens, score_composition
 from .technique_library import TECHNIQUES
+from ...libraries.prompts import get_prompt_template, render_prompt
+from ...libraries.effectiveness import get_technique_effectiveness, get_model_effectiveness
 
 def compose(translated_text: str, routed_model: str, domain: str) -> Dict[str, Any]:
     """

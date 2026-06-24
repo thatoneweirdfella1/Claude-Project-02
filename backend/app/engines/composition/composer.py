@@ -1,46 +1,44 @@
 from typing import Dict, List, Any
 from .technique_library import TECHNIQUES, are_compatible, check_conflicts
+from ...libraries.effectiveness import get_technique_effectiveness
 
 def select_techniques(translated_text: str, routed_model: str, domain: str) -> List[str]:
     """
-    Select appropriate techniques based on question characteristics and routing.
+    Select appropriate techniques based on effectiveness matrices and domain.
+    Uses effectiveness scores to pick best techniques for the question type and model.
     """
     selected = []
 
     # All questions benefit from permission to say no (safety)
     selected.append("permission_to_say_no")
 
-    # Domain-specific selections
-    if domain == "analytical":
-        selected.append("chain_of_thought")  # Structured reasoning
-        selected.append("quote_first")       # Ground in specifics
+    # Score all techniques by effectiveness in this domain
+    technique_scores = []
+    for technique_id in TECHNIQUES.keys():
+        if technique_id == "permission_to_say_no":
+            continue  # Already added
+        effectiveness = get_technique_effectiveness(technique_id, domain)
+        technique_scores.append((technique_id, effectiveness))
 
-    elif domain == "exploratory":
-        selected.append("chain_of_thought")
-        selected.append("contrarian")       # Challenge assumptions
+    # Sort by effectiveness (highest first)
+    technique_scores.sort(key=lambda x: x[1], reverse=True)
 
-    elif domain == "creative":
-        selected.append("structured_output") # Clear format expectation
-        if len(translated_text) < 100:
-            selected.append("few_shot")  # Show examples for brevity
+    # Model-specific limit on techniques
+    max_techniques = {
+        "haiku": 2,      # Keep it simple for fast model
+        "opus-fast": 4,  # Balanced
+        "opus-thinking": 5,  # Can handle more complexity
+    }
+    max_tech = max_techniques.get(routed_model, 3)
 
-    elif domain == "decision_making":
-        selected.append("trade_offs")        # Weigh options
-        selected.append("direct_answer")     # Clear recommendation first
-
-    elif domain == "factual":
-        selected.append("direct_answer")     # Quick, clear answer
-        # Don't add unnecessary techniques for simple questions
-
-    elif domain == "comparative":
-        selected.append("structured_output")  # Side-by-side comparison
-        selected.append("trade_offs")         # Pros/cons
-
-    # Model-specific adjustments
-    if routed_model == "haiku":
-        # Haiku works best with fewer, simpler techniques
-        if len(selected) > 2:
-            selected = selected[:2]
+    # Add top-scoring techniques up to the limit
+    for tech_id, _score in technique_scores[:max_tech]:
+        # Check compatibility with already-selected techniques
+        compatible = all(are_compatible(tech_id, selected_tech) for selected_tech in selected)
+        if compatible:
+            selected.append(tech_id)
+        if len(selected) >= max_tech + 1:  # +1 because permission_to_say_no already added
+            break
 
     # Check for conflicts and resolve
     conflicts = check_conflicts(selected)
@@ -55,37 +53,29 @@ def select_techniques(translated_text: str, routed_model: str, domain: str) -> L
 
 def build_prompt(translated_text: str, selected_techniques: List[str], domain: str, routed_model: str) -> str:
     """
-    Build final prompt by combining techniques + question.
+    Build final prompt using the prompt library template + techniques.
     """
-    prompt_parts = []
+    from ...libraries.prompts import get_prompt_template, render_prompt as render_prompt_template
 
-    # System context based on model
-    if routed_model == "opus-thinking":
-        prompt_parts.append("Take your time to think through this carefully.\n")
-    elif routed_model == "opus-fast":
-        prompt_parts.append("Provide a clear, efficient answer.\n")
-    else:  # Haiku
-        prompt_parts.append("Be concise but complete.\n")
+    # Get base prompt template from library
+    template = get_prompt_template(routed_model, domain)
 
-    # Apply techniques in order
+    # Inject selected techniques into the prompt
+    technique_injections = []
     for tech_id in selected_techniques:
         tech = TECHNIQUES.get(tech_id)
         if tech:
-            # Add technique instruction
             template = tech.get("template", "")
             if template and "{question}" not in template:
-                prompt_parts.append(template)
+                technique_injections.append(template)
 
-    # Add the actual question
-    if "{question}" in "".join(prompt_parts):
-        # Replace {question} placeholder
-        combined = "\n".join(prompt_parts)
-        prompt_parts = [combined.replace("{question}", translated_text)]
+    # Build the final prompt
+    if technique_injections:
+        injected = "\n\n".join(technique_injections)
+        final_prompt = f"{injected}\n\n{render_prompt_template(template, translated_text)}"
     else:
-        # Add question at end
-        prompt_parts.append(f"\nQuestion: {translated_text}")
+        final_prompt = render_prompt_template(template, translated_text)
 
-    final_prompt = "\n".join(prompt_parts)
     return final_prompt
 
 def estimate_tokens(prompt: str, answer_estimate: str = "medium") -> int:
