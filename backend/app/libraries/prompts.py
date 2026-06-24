@@ -147,8 +147,15 @@ def get_prompt_template(model: str, domain: str) -> str:
 def render_prompt(template: str, question: str) -> str:
     """
     Render a prompt template with the actual question.
-    Automatically prepends Phase 2-Zero flow preservation instruction.
+    Automatically prepends flow-preservation + anti-sycophancy instructions so
+    the model behaves well at generation time (post-processing is a safety net).
     """
-    # Prepend flow preservation instruction for all responses
-    enriched_template = FLOW_PRESERVATION_INSTRUCTION + "\n\n" + template
+    # Anti-sycophancy instruction imported lazily to avoid circular imports
+    try:
+        from ..engines.anti_sycophancy import ANTI_SYCOPHANCY_INSTRUCTION
+        behavior_instructions = FLOW_PRESERVATION_INSTRUCTION + "\n\n" + ANTI_SYCOPHANCY_INSTRUCTION
+    except Exception:
+        behavior_instructions = FLOW_PRESERVATION_INSTRUCTION
+
+    enriched_template = behavior_instructions + "\n\n" + template
     return enriched_template.replace("{question}", question)

@@ -13,6 +13,7 @@ from ..engines.translation import translate
 from ..engines.routing import route
 from ..engines.composition import compose
 from ..engines.learning import log_full_pipeline, record_feedback, get_insights
+from ..engines.response_pipeline import process_response
 from .anthropic_client import call_claude
 
 router = APIRouter(prefix="/api", tags=["translator"])
@@ -129,10 +130,18 @@ async def ask_endpoint(request: Dict[str, Any]) -> Dict[str, Any]:
         if not session_id or not final_prompt or not api_key:
             raise HTTPException(status_code=400, detail="Missing required fields")
 
-        # Call Claude
-        response_text, tokens_used = call_claude(final_prompt, routed_model, api_key)
+        # Allow caller to toggle individual pipeline stages (all on by default)
+        pipeline_options = request.get("pipeline_options")
 
-        # Log to database
+        # Call Claude
+        raw_response, tokens_used = call_claude(final_prompt, routed_model, api_key)
+
+        # Run the raw reply through the ADHD-optimization pipeline:
+        # anti-sycophancy -> flow preservation -> RSD -> cognitive load -> formatter
+        pipeline_result = process_response(raw_response, pipeline_options)
+        response_text = pipeline_result["response"]
+
+        # Log to database (store the processed response the user actually sees)
         if session_id in sessions:
             session = sessions[session_id]
             log_full_pipeline(
@@ -146,7 +155,9 @@ async def ask_endpoint(request: Dict[str, Any]) -> Dict[str, Any]:
 
             sessions[session_id]["answer"] = {
                 "response": response_text,
+                "raw_response": raw_response,
                 "tokens_used": tokens_used,
+                "pipeline": pipeline_result["stages"],
             }
 
         return {
@@ -154,7 +165,9 @@ async def ask_endpoint(request: Dict[str, Any]) -> Dict[str, Any]:
             "data": {
                 "session_id": session_id,
                 "answer": response_text,
+                "raw_answer": raw_response,
                 "tokens_used": tokens_used,
+                "pipeline_stages": pipeline_result["stages"],
             },
             "error": None
         }

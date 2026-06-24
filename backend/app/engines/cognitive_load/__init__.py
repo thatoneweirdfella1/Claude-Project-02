@@ -211,14 +211,23 @@ class CognitiveLoadMeter:
             simplified
         )
 
-        # Reduce multiple viewpoints: keep primary + one alternative
-        if re.search(r'on one hand.*?on the other hand', simplified, re.DOTALL):
-            # Keep first viewpoint, remove others
+        # Reduce multiple viewpoints: keep the primary, drop the counter-weighing.
+        # Handles both period- and comma-separated "on one hand / on the other hand".
+        if re.search(r'on one hand.*?on the other hand', simplified, re.IGNORECASE | re.DOTALL):
+            # Keep the first viewpoint clause, drop "on the other hand ..." up to
+            # the next sentence boundary or strong conjunction.
             simplified = re.sub(
-                r'on one hand\s+([^.]+)\.\s+on the other hand\s+[^.]+\.',
-                r'\1.',
+                r'\bon one hand\b\s*',
+                '',
                 simplified,
-                flags=re.IGNORECASE
+                flags=re.IGNORECASE,
+            )
+            simplified = re.sub(
+                r'[,;]?\s*on the other hand\b.*?(?=[.?!]|\bbut\b|\bunless\b|$)',
+                '',
+                simplified,
+                count=1,
+                flags=re.IGNORECASE | re.DOTALL,
             )
 
         # Simplify conditionals: state base case clearly
@@ -228,6 +237,25 @@ class CognitiveLoadMeter:
             simplified,
             flags=re.IGNORECASE
         )
+
+        # Collapse trailing fragment questions ("... C? And D?") into one.
+        # Multiple short open questions stacked at the end are pure load.
+        trailing_q = re.findall(r'([^.?!]*\?)', simplified)
+        if len(trailing_q) >= 2:
+            # Keep only the first substantive question; drop short fragments
+            # like "And D?" / "What about C?" that trail it.
+            fragments = [q.strip() for q in trailing_q]
+            short_fragments = [q for q in fragments[1:] if len(q.split()) <= 5]
+            for frag in short_fragments:
+                simplified = simplified.replace(frag, '', 1)
+
+        # Clean up artifacts from clause removals (missing spaces, double spaces,
+        # floating punctuation, words run together at removal seams).
+        simplified = re.sub(r'([a-z])([A-Z])', r'\1 \2', simplified)   # wellBut -> well But
+        simplified = re.sub(r'([a-z])(but|unless|and|or)\b', r'\1 \2', simplified, flags=re.IGNORECASE)
+        simplified = re.sub(r'\s{2,}', ' ', simplified)
+        simplified = re.sub(r'\s+([,.?!])', r'\1', simplified)
+        simplified = simplified.strip()
 
         # Break long sentences at major conjunctions
         sentences = re.split(r'(?<=[.!?])\s+', simplified)
