@@ -1,3 +1,4 @@
+import re
 from typing import Dict, Any
 
 def analyze_question_dimensions(text: str) -> Dict[str, Any]:
@@ -91,27 +92,96 @@ def estimate_complexity(text: str) -> int:
     return min(10, max(1, complexity))
 
 def detect_domain(text: str) -> str:
-    """Detect question domain."""
-    domains = {
-        "factual": ["what is", "define", "explain", "how do", "when", "where"],
-        "analytical": ["why", "analyze", "evaluate", "compare", "pros and cons"],
-        "creative": ["generate", "create", "design", "brainstorm", "suggest"],
-        "comparative": ["difference between", "vs", "versus", "which is better"],
-        "exploratory": ["what if", "could", "imagine", "explore"],
-        "decision_making": ["should", "recommend", "choose", "best way"]
+    """
+    Detect question domain with weighted scoring.
+    More sophisticated than keyword matching - considers question structure.
+    """
+    text_lower = text.lower()
+
+    # Domain-specific indicators with weights
+    domain_indicators = {
+        "factual": {
+            "keywords": ["what is", "define", "explain", "how do", "when", "where", "who", "what's"],
+            "patterns": [r"^(what|where|when|who|how many)", r"definition", r"meaning of"],
+            "weight": 1.5
+        },
+        "analytical": {
+            "keywords": ["why", "analyze", "evaluate", "compare", "assess", "examine", "reason"],
+            "patterns": [r"why", r"how does", r"what causes", r"root cause"],
+            "weight": 1.5
+        },
+        "creative": {
+            "keywords": ["generate", "create", "design", "brainstorm", "suggest", "come up with", "imagine"],
+            "patterns": [r"design.*for", r"create.*that", r"suggest.*way", r"novel"],
+            "weight": 1.5
+        },
+        "comparative": {
+            "keywords": ["difference between", "vs", "versus", "which is better", "compare", "similar"],
+            "patterns": [r"\bvs\b", r"versus", r"difference.*between"],
+            "weight": 1.5
+        },
+        "exploratory": {
+            "keywords": ["what if", "could", "imagine", "explore", "possibilities", "potential"],
+            "patterns": [r"what if", r"could.*be", r"imagine", r"explore"],
+            "weight": 1.5
+        },
+        "decision_making": {
+            "keywords": ["should", "recommend", "choose", "best way", "should i", "how should"],
+            "patterns": [r"should (i|we)", r"recommend", r"best.*for", r"how should"],
+            "weight": 1.5
+        }
     }
 
-    text_lower = text.lower()
     scores = {}
 
-    for domain, keywords in domains.items():
-        score = sum(1 for kw in keywords if kw in text_lower)
+    for domain, indicators in domain_indicators.items():
+        score = 0
+
+        # Keyword matching
+        for keyword in indicators["keywords"]:
+            if keyword in text_lower:
+                score += 1
+
+        # Pattern matching
+        for pattern in indicators["patterns"]:
+            if re.search(pattern, text_lower, re.IGNORECASE):
+                score += 2  # Patterns weighted higher than keywords
+
+        # Strong signals - look for exact sentence starts
+        if domain == "factual" and re.match(r"^(what|where|when|who|how many)", text_lower):
+            score += 3
+
+        if domain == "decision_making" and re.match(r"^should\s", text_lower):
+            score += 3
+
+        if domain == "exploratory" and re.match(r"^(what if|imagine)", text_lower):
+            score += 3
+
+        if domain == "comparative" and ("vs" in text_lower or "versus" in text_lower):
+            score += 2
+
+        # Domain-specific content clues
+        if domain == "analytical":
+            if any(word in text_lower for word in ["root cause", "reason", "because", "mechanism"]):
+                score += 2
+
+        if domain == "creative":
+            if any(word in text_lower for word in ["innovative", "novel", "creative", "original"]):
+                score += 2
+
         if score > 0:
             scores[domain] = score
 
-    if scores:
-        return max(scores, key=scores.get)
-    return "exploratory"
+    if not scores:
+        # No clear domain detected
+        # Default based on question characteristics
+        if "?" not in text_lower:
+            return "exploratory"
+        if len(text) < 100:
+            return "factual"
+        return "exploratory"
+
+    return max(scores, key=scores.get)
 
 def detect_scope(text: str) -> str:
     """Detect scope: narrow, medium, broad."""
