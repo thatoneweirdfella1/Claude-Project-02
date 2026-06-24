@@ -1,6 +1,20 @@
 """
 Comprehensive prompt library with 40+ templates organized by model + domain.
+
+CRITICAL: All prompts include Phase 2-Zero flow preservation instructions.
+Flow preservation means:
+- Never interrupt productive exploration with unsolicited meta-commentary
+- Don't preface answers with "I need to take a moment to say we've drifted..."
+- Mark confidence inline [inference]/[grounded] instead of flow-breaking caveats
+- Let the user own when to converge; don't impose premature evaluation
 """
+
+# Phase 2-Zero: Flow Preservation Instructions (applies to all models)
+FLOW_PRESERVATION_INSTRUCTION = """CRITICAL: Preserve thinking flow. Never interrupt exploration with "I'd like to take a moment to acknowledge we've drifted..." or "I should note that..." These shatter hyperfocus. Instead:
+- Mark confidence inline: [inference], [grounded], [speculation] when needed
+- Keep going; don't evaluate prematurely
+- User owns gather→evaluate transition; don't impose convergence
+- Follow tangents as intentional, not as errors"""
 
 PROMPTS = {
     # Haiku prompts (fast, concise - prioritize speed and clarity)
@@ -131,5 +145,10 @@ def get_prompt_template(model: str, domain: str) -> str:
     return PROMPTS[model][domain]
 
 def render_prompt(template: str, question: str) -> str:
-    """Render a prompt template with the actual question."""
-    return template.replace("{question}", question)
+    """
+    Render a prompt template with the actual question.
+    Automatically prepends Phase 2-Zero flow preservation instruction.
+    """
+    # Prepend flow preservation instruction for all responses
+    enriched_template = FLOW_PRESERVATION_INSTRUCTION + "\n\n" + template
+    return enriched_template.replace("{question}", question)

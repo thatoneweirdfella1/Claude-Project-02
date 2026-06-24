@@ -1,6 +1,7 @@
 from typing import Dict, List, Any
 from .technique_library import TECHNIQUES, are_compatible, check_conflicts
 from ...libraries.effectiveness import get_technique_effectiveness
+from ..flow_preservation import preserve_exploration_mode, validate_response_for_flow_preservation
 
 def select_techniques(translated_text: str, routed_model: str, domain: str) -> List[str]:
     """
@@ -302,3 +303,35 @@ def categorize_techniques(technique_ids: List[str]) -> set:
             categories.add("safety")
 
     return categories
+
+
+def apply_flow_preservation(response: str, user_query: str = "") -> Dict[str, Any]:
+    """
+    Apply Phase 2-Zero flow preservation to a response.
+
+    Detects and removes flow-breaking patterns that shatter ADHD hyperfocus:
+    - Unsolicited epistemic self-correction
+    - Over-caveating that drowns signal
+    - Frame-shifting that treats tangents as errors
+    - Premature convergence attempts
+
+    Returns dict with:
+    - 'response': flow-preserved response text
+    - 'is_valid': whether response passed flow-preservation check
+    - 'issues': list of detected flow-breaking patterns (if any)
+    """
+    # First, validate and detect issues
+    is_valid, issues = validate_response_for_flow_preservation(response)
+
+    # Apply preservation mode if issues detected
+    if not is_valid:
+        preserved = preserve_exploration_mode(response)
+    else:
+        preserved = response
+
+    return {
+        "response": preserved,
+        "is_valid": is_valid,
+        "issues": issues,
+        "applied_flow_preservation": not is_valid,
+    }
