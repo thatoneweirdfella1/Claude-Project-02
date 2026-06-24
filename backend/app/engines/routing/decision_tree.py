@@ -21,24 +21,72 @@ def analyze_question_dimensions(text: str) -> Dict[str, Any]:
     return dimensions
 
 def estimate_complexity(text: str) -> int:
-    """Estimate complexity 1-10."""
+    """Estimate complexity 1-10 based on multiple factors."""
     complexity = 3  # Base
 
-    # Multi-part questions add complexity
-    complexity += min(3, text.count("?") - 1)
+    # Domain-specific complexity
+    text_lower = text.lower()
+
+    # Simple domains (factual, definitions) - harder to reach high complexity
+    if any(word in text_lower for word in ["what is", "define", "explain", "how many"]):
+        complexity = max(1, complexity - 1)
+
+    # Questions about design/architecture/systems typically complex
+    design_keywords = [
+        "architecture", "design pattern", "system design", "design",
+        "scalability", "performance", "tradeoffs", "trade-offs",
+        "distributed", "microservices", "monolith"
+    ]
+    design_count = sum(1 for kw in design_keywords if kw in text_lower)
+    complexity += min(4, design_count * 1.5)
+
+    # Research/exploratory questions
+    research_keywords = [
+        "research", "novel", "new approach", "innovative", "cutting edge",
+        "experimental", "frontier", "emerging", "latest"
+    ]
+    research_count = sum(1 for kw in research_keywords if kw in text_lower)
+    complexity += min(3, research_count * 2)
+
+    # Ambiguity/uncertainty adds complexity
+    ambiguity_keywords = [
+        "ambiguous", "unclear", "uncertain", "not sure", "confused",
+        "multiple ways", "alternatives", "options", "vs"
+    ]
+    ambiguity_count = sum(1 for kw in ambiguity_keywords if kw in text_lower)
+    complexity += min(2, ambiguity_count)
+
+    # Multi-part questions
+    question_count = text.count("?")
+    if question_count > 1:
+        complexity += min(3, question_count - 1)
+
+    # Constraint/requirement complexity
+    constraint_keywords = [
+        "constraints", "requirements", "limitations", "conditions",
+        "trade-offs", "millions", "thousands", "performance", "latency",
+        "throughput", "sub-", "concurrent"
+    ]
+    constraint_count = sum(1 for kw in constraint_keywords if kw in text_lower)
+    complexity += min(2, constraint_count // 2)
 
     # Long questions usually more complex
-    if len(text) > 300:
+    if len(text) > 400:
+        complexity += 3
+    elif len(text) > 250:
         complexity += 2
     elif len(text) > 150:
         complexity += 1
 
-    # Keywords that indicate higher complexity
-    complex_keywords = [
-        "architecture", "design", "tradeoffs", "best practice",
-        "novel", "research", "ambiguous", "unclear"
-    ]
-    complexity += sum(1 for kw in complex_keywords if kw in text.lower())
+    # Domain-specific complexity adjustments
+    if "algorithm" in text_lower or "data structure" in text_lower:
+        complexity += 2
+
+    if "machine learning" in text_lower or "ml" in text_lower or "neural" in text_lower:
+        complexity += 1
+
+    if "security" in text_lower or "encryption" in text_lower or "auth" in text_lower:
+        complexity += 1
 
     return min(10, max(1, complexity))
 
@@ -205,7 +253,7 @@ def score_for_haiku(complexity: int, domain: str, scope: str, certainty: str,
     if certainty == "clear":
         score += 15
     elif certainty == "exploratory":
-        score -= 20
+        score -= 25  # Exploratory is against Haiku's strength
 
     return score
 
