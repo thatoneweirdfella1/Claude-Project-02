@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ADHD ⇄ AI Translator</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root{
+    --bg:#0f1117; --surface:#171a23; --surface2:#1f2330; --border:#2a2f3d;
+    --text:#e8eaed; --dim:#9aa0a6; --accent:#4a9eff; --green:#2dd36f;
+    --amber:#f5a623; --red:#ff5c5c;
+  }
+  body{ font-family:-apple-system,"Segoe UI",system-ui,sans-serif; background:var(--bg);
+    color:var(--text); line-height:1.55; padding:20px; max-width:880px; margin:0 auto; }
+  h1{ font-size:1.5rem; margin-bottom:2px; }
+  .sub{ color:var(--dim); font-size:.9rem; margin-bottom:20px; }
+  .card{ background:var(--surface); border:1px solid var(--border); border-radius:14px;
+    padding:18px; margin-bottom:16px; }
+  label{ display:block; font-size:.8rem; color:var(--dim); margin-bottom:6px; text-transform:uppercase; letter-spacing:.04em; }
+  textarea, input[type=password], select{ width:100%; background:var(--surface2);
+    border:1px solid var(--border); border-radius:10px; color:var(--text);
+    padding:12px; font-size:1rem; font-family:inherit; resize:vertical; }
+  textarea{ min-height:120px; }
+  .row{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+  .row > div{ flex:1; min-width:160px; }
+  button{ background:var(--accent); color:#021; border:none; border-radius:10px;
+    padding:13px 22px; font-size:1rem; font-weight:700; cursor:pointer; }
+  button:disabled{ opacity:.5; cursor:not-allowed; }
+  button.ghost{ background:var(--surface2); color:var(--text); border:1px solid var(--border); }
+  .go{ width:100%; padding:16px; font-size:1.1rem; margin-top:4px; }
+  .answer{ background:var(--surface2); border-radius:10px; padding:16px; white-space:pre-wrap;
+    font-size:1.02rem; }
+  .hidden{ display:none; }
+  .pill{ font-size:.7rem; padding:3px 9px; border-radius:20px; font-weight:700; }
+  .pill.green{ background:var(--green); color:#042; }
+  .pill.amber{ background:var(--amber); color:#210; }
+  .pill.blue{ background:var(--accent); color:#021; }
+  .stages{ display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; }
+  .toggle{ display:flex; align-items:center; gap:8px; font-size:.85rem; color:var(--dim); }
+  .meta{ font-size:.8rem; color:var(--dim); margin-top:10px; }
+  details{ margin-top:10px; } summary{ cursor:pointer; color:var(--accent); font-size:.85rem; }
+  .raw{ background:#0c0e14; border-radius:8px; padding:12px; margin-top:8px; font-size:.9rem;
+    color:var(--dim); white-space:pre-wrap; }
+  .err{ color:var(--red); font-size:.9rem; margin-top:8px; }
+  .statebar{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+  .spin{ display:inline-block; width:14px; height:14px; border:2px solid #021;
+    border-top-color:transparent; border-radius:50%; animation:s .7s linear infinite; vertical-align:-2px; }
+  @keyframes s{ to{ transform:rotate(360deg); } }
+  a{ color:var(--accent); }
+</style>
+</head>
+<body>
+
+<h1>🧠 ADHD ⇄ AI Translator</h1>
+<p class="sub">Type how you actually think. Get back an answer with no flattery, no flow-breaking, no overwhelm.</p>
+
+<!-- API KEY -->
+<div class="card">
+  <label>Anthropic API Key <span style="text-transform:none">(stored only in this browser, never sent anywhere but Anthropic)</span></label>
+  <input type="password" id="apiKey" placeholder="sk-ant-...">
+  <p class="meta">Get one at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>. It's saved locally so you only paste once.</p>
+</div>
+
+<!-- INPUT -->
+<div class="card">
+  <label>What's on your mind? (ramble freely)</label>
+  <textarea id="input" placeholder="okay so like i've been thinking... should i use react or vue for this thing, but also what about speed, and honestly i'm kinda overwhelmed by all the options ugh"></textarea>
+  <div class="row" style="margin-top:12px">
+    <div>
+      <label>Model</label>
+      <select id="model">
+        <option value="claude-haiku-4-5-20251001">Haiku 4.5 — fast & cheap</option>
+        <option value="claude-opus-4-8" selected>Opus 4.8 — smartest</option>
+        <option value="claude-sonnet-4-6">Sonnet 4.6 — balanced</option>
+      </select>
+    </div>
+    <div>
+      <label>Directness</label>
+      <select id="directness">
+        <option value="max">Max — robotic, zero pleasantries</option>
+        <option value="high" selected>High — direct but human</option>
+        <option value="off">Off — leave AI as-is</option>
+      </select>
+    </div>
+  </div>
+  <button class="go" id="goBtn" onclick="run()">Translate & Ask →</button>
+  <div class="err hidden" id="err"></div>
+</div>
+
+<!-- STATE READ -->
+<div class="card hidden" id="stateCard">
+  <label>How I read your message</label>
+  <div class="statebar" id="stateBar"></div>
+  <div class="meta" id="stateNote"></div>
+</div>
+
+<!-- ANSWER -->
+<div class="card hidden" id="answerCard">
+  <label>Answer</label>
+  <div class="answer" id="answer"></div>
+  <div class="stages" id="stages"></div>
+  <details>
+    <summary>Show raw answer (before cleanup)</summary>
+    <div class="raw" id="raw"></div>
+  </details>
+</div>
+
+<script>
+// ============================================================================
+// ENGINE LOGIC (ported from the Python backend — runs entirely in your browser)
+// ============================================================================
+
+// ---- ADHD STATE DETECTION (mirrors routing/adhd_state.py) ----
+function detectState(text){
+  const low = text.toLowerCase();
+  const hit = (arr)=>arr.filter(t=>low.includes(t)).length;
+  const overwhelm = hit(["too much","can't keep up","overwhelmed","everything at once","i can't","drowning","so many"]);
+  const anxious = hit(["worried","nervous","anxious","scared","what if","stress","panic"]);
+  const frustrated = hit(["frustrated","annoyed","stuck","ugh","hate","fed up","sick of"]);
+  const interest = hit(["what if","imagine","cool","interesting","curious","fascinating","love this","obsessed"]);
+  const evaluating = hit(["is this real","is that right","verify","fact check","am i wrong","double check","actually true"]);
+  const caps = (text.match(/\b[A-Z]{3,}\b/g)||[]).length;
+  const excl = (text.match(/!/g)||[]).length;
+  const intensity = caps + excl;
+
+  let emotion = "calm";
+  const scores = {overwhelmed: overwhelm*2 + (intensity>=3?1:0), anxious: anxious*2, frustrated: frustrated*2 + (intensity>=4?1:0)};
+  const top = Object.keys(scores).reduce((a,b)=>scores[a]>=scores[b]?a:b);
+  if(scores[top]>0) emotion = top;
+
+  const words = text.split(/\s+/).length;
+  const rsdMarkers = hit(["stupid","dumb","idiot","i always mess","failure","i feel dumb","i should know","i'm behind","embarrassed"]);
+  const selfNeg = (text.match(/\bi (can't|cannot|never|always)\b/gi)||[]).length;
+  const rsd = (rsdMarkers+selfNeg)>=3?"high":(rsdMarkers+selfNeg)>=1?"medium":"low";
+
+  const interestLvl = interest>=2?"high":interest===1?"medium":"low";
+  const mode = (evaluating>0)?"evaluating":"gathering";
+
+  return {emotion, rsd, interest:interestLvl, mode, words};
+}
+
+// ---- ANTI-SYCOPHANCY (mirrors anti_sycophancy/__init__.py) ----
+const SYCO_OPENERS = [
+  /^(?:wow,?\s+)?(?:that's|what)\s+(?:a\s+)?(?:great|excellent|fantastic|wonderful|brilliant|fascinating|interesting|insightful|thoughtful|good)\s+(?:question|point|idea|observation|insight)[!.]*\s*/i,
+  /^great\s+question[!.]*\s*/i,
+  /^(?:i\s+)?(?:love|really like|appreciate)\s+(?:this|that|your)\s+(?:question|idea|thinking|approach)[!.]*\s*/i,
+];
+const EMPTY_VALIDATION = [
+  /you(?:'re| are)\s+(?:absolutely|totally|completely|so|100%|definitely)\s+right[!.]*/gi,
+  /(?:that's|that is)\s+(?:absolutely|exactly|precisely|totally)\s+(?:right|correct|true)[!.]*/gi,
+  /excellent\s+point[!.]*/gi, /great\s+(?:point|thinking|insight)[!.]*/gi, /spot\s+on[!.]*/gi,
+];
+const PLEASANTRIES = [
+  /i'd\s+be\s+(?:happy|glad|delighted)\s+to[!.]*/gi,
+  /i'd\s+love\s+to\s+(?:help|assist)[!.]*/gi,
+  /(?:i\s+)?hope\s+(?:this|that)\s+helps[!.]*/gi,
+  /happy\s+to\s+help[!.]*/gi,
+  /feel\s+free\s+to\s+(?:ask|reach out)[^.!?]*[.!?]/gi,
+  /let\s+me\s+know\s+if\s+(?:you\s+have\s+any|there's\s+anything|you\s+need)[^.!?]*[.!?]/gi,
+];
+function antiSycophancy(text, level){
+  if(level==="off") return {text, removed:[]};
+  let t = text, removed=[];
+  SYCO_OPENERS.forEach(r=>{ if(r.test(t.trimStart())){ t=t.trimStart().replace(r,""); removed.push("flattery opener"); }});
+  EMPTY_VALIDATION.forEach(r=>{ if(r.test(t)){ t=t.replace(r,""); removed.push("empty praise"); }});
+  PLEASANTRIES.forEach(r=>{ if(r.test(t)){ t=t.replace(r,""); removed.push("filler pleasantry"); }});
+  // tidy seams
+  t = t.replace(/\s{2,}/g," ").replace(/\n{3,}/g,"\n\n").replace(/^[\s,.!]+/,"").replace(/\s+([,.!?])/g,"$1").trim();
+  return {text:t, removed:[...new Set(removed)]};
+}
+
+// ---- FLOW PRESERVATION (mirrors flow_preservation/__init__.py) ----
+const BANNED = [
+  /[^.!?]*i'd like to take a moment[^.!?]*[.!?]/gi,
+  /[^.!?]*i have to admit[^.!?]*[.!?]/gi,
+  /[^.!?]*we've drifted[^.!?]*[.!?]/gi,
+  /[^.!?]*let me bring us back[^.!?]*[.!?]/gi,
+  /[^.!?]*to summarize where we are[^.!?]*[.!?]/gi,
+  /[^.!?]*we've (?:gotten|moved)[^.!?]*off (?:track|topic)[^.!?]*[.!?]/gi,
+];
+function flowPreserve(text){
+  let t=text, applied=false;
+  BANNED.forEach(r=>{ if(r.test(t)){ t=t.replace(r,""); applied=true; }});
+  // tangent reframing
+  t = t.replace(/that's\s+(?:a\s+)?bit\s+of\s+a\s+tangent,?\s*(?:but\s+)?/gi,()=>{applied=true;return "";});
+  t = t.replace(/\s{2,}/g," ").trim();
+  return {text:t, applied};
+}
+
+// ---- RSD REFRAME (mirrors rsd_detection/__init__.py) ----
+function rsdReframe(text){
+  let t=text, applied=false;
+  const before=t;
+  t = t.replace(/you\s+should\s+have\s+(\w+)/gi,"one approach that often works is to $1");
+  t = t.replace(/\byou\s+(?:didn't|couldn't|failed to)\s+/gi,"one thing that helps is to ");
+  if(t!==before) applied=true;
+  return {text:t, applied};
+}
+
+// ---- FORMATTER (light: spacing + answer-first hint) ----
+function formatForAdhd(text){
+  // add paragraph breaks after sentences if it's a long unbroken wall
+  if(text.length>400 && !text.includes("\n")){
+    const sentences = text.match(/[^.!?]+[.!?]+/g)||[text];
+    let out="", buf="";
+    sentences.forEach(s=>{ buf+=s; if(buf.split(/\s+/).length>40){ out+=buf.trim()+"\n\n"; buf=""; }});
+    out+=buf; return out.trim();
+  }
+  return text;
+}
+
+// ---- THE PIPELINE ----
+function runPipeline(raw, level){
+  const stages=[];
+  let t=raw;
+  const a=antiSycophancy(t, level); t=a.text; stages.push({name:"anti-flattery", on:a.removed.length>0, detail:a.removed.join(", ")});
+  const f=flowPreserve(t); t=f.text; stages.push({name:"flow-preserve", on:f.applied});
+  const r=rsdReframe(t); t=r.text; stages.push({name:"rsd-reframe", on:r.applied});
+  t=formatForAdhd(t); stages.push({name:"formatter", on:t!==r.text});
+  return {text:t, stages};
+}
+
+// ---- SYSTEM PROMPT (behavior at the source) ----
+function systemPrompt(state, level){
+  let p="You are a translator-assistant for someone with ADHD. ";
+  if(level!=="off"){
+    p+="Be direct and mechanical. No flattery, no 'great question', no 'you're absolutely right'. ";
+    p+="Skip pleasantries. Lead with the answer, not validation. Don't over-apologize. ";
+    p+="Never interrupt with 'I'd like to take a moment to acknowledge we've drifted'. ";
+    p+="Accuracy over agreeableness — if something is wrong or uncertain, say so plainly. ";
+  }
+  if(level==="max") p+="Use the most robotic, terse, no-pleasantry register possible. ";
+  if(state.emotion==="overwhelmed") p+="The user is overwhelmed: give ONLY the single most important next step, very short. ";
+  if(state.rsd==="high") p+="The user is being self-critical: do not pile on; be matter-of-fact and kind without being saccharine. ";
+  if(state.interest==="high"&&state.mode==="gathering") p+="The user is exploring with curiosity: follow their tangents, don't force convergence. ";
+  if(state.mode==="evaluating") p+="The user wants to verify: be rigorous about what's grounded vs. inferred. ";
+  p+="Use short sentences and white space. Lead with the bottom line.";
+  return p;
+}
+
+// ============================================================================
+// UI / API
+// ============================================================================
+const $=(id)=>document.getElementById(id);
+
+// restore saved key
+$("apiKey").value = localStorage.getItem("anthropicKey")||"";
+$("apiKey").addEventListener("change", e=>localStorage.setItem("anthropicKey", e.target.value.trim()));
+
+function showErr(msg){ const e=$("err"); e.textContent=msg; e.classList.remove("hidden"); }
+function clearErr(){ $("err").classList.add("hidden"); }
+
+async function run(){
+  clearErr();
+  const key = $("apiKey").value.trim();
+  const input = $("input").value.trim();
+  const model = $("model").value;
+  const level = $("directness").value;
+  if(!key){ showErr("Paste your Anthropic API key first."); return; }
+  if(!input){ showErr("Type something first."); return; }
+
+  // 1. Read state
+  const state = detectState(input);
+  renderState(state);
+
+  // 2. Build prompts
+  const sys = systemPrompt(state, level);
+
+  // 3. Call Claude
+  const btn=$("goBtn"); btn.disabled=true; btn.innerHTML='<span class="spin"></span> Thinking...';
+  try{
+    const res = await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{
+        "content-type":"application/json",
+        "x-api-key":key,
+        "anthropic-version":"2023-06-01",
+        "anthropic-dangerous-direct-browser-access":"true"
+      },
+      body: JSON.stringify({
+        model, max_tokens:1024,
+        system: sys,
+        messages:[{role:"user", content: input}]
+      })
+    });
+    if(!res.ok){
+      const txt=await res.text();
+      throw new Error("API "+res.status+": "+txt.slice(0,300));
+    }
+    const data = await res.json();
+    const rawAnswer = data.content.map(c=>c.text||"").join("");
+
+    // 4. Run cleanup pipeline
+    const out = runPipeline(rawAnswer, level);
+
+    // 5. Render
+    $("answer").textContent = out.text;
+    $("raw").textContent = rawAnswer;
+    renderStages(out.stages);
+    $("answerCard").classList.remove("hidden");
+  }catch(err){
+    showErr(err.message.includes("Failed to fetch")
+      ? "Couldn't reach Anthropic. Check your internet / key. (If you opened this as a file and it's blocked, try a different browser.)"
+      : err.message);
+  }finally{
+    btn.disabled=false; btn.textContent="Translate & Ask →";
+  }
+}
+
+function renderState(s){
+  const bar=$("stateBar"); bar.innerHTML="";
+  const chip=(txt,cls)=>{ const e=document.createElement("span"); e.className="pill "+cls; e.textContent=txt; bar.appendChild(e); };
+  chip("mood: "+s.emotion, s.emotion==="calm"?"green":"amber");
+  chip("RSD: "+s.rsd, s.rsd==="low"?"green":"amber");
+  chip("interest: "+s.interest, "blue");
+  chip("mode: "+s.mode, "blue");
+  let note="";
+  if(s.emotion==="overwhelmed") note="You sound overwhelmed — I told the AI to give just the single next step.";
+  else if(s.rsd==="high") note="Picked up self-criticism — I told the AI not to pile on.";
+  else if(s.interest==="high"&&s.mode==="gathering") note="You're exploring — I told the AI to follow your tangents, not force a conclusion.";
+  else if(s.mode==="evaluating") note="You want to verify — I told the AI to separate fact from inference.";
+  else note="Reading you as calm/neutral — straightforward direct answer.";
+  $("stateNote").textContent=note;
+  $("stateCard").classList.remove("hidden");
+}
+
+function renderStages(stages){
+  const wrap=$("stages"); wrap.innerHTML="";
+  stages.forEach(s=>{
+    const e=document.createElement("span");
+    e.className="pill "+(s.on?"green":"blue");
+    e.textContent=(s.on?"✓ ":"– ")+s.name+(s.detail?" ("+s.detail+")":"");
+    wrap.appendChild(e);
+  });
+}
+</script>
+</body>
+</html>
