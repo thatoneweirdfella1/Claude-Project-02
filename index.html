@@ -3,7 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ADHD ⇄ AI Translator</title>
+<title>Divergence.AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&display=swap" rel="stylesheet">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   :root{
@@ -13,7 +16,23 @@
   }
   body{ font-family:-apple-system,"Segoe UI",system-ui,sans-serif; background:var(--bg);
     color:var(--text); line-height:1.55; padding:20px; max-width:880px; margin:0 auto; }
-  h1{ font-size:1.5rem; margin-bottom:2px; }
+  h1.brand{
+    font-family:"Orbitron",sans-serif; font-weight:900; font-size:2.6rem;
+    letter-spacing:.04em; margin-bottom:2px; line-height:1.05;
+    background:linear-gradient(92deg,#4a9eff 0%,#9b5cff 38%,#2dd36f 72%,#4a9eff 100%);
+    background-size:300% 100%; -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent; color:transparent;
+    animation:synapse 6s linear infinite, flicker 4.5s ease-in-out infinite;
+    filter:drop-shadow(0 0 14px rgba(74,158,255,.35));
+  }
+  h1.brand .dot{ -webkit-text-fill-color:#9b5cff; color:#9b5cff; }
+  @keyframes synapse{ to{ background-position:300% 50%; } }
+  @keyframes flicker{
+    0%,100%{ filter:drop-shadow(0 0 14px rgba(74,158,255,.35)); }
+    47%{ filter:drop-shadow(0 0 22px rgba(155,92,255,.55)); }
+    49%{ filter:drop-shadow(0 0 4px rgba(74,158,255,.15)); }
+    51%{ filter:drop-shadow(0 0 24px rgba(45,211,111,.5)); }
+  }
   .sub{ color:var(--dim); font-size:.9rem; margin-bottom:20px; }
   .card{ background:var(--surface); border:1px solid var(--border); border-radius:14px;
     padding:18px; margin-bottom:16px; }
@@ -52,7 +71,7 @@
 </head>
 <body>
 
-<h1>🧠 ADHD ⇄ AI Translator</h1>
+<h1 class="brand">⚡ Divergence<span class="dot">.AI</span></h1>
 <p class="sub">Type how you actually think. Get back an answer with no flattery, no flow-breaking, no overwhelm.</p>
 
 <!-- API KEY -->
