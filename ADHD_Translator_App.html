@@ -104,18 +104,11 @@ body {
   overflow-y: auto;
   overflow-x: hidden;
 
-  /* marble base — soft organic veins */
+  /* marble base — SVG turbulence filter for organic veining */
   background-color: var(--sb-bg);
-  background-image:
-    radial-gradient(ellipse 600px 400px at 15% 20%, rgba(255,255,255,.08) 0%, transparent 50%),
-    radial-gradient(ellipse 500px 350px at 85% 70%, rgba(255,255,255,.06) 0%, transparent 50%),
-    radial-gradient(ellipse 400px 500px at 40% 80%, rgba(0,0,0,.04) 0%, transparent 40%),
-    linear-gradient(75deg, transparent 48%, rgba(255,255,255,.04) 48.5%, rgba(255,255,255,.04) 50%, transparent 50.5%),
-    linear-gradient(105deg, transparent 35%, rgba(200,200,200,.05) 35.5%, rgba(200,200,200,.05) 37%, transparent 37.5%),
-    linear-gradient(35deg, transparent 62%, rgba(255,255,255,.03) 62.5%, rgba(255,255,255,.03) 64%, transparent 64.5%),
-    linear-gradient(155deg, transparent 28%, rgba(180,180,180,.04) 28.5%, rgba(180,180,180,.04) 30%, transparent 30.5%);
-  background-size: 100% 100%, 100% 100%, 100% 100%, 150% 150%, 140% 140%, 160% 160%, 130% 130%;
-  background-position: 0 0, 0 0, 0 0, 0 0, 20% 30%, 40% 50%, 60% 20%;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1200"><defs><filter id="m"><feTurbulence type="fractalNoise" baseFrequency="0.03,0.08" numOctaves="4" result="noise" seed="2"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="120" xChannelSelector="R" yChannelSelector="G"/></filter></defs><rect width="800" height="1200" fill="%230e0f11"/><rect width="800" height="1200" fill="%23ffffff" opacity="0.12" filter="url(%23m)"/><rect width="800" height="1200" fill="%23d0d0d0" opacity="0.08" filter="url(%23m)" transform="translate(40,60)"/><rect width="800" height="1200" fill="%23e8e8e8" opacity="0.06" filter="url(%23m)" transform="translate(-20,80)"/></svg>');
+  background-size: 800px 1200px;
+  background-attachment: fixed;
 }
 
 .sidebar::after {
