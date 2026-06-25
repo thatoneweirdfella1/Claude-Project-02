@@ -104,10 +104,10 @@ body {
   overflow-y: auto;
   overflow-x: hidden;
 
-  /* marble base — procedural veining */
+  /* marble base — organic stone veining */
   background-color: var(--sb-bg);
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="512" height="768"><defs><filter id="marble"><feTurbulence type="fractalNoise" baseFrequency="0.04,0.06" numOctaves="5" result="noise" seed="3"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="80" xChannelSelector="R" yChannelSelector="G"/></filter></defs><rect width="512" height="768" fill="%230a0a0c"/><circle cx="256" cy="384" r="400" fill="%23a8a8a8" opacity="0.14" filter="url(%23marble)"/><circle cx="100" cy="200" r="300" fill="%239a9a9a" opacity="0.1" filter="url(%23marble)"/><circle cx="450" cy="600" r="350" fill="%23b5b5b5" opacity="0.12" filter="url(%23marble)"/></svg>');
-  background-size: 512px 768px;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="900"><defs><filter id="m1"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="6" result="noise" seed="5"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="140" xChannelSelector="R" yChannelSelector="G"/></filter><filter id="m2"><feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="4" result="noise" seed="7"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="60" xChannelSelector="R" yChannelSelector="G"/></filter></defs><rect width="600" height="900" fill="currentColor" opacity="1"/><g filter="url(%23m1)" opacity="0.18"><path d="M0,0 Q150,100 300,50 T600,100 L600,900 Q450,800 300,850 T0,900 Z" fill="%23888888"/><path d="M0,200 Q200,250 400,200 T600,300 L600,900 L0,900 Z" fill="%23999999" opacity="0.6"/><path d="M0,400 Q100,450 200,420 Q300,380 400,450 Q500,520 600,450 L600,900 L0,900 Z" fill="%23aaaaaa" opacity="0.4"/></g><g filter="url(%23m2)" opacity="0.08"><ellipse cx="150" cy="250" rx="200" ry="300" fill="%23666666"/><ellipse cx="450" cy="650" rx="250" ry="200" fill="%23777777"/></g></svg>');
+  background-size: 600px 900px;
   background-attachment: fixed;
   background-repeat: repeat;
 }
