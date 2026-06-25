@@ -104,17 +104,18 @@ body {
   overflow-y: auto;
   overflow-x: hidden;
 
-  /* marble base */
+  /* marble base — soft organic veins */
   background-color: var(--sb-bg);
   background-image:
-    linear-gradient(108deg, transparent 22%, var(--sb-vein3) 22%, var(--sb-vein3) 23.2%, transparent 23.2%),
-    linear-gradient(72deg,  transparent 38%, var(--sb-vein1) 38%, var(--sb-vein1) 39.4%, transparent 39.4%),
-    linear-gradient(128deg, transparent 48%, var(--sb-vein2) 48%, var(--sb-vein2) 49%, transparent 49%),
-    linear-gradient(95deg,  transparent 15%, var(--sb-vein1) 15%, var(--sb-vein1) 16.5%, transparent 16.5%),
-    linear-gradient(155deg, transparent 60%, var(--sb-vein3) 60%, var(--sb-vein3) 61.2%, transparent 61.2%),
-    linear-gradient(40deg,  transparent 70%, var(--sb-vein2) 70%, var(--sb-vein2) 71.8%, transparent 71.8%),
-    linear-gradient(115deg, transparent 80%, var(--sb-vein1) 80%, var(--sb-vein1) 82%, transparent 82%);
-  background-size: 100% 600px;
+    radial-gradient(ellipse 600px 400px at 15% 20%, rgba(255,255,255,.08) 0%, transparent 50%),
+    radial-gradient(ellipse 500px 350px at 85% 70%, rgba(255,255,255,.06) 0%, transparent 50%),
+    radial-gradient(ellipse 400px 500px at 40% 80%, rgba(0,0,0,.04) 0%, transparent 40%),
+    linear-gradient(75deg, transparent 48%, rgba(255,255,255,.04) 48.5%, rgba(255,255,255,.04) 50%, transparent 50.5%),
+    linear-gradient(105deg, transparent 35%, rgba(200,200,200,.05) 35.5%, rgba(200,200,200,.05) 37%, transparent 37.5%),
+    linear-gradient(35deg, transparent 62%, rgba(255,255,255,.03) 62.5%, rgba(255,255,255,.03) 64%, transparent 64.5%),
+    linear-gradient(155deg, transparent 28%, rgba(180,180,180,.04) 28.5%, rgba(180,180,180,.04) 30%, transparent 30.5%);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 150% 150%, 140% 140%, 160% 160%, 130% 130%;
+  background-position: 0 0, 0 0, 0 0, 0 0, 20% 30%, 40% 50%, 60% 20%;
 }
 
 .sidebar::after {
@@ -122,7 +123,7 @@ body {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(90deg, transparent 98%, var(--divider) 100%);
+  background: linear-gradient(90deg, transparent 95%, var(--divider) 100%);
 }
 
 /* ============================================================
