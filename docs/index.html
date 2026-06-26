@@ -1100,14 +1100,16 @@ summary { cursor: pointer; color: var(--accent); font-size: .85rem; }
 
   <!-- ANSWER / EXECUTE -->
   <div id="panel-execute" class="hidden">
-    <div class="page-header"><div class="page-title" style="font-size:1.5rem">▶ Answer / Execute</div><p class="page-sub">Turn the last answer into action.</p></div>
+    <div class="page-header"><div class="page-title" style="font-size:1.5rem">▶ Answer / Execute</div><p class="page-sub">Pick any answer from the conversation and turn it into action.</p></div>
     <div class="card">
-      <label>Last Answer</label>
+      <label>Choose an answer</label>
+      <select id="execSelect" onchange="renderExecute()" style="margin-bottom:12px"></select>
       <div id="executeAnswer" class="answer" style="margin-bottom:12px"><p class="meta">No answer yet.</p></div>
       <div class="row" style="gap:8px;flex-wrap:wrap">
         <button onclick="execCopy()" class="quick-btn">📋 Copy</button>
         <button onclick="execToTask()" class="quick-btn">☑ Make Task</button>
         <button onclick="execToResource()" class="quick-btn">🔗 Save as Resource</button>
+        <button onclick="execToSynthesis()" class="quick-btn">⚛ Send to Synthesis</button>
       </div>
     </div>
   </div>
@@ -2143,12 +2145,44 @@ function renderTechniques(){
 }
 
 // ---- EXECUTE ----
-function renderExecute(){
-  $("executeAnswer").innerHTML = lastCall ? esc(lastCall.answer) : '<p class="meta">No answer yet.</p>';
+// returns the AI answers in the conversation, newest first
+function execAnswers(){
+  return conversation
+    .map((t,i)=>({...t, idx:i}))
+    .filter(t=>t.role==="assistant")
+    .reverse();
 }
-function execCopy(){ if(!lastCall) return; navigator.clipboard.writeText(lastCall.answer); showErr("Copied to clipboard."); }
-function execToTask(){ if(!lastCall) return; tasks.unshift({id:Date.now(), text:lastCall.answer.slice(0,120), done:false}); saveTasks(); showErr("Saved as task."); }
-function execToResource(){ if(!lastCall) return; resources.unshift({id:Date.now(), title:"Saved answer", url:lastCall.answer.slice(0,200)}); localStorage.setItem("divResources",JSON.stringify(resources)); showErr("Saved as resource."); }
+function execSelected(){
+  const answers=execAnswers();
+  if(!answers.length) return null;
+  const sel=$("execSelect");
+  const pick=answers.find(a=>String(a.idx)===sel.value);
+  return pick || answers[0];
+}
+function renderExecute(){
+  const answers=execAnswers();
+  const sel=$("execSelect");
+  // rebuild dropdown only if the option set changed (keeps selection on re-render)
+  if(sel.options.length!==answers.length){
+    const prev=sel.value;
+    sel.innerHTML = answers.length
+      ? answers.map((a,n)=>{
+          const userBefore=[...conversation].slice(0,a.idx).reverse().find(t=>t.role==="user");
+          const tag=userBefore?userBefore.content.slice(0,45):"(answer)";
+          const label=(n===0?"⭐ Latest — ":"")+esc(tag)+(tag.length>=45?"…":"");
+          return '<option value="'+a.idx+'">'+label+'</option>';
+        }).join("")
+      : '<option>No answers yet</option>';
+    if(prev && answers.some(a=>String(a.idx)===prev)) sel.value=prev;
+  }
+  const cur=execSelected();
+  $("executeAnswer").innerHTML = cur ? esc(cur.display||cur.content) : '<p class="meta">No answer yet — ask something on the Translate screen.</p>';
+}
+function execText(){ const c=execSelected(); return c ? (c.display||c.content) : null; }
+function execCopy(){ const t=execText(); if(!t){showErr("No answer selected.");return;} navigator.clipboard.writeText(t); showErr("Copied to clipboard."); }
+function execToTask(){ const t=execText(); if(!t){showErr("No answer selected.");return;} tasks.unshift({id:Date.now(), text:t.slice(0,120), done:false}); saveTasks(); showErr("Saved as task."); }
+function execToResource(){ const t=execText(); if(!t){showErr("No answer selected.");return;} resources.unshift({id:Date.now(), title:"Saved answer", url:t.slice(0,200)}); localStorage.setItem("divResources",JSON.stringify(resources)); showErr("Saved as resource."); }
+function execToSynthesis(){ const t=execText(); if(!t){showErr("No answer selected.");return;} showPanel("synthesis"); runSynthesis(); }
 
 // ---- FEEDBACK ----
 function renderFeedback(){
