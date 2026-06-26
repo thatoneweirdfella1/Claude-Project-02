@@ -420,6 +420,17 @@ summary { cursor: pointer; color: var(--accent); font-size: .85rem; }
 .err  { color: var(--red);   font-size: .9rem; margin-top: 8px; }
 .hidden { display: none !important; }
 
+/* conversation thread bubbles */
+.bubble { border-radius: 10px; padding: 11px 14px; margin-bottom: 10px; font-size: .98rem; line-height: 1.55; white-space: pre-wrap; }
+.bubble.me { background: var(--icon-active-bg); border: 1px solid var(--accent); }
+.bubble.ai { background: var(--bg-card2); border: 1px solid var(--border); }
+.bubble .who { font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; font-weight: 700; margin-bottom: 4px; opacity: .7; }
+.bubble.me .who { color: var(--accent); }
+.bubble.ai .who { color: var(--green); }
+.bubble .stamp { font-size: .68rem; color: var(--dim); float: right; font-weight: 400; }
+.exp-opt { display: flex; align-items: center; gap: 8px; font-size: .9rem; color: var(--text); text-transform: none; letter-spacing: 0; font-weight: 400; cursor: pointer; }
+.exp-opt input { width: auto; }
+
 /* spinner */
 .spin {
   display: inline-block;
@@ -727,19 +738,46 @@ summary { cursor: pointer; color: var(--accent); font-size: .85rem; }
         </div>
       </div>
       <button class="go" id="goBtn" onclick="run()">Translate &amp; Ask →</button>
+      <div class="row" style="margin-top:10px;gap:8px">
+        <button onclick="newConversation()" style="flex:1;padding:11px;background:var(--bg-card2);color:var(--text);border:1px solid var(--border);border-radius:9px;cursor:pointer;font-family:inherit;font-size:.85rem">🔄 New Conversation</button>
+        <button onclick="openExport()" style="flex:1;padding:11px;background:var(--bg-card2);color:var(--text);border:1px solid var(--border);border-radius:9px;cursor:pointer;font-family:inherit;font-size:.85rem">⬇ Export Markdown</button>
+      </div>
+      <div class="meta" id="memoryNote">💭 Memory: ON — I remember everything in this conversation until you hit "New Conversation".</div>
       <div class="err hidden" id="err"></div>
+    </div>
+
+    <!-- CONVERSATION THREAD -->
+    <div class="card hidden" id="threadCard">
+      <label>Conversation</label>
+      <div id="thread"></div>
+    </div>
+
+    <!-- EXPORT DIALOG -->
+    <div class="card hidden" id="exportCard">
+      <label>Export to Markdown</label>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px">
+        <label class="exp-opt"><input type="checkbox" id="expMine" checked> Include <b>my</b> messages</label>
+        <label class="exp-opt"><input type="checkbox" id="expAI" checked> Include <b>AI</b> replies</label>
+        <label class="exp-opt"><input type="checkbox" id="expTime" checked> Include timestamps</label>
+        <label class="exp-opt"><input type="checkbox" id="expState"> Include mood/state reads</label>
+        <label class="exp-opt"><input type="checkbox" id="expRaw"> Include raw (pre-cleanup) answers</label>
+      </div>
+      <div class="row" style="gap:8px">
+        <button onclick="doExport()" style="flex:1;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:9px;cursor:pointer;font-family:inherit;font-weight:600">Download .md</button>
+        <button onclick="$('exportCard').classList.add('hidden')" style="flex:1;padding:12px;background:var(--bg-card2);color:var(--text);border:1px solid var(--border);border-radius:9px;cursor:pointer;font-family:inherit">Cancel</button>
+      </div>
     </div>
 
     <!-- STATE READ -->
     <div class="card hidden" id="stateCard">
-      <label>How I read your message</label>
+      <label>How I read your last message</label>
       <div class="statebar" id="stateBar"></div>
       <div class="meta" id="stateNote"></div>
     </div>
 
-    <!-- ANSWER -->
+    <!-- ANSWER (latest) -->
     <div class="card hidden" id="answerCard">
-      <label>Answer</label>
+      <label>Latest Answer</label>
       <div class="answer" id="answer"></div>
       <div class="stages" id="stages"></div>
       <details>
@@ -1002,6 +1040,44 @@ const savedTheme=localStorage.getItem("divergenceTheme");
 if(savedTheme) setTheme(savedTheme);
 
 // ---- MAIN RUN ----
+// ---- SESSION MEMORY (restore on load below) ----
+// conversation = full thread. Each turn stores everything for replay + export.
+let conversation = JSON.parse(localStorage.getItem("divergenceThread")||"[]");
+
+function saveThread(){ localStorage.setItem("divergenceThread", JSON.stringify(conversation)); }
+
+function newConversation(){
+  if(conversation.length && !confirm("Start fresh? This clears the current conversation memory.")) return;
+  conversation = [];
+  saveThread();
+  $("thread").innerHTML="";
+  $("threadCard").classList.add("hidden");
+  $("answerCard").classList.add("hidden");
+  $("stateCard").classList.add("hidden");
+  $("input").value="";
+}
+
+function fmtTime(ts){
+  const d=new Date(ts);
+  return d.toLocaleString([], {month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"});
+}
+
+function renderThread(){
+  const wrap=$("thread"); wrap.innerHTML="";
+  conversation.forEach(turn=>{
+    const b=document.createElement("div");
+    b.className="bubble "+(turn.role==="user"?"me":"ai");
+    const who=turn.role==="user"?"You":"Divergence.AI";
+    b.innerHTML='<div class="who">'+who+'<span class="stamp">'+fmtTime(turn.ts)+'</span></div>';
+    const body=document.createElement("div");
+    body.textContent=turn.display||turn.content;
+    b.appendChild(body);
+    wrap.appendChild(b);
+  });
+  $("threadCard").classList.toggle("hidden", conversation.length===0);
+  wrap.scrollTop=wrap.scrollHeight;
+}
+
 async function run(){
   clearErr();
   const key=$("apiKey").value.trim();
@@ -1013,11 +1089,18 @@ async function run(){
 
   const state=detectState(input);
   renderState(state);
-
   const sys=systemPrompt(state,level);
+
+  // add user turn to memory
+  conversation.push({role:"user", content:input, ts:Date.now(), state});
+  renderThread();
+  $("input").value="";
+
   const btn=$("goBtn"); btn.disabled=true; btn.innerHTML='<span class="spin"></span> Thinking...';
 
   try{
+    // send the FULL conversation history so Claude remembers context
+    const apiMessages = conversation.map(t=>({role:t.role, content:t.content}));
     const res=await fetch("https://api.anthropic.com/v1/messages",{
       method:"POST",
       headers:{
@@ -1026,15 +1109,23 @@ async function run(){
         "anthropic-version":"2023-06-01",
         "anthropic-dangerous-direct-browser-access":"true"
       },
-      body:JSON.stringify({model,max_tokens:1024,system:sys,messages:[{role:"user",content:input}]})
+      body:JSON.stringify({model,max_tokens:1024,system:sys,messages:apiMessages})
     });
     if(!res.ok){
       const txt=await res.text();
+      conversation.pop(); renderThread();  // roll back failed turn
       throw new Error("API "+res.status+": "+txt.slice(0,300));
     }
     const data=await res.json();
     const rawAnswer=data.content.map(c=>c.text||"").join("");
     const out=runPipeline(rawAnswer,level);
+
+    // store assistant turn: content sent back to API = cleaned text,
+    // but keep raw for export
+    conversation.push({role:"assistant", content:out.text, display:out.text, raw:rawAnswer, ts:Date.now(), stages:out.stages});
+    saveThread();
+    renderThread();
+
     $("answer").textContent=out.text;
     $("raw").textContent=rawAnswer;
     renderStages(out.stages);
@@ -1046,6 +1137,41 @@ async function run(){
   }finally{
     btn.disabled=false; btn.textContent="Translate & Ask →";
   }
+}
+
+// ---- MARKDOWN EXPORT ----
+function openExport(){
+  if(conversation.length===0){ showErr("Nothing to export yet — ask something first."); return; }
+  $("exportCard").classList.toggle("hidden");
+}
+
+function doExport(){
+  const incMine=$("expMine").checked, incAI=$("expAI").checked;
+  const incTime=$("expTime").checked, incState=$("expState").checked, incRaw=$("expRaw").checked;
+  let md="# Divergence.AI Conversation\n\n";
+  if(incTime) md+="_Exported "+new Date().toLocaleString()+"_\n\n";
+  md+="---\n\n";
+  conversation.forEach(turn=>{
+    if(turn.role==="user" && !incMine) return;
+    if(turn.role==="assistant" && !incAI) return;
+    const who=turn.role==="user"?"🧑 You":"🤖 Divergence.AI";
+    md+="### "+who;
+    if(incTime) md+="  \n_"+fmtTime(turn.ts)+"_";
+    md+="\n\n"+(turn.display||turn.content)+"\n\n";
+    if(incState && turn.state){
+      md+="> mood: "+turn.state.emotion+" · RSD: "+turn.state.rsd+" · interest: "+turn.state.interest+" · mode: "+turn.state.mode+"\n\n";
+    }
+    if(incRaw && turn.raw && turn.raw!==turn.content){
+      md+="<details><summary>raw (pre-cleanup)</summary>\n\n"+turn.raw+"\n\n</details>\n\n";
+    }
+    md+="---\n\n";
+  });
+  const blob=new Blob([md],{type:"text/markdown"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="divergence-"+new Date().toISOString().slice(0,10)+".md";
+  a.click();
+  $("exportCard").classList.add("hidden");
 }
 
 function renderState(s){
@@ -1074,6 +1200,9 @@ function renderStages(stages){
     wrap.appendChild(e);
   });
 }
+
+// restore conversation thread from last session on page load
+if(conversation.length){ renderThread(); }
 </script>
 </body>
 </html>
