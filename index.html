@@ -593,6 +593,13 @@ summary { cursor: pointer; color: var(--accent); font-size: .85rem; }
         <span class="nav-label">Skills</span>
       </button>
 
+      <button class="nav-item" id="nav-advanced" onclick="showPanel('advanced')">
+        <span class="nav-icon-wrap">
+          <svg viewBox="0 0 24 24"><path d="M12 2c5.52 0 10 3.13 10 7v6c0 3.87-4.48 7-10 7s-10-3.13-10-7V9c0-3.87 4.48-7 10-7m0 2c-4.41 0-8 2.24-8 5v6c0 2.76 3.59 5 8 5s8-2.24 8-5V9c0-2.76-3.59-5-8-5z"/></svg>
+        </span>
+        <span class="nav-label">Advanced</span>
+      </button>
+
       <button class="nav-item" onclick="showPanel('route')">
         <span class="nav-icon-wrap">
           <svg viewBox="0 0 24 24"><rect x="2" y="2" width="6" height="6" rx="1"/><rect x="16" y="2" width="6" height="6" rx="1"/><rect x="9" y="16" width="6" height="6" rx="1"/><line x1="5" y1="8" x2="5" y2="14"/><line x1="5" y1="14" x2="12" y2="14"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="19" y1="14" x2="12" y2="14"/><line x1="12" y1="14" x2="12" y2="16"/></svg>
@@ -862,6 +869,61 @@ summary { cursor: pointer; color: var(--accent); font-size: .85rem; }
     </div>
   </div>
 
+  <!-- ADVANCED: Agents, Batches, Environments (educational) -->
+  <div id="panel-advanced" class="hidden">
+    <div class="page-header">
+      <div class="page-title" style="font-size:1.5rem">Advanced: Agents, Batches, Environments</div>
+      <p class="page-sub">How Anthropic's powerful features could extend Divergence.AI</p>
+    </div>
+
+    <div class="card">
+      <label>🤖 Agents</label>
+      <p style="font-weight:600;margin:0 0 6px 0;color:var(--accent)">Autonomous AI that runs without you asking</p>
+      <p class="meta" style="margin:0 0 10px 0">Agents are Claude instances that can operate independently, making decisions and taking actions in a loop.</p>
+      <div style="background:var(--bg-card2);border-left:3px solid var(--accent);padding:10px;border-radius:6px;margin:10px 0;font-size:.9rem">
+        <b style="color:var(--text)">For Divergence.AI:</b><br/>
+        • <b>Research Agent:</b> Runs nightly, finds new articles on ADHD, executive dysfunction, productivity. Summarizes them using your Summarize skill. Adds to a "Recent Research" feed.<br/>
+        • <b>Pattern Agent:</b> Analyzes your past 50 conversations, identifies recurring questions/challenges, suggests new Skills that would help.<br/>
+        • <b>Learning Agent:</b> Watches your Memory Stores, detects if you're becoming more frequently overwhelmed, proactively suggests adjustments to your system prompt.
+      </div>
+      <p class="meta">⏭️ <b>Next Step:</b> When you're ready, I could build an Agent system that automatically runs background research or analysis while you work.</p>
+    </div>
+
+    <div class="card">
+      <label>📦 Batches</label>
+      <p style="font-weight:600;margin:0 0 6px 0;color:var(--green)">Process large volume of questions at once (with cost savings)</p>
+      <p class="meta" style="margin:0 0 10px 0">Batches let you queue up 100s or 1000s of questions to be processed asynchronously, often at a 50% discount.</p>
+      <div style="background:var(--bg-card2);border-left:3px solid var(--green);padding:10px;border-radius:6px;margin:10px 0;font-size:.9rem">
+        <b style="color:var(--text)">For Divergence.AI:</b><br/>
+        • <b>Journaling Batch:</b> Dump 500 journal entries. Claude processes them all: extracts themes, answers open questions, identifies patterns you've been sitting on.<br/>
+        • <b>Archive Batch:</b> Analyze all past conversations for insights. Generate a comprehensive profile of your thinking patterns, decision-making style, repeated challenges.<br/>
+        • <b>Feedback Batch:</b> Rate 200 past answers in bulk. System learns which response types you prefer and auto-adjusts Memory Stores faster.
+      </div>
+      <p class="meta">⏭️ <b>Next Step:</b> Could implement a "Batch Import" feature where you paste a list of questions and get them all answered cheaply overnight.</p>
+    </div>
+
+    <div class="card">
+      <label>🌍 Environments</label>
+      <p style="font-weight:600;margin:0 0 6px 0;color:var(--amber)">Separate testing sandbox from production</p>
+      <p class="meta" style="margin:0 0 10px 0">Environments let you safely test changes before rolling them to live users. Critical when Divergence.AI goes public.</p>
+      <div style="background:var(--bg-card2);border-left:3px solid var(--amber);padding:10px;border-radius:6px;margin:10px 0;font-size:.9rem">
+        <b style="color:var(--text)">For Divergence.AI:</b><br/>
+        • <b>Personal Dev:</b> Right now—you're the only user. Your session IS the sandbox. Test new Memory behaviors, new Skills, new pipeline stages. Data is yours.<br/>
+        • <b>Public Beta:</b> When shared with others (friends, Google Play). Separate API key, separate data. You don't want your personal Memory Stores mixing with beta testers' data.<br/>
+        • <b>Production:</b> The stable, tested version. If someone pays for it, they get the hardened version, not your experiments.
+      </div>
+      <p class="meta">⏭️ <b>Next Step:</b> Currently unnecessary—you own the only instance. But when scaling to multiple users, we'd create a Settings panel to choose environment (dev/beta/prod).</p>
+    </div>
+
+    <div class="card">
+      <label>Integration Path</label>
+      <p class="meta"><b>Phase 1 (now):</b> You manually tweak Memory Stores and Skills.<br/>
+      <b>Phase 2:</b> Add Agents to auto-research + learn behind the scenes.<br/>
+      <b>Phase 3:</b> Add Batches to process archives cheaply.<br/>
+      <b>Phase 4:</b> Multi-user: split into dev/prod environments.</p>
+    </div>
+  </div>
+
   <!-- ===== PLACEHOLDER PANELS ===== -->
   <div id="panel-dashboard"    class="hidden"><div class="placeholder-panel"><div class="big-icon">⊞</div><h2>Dashboard</h2><p>Your overview — conversations, stats, quick-launch. Coming soon.</p></div></div>
   <div id="panel-new"          class="hidden"><div class="placeholder-panel"><div class="big-icon">＋</div><h2>Create New</h2><p>Start a fresh conversation with full context control. Coming soon.</p></div></div>
@@ -1107,7 +1169,7 @@ function clearErr(){ $("err").classList.add("hidden"); }
 const ALL_PANELS=[
   "translate","dashboard","new","messages","archive","resources","projects","integrations",
   "tasks","customize","route","techniques","execute","feedback","debate","consensus",
-  "synthesis","accountswap","history","memory","skills","settings","help","multiai","confidence",
+  "synthesis","accountswap","history","memory","skills","advanced","settings","help","multiai","confidence",
   "transparency","download","profile"
 ];
 function showPanel(id){
