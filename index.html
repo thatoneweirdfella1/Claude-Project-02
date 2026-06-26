@@ -467,6 +467,43 @@ summary { cursor: pointer; color: var(--accent); font-size: .85rem; }
 }
 .placeholder-panel p { font-size: .9rem; max-width: 320px; }
 
+.quick-btn {
+  flex: 1;
+  min-width: 130px;
+  padding: 12px;
+  background: var(--bg-card2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: .88rem;
+  transition: background var(--transition);
+}
+.quick-btn:hover { background: var(--icon-hover); }
+
+.list-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px;
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  margin-bottom: 8px;
+}
+.list-row .grow { flex: 1; min-width: 0; }
+.list-row .grow b { display: block; }
+.list-row .grow small { color: var(--dim); word-break: break-all; }
+.list-row button.del {
+  background: var(--red); color: #fff; border: none;
+  border-radius: 7px; width: 30px; height: 30px; cursor: pointer; flex-shrink: 0;
+}
+.glossary-term { padding: 12px 0; border-bottom: 1px solid var(--border); }
+.glossary-term:last-child { border-bottom: none; }
+.glossary-term b { color: var(--accent); }
+.glossary-term p { font-size: .88rem; color: var(--dim); margin-top: 4px; }
+
 /* ============================================================
    RESPONSIVE
 ============================================================ */
@@ -924,30 +961,267 @@ summary { cursor: pointer; color: var(--accent); font-size: .85rem; }
     </div>
   </div>
 
-  <!-- ===== PLACEHOLDER PANELS ===== -->
-  <div id="panel-dashboard"    class="hidden"><div class="placeholder-panel"><div class="big-icon">⊞</div><h2>Dashboard</h2><p>Your overview — conversations, stats, quick-launch. Coming soon.</p></div></div>
-  <div id="panel-new"          class="hidden"><div class="placeholder-panel"><div class="big-icon">＋</div><h2>Create New</h2><p>Start a fresh conversation with full context control. Coming soon.</p></div></div>
-  <div id="panel-messages"     class="hidden"><div class="placeholder-panel"><div class="big-icon">💬</div><h2>Messages</h2><p>Full conversation history, searchable. Coming soon.</p></div></div>
-  <div id="panel-archive"      class="hidden"><div class="placeholder-panel"><div class="big-icon">🗄</div><h2>Archive</h2><p>Archived threads — nothing deleted. Coming soon.</p></div></div>
-  <div id="panel-resources"    class="hidden"><div class="placeholder-panel"><div class="big-icon">🔗</div><h2>Resources</h2><p>Pinned docs, links, and context you want always available. Coming soon.</p></div></div>
-  <div id="panel-projects"     class="hidden"><div class="placeholder-panel"><div class="big-icon">💼</div><h2>Projects</h2><p>Group conversations by project with shared context. Coming soon.</p></div></div>
-  <div id="panel-integrations" class="hidden"><div class="placeholder-panel"><div class="big-icon">⟨/⟩</div><h2>Integrations</h2><p>Connect external tools and APIs. Coming soon.</p></div></div>
-  <div id="panel-tasks"        class="hidden"><div class="placeholder-panel"><div class="big-icon">☑</div><h2>Tasks</h2><p>Action items extracted from your conversations. Coming soon.</p></div></div>
-  <div id="panel-customize"    class="hidden"><div class="placeholder-panel"><div class="big-icon">🎨</div><h2>Customize</h2><p>Tune colors, fonts, layout preferences. Coming soon.</p></div></div>
-  <div id="panel-route"        class="hidden"><div class="placeholder-panel"><div class="big-icon">⎇</div><h2>Route / Model</h2><p>See which model Divergence.AI chose for your question and why. Coming soon.</p></div></div>
-  <div id="panel-techniques"   class="hidden"><div class="placeholder-panel"><div class="big-icon">🔧</div><h2>Techniques</h2><p>Browse the ADHD-specific communication techniques active in your session. Coming soon.</p></div></div>
-  <div id="panel-execute"      class="hidden"><div class="placeholder-panel"><div class="big-icon">▶</div><h2>Answer / Execute</h2><p>Run answers as actions — send emails, create tasks, search. Coming soon.</p></div></div>
-  <div id="panel-feedback"     class="hidden"><div class="placeholder-panel"><div class="big-icon">★</div><h2>Feedback</h2><p>Rate responses — that data tunes the system to you over time. Coming soon.</p></div></div>
-  <div id="panel-debate"       class="hidden"><div class="placeholder-panel"><div class="big-icon">👥</div><h2>Debate</h2><p>Two AI perspectives argue a question so you can see both sides. Coming soon.</p></div></div>
-  <div id="panel-consensus"    class="hidden"><div class="placeholder-panel"><div class="big-icon">∞</div><h2>Consensus</h2><p>Multiple models vote — tells you where they agree and where they diverge. Coming soon.</p></div></div>
-  <div id="panel-synthesis"    class="hidden"><div class="placeholder-panel"><div class="big-icon">⚛</div><h2>Synthesis</h2><p>Merges outputs from multiple sessions into one coherent answer. Coming soon.</p></div></div>
-  <div id="panel-accountswap"  class="hidden"><div class="placeholder-panel"><div class="big-icon">👤</div><h2>Account Swap</h2><p>Switch between different API accounts or keys instantly. Coming soon.</p></div></div>
-  <div id="panel-history"      class="hidden"><div class="placeholder-panel"><div class="big-icon">🕐</div><h2>History</h2><p>Full session history with search and replay. Coming soon.</p></div></div>
-  <div id="panel-help"         class="hidden"><div class="placeholder-panel"><div class="big-icon">?</div><h2>Help / Glossary</h2><p>Definitions for every term Divergence.AI uses, plus how-to guides. Coming soon.</p></div></div>
-  <div id="panel-multiai"      class="hidden"><div class="placeholder-panel"><div class="big-icon">⊙</div><h2>Multi-AI On/Off</h2><p>Toggle routing across multiple AI providers at once. Coming soon.</p></div></div>
-  <div id="panel-confidence"   class="hidden"><div class="placeholder-panel"><div class="big-icon">◎</div><h2>Confidence</h2><p>See a per-sentence confidence map — what's grounded vs. inferred. Coming soon.</p></div></div>
-  <div id="panel-transparency" class="hidden"><div class="placeholder-panel"><div class="big-icon">👁</div><h2>Transparency / Details</h2><p>Full view: system prompt, token count, pipeline stages, routing decision. Coming soon.</p></div></div>
-  <div id="panel-download"     class="hidden"><div class="placeholder-panel"><div class="big-icon">⬇</div><h2>Download</h2><p>Export conversations as Markdown, PDF, or plain text. Coming soon.</p></div></div>
+  <!-- ===== FUNCTIONAL PANELS ===== -->
+
+  <!-- DASHBOARD -->
+  <div id="panel-dashboard" class="hidden">
+    <div class="page-header"><div class="page-title" style="font-size:1.5rem">⊞ Dashboard</div><p class="page-sub">Your Divergence.AI at a glance.</p></div>
+    <div class="row" style="gap:10px;flex-wrap:wrap">
+      <div class="card" style="flex:1;min-width:140px"><label>Messages This Session</label><div id="dashMsgs" style="font-size:2rem;font-weight:600;color:var(--accent)">0</div></div>
+      <div class="card" style="flex:1;min-width:140px"><label>Conversations Learned</label><div id="dashConvs" style="font-size:2rem;font-weight:600;color:var(--green)">0</div></div>
+    </div>
+    <div class="row" style="gap:10px;flex-wrap:wrap">
+      <div class="card" style="flex:1;min-width:140px"><label>Current State</label><div id="dashState" style="font-size:1.2rem;font-weight:600;color:var(--amber)">—</div></div>
+      <div class="card" style="flex:1;min-width:140px"><label>Active Skills</label><div id="dashSkills" style="font-size:2rem;font-weight:600;color:var(--purple)">0</div></div>
+    </div>
+    <div class="card">
+      <label>Quick Launch</label>
+      <div class="row" style="gap:8px;flex-wrap:wrap">
+        <button onclick="showPanel('translate')" class="quick-btn">⚡ Translate</button>
+        <button onclick="showPanel('memory');renderMemoryPanel()" class="quick-btn">🧠 Memory</button>
+        <button onclick="showPanel('skills');renderSkillsPanel()" class="quick-btn">🎯 Skills</button>
+        <button onclick="showPanel('tasks');renderTasks()" class="quick-btn">☑ Tasks</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CREATE NEW -->
+  <div id="panel-new" class="hidden">
+    <div class="page-header"><div class="page-title" style="font-size:1.5rem">＋ Create New</div><p class="page-sub">Start a fresh conversation.</p></div>
+    <div class="card">
+      <label>New Conversation</label>
+      <p class="meta" style="margin-bottom:12px">This clears the current thread (Memory Stores keep learning). Then takes you to Translate.</p>
+      <button onclick="newConversation();showPanel('translate')" style="width:100%;padding:14px;background:var(--accent);color:#fff;border:none;border-radius:9px;cursor:pointer;font-family:inherit;font-weight:600;font-size:1rem">Start Fresh Conversation →</button>
+    </div>
+  </div>
+
+  <!-- MESSAGES -->
+  <div id="panel-messages" class="hidden">
+    <div class="page-header"><div class="page-title" style="font-size:1.5rem">💬 Messages</div><p class="page-sub">Current conversation thread.</p></div>
+    <div class="card"><input type="text" id="msgSearch" placeholder="Search messages..." oninput="renderMessages()"></div>
+    <div class="card"><div id="messagesList"></div></div>
+  </div>
+
+  <!-- ARCHIVE -->
+  <div id="panel-archive" class="hidden">
+    <div class="page-header"><div class="page-title" style="font-size:1.5rem">🗄 Archive</div><p class="page-sub">Saved conversations — nothing deleted.</p></div>
+    <div class="card">
+      <label>Archive Current Conversation</label>
+      <p class="meta" style="margin-bottom:10px">Save the current thread so you can revisit it later.</p>
+      <button onclick="archiveCurrent()" style="width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:9px;cursor:pointer;font-family:inherit;font-weight:600">📥 Archive Current</button>
+    </div>
+    <div class="card"><label>Archived Conversations</label><div id="archiveList"></div></div>
+  </div>
+
+  <!-- RESOURCES -->
+  <div id="panel-resources" class="hidden">
+    <div class="page-header"><div class="page-title" style="font-size:1.5rem">🔗 Resources</div><p class="page-sub">Pinned links and notes you want always handy.</p></div>
+    <div class="card">
+      <label>Add Resource</label>
+      <input type="text" id="resTitle" placeholder="Title (e.g., ADHD article)">
+      <input type="text" id="resUrl" placeholder="URL or note" style="margin-top:8px">
+      <button onclick="addResource()" style="margin-top:10px;width:100%;padding:11px;background:var(--accent);color:#fff;border:none;border-radius:9px;cursor:pointer;font-family:inherit;font-weight:600">+ Add</button>
+    </div>
+    <div class="card"><label>Your Resources</label><div id="resourcesList"></div></div>
+  </div>
+
+  <!-- PROJECTS -->
+  <div id="panel-projects" class="hidden">
+    <div class="page-header"><div class="page-title" style="font-size:1.5rem">💼 Projects</div><p class="page-sub">Group your work into named projects.</p></div>
+    <div class="card">
+      <label>Create Project</label>
+      <input type="text" id="projName" placeholder="Project name">
+      <button onclick="addProject()" style="margin-top:10px;width:100%;padding:11px;background:var(--accent);color:#fff;border:none;border-radius:9px;cursor:pointer;font-family:inherit;font-weight:600">+ Create Project</button>
+    </div>
+    <div class="card"><label>Your Projects</label><div id="projectsList"></div></div>
+  </div>
+
+  <!-- INTEGRATIONS -->
+  <div id="panel-integrations" class="hidden">
+    <div class="page-header"><div class="page-title" style="font-size:1.5rem">⟨/⟩ Integrations</div><p class="page-sub">Connect external tools.</p></div>
+    <div class="card"><label>Available</label><div id="integrationsList"></div></div>
+  </div>
+
+  <!-- TASKS -->
+  <div id="panel-tasks" class="hidden">
+    <div class="page-header"><div class="page-title" style="font-size:1.5rem">☑ Tasks</div><p class="page-sub">Action items — manual or auto-extracted from conversations.</p></div>
+    <div class="card">
+      <label>Add Task</label>
+      <div class="row" style="gap:8px">
+        <input type="text" id="taskInput" placeholder="What needs doing?" style="flex:1" onkeydown="if(event.key==='Enter')addTask()">
+        <button onclick="addTask()" style="padding:11px 18px;background:var(--accent);color:#fff;border:none;border-radius:9px;cursor:pointer;font-family:inherit;font-weight:600">Add</button>
+      </div>
+      <button onclick="extractTasks()" style="margin-top:10px;width:100%;padding:11px;background:var(--bg-card2);color:var(--text);border:1px solid var(--border);border-radius:9px;cursor:pointer;font-family:inherit">🔍 Auto-extract from conversation</button>
+    </div>
+    <div class="card"><label>Your Tasks</label><div id="tasksList"></div></div>
+  </div>
+
+  <!-- CUSTOMIZE -->
+  <div id="panel-customize" class="hidden">
+    <div class="page-header"><div class="page-title" style="font-size:1.5rem">🎨 Customize</div><p class="page-sub">Tune the look and feel.</p></div>
+    <div class="card">
+      <label>Accent Color</label>
+      <div class="row" style="gap:8px;flex-wrap:wrap;margin-top:8px">
+        <button onclick="setAccent('#4a9eff')" style="width:44px;height:44px;border-radius:10px;background:#4a9eff;border:2px solid var(--border);cursor:pointer"></button>
+        <button onclick="setAccent('#2dd36f')" style="width:44px;height:44px;border-radius:10px;background:#2dd36f;border:2px solid var(--border);cursor:pointer"></button>
+        <button onclick="setAccent('#9b5cff')" style="width:44px;height:44px;border-radius:10px;background:#9b5cff;border:2px solid var(--border);cursor:pointer"></button>
+        <button onclick="setAccent('#f5a623')" style="width:44px;height:44px;border-radius:10px;background:#f5a623;border:2px solid var(--border);cursor:pointer"></button>
+        <button onclick="setAccent('#ff5c5c')" style="width:44px;height:44px;border-radius:10px;background:#ff5c5c;border:2px solid var(--border);cursor:pointer"></button>
+      </div>
+    </div>
+    <div class="card">
+      <label>Font Size: <span id="fontSizeVal">16</span>px</label>
+      <input type="range" id="fontSizeSlider" min="13" max="22" value="16" oninput="setFontSize(this.value)" style="width:100%;margin-top:8px">
+    </div>
+    <div class="card">
+      <label>Theme</label>
+      <div class="row" style="gap:8px">
+        <button onclick="setTheme('dark')" class="quick-btn">🌑 Dark</button>
+        <button onclick="setTheme('light')" class="quick-btn">☀ Light</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROUTE / MODEL -->
+  <div id="panel-route" class="hidden">
+    <div class="page-header"><div class="page-title" style="font-size:1.5rem">⎇ Route / Model</div><p class="page-sub">Which model handled your last question, and why.</p></div>
+    <div class="card"><label>Last Routing Decision</label><div id="routeInfo"><p class="meta">Ask something first — routing details will appear here.</p></div></div>
+    <div class="card">
+      <label>Model Guide</label>
+      <p class="meta"><b>Haiku 4.5</b> — fast & cheap. Best for quick questions, low cost.<br/><br/><b>Sonnet 4.6</b> — balanced. Good default for most work.<br/><br/><b>Opus 4.8</b> — smartest. Best for hard reasoning, worth the cost when it matters.</p>
+    </div>
+  </div>
+
+  <!-- TECHNIQUES -->
+  <div id="panel-techniques" class="hidden">
+    <div class="page-header"><div class="page-title" style="font-size:1.5rem">🔧 Techniques</div><p class="page-sub">The ADHD-specific engines running on every answer.</p></div>
+    <div class="card"><div id="techniquesList"></div></div>
+  </div>
+
+  <!-- ANSWER / EXECUTE -->
+  <div id="panel-execute" class="hidden">
+    <div class="page-header"><div class="page-title" style="font-size:1.5rem">▶ Answer / Execute</div><p class="page-sub">Turn the last answer into action.</p></div>
+    <div class="card">
+      <label>Last Answer</label>
+      <div id="executeAnswer" class="answer" style="margin-bottom:12px"><p class="meta">No answer yet.</p></div>
+      <div class="row" style="gap:8px;flex-wrap:wrap">
+        <button onclick="execCopy()" class="quick-btn">📋 Copy</button>
+        <button onclick="execToTask()" class="quick-btn">☑ Make Task</button>
+        <button onclick="execToResource()" class="quick-btn">🔗 Save as Resource</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEEDBACK -->
+  <div id="panel-feedback" class="hidden">
+    <div class="page-header"><div class="page-title" style="font-size:1.5rem">★ Feedback</div><p class="page-sub">Rate answers — this tunes Memory Stores to you.</p></div>
+    <div class="card">
+      <label>Rate the Last Answer</label>
+      <div id="feedbackAnswer" class="answer" style="margin:8px 0 14px"><p class="meta">No answer to rate yet.</p></div>
+      <div class="row" style="gap:8px">
+        <button onclick="rateAnswer('up')" style="flex:1;padding:14px;background:var(--green);color:#fff;border:none;border-radius:9px;cursor:pointer;font-family:inherit;font-weight:600;font-size:1.1rem">👍 Good</button>
+        <button onclick="rateAnswer('down')" style="flex:1;padding:14px;background:var(--red);color:#fff;border:none;border-radius:9px;cursor:pointer;font-family:inherit;font-weight:600;font-size:1.1rem">👎 Off</button>
+      </div>
+    </div>
+    <div class="card"><label>Feedback History</label><div id="feedbackStats"></div></div>
+  </div>
+
+  <!-- DEBATE -->
+  <div id="panel-debate" class="hidden">
+    <div class="page-header"><div class="page-title" style="font-size:1.5rem">👥 Debate</div><p class="page-sub">Two AI perspectives argue both sides of a question.</p></div>
+    <div class="card">
+      <label>Question to Debate</label>
+      <textarea id="debateInput" placeholder="e.g., Should I use React or Vue?"></textarea>
+      <button onclick="runDebate()" id="debateBtn" style="margin-top:10px;width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:9px;cursor:pointer;font-family:inherit;font-weight:600">⚔ Run Debate</button>
+    </div>
+    <div class="card hidden" id="debateResult">
+      <label style="color:var(--green)">Side A — For</label><div id="debateFor" class="answer" style="margin-bottom:16px"></div>
+      <label style="color:var(--red)">Side B — Against</label><div id="debateAgainst" class="answer"></div>
+    </div>
+  </div>
+
+  <!-- CONSENSUS -->
+  <div id="panel-consensus" class="hidden">
+    <div class="page-header"><div class="page-title" style="font-size:1.5rem">∞ Consensus</div><p class="page-sub">Ask multiple models the same thing — see where they agree.</p></div>
+    <div class="card">
+      <label>Question</label>
+      <textarea id="consensusInput" placeholder="Ask something factual or opinion-based..."></textarea>
+      <button onclick="runConsensus()" id="consensusBtn" style="margin-top:10px;width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:9px;cursor:pointer;font-family:inherit;font-weight:600">🗳 Poll Models</button>
+    </div>
+    <div class="card hidden" id="consensusResult"><label>Responses</label><div id="consensusList"></div></div>
+  </div>
+
+  <!-- SYNTHESIS -->
+  <div id="panel-synthesis" class="hidden">
+    <div class="page-header"><div class="page-title" style="font-size:1.5rem">⚛ Synthesis</div><p class="page-sub">Merge your whole conversation into one coherent summary.</p></div>
+    <div class="card">
+      <p class="meta" style="margin-bottom:12px">Takes everything from the current conversation and produces a single distilled summary of conclusions, decisions, and open questions.</p>
+      <button onclick="runSynthesis()" id="synthBtn" style="width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:9px;cursor:pointer;font-family:inherit;font-weight:600">⚛ Synthesize Conversation</button>
+    </div>
+    <div class="card hidden" id="synthResult"><label>Synthesis</label><div id="synthOutput" class="answer"></div></div>
+  </div>
+
+  <!-- ACCOUNT SWAP -->
+  <div id="panel-accountswap" class="hidden">
+    <div class="page-header"><div class="page-title" style="font-size:1.5rem">👤 Account Swap</div><p class="page-sub">Store multiple API keys, switch instantly.</p></div>
+    <div class="card">
+      <label>Save a Key</label>
+      <input type="text" id="acctLabel" placeholder="Label (e.g., Personal)">
+      <input type="password" id="acctKey" placeholder="sk-ant-..." style="margin-top:8px">
+      <button onclick="saveAccount()" style="margin-top:10px;width:100%;padding:11px;background:var(--accent);color:#fff;border:none;border-radius:9px;cursor:pointer;font-family:inherit;font-weight:600">+ Save Key</button>
+    </div>
+    <div class="card"><label>Saved Keys</label><div id="accountsList"></div></div>
+  </div>
+
+  <!-- HISTORY -->
+  <div id="panel-history" class="hidden">
+    <div class="page-header"><div class="page-title" style="font-size:1.5rem">🕐 History</div><p class="page-sub">All archived conversations, newest first.</p></div>
+    <div class="card"><div id="historyList"></div></div>
+  </div>
+
+  <!-- HELP / GLOSSARY -->
+  <div id="panel-help" class="hidden">
+    <div class="page-header"><div class="page-title" style="font-size:1.5rem">? Help / Glossary</div><p class="page-sub">What every term means.</p></div>
+    <div class="card"><input type="text" id="helpSearch" placeholder="Search terms..." oninput="renderHelp()"></div>
+    <div class="card"><div id="helpList"></div></div>
+  </div>
+
+  <!-- MULTI-AI -->
+  <div id="panel-multiai" class="hidden">
+    <div class="page-header"><div class="page-title" style="font-size:1.5rem">⊙ Multi-AI</div><p class="page-sub">Compare answers across models at once.</p></div>
+    <div class="card">
+      <label>Multi-AI Mode</label>
+      <p class="meta" style="margin-bottom:12px">When ON, Debate and Consensus tools query multiple models. When OFF, single-model only (cheaper/faster).</p>
+      <button id="multiaiToggle" onclick="toggleMultiAI()" style="width:100%;padding:13px;border:none;border-radius:9px;cursor:pointer;font-family:inherit;font-weight:600;font-size:1rem"></button>
+    </div>
+  </div>
+
+  <!-- CONFIDENCE -->
+  <div id="panel-confidence" class="hidden">
+    <div class="page-header"><div class="page-title" style="font-size:1.5rem">◎ Confidence</div><p class="page-sub">What's grounded vs. inferred in the last answer.</p></div>
+    <div class="card"><label>Confidence Map</label><div id="confidenceMap"><p class="meta">Ask something first.</p></div></div>
+  </div>
+
+  <!-- TRANSPARENCY -->
+  <div id="panel-transparency" class="hidden">
+    <div class="page-header"><div class="page-title" style="font-size:1.5rem">👁 Transparency / Details</div><p class="page-sub">Exactly what happened on your last request.</p></div>
+    <div class="card"><label>System Prompt Sent</label><div id="transSystem" class="raw" style="white-space:pre-wrap"></div></div>
+    <div class="card"><label>Model & Tokens</label><div id="transMeta"></div></div>
+    <div class="card"><label>Pipeline Stages</label><div id="transStages" class="stages"></div></div>
+  </div>
+
+  <!-- DOWNLOAD -->
+  <div id="panel-download" class="hidden">
+    <div class="page-header"><div class="page-title" style="font-size:1.5rem">⬇ Download</div><p class="page-sub">Export your conversation.</p></div>
+    <div class="card">
+      <label>Export Format</label>
+      <div class="row" style="gap:8px;flex-wrap:wrap;margin-top:8px">
+        <button onclick="openExport();showPanel('translate')" class="quick-btn">📝 Markdown (with options)</button>
+        <button onclick="downloadPlainText()" class="quick-btn">📄 Plain Text</button>
+        <button onclick="downloadJSON()" class="quick-btn">{ } JSON</button>
+      </div>
+    </div>
+  </div>
 
   <!-- SETTINGS (functional) -->
   <div id="panel-settings" class="hidden">
@@ -1181,6 +1455,16 @@ function showPanel(id){
   // sync settings key field
   if(id==="settings"&&$("apiKeySettings")) $("apiKeySettings").value=localStorage.getItem("divergenceKey")||"";
   if(id==="profile"&&$("profileInitialP")) $("profileInitialP").value=localStorage.getItem("profileInitial")||"D";
+  // panel renderers
+  const renderers={
+    dashboard:renderDashboard, messages:renderMessages, archive:renderArchive,
+    resources:renderResources, projects:renderProjects, integrations:renderIntegrations,
+    tasks:renderTasks, route:renderRoute, techniques:renderTechniques, execute:renderExecute,
+    feedback:renderFeedback, accountswap:renderAccounts, history:renderHistory,
+    help:renderHelp, multiai:renderMultiAI, confidence:renderConfidence,
+    transparency:renderTransparency, customize:renderCustomize
+  };
+  if(renderers[id]) renderers[id]();
 }
 
 // ---- THEME ----
@@ -1561,6 +1845,13 @@ async function run(){
     const rawAnswer=data.content.map(c=>c.text||"").join("");
     const out=runPipeline(rawAnswer,level);
 
+    // capture full detail of this call for Transparency/Route/Confidence panels
+    lastCall = {
+      system: sys, model, skill, stages: out.stages,
+      usage: data.usage||{}, raw: rawAnswer, answer: out.text,
+      state, level, ts: Date.now()
+    };
+
     // store assistant turn: content sent back to API = cleaned text,
     // but keep raw for export
     conversation.push({role:"assistant", content:out.text, display:out.text, raw:rawAnswer, ts:Date.now(), stages:out.stages});
@@ -1655,6 +1946,409 @@ function renderStages(stages, skill){
     wrap.appendChild(e);
   });
 }
+
+// ============================================================================
+// SIDEBAR PANEL FEATURES — all functional
+// ============================================================================
+let lastCall = null;
+
+// ---- shared localStorage-backed stores ----
+let resources = JSON.parse(localStorage.getItem("divResources")||"[]");
+let projects  = JSON.parse(localStorage.getItem("divProjects")||"[]");
+let tasks     = JSON.parse(localStorage.getItem("divTasks")||"[]");
+let archives  = JSON.parse(localStorage.getItem("divArchives")||"[]");
+let accounts  = JSON.parse(localStorage.getItem("divAccounts")||"[]");
+let feedbackLog = JSON.parse(localStorage.getItem("divFeedback")||"[]");
+let multiAI   = localStorage.getItem("divMultiAI")!=="off";
+
+const esc = s => (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+
+// ---- DASHBOARD ----
+function renderDashboard(){
+  $("dashMsgs").textContent = conversation.length;
+  $("dashConvs").textContent = learner.conversationCount;
+  $("dashSkills").textContent = Object.keys(skills).length;
+  const last = [...conversation].reverse().find(t=>t.role==="user"&&t.state);
+  $("dashState").textContent = last ? last.state.emotion : "—";
+}
+
+// ---- MESSAGES ----
+function renderMessages(){
+  const q = ($("msgSearch")?.value||"").toLowerCase();
+  const wrap = $("messagesList"); wrap.innerHTML="";
+  const items = conversation.filter(t=>!q || (t.content||"").toLowerCase().includes(q));
+  if(!items.length){ wrap.innerHTML='<p class="meta">No messages'+(q?" match.":" yet — start in Translate."); return; }
+  items.forEach(t=>{
+    const b=document.createElement("div");
+    b.className="bubble "+(t.role==="user"?"me":"ai");
+    b.innerHTML='<div class="who">'+(t.role==="user"?"You":"Divergence.AI")+'<span class="stamp">'+fmtTime(t.ts)+'</span></div>';
+    const body=document.createElement("div"); body.textContent=t.display||t.content; b.appendChild(body);
+    wrap.appendChild(b);
+  });
+}
+
+// ---- ARCHIVE / HISTORY ----
+function archiveCurrent(){
+  if(!conversation.length){ showErr("Nothing to archive yet."); return; }
+  const title = (conversation.find(t=>t.role==="user")?.content||"Conversation").slice(0,60);
+  archives.unshift({id:Date.now(), title, ts:Date.now(), turns:JSON.parse(JSON.stringify(conversation))});
+  localStorage.setItem("divArchives", JSON.stringify(archives));
+  renderArchive(); showErr("Archived: "+title);
+}
+function restoreArchive(id){
+  const a = archives.find(x=>x.id===id); if(!a) return;
+  if(conversation.length && !confirm("Replace current conversation with this archived one?")) return;
+  conversation = JSON.parse(JSON.stringify(a.turns));
+  saveThread(); renderThread(); showPanel("translate");
+}
+function deleteArchive(id){
+  archives = archives.filter(x=>x.id!==id);
+  localStorage.setItem("divArchives", JSON.stringify(archives));
+  renderArchive(); renderHistory();
+}
+function archiveRowHTML(a){
+  return '<div class="list-row"><div class="grow"><b>'+esc(a.title)+'</b><small>'+fmtTime(a.ts)+' · '+a.turns.length+' messages</small></div>'+
+    '<button class="quick-btn" style="flex:0;min-width:0;padding:8px 12px" onclick="restoreArchive('+a.id+')">Open</button>'+
+    '<button class="del" onclick="deleteArchive('+a.id+')">×</button></div>';
+}
+function renderArchive(){
+  const wrap=$("archiveList");
+  wrap.innerHTML = archives.length ? archives.map(archiveRowHTML).join("") : '<p class="meta">No archived conversations yet.</p>';
+}
+function renderHistory(){
+  const wrap=$("historyList");
+  wrap.innerHTML = archives.length ? archives.map(archiveRowHTML).join("") : '<p class="meta">No history yet — archive a conversation to see it here.</p>';
+}
+
+// ---- RESOURCES ----
+function addResource(){
+  const title=$("resTitle").value.trim(), url=$("resUrl").value.trim();
+  if(!title){ showErr("Give the resource a title."); return; }
+  resources.unshift({id:Date.now(), title, url});
+  localStorage.setItem("divResources", JSON.stringify(resources));
+  $("resTitle").value=""; $("resUrl").value=""; renderResources();
+}
+function deleteResource(id){ resources=resources.filter(r=>r.id!==id); localStorage.setItem("divResources",JSON.stringify(resources)); renderResources(); }
+function renderResources(){
+  const wrap=$("resourcesList");
+  if(!resources.length){ wrap.innerHTML='<p class="meta">No resources pinned yet.</p>'; return; }
+  wrap.innerHTML = resources.map(r=>{
+    const isLink=/^https?:\/\//.test(r.url);
+    const sub = isLink ? '<a href="'+esc(r.url)+'" target="_blank">'+esc(r.url)+'</a>' : esc(r.url);
+    return '<div class="list-row"><div class="grow"><b>'+esc(r.title)+'</b><small>'+sub+'</small></div><button class="del" onclick="deleteResource('+r.id+')">×</button></div>';
+  }).join("");
+}
+
+// ---- PROJECTS ----
+function addProject(){
+  const name=$("projName").value.trim();
+  if(!name){ showErr("Name the project."); return; }
+  projects.unshift({id:Date.now(), name, ts:Date.now()});
+  localStorage.setItem("divProjects", JSON.stringify(projects));
+  $("projName").value=""; renderProjects();
+}
+function deleteProject(id){ projects=projects.filter(p=>p.id!==id); localStorage.setItem("divProjects",JSON.stringify(projects)); renderProjects(); }
+function renderProjects(){
+  const wrap=$("projectsList");
+  if(!projects.length){ wrap.innerHTML='<p class="meta">No projects yet.</p>'; return; }
+  wrap.innerHTML = projects.map(p=>'<div class="list-row"><div class="grow"><b>'+esc(p.name)+'</b><small>Created '+fmtTime(p.ts)+'</small></div><button class="del" onclick="deleteProject('+p.id+')">×</button></div>').join("");
+}
+
+// ---- INTEGRATIONS ----
+function renderIntegrations(){
+  const items=[
+    {n:"Anthropic API",d:"Connected — your key powers every answer.",on:!!localStorage.getItem("divergenceKey")},
+    {n:"Markdown Export",d:"Built in — export conversations as .md.",on:true},
+    {n:"Local Storage",d:"Active — all data stays in this browser.",on:true},
+    {n:"Google Drive",d:"Planned — sync conversations to the cloud.",on:false},
+    {n:"Calendar",d:"Planned — push tasks to your calendar.",on:false},
+  ];
+  $("integrationsList").innerHTML = items.map(i=>
+    '<div class="list-row"><div class="grow"><b>'+i.n+'</b><small>'+i.d+'</small></div>'+
+    '<span class="pill '+(i.on?"green":"blue")+'">'+(i.on?"● Active":"○ Soon")+'</span></div>').join("");
+}
+
+// ---- TASKS ----
+function saveTasks(){ localStorage.setItem("divTasks", JSON.stringify(tasks)); }
+function addTask(){
+  const v=$("taskInput").value.trim(); if(!v) return;
+  tasks.unshift({id:Date.now(), text:v, done:false}); saveTasks();
+  $("taskInput").value=""; renderTasks();
+}
+function toggleTask(id){ const t=tasks.find(x=>x.id===id); if(t){t.done=!t.done; saveTasks(); renderTasks();} }
+function deleteTask(id){ tasks=tasks.filter(x=>x.id!==id); saveTasks(); renderTasks(); }
+function extractTasks(){
+  // pull imperative-looking lines from assistant answers
+  let found=0;
+  conversation.filter(t=>t.role==="assistant").forEach(t=>{
+    (t.content||"").split(/\n/).forEach(line=>{
+      const m=line.match(/^\s*(?:[-*\d.]+\s*)?(.+)/);
+      const txt=m?m[1].trim():"";
+      if(txt.length>8 && /\b(do|create|write|build|add|fix|check|review|set up|make|send|call|update|test)\b/i.test(txt) && txt.length<120){
+        if(!tasks.some(x=>x.text===txt)){ tasks.push({id:Date.now()+found, text:txt, done:false}); found++; }
+      }
+    });
+  });
+  saveTasks(); renderTasks();
+  showErr(found?("Extracted "+found+" task"+(found>1?"s":"")+"."):"No clear action items found in the conversation.");
+}
+function renderTasks(){
+  const wrap=$("tasksList");
+  if(!tasks.length){ wrap.innerHTML='<p class="meta">No tasks yet.</p>'; return; }
+  wrap.innerHTML = tasks.map(t=>
+    '<div class="list-row"><input type="checkbox" '+(t.done?"checked":"")+' onchange="toggleTask('+t.id+')" style="width:18px;height:18px;cursor:pointer">'+
+    '<div class="grow"><b style="font-weight:500;'+(t.done?"text-decoration:line-through;opacity:.55":"")+'">'+esc(t.text)+'</b></div>'+
+    '<button class="del" onclick="deleteTask('+t.id+')">×</button></div>').join("");
+}
+
+// ---- CUSTOMIZE ----
+function setAccent(color){
+  document.documentElement.style.setProperty("--accent", color);
+  localStorage.setItem("divAccent", color);
+}
+function setFontSize(px){
+  document.body.style.fontSize = px+"px";
+  $("fontSizeVal").textContent = px;
+  localStorage.setItem("divFontSize", px);
+}
+function renderCustomize(){
+  $("fontSizeSlider").value = localStorage.getItem("divFontSize")||16;
+  $("fontSizeVal").textContent = localStorage.getItem("divFontSize")||16;
+}
+
+// ---- ROUTE ----
+function renderRoute(){
+  const wrap=$("routeInfo");
+  if(!lastCall){ wrap.innerHTML='<p class="meta">Ask something first — routing details will appear here.</p>'; return; }
+  const names={"claude-haiku-4-5-20251001":"Haiku 4.5","claude-opus-4-8":"Opus 4.8","claude-sonnet-4-6":"Sonnet 4.6"};
+  wrap.innerHTML =
+    '<div class="list-row"><div class="grow"><b>Model: '+(names[lastCall.model]||lastCall.model)+'</b><small>You selected this in the Translate panel.</small></div></div>'+
+    '<div class="list-row"><div class="grow"><b>Directness: '+lastCall.level+'</b><small>Controls how much flattery/filler is stripped.</small></div></div>'+
+    '<div class="list-row"><div class="grow"><b>Skill: '+(lastCall.skill?lastCall.skill.icon+" "+lastCall.skill.name:"none matched")+'</b><small>'+(lastCall.skill?esc(lastCall.skill.description):"No keyword triggered a skill.")+'</small></div></div>'+
+    '<div class="list-row"><div class="grow"><b>Detected state: '+lastCall.state.emotion+'</b><small>RSD '+lastCall.state.rsd+' · interest '+lastCall.state.interest+' · mode '+lastCall.state.mode+'</small></div></div>';
+}
+
+// ---- TECHNIQUES ----
+function renderTechniques(){
+  const techs=[
+    {n:"Anti-Sycophancy",d:"Strips flattery openers, empty praise, and filler pleasantries that drive hallucination.",icon:"🚫"},
+    {n:"Flow Preservation",d:"Removes meta-commentary like 'we've drifted' that breaks hyperfocus.",icon:"🌊"},
+    {n:"RSD Reframe",d:"Rewrites 'you should have' criticism into forward-looking suggestions.",icon:"💙"},
+    {n:"ADHD-State Detection",d:"Reads mood, RSD sensitivity, interest, and mode from your text.",icon:"🧭"},
+    {n:"Cognitive-Load Formatter",d:"Chunks long answers, adds whitespace, leads with the bottom line.",icon:"📐"},
+    {n:"Memory Stores",d:"Learns your patterns across conversations and auto-tunes the prompt.",icon:"🧠"},
+  ];
+  $("techniquesList").innerHTML = techs.map(t=>
+    '<div class="list-row"><span style="font-size:1.4rem">'+t.icon+'</span><div class="grow"><b>'+t.n+'</b><small>'+t.d+'</small></div><span class="pill green">● on</span></div>').join("");
+}
+
+// ---- EXECUTE ----
+function renderExecute(){
+  $("executeAnswer").innerHTML = lastCall ? esc(lastCall.answer) : '<p class="meta">No answer yet.</p>';
+}
+function execCopy(){ if(!lastCall) return; navigator.clipboard.writeText(lastCall.answer); showErr("Copied to clipboard."); }
+function execToTask(){ if(!lastCall) return; tasks.unshift({id:Date.now(), text:lastCall.answer.slice(0,120), done:false}); saveTasks(); showErr("Saved as task."); }
+function execToResource(){ if(!lastCall) return; resources.unshift({id:Date.now(), title:"Saved answer", url:lastCall.answer.slice(0,200)}); localStorage.setItem("divResources",JSON.stringify(resources)); showErr("Saved as resource."); }
+
+// ---- FEEDBACK ----
+function renderFeedback(){
+  $("feedbackAnswer").innerHTML = lastCall ? esc(lastCall.answer) : '<p class="meta">No answer to rate yet.</p>';
+  const up=feedbackLog.filter(f=>f.rating==="up").length, down=feedbackLog.filter(f=>f.rating==="down").length;
+  $("feedbackStats").innerHTML = feedbackLog.length
+    ? '<div class="row" style="gap:10px"><div class="grow"><b style="color:var(--green)">👍 '+up+'</b></div><div class="grow"><b style="color:var(--red)">👎 '+down+'</b></div></div><p class="meta" style="margin-top:8px">'+feedbackLog.length+' ratings logged. This feeds your Memory profile.</p>'
+    : '<p class="meta">No ratings yet.</p>';
+}
+function rateAnswer(rating){
+  if(!lastCall){ showErr("Nothing to rate yet."); return; }
+  feedbackLog.unshift({rating, ts:Date.now(), state:lastCall.state, level:lastCall.level});
+  localStorage.setItem("divFeedback", JSON.stringify(feedbackLog));
+  // nudge learner: positive feedback reinforces the directness level used
+  if(rating==="up" && learner.directnessPreference){
+    learner.directnessPreference[lastCall.level]=(learner.directnessPreference[lastCall.level]||0)+2;
+    saveLearner();
+  }
+  renderFeedback(); showErr(rating==="up"?"Logged 👍 — reinforcing this style.":"Logged 👎 — I'll adjust.");
+}
+
+// ---- multi-model helper ----
+async function callModel(model, system, userText, maxTokens){
+  const key=localStorage.getItem("divergenceKey")||$("apiKey").value.trim();
+  if(!key) throw new Error("Paste your API key on the Translate screen first.");
+  const res=await fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",
+    headers:{"content-type":"application/json","x-api-key":key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+    body:JSON.stringify({model,max_tokens:maxTokens||700,system,messages:[{role:"user",content:userText}]})
+  });
+  if(!res.ok) throw new Error("API "+res.status+": "+(await res.text()).slice(0,200));
+  const d=await res.json(); return d.content.map(c=>c.text||"").join("");
+}
+
+// ---- DEBATE ----
+async function runDebate(){
+  clearErr();
+  const q=$("debateInput").value.trim(); if(!q){ showErr("Type a question to debate."); return; }
+  const btn=$("debateBtn"); btn.disabled=true; btn.innerHTML='<span class="spin"></span> Debating...';
+  const model=$("model").value;
+  try{
+    const [forTxt, againstTxt] = await Promise.all([
+      callModel(model,"You argue FOR the proposition. Be direct, mechanical, no flattery. Give the strongest 3 points.",q),
+      callModel(model,"You argue AGAINST the proposition. Be direct, mechanical, no flattery. Give the strongest 3 points.",q)
+    ]);
+    $("debateFor").textContent=forTxt;
+    $("debateAgainst").textContent=againstTxt;
+    $("debateResult").classList.remove("hidden");
+  }catch(e){ showErr(e.message); }
+  finally{ btn.disabled=false; btn.textContent="⚔ Run Debate"; }
+}
+
+// ---- CONSENSUS ----
+async function runConsensus(){
+  clearErr();
+  const q=$("consensusInput").value.trim(); if(!q){ showErr("Type a question."); return; }
+  const btn=$("consensusBtn"); btn.disabled=true; btn.innerHTML='<span class="spin"></span> Polling...';
+  const models = multiAI
+    ? ["claude-haiku-4-5-20251001","claude-sonnet-4-6","claude-opus-4-8"]
+    : [$("model").value];
+  const names={"claude-haiku-4-5-20251001":"Haiku 4.5","claude-opus-4-8":"Opus 4.8","claude-sonnet-4-6":"Sonnet 4.6"};
+  const sys="Answer concisely and directly. No flattery. Lead with your bottom-line position.";
+  try{
+    const results = await Promise.all(models.map(m=>callModel(m,sys,q,500).then(t=>({m,t})).catch(e=>({m,t:"(error: "+e.message+")"}))));
+    $("consensusList").innerHTML = results.map(r=>
+      '<div class="card" style="background:var(--bg-card2);margin-bottom:10px"><label style="color:var(--accent)">'+(names[r.m]||r.m)+'</label><div class="answer">'+esc(r.t)+'</div></div>').join("");
+    $("consensusResult").classList.remove("hidden");
+  }catch(e){ showErr(e.message); }
+  finally{ btn.disabled=false; btn.textContent="🗳 Poll Models"; }
+}
+
+// ---- SYNTHESIS ----
+async function runSynthesis(){
+  clearErr();
+  if(!conversation.length){ showErr("No conversation to synthesize yet."); return; }
+  const btn=$("synthBtn"); btn.disabled=true; btn.innerHTML='<span class="spin"></span> Synthesizing...';
+  const transcript = conversation.map(t=>(t.role==="user"?"USER: ":"AI: ")+(t.content||"")).join("\n\n");
+  try{
+    const out = await callModel($("model").value,
+      "Summarize this conversation into: 1) key conclusions, 2) decisions made, 3) open questions. Be direct and brief. Use short bullets.",
+      transcript, 800);
+    $("synthOutput").textContent=out;
+    $("synthResult").classList.remove("hidden");
+  }catch(e){ showErr(e.message); }
+  finally{ btn.disabled=false; btn.textContent="⚛ Synthesize Conversation"; }
+}
+
+// ---- ACCOUNT SWAP ----
+function saveAccount(){
+  const label=$("acctLabel").value.trim(), k=$("acctKey").value.trim();
+  if(!label||!k){ showErr("Need both a label and a key."); return; }
+  accounts.unshift({id:Date.now(), label, key:k});
+  localStorage.setItem("divAccounts", JSON.stringify(accounts));
+  $("acctLabel").value=""; $("acctKey").value=""; renderAccounts();
+}
+function useAccount(id){
+  const a=accounts.find(x=>x.id===id); if(!a) return;
+  localStorage.setItem("divergenceKey", a.key);
+  $("apiKey").value=a.key; if($("apiKeySettings")) $("apiKeySettings").value=a.key;
+  renderAccounts(); showErr("Now using: "+a.label);
+}
+function deleteAccount(id){ accounts=accounts.filter(x=>x.id!==id); localStorage.setItem("divAccounts",JSON.stringify(accounts)); renderAccounts(); }
+function renderAccounts(){
+  const wrap=$("accountsList");
+  const active=localStorage.getItem("divergenceKey")||"";
+  if(!accounts.length){ wrap.innerHTML='<p class="meta">No keys saved yet.</p>'; return; }
+  wrap.innerHTML = accounts.map(a=>{
+    const isActive=a.key===active;
+    return '<div class="list-row"><div class="grow"><b>'+esc(a.label)+(isActive?' <span class="pill green">active</span>':'')+'</b><small>…'+esc(a.key.slice(-6))+'</small></div>'+
+      '<button class="quick-btn" style="flex:0;min-width:0;padding:8px 12px" onclick="useAccount('+a.id+')">Use</button>'+
+      '<button class="del" onclick="deleteAccount('+a.id+')">×</button></div>';
+  }).join("");
+}
+
+// ---- HELP / GLOSSARY ----
+const GLOSSARY=[
+  ["Flow Preservation","Stops the AI from interrupting your hyperfocus with meta-commentary like 'we've drifted off topic'."],
+  ["Anti-Sycophancy","Removes flattery and empty agreement ('great question!', 'you're absolutely right') that can drive hallucination."],
+  ["RSD","Rejection Sensitive Dysphoria — intense emotional pain from perceived criticism. The app reframes critical phrasing."],
+  ["Cognitive Load","A score of how mentally heavy an answer is. If too high, the formatter simplifies it."],
+  ["ADHD-State Detection","Reads your mood, energy, and mode (gathering vs. evaluating) from your text to tailor the reply."],
+  ["Sessions","Conversation memory — the full thread is sent each turn so Claude remembers context."],
+  ["Memory Stores","Long-term learning across all conversations — your triggers, preferred directness, common states."],
+  ["Skills","Specialized techniques (Research, Summarize, Code…) auto-triggered by keywords to shape the answer."],
+  ["Directness","How aggressively flattery/filler is stripped: Max (robotic), High (direct but human), Off (raw)."],
+  ["Debate","Two AI perspectives argue both sides of a question so you see the full picture."],
+  ["Consensus","The same question asked to multiple models so you can spot where they agree."],
+  ["Synthesis","Distills a whole conversation into conclusions, decisions, and open questions."],
+  ["Confidence Map","Highlights which parts of an answer are grounded vs. inferred."],
+];
+function renderHelp(){
+  const q=($("helpSearch")?.value||"").toLowerCase();
+  const items=GLOSSARY.filter(([t,d])=>!q||t.toLowerCase().includes(q)||d.toLowerCase().includes(q));
+  $("helpList").innerHTML = items.length
+    ? items.map(([t,d])=>'<div class="glossary-term"><b>'+t+'</b><p>'+d+'</p></div>').join("")
+    : '<p class="meta">No terms match.</p>';
+}
+
+// ---- MULTI-AI ----
+function renderMultiAI(){
+  const btn=$("multiaiToggle");
+  btn.textContent = multiAI ? "● Multi-AI: ON" : "○ Multi-AI: OFF";
+  btn.style.background = multiAI ? "var(--green)" : "var(--bg-card2)";
+  btn.style.color = multiAI ? "#fff" : "var(--text)";
+  btn.style.border = multiAI ? "none" : "1px solid var(--border)";
+}
+function toggleMultiAI(){
+  multiAI=!multiAI; localStorage.setItem("divMultiAI", multiAI?"on":"off"); renderMultiAI();
+}
+
+// ---- CONFIDENCE ----
+function renderConfidence(){
+  const wrap=$("confidenceMap");
+  if(!lastCall){ wrap.innerHTML='<p class="meta">Ask something first.</p>'; return; }
+  // split into sentences, classify by inline tags + heuristics
+  const sentences = (lastCall.raw||lastCall.answer).match(/[^.!?]+[.!?]+/g)||[lastCall.answer];
+  wrap.innerHTML = sentences.map(s=>{
+    const low=s.toLowerCase();
+    let level="grounded", color="var(--green)";
+    if(/\[inference\]|\[speculation\]|might|maybe|possibly|i think|probably|likely|could be|i'm not sure/.test(low)){ level="inferred"; color="var(--amber)"; }
+    if(/\[speculation\]|guess|unclear|uncertain|hard to say/.test(low)){ level="speculative"; color="var(--red)"; }
+    return '<div style="border-left:3px solid '+color+';padding:6px 10px;margin-bottom:6px;background:var(--bg-card2);border-radius:0 6px 6px 0"><small style="color:'+color+';font-weight:600;text-transform:uppercase;font-size:.7rem">'+level+'</small><div style="font-size:.9rem">'+esc(s.trim())+'</div></div>';
+  }).join("");
+}
+
+// ---- TRANSPARENCY ----
+function renderTransparency(){
+  if(!lastCall){
+    $("transSystem").textContent="(no request yet)";
+    $("transMeta").innerHTML='<p class="meta">Ask something first.</p>';
+    $("transStages").innerHTML="";
+    return;
+  }
+  $("transSystem").textContent = lastCall.system;
+  const u=lastCall.usage||{};
+  $("transMeta").innerHTML =
+    '<div class="list-row"><div class="grow"><b>'+lastCall.model+'</b><small>Input '+(u.input_tokens||"?")+' tokens · Output '+(u.output_tokens||"?")+' tokens</small></div></div>';
+  const wrap=$("transStages"); wrap.innerHTML="";
+  if(lastCall.skill){ const e=document.createElement("span"); e.className="pill purple"; e.textContent=lastCall.skill.icon+" "+lastCall.skill.name; wrap.appendChild(e); }
+  (lastCall.stages||[]).forEach(s=>{ const e=document.createElement("span"); e.className="pill "+(s.on?"green":"blue"); e.textContent=(s.on?"✓ ":"– ")+s.name+(s.detail?" ("+s.detail+")":""); wrap.appendChild(e); });
+}
+
+// ---- DOWNLOAD extras ----
+function downloadPlainText(){
+  if(!conversation.length){ showErr("Nothing to export yet."); return; }
+  const txt=conversation.map(t=>(t.role==="user"?"YOU: ":"DIVERGENCE.AI: ")+(t.display||t.content)).join("\n\n");
+  const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([txt],{type:"text/plain"}));
+  a.download="divergence-"+new Date().toISOString().slice(0,10)+".txt"; a.click();
+}
+function downloadJSON(){
+  if(!conversation.length){ showErr("Nothing to export yet."); return; }
+  const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([JSON.stringify(conversation,null,2)],{type:"application/json"}));
+  a.download="divergence-"+new Date().toISOString().slice(0,10)+".json"; a.click();
+}
+
+// ---- restore saved customizations on load ----
+(function(){
+  const ac=localStorage.getItem("divAccent"); if(ac) document.documentElement.style.setProperty("--accent",ac);
+  const fs=localStorage.getItem("divFontSize"); if(fs) document.body.style.fontSize=fs+"px";
+})();
 
 // restore conversation thread from last session on page load
 if(conversation.length){ renderThread(); }
