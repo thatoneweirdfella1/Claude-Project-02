@@ -586,6 +586,13 @@ summary { cursor: pointer; color: var(--accent); font-size: .85rem; }
         <span class="nav-label">Memory</span>
       </button>
 
+      <button class="nav-item" id="nav-skills" onclick="showPanel('skills');renderSkillsPanel()">
+        <span class="nav-icon-wrap">
+          <svg viewBox="0 0 24 24"><path d="M6 9c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+        </span>
+        <span class="nav-label">Skills</span>
+      </button>
+
       <button class="nav-item" onclick="showPanel('route')">
         <span class="nav-icon-wrap">
           <svg viewBox="0 0 24 24"><rect x="2" y="2" width="6" height="6" rx="1"/><rect x="16" y="2" width="6" height="6" rx="1"/><rect x="9" y="16" width="6" height="6" rx="1"/><line x1="5" y1="8" x2="5" y2="14"/><line x1="5" y1="14" x2="12" y2="14"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="19" y1="14" x2="12" y2="14"/><line x1="12" y1="14" x2="12" y2="16"/></svg>
@@ -835,6 +842,26 @@ summary { cursor: pointer; color: var(--accent); font-size: .85rem; }
     </div>
   </div>
 
+  <!-- SKILLS (specialized techniques for different task types) -->
+  <div id="panel-skills" class="hidden">
+    <div class="page-header">
+      <div class="page-title" style="font-size:1.5rem">Skills</div>
+      <p class="page-sub">Teach Claude specialized techniques. Built-in + custom.</p>
+    </div>
+
+    <div class="card">
+      <label>Your Skills</label>
+      <div id="skillsList" style="max-height:400px;overflow-y:auto"></div>
+      <button onclick="addSkill()" style="margin-top:12px;width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:inherit;font-weight:600">+ Add Custom Skill</button>
+      <p class="meta" style="margin-top:10px">Built-in skills are always available. Custom skills you create are stored and matched by keyword.</p>
+    </div>
+
+    <div class="card">
+      <label>How Skills Work</label>
+      <p class="meta">When you ask a question, Divergence.AI detects which skill matches (based on keywords). If a match is found, special instructions are added to tell Claude how to handle that task type. You can see which skill was activated in the Transparency panel.</p>
+    </div>
+  </div>
+
   <!-- ===== PLACEHOLDER PANELS ===== -->
   <div id="panel-dashboard"    class="hidden"><div class="placeholder-panel"><div class="big-icon">⊞</div><h2>Dashboard</h2><p>Your overview — conversations, stats, quick-launch. Coming soon.</p></div></div>
   <div id="panel-new"          class="hidden"><div class="placeholder-panel"><div class="big-icon">＋</div><h2>Create New</h2><p>Start a fresh conversation with full context control. Coming soon.</p></div></div>
@@ -1010,7 +1037,7 @@ function runPipeline(raw,level){
 }
 
 // ---- SYSTEM PROMPT ----
-function systemPrompt(state, level, learned){
+function systemPrompt(state, level, learned, skill){
   let p="You are a translator-assistant for someone with ADHD. ";
 
   // learned preference: if they always pick max/high, apply it even if they select default
@@ -1026,6 +1053,11 @@ function systemPrompt(state, level, learned){
     p+="Accuracy over agreeableness — if something is wrong or uncertain, say so plainly. ";
   }
   if(effectiveLevel==="max") p+="Use the most robotic, terse, no-pleasantry register possible. ";
+
+  // SKILL INSTRUCTIONS: if a skill matches, include its special handling
+  if(skill){
+    p+="TASK-SPECIFIC INSTRUCTION: "+skill.instructions+" ";
+  }
 
   if(state.emotion==="overwhelmed")          p+="The user is overwhelmed: give ONLY the single most important next step, very short. ";
   if(state.rsd==="high")                     p+="The user is being self-critical: do not pile on; be matter-of-fact and kind without being saccharine. ";
@@ -1075,7 +1107,7 @@ function clearErr(){ $("err").classList.add("hidden"); }
 const ALL_PANELS=[
   "translate","dashboard","new","messages","archive","resources","projects","integrations",
   "tasks","customize","route","techniques","execute","feedback","debate","consensus",
-  "synthesis","accountswap","history","memory","settings","help","multiai","confidence",
+  "synthesis","accountswap","history","memory","skills","settings","help","multiai","confidence",
   "transparency","download","profile"
 ];
 function showPanel(id){
@@ -1256,6 +1288,136 @@ function exportProfile(){
   a.click();
 }
 
+// ---- SKILLS ----
+// Skills are specialized techniques Claude uses for specific task types
+const BUILTIN_SKILLS = {
+  research: {
+    id: "research",
+    name: "Research",
+    description: "Find, verify, and synthesize information on a topic",
+    keywords: ["research","find out","look up","investigate","what do you know about","tell me about","how does"],
+    instructions: "When the user asks you to research something, use your knowledge to provide comprehensive, sourced answers. Break down complex topics into digestible pieces. Cite specific examples. Flag uncertainty explicitly (e.g., [inference] or [grounded in common knowledge]).",
+    icon: "🔍"
+  },
+  summarize: {
+    id: "summarize",
+    name: "Summarize",
+    description: "Condense long content into key points",
+    keywords: ["summarize","tl;dr","short version","condense","give me the gist","what's the key point","main idea"],
+    instructions: "Extract the 3-5 most important points. Use bullet format. Lead with the most critical insight first. Avoid filler. Remove examples unless they're essential.",
+    icon: "📋"
+  },
+  extract: {
+    id: "extract",
+    name: "Extract",
+    description: "Pull structured data from unstructured text",
+    keywords: ["extract","pull out","find all","list all","what are the","names","dates","numbers from"],
+    instructions: "Parse the content and return data in a structured format (bullets, table, or JSON if appropriate). Be thorough. If data is missing, note it clearly. Organize by category.",
+    icon: "📌"
+  },
+  code: {
+    id: "code",
+    name: "Code",
+    description: "Write, debug, or explain code",
+    keywords: ["code","write a","debug","function","variable","error","syntax","how do i"],
+    instructions: "Provide clean, production-ready code with comments for complex logic only. Explain the approach, not the obvious. If debugging, isolate the root cause and explain the fix. Use the user's existing style/language.",
+    icon: "💻"
+  },
+  plan: {
+    id: "plan",
+    name: "Plan",
+    description: "Break down a task into actionable steps",
+    keywords: ["how do i","steps to","plan","strategy","approach","process","what's the best way"],
+    instructions: "Create a sequential, numbered plan. Each step should be concrete and actionable. Estimate effort if relevant. Flag dependencies. Be realistic about what's hard.",
+    icon: "📍"
+  },
+  brainstorm: {
+    id: "brainstorm",
+    name: "Brainstorm",
+    description: "Generate creative ideas and options",
+    keywords: ["brainstorm","ideas","options","what if","alternatives","what could","possibility"],
+    instructions: "Generate 4-6 distinct ideas. Vary wild/conservative. Explain the trade-off of each. Don't evaluate yet — just expand the option space.",
+    icon: "💡"
+  }
+};
+
+let skills = JSON.parse(localStorage.getItem("divergenceSkills")||JSON.stringify(BUILTIN_SKILLS));
+
+function saveSkills(){ localStorage.setItem("divergenceSkills", JSON.stringify(skills)); }
+
+function detectSkillMatch(inputText){
+  const lower = inputText.toLowerCase();
+  let matched = [];
+  Object.values(skills).forEach(skill=>{
+    const hitCount = skill.keywords.filter(kw=>lower.includes(kw)).length;
+    if(hitCount>0) matched.push({...skill, hitCount});
+  });
+  // return top match (highest keyword hit count)
+  return matched.length ? matched.sort((a,b)=>b.hitCount-a.hitCount)[0] : null;
+}
+
+function addSkill(){
+  const name = prompt("Skill name (e.g., 'Meeting Notes'):");
+  if(!name) return;
+  const desc = prompt("What is this skill for?");
+  if(!desc) return;
+  const keywords = prompt("Keywords (comma-separated, e.g., meeting, notes, summarize)");
+  if(!keywords) return;
+  const instructions = prompt("Special instructions for Claude when using this skill:");
+  if(!instructions) return;
+
+  const id = "custom_"+Date.now();
+  skills[id] = {id, name, description:desc, keywords:keywords.split(",").map(k=>k.trim()), instructions, icon:"⭐", custom:true};
+  saveSkills();
+  renderSkillsPanel();
+  showErr("Skill '"+name+"' added!");
+}
+
+function deleteSkill(id){
+  if(!confirm("Delete this skill?")) return;
+  delete skills[id];
+  saveSkills();
+  renderSkillsPanel();
+}
+
+function renderSkillsPanel(){
+  const wrap = $("skillsList");
+  wrap.innerHTML = "";
+  Object.values(skills).forEach(skill=>{
+    const card = document.createElement("div");
+    card.style.cssText = `background:var(--bg-card2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px`;
+    const header = document.createElement("div");
+    header.style.cssText = `display:flex;align-items:center;gap:8px;margin-bottom:8px`;
+    const icon = document.createElement("span");
+    icon.textContent = skill.icon;
+    icon.style.fontSize = "1.3rem";
+    const title = document.createElement("span");
+    title.style.cssText = `flex:1;font-weight:600`;
+    title.textContent = skill.name;
+    header.appendChild(icon);
+    header.appendChild(title);
+    if(skill.custom){
+      const delBtn = document.createElement("button");
+      delBtn.textContent = "×";
+      delBtn.style.cssText = `background:var(--red);color:#fff;border:none;border-radius:6px;width:28px;height:28px;cursor:pointer;font-weight:600`;
+      delBtn.onclick = ()=>deleteSkill(skill.id);
+      header.appendChild(delBtn);
+    }
+    card.appendChild(header);
+
+    const desc = document.createElement("p");
+    desc.textContent = skill.description;
+    desc.style.cssText = `font-size:.85rem;color:var(--dim);margin:0 0 8px 0`;
+    card.appendChild(desc);
+
+    const keywords = document.createElement("p");
+    keywords.style.cssText = `font-size:.75rem;color:var(--dim);margin:0`;
+    keywords.textContent = "Triggers: "+skill.keywords.join(", ");
+    card.appendChild(keywords);
+  });
+}
+
+
 function newConversation(){
   if(conversation.length && !confirm("Start fresh conversation?\n\n🔄 Your current conversation thread will be cleared.\n💭 Memory Stores will keep learning across conversations.")) return;
   conversation = [];
@@ -1302,10 +1464,14 @@ async function run(){
 
   // infer learned preferences from past conversations
   const learned = learner.conversationCount>0 ? inferLearnedPreferences() : null;
-  const sys=systemPrompt(state, level, learned);
 
-  // add user turn to memory
-  conversation.push({role:"user", content:input, ts:Date.now(), state});
+  // detect which skill (if any) matches this question
+  const skill = detectSkillMatch(input);
+
+  const sys=systemPrompt(state, level, learned, skill);
+
+  // add user turn to memory (including detected skill)
+  conversation.push({role:"user", content:input, ts:Date.now(), state, skill});
   renderThread();
   $("input").value="";
 
@@ -1347,7 +1513,7 @@ async function run(){
 
     $("answer").textContent=out.text;
     $("raw").textContent=rawAnswer;
-    renderStages(out.stages);
+    renderStages(out.stages, skill);
     $("answerCard").classList.remove("hidden");
   }catch(err){
     showErr(err.message.includes("Failed to fetch")
@@ -1410,8 +1576,16 @@ function renderState(s){
   $("stateCard").classList.remove("hidden");
 }
 
-function renderStages(stages){
+function renderStages(stages, skill){
   const wrap=$("stages"); wrap.innerHTML="";
+
+  if(skill){
+    const e=document.createElement("span");
+    e.className="pill purple";
+    e.textContent=skill.icon+" "+skill.name;
+    wrap.appendChild(e);
+  }
+
   stages.forEach(s=>{
     const e=document.createElement("span");
     e.className="pill "+(s.on?"green":"blue");
