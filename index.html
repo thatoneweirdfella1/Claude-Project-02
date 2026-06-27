@@ -9,312 +9,196 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
-   THEME TOKENS
+   THEME & VARIABLES
 ============================================================ */
 :root {
-  --sb-width: 240px;
-  --radius-icon: 10px;
-  --icon-size: 40px;
-  --transition: .18s ease;
-}
-
-[data-theme="dark"] {
-  --bg-main:    #0d0f14;
-  --bg-card:    #161921;
-  --bg-card2:   #1d2030;
-  --border:     #272b3a;
-  --text:       #e8eaed;
-  --dim:        #8a9099;
-  --accent:     #4a9eff;
-  --green:      #2dd36f;
-  --amber:      #f5a623;
-  --red:        #ff5c5c;
-  --purple:     #9b5cff;
-  /* marble sidebar */
-  --sb-bg:      #0e0f11;
-  --sb-vein1:   rgba(200,200,200,.028);
-  --sb-vein2:   rgba(180,180,180,.018);
-  --sb-vein3:   rgba(230,230,230,.04);
-  --icon-bg:    rgba(255,255,255,.07);
-  --icon-hover: rgba(255,255,255,.12);
-  --icon-active:#4a9eff;
-  --icon-active-bg: rgba(74,158,255,.18);
-  --nav-label:  #c2c8d0;
-  --divider:    rgba(255,255,255,.08);
+  --sb-width: 220px;
+  --bg-main: #0d0f14;
+  --bg-card: #161921;
+  --bg-card2: #1d2030;
+  --border: #272b3a;
+  --text: #e8eaed;
+  --dim: #8a9099;
+  --accent: #4a9eff;
+  --purple: #9b5cff;
+  --green: #2dd36f;
+  --amber: #f5a623;
+  --red: #ff5c5c;
 }
 
 [data-theme="light"] {
-  --bg-main:    #f0f2f5;
-  --bg-card:    #ffffff;
-  --bg-card2:   #f5f7fa;
-  --border:     #dde1ea;
-  --text:       #1a1d26;
-  --dim:        #6b7280;
-  --accent:     #2563eb;
-  --green:      #16a34a;
-  --amber:      #d97706;
-  --red:        #dc2626;
-  --purple:     #7c3aed;
-  /* marble sidebar */
-  --sb-bg:      #f4f4f4;
-  --sb-vein1:   rgba(0,0,0,.045);
-  --sb-vein2:   rgba(0,0,0,.028);
-  --sb-vein3:   rgba(0,0,0,.06);
-  --icon-bg:    rgba(0,0,0,.07);
-  --icon-hover: rgba(0,0,0,.12);
-  --icon-active:#2563eb;
-  --icon-active-bg: rgba(37,99,235,.12);
-  --nav-label:  #2a2d35;
-  --divider:    rgba(0,0,0,.1);
+  --bg-main: #f0f2f5;
+  --bg-card: #ffffff;
+  --bg-card2: #f5f7fa;
+  --border: #dde1ea;
+  --text: #1a1d26;
+  --dim: #6b7280;
+  --accent: #2563eb;
+  --purple: #7c3aed;
+  --green: #16a34a;
+  --amber: #d97706;
+  --red: #dc2626;
 }
 
 /* ============================================================
-   RESET + BASE
+   RESET & BASE
 ============================================================ */
-*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100%;
+  height: 100%;
+}
 
 body {
-  font-family: "Inter", -apple-system, "Segoe UI", system-ui, sans-serif;
+  font-family: 'Inter', -apple-system, sans-serif;
   background: var(--bg-main);
   color: var(--text);
-  line-height: 1.55;
-  min-height: 100vh;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 /* ============================================================
-   APP SHELL
+   APP LAYOUT
 ============================================================ */
 .app {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
 }
 
 /* ============================================================
-   SIDEBAR — MARBLE
+   SIDEBAR
 ============================================================ */
 .sidebar {
   width: var(--sb-width);
   min-height: 100vh;
-  position: fixed;
-  top: 0; left: 0;
-  display: flex;
-  flex-direction: column;
-  z-index: 100;
+  background: linear-gradient(135deg, rgba(13,15,20,0.95), rgba(20,25,35,0.95));
+  border-right: 1px solid var(--border);
+  padding: 20px 10px;
   overflow-y: auto;
-  overflow-x: hidden;
-
-  /* marble base — your actual marble image */
-  background-color: var(--sb-bg);
-  background-image: url('marble-bg.png');
-  background-size: cover;
-  background-attachment: fixed;
-  background-position: top left;
-}
-
-.sidebar::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(90deg, transparent 95%, var(--divider) 100%);
-}
-
-/* ============================================================
-   BRAND HEADER
-============================================================ */
-.brand-wrap {
-  padding: 22px 16px 14px;
-  border-bottom: 1px solid var(--divider);
-  margin-bottom: 8px;
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
 }
 
 .brand {
-  font-family: "Orbitron", sans-serif;
-  font-weight: 900;
-  font-size: 1.3rem;
-  letter-spacing: .03em;
-  line-height: 1.1;
   display: flex;
   align-items: center;
-  gap: 6px;
-  background: linear-gradient(92deg, #4a9eff 0%, #9b5cff 40%, #2dd36f 72%, #4a9eff 100%);
-  background-size: 300% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
-  animation: synapse 6s linear infinite, flicker 4.5s ease-in-out infinite;
-  filter: drop-shadow(0 0 10px rgba(74,158,255,.3));
+  gap: 10px;
+  margin-bottom: 20px;
+  font-family: 'Orbitron';
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 1px;
 }
 
-.brand .bolt { font-style: normal; -webkit-text-fill-color: #f5a623; color: #f5a623; }
-.brand .dot  { -webkit-text-fill-color: #9b5cff; color: #9b5cff; }
-
-@keyframes synapse { to { background-position: 300% 50%; } }
-@keyframes flicker {
-  0%,100% { filter: drop-shadow(0 0 10px rgba(74,158,255,.3)); }
-  47%     { filter: drop-shadow(0 0 18px rgba(155,92,255,.5)); }
-  49%     { filter: drop-shadow(0 0 3px  rgba(74,158,255,.1)); }
-  51%     { filter: drop-shadow(0 0 20px rgba(45,211,111,.45)); }
+.brand-icon {
+  font-size: 24px;
+  filter: drop-shadow(0 0 8px rgba(155,92,255,0.3));
 }
 
-/* ============================================================
-   NAV SECTIONS
-============================================================ */
-.sidebar-body   { flex: 1; padding: 0 10px; }
-.sidebar-footer { padding: 10px 10px 18px; border-top: 1px solid var(--divider); }
-
-.nav-section { padding: 4px 0; }
-
-.nav-divider {
-  height: 1px;
-  background: var(--divider);
-  margin: 8px 6px;
+.brand-text {
+  color: var(--text);
 }
 
-/* ============================================================
-   NAV ITEM
-============================================================ */
+.brand-dot {
+  color: var(--purple);
+}
+
+.nav-section {
+  margin-bottom: 12px;
+}
+
 .nav-item {
   display: flex;
   align-items: center;
   gap: 10px;
   width: 100%;
-  padding: 5px 6px;
+  padding: 8px 10px;
   border: none;
-  border-radius: 10px;
+  border-radius: 8px;
   background: transparent;
+  color: var(--dim);
   cursor: pointer;
-  transition: background var(--transition);
+  font-family: 'Inter';
+  font-size: 13px;
+  transition: all 0.15s ease;
   text-align: left;
 }
 
-.nav-item:hover { background: var(--icon-hover); }
-
-.nav-item.active {
-  background: var(--icon-active-bg);
+.nav-item:hover {
+  background: rgba(255,255,255,0.08);
+  color: var(--text);
 }
 
-.nav-item.active .nav-label {
-  color: var(--icon-active);
+.nav-item.active {
+  background: rgba(74,158,255,0.2);
+  color: var(--accent);
   font-weight: 600;
 }
 
-.nav-item.active .nav-icon-wrap {
-  background: var(--icon-active);
-}
-
-.nav-item.active .nav-icon-wrap svg,
-.nav-item.active .nav-icon-wrap .nav-ico-txt {
-  color: #fff;
-  fill: #fff;
-  -webkit-text-fill-color: #fff;
-}
-
-.nav-icon-wrap {
-  width: var(--icon-size);
-  height: var(--icon-size);
-  border-radius: var(--radius-icon);
-  background: var(--icon-bg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.nav-icon {
+  font-size: 18px;
   flex-shrink: 0;
-  transition: background var(--transition);
 }
 
-.nav-ico-txt {
-  font-size: 1.1rem;
-  line-height: 1;
-  color: var(--nav-label);
-  -webkit-text-fill-color: var(--nav-label);
-  font-style: normal;
-}
-
-.nav-icon-wrap svg {
-  width: 18px; height: 18px;
-  fill: none;
-  stroke: var(--nav-label);
-  stroke-width: 1.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.nav-label {
-  font-size: .84rem;
-  font-weight: 500;
-  color: var(--nav-label);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.profile-avatar {
-  width: var(--icon-size);
-  height: var(--icon-size);
-  border-radius: var(--radius-icon);
-  background: var(--icon-bg);
-  display: flex; align-items: center; justify-content: center;
-  font-weight: 700; font-size: 1rem;
-  color: var(--nav-label);
-  flex-shrink: 0;
-  border: 1.5px solid var(--divider);
+.nav-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 8px 0;
 }
 
 /* ============================================================
-   MAIN CONTENT AREA
+   MAIN CONTENT
 ============================================================ */
 .main-content {
   margin-left: var(--sb-width);
-  flex: 1;
-  padding: 28px 28px 48px;
-  max-width: 920px;
+  width: calc(100% - var(--sb-width));
+  height: 100vh;
+  overflow-y: auto;
+  padding: 40px;
+  background: linear-gradient(180deg, rgba(13,15,20,0.1), rgba(13,15,20,0.3));
 }
-
-/* ============================================================
-   THEME TOGGLE (top-right corner)
-============================================================ */
-.theme-toggle {
-  position: fixed;
-  top: 16px; right: 20px;
-  z-index: 200;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 6px 12px;
-  font-size: .8rem;
-  color: var(--dim);
-  cursor: pointer;
-  font-family: inherit;
-  transition: background var(--transition);
-}
-.theme-toggle:hover { background: var(--bg-card2); }
 
 /* ============================================================
    PAGE HEADER
 ============================================================ */
 .page-header {
-  margin-bottom: 24px;
+  text-align: center;
+  margin-bottom: 40px;
 }
 
 .page-title {
-  font-family: "Orbitron", sans-serif;
-  font-weight: 800;
-  font-size: 1.9rem;
-  letter-spacing: .03em;
-  background: linear-gradient(92deg, #4a9eff 0%, #9b5cff 40%, #2dd36f 72%, #4a9eff 100%);
-  background-size: 300% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
-  animation: synapse 6s linear infinite, flicker 4.5s ease-in-out infinite;
-  filter: drop-shadow(0 0 12px rgba(74,158,255,.3));
-  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 12px;
 }
 
-.page-sub { color: var(--dim); font-size: .9rem; }
+.page-title-icon {
+  font-size: 48px;
+  filter: drop-shadow(0 0 12px rgba(155,92,255,0.4));
+}
+
+.page-title-text {
+  font-family: 'Orbitron';
+  font-size: 36px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.page-title-text .purple {
+  color: var(--purple);
+}
+
+.page-sub {
+  font-size: 14px;
+  color: var(--dim);
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
 
 /* ============================================================
    CARDS
@@ -322,533 +206,502 @@ body {
 .card {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 18px;
-  margin-bottom: 16px;
-}
-
-label {
-  display: block;
-  font-size: .78rem;
-  color: var(--dim);
-  margin-bottom: 6px;
-  text-transform: uppercase;
-  letter-spacing: .05em;
-  font-weight: 600;
-}
-
-textarea, input[type=password], select {
-  width: 100%;
-  background: var(--bg-card2);
-  border: 1px solid var(--border);
   border-radius: 10px;
-  color: var(--text);
-  padding: 12px;
-  font-size: 1rem;
-  font-family: inherit;
-  resize: vertical;
-  outline: none;
-  transition: border-color var(--transition);
-}
-textarea:focus, input[type=password]:focus, select:focus {
-  border-color: var(--accent);
-}
-textarea { min-height: 120px; }
-select option { background: var(--bg-card2); }
-
-.row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
-.row > div { flex: 1; min-width: 160px; }
-
-button.go {
-  width: 100%;
   padding: 16px;
-  font-size: 1.05rem;
-  margin-top: 12px;
+  margin-bottom: 20px;
+}
+
+.card label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 10px;
+  letter-spacing: 0.5px;
+}
+
+.card p {
+  font-size: 12px;
+  color: var(--dim);
+  margin-top: 6px;
+}
+
+.card input[type="password"],
+.card input[type="text"],
+.card textarea,
+.card select {
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: var(--text);
+  font-family: 'Inter';
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.card input[type="password"]::placeholder,
+.card input[type="text"]::placeholder,
+.card textarea::placeholder {
+  color: var(--dim);
+}
+
+.card input:focus,
+.card textarea:focus,
+.card select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 8px rgba(74,158,255,0.2);
+}
+
+.card textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.card a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.card a:hover {
+  text-decoration: underline;
+}
+
+/* ============================================================
+   ROWS & LAYOUT
+============================================================ */
+.row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.row > div {
+  flex: 1;
+}
+
+/* ============================================================
+   BUTTONS
+============================================================ */
+.go {
+  width: 100%;
+  padding: 14px;
   background: var(--accent);
   color: #fff;
   border: none;
-  border-radius: 10px;
-  font-weight: 700;
+  border-radius: 9px;
   cursor: pointer;
-  font-family: inherit;
-  transition: opacity var(--transition), background var(--transition);
-}
-button.go:hover  { opacity: .9; }
-button.go:disabled { opacity: .5; cursor: not-allowed; }
-
-.meta { font-size: .8rem; color: var(--dim); margin-top: 10px; }
-a { color: var(--accent); }
-
-/* ============================================================
-   PILLS / STAGES / STATE
-============================================================ */
-.pill {
-  font-size: .7rem;
-  padding: 3px 9px;
-  border-radius: 20px;
-  font-weight: 700;
-}
-.pill.green  { background: var(--green);  color: #042; }
-.pill.amber  { background: var(--amber);  color: #210; }
-.pill.blue   { background: var(--accent); color: #fff; }
-.pill.purple { background: var(--purple); color: #fff; }
-
-.statebar, .stages { display: flex; flex-wrap: wrap; gap: 6px; }
-.stages { margin-top: 12px; }
-
-.answer {
-  background: var(--bg-card2);
-  border-radius: 10px;
-  padding: 16px;
-  white-space: pre-wrap;
-  font-size: 1.02rem;
-  line-height: 1.65;
+  font-family: 'Inter';
+  font-size: 15px;
+  font-weight: 600;
+  transition: all 0.15s ease;
 }
 
-details { margin-top: 10px; }
-summary { cursor: pointer; color: var(--accent); font-size: .85rem; }
-.raw {
-  background: var(--bg-main);
-  border-radius: 8px;
-  padding: 12px;
-  margin-top: 8px;
-  font-size: .9rem;
-  color: var(--dim);
-  white-space: pre-wrap;
+.go:hover {
+  background: #3a8fe0;
+  box-shadow: 0 0 16px rgba(74,158,255,0.4);
 }
-
-.err  { color: var(--red);   font-size: .9rem; margin-top: 8px; }
-.hidden { display: none !important; }
-
-/* conversation thread bubbles */
-.bubble { border-radius: 10px; padding: 11px 14px; margin-bottom: 10px; font-size: .98rem; line-height: 1.55; white-space: pre-wrap; }
-.bubble.me { background: var(--icon-active-bg); border: 1px solid var(--accent); }
-.bubble.ai { background: var(--bg-card2); border: 1px solid var(--border); }
-.bubble .who { font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; font-weight: 700; margin-bottom: 4px; opacity: .7; }
-.bubble.me .who { color: var(--accent); }
-.bubble.ai .who { color: var(--green); }
-.bubble .stamp { font-size: .68rem; color: var(--dim); float: right; font-weight: 400; }
-.exp-opt { display: flex; align-items: center; gap: 8px; font-size: .9rem; color: var(--text); text-transform: none; letter-spacing: 0; font-weight: 400; cursor: pointer; }
-.exp-opt input { width: auto; }
-
-/* spinner */
-.spin {
-  display: inline-block;
-  width: 14px; height: 14px;
-  border: 2px solid rgba(255,255,255,.3);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: spin .7s linear infinite;
-  vertical-align: -2px;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* ============================================================
-   PLACEHOLDER PANELS
-============================================================ */
-.placeholder-panel {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 40vh;
-  text-align: center;
-  gap: 12px;
-  color: var(--dim);
-}
-.placeholder-panel .big-icon {
-  font-size: 3.5rem;
-  opacity: .35;
-}
-.placeholder-panel h2 {
-  font-size: 1.4rem;
-  color: var(--text);
-  opacity: .5;
-}
-.placeholder-panel p { font-size: .9rem; max-width: 320px; }
 
 .quick-btn {
   flex: 1;
-  min-width: 130px;
-  padding: 12px;
+  padding: 11px;
   background: var(--bg-card2);
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: 9px;
   cursor: pointer;
   font-family: inherit;
-  font-size: .88rem;
-  transition: background var(--transition);
+  font-size: 0.85rem;
+  transition: all 0.15s ease;
 }
-.quick-btn:hover { background: var(--icon-hover); }
 
-.list-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 11px;
-  background: var(--bg-card2);
-  border: 1px solid var(--border);
-  border-radius: 9px;
-  margin-bottom: 8px;
+.quick-btn:hover {
+  background: var(--bg-card);
+  border-color: var(--accent);
 }
-.list-row .grow { flex: 1; min-width: 0; }
-.list-row .grow b { display: block; }
-.list-row .grow small { color: var(--dim); word-break: break-all; }
-.list-row button.del {
-  background: var(--red); color: #fff; border: none;
-  border-radius: 7px; width: 30px; height: 30px; cursor: pointer; flex-shrink: 0;
-}
-.glossary-term { padding: 12px 0; border-bottom: 1px solid var(--border); }
-.glossary-term:last-child { border-bottom: none; }
-.glossary-term b { color: var(--accent); }
-.glossary-term p { font-size: .88rem; color: var(--dim); margin-top: 4px; }
 
 /* ============================================================
-   RESPONSIVE
+   CONVERSATION & ANSWER
 ============================================================ */
-@media (max-width: 680px) {
-  :root { --sb-width: 60px; }
-  .nav-label { display: none; }
-  .brand-wrap { padding: 16px 10px 12px; }
-  .brand .brand-text { display: none; }
-  .main-content { padding: 20px 16px 40px; }
+.hidden {
+  display: none !important;
 }
+
+.bubble {
+  padding: 12px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.bubble.me {
+  background: rgba(74,158,255,0.15);
+  margin-left: 20px;
+}
+
+.bubble.ai {
+  background: rgba(155,92,255,0.12);
+}
+
+.answer {
+  background: transparent;
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.raw {
+  background: rgba(0,0,0,0.3);
+  padding: 10px;
+  border-radius: 6px;
+  font-family: 'Courier New';
+  font-size: 12px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.stages {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.pill.green {
+  background: rgba(45,211,111,0.2);
+  color: var(--green);
+}
+
+.pill.blue {
+  background: rgba(74,158,255,0.2);
+  color: var(--accent);
+}
+
+.pill.amber {
+  background: rgba(245,166,35,0.2);
+  color: var(--amber);
+}
+
+.pill.purple {
+  background: rgba(155,92,255,0.2);
+  color: var(--purple);
+}
+
+.err {
+  padding: 10px;
+  background: rgba(255,92,92,0.15);
+  border: 1px solid var(--red);
+  border-radius: 6px;
+  color: var(--red);
+  font-size: 12px;
+  margin-top: 10px;
+}
+
+.meta {
+  font-size: 12px;
+  color: var(--dim);
+  margin-top: 6px;
+}
+
+.spin {
+  display: inline-block;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================================
+   SCROLLBAR
+============================================================ */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--dim);
+}
+
+/* ============================================================
+   STATE BAR & CHARTS
+============================================================ */
+.statebar {
+  display: flex;
+  gap: 4px;
+  margin: 12px 0;
+}
+
+.state-block {
+  flex: 1;
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.exp-opt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.exp-opt input {
+  cursor: pointer;
+}
+
+.chart-bar {
+  display: inline-block;
+  height: 20px;
+  border-radius: 4px;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
 </style>
 </head>
 <body>
 
-<!-- THEME TOGGLE -->
-<button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">☀ Light</button>
-
 <div class="app">
 
-<!-- ============================================================
-     SIDEBAR
-============================================================ -->
+<!-- SIDEBAR -->
 <nav class="sidebar">
-  <div class="brand-wrap">
-    <div class="brand">
-      <i class="bolt">⚡</i>
-      <span class="brand-text">Divergence<span class="dot">.AI</span></span>
-    </div>
+  <div class="brand">
+    <span class="brand-icon">⚡</span>
+    <span class="brand-text">Divergence<span class="brand-dot">.AI</span></span>
   </div>
 
-  <div class="sidebar-body">
+  <div class="nav-section">
+    <button class="nav-item active" onclick="showPanel('translate')">
+      <span class="nav-icon">⚡</span>
+      <span>Translate</span>
+    </button>
+    <button class="nav-item" onclick="showPanel('debate')">
+      <span class="nav-icon">👥</span>
+      <span>Debate</span>
+    </button>
+    <button class="nav-item" onclick="showPanel('consensus')">
+      <span class="nav-icon">∞</span>
+      <span>Consensus</span>
+    </button>
+    <button class="nav-item" onclick="showPanel('synthesis')">
+      <span class="nav-icon">⚛</span>
+      <span>Synthesis</span>
+    </button>
+  </div>
 
-    <!-- TOP: Claude-familiar -->
-    <div class="nav-section">
+  <div class="nav-divider"></div>
 
-      <button class="nav-item" onclick="showPanel('dashboard')">
-        <span class="nav-icon-wrap">
-          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
-        </span>
-        <span class="nav-label">Dashboard</span>
-      </button>
+  <div class="nav-section">
+    <button class="nav-item" onclick="showPanel('memory')">
+      <span class="nav-icon">💭</span>
+      <span>Memory Stores</span>
+    </button>
+    <button class="nav-item" onclick="showPanel('skills')">
+      <span class="nav-icon">🔧</span>
+      <span>Skills</span>
+    </button>
+    <button class="nav-item" onclick="showPanel('resources')">
+      <span class="nav-icon">📚</span>
+      <span>Resources</span>
+    </button>
+    <button class="nav-item" onclick="showPanel('projects')">
+      <span class="nav-icon">💼</span>
+      <span>Projects</span>
+    </button>
+    <button class="nav-item" onclick="showPanel('tasks')">
+      <span class="nav-icon">☑</span>
+      <span>Tasks</span>
+    </button>
+  </div>
 
-      <button class="nav-item" onclick="showPanel('new')">
-        <span class="nav-icon-wrap">
-          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        </span>
-        <span class="nav-label">Create New</span>
-      </button>
+  <div class="nav-divider"></div>
 
-      <button class="nav-item" onclick="showPanel('messages')">
-        <span class="nav-icon-wrap">
-          <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        </span>
-        <span class="nav-label">Messages</span>
-      </button>
+  <div class="nav-section">
+    <button class="nav-item" onclick="showPanel('transparency')">
+      <span class="nav-icon">👁</span>
+      <span>Transparency</span>
+    </button>
+    <button class="nav-item" onclick="showPanel('confidence')">
+      <span class="nav-icon">◎</span>
+      <span>Confidence</span>
+    </button>
+    <button class="nav-item" onclick="showPanel('multiai')">
+      <span class="nav-icon">⚙</span>
+      <span>Advanced</span>
+    </button>
+  </div>
 
-      <button class="nav-item" onclick="showPanel('archive')">
-        <span class="nav-icon-wrap">
-          <svg viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5" rx="1"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
-        </span>
-        <span class="nav-label">Archive</span>
-      </button>
+  <div class="nav-divider"></div>
 
-      <button class="nav-item" onclick="showPanel('resources')">
-        <span class="nav-icon-wrap">
-          <svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="2"/><circle cx="16" cy="8" r="2"/><circle cx="12" cy="18" r="2"/><line x1="8" y1="10" x2="12" y2="16"/><line x1="16" y1="10" x2="12" y2="16"/></svg>
-        </span>
-        <span class="nav-label">Resources</span>
-      </button>
-
-      <button class="nav-item" onclick="showPanel('projects')">
-        <span class="nav-icon-wrap">
-          <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
-        </span>
-        <span class="nav-label">Projects</span>
-      </button>
-
-      <button class="nav-item" onclick="showPanel('integrations')">
-        <span class="nav-icon-wrap">
-          <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/><line x1="14" y1="4" x2="10" y2="20"/></svg>
-        </span>
-        <span class="nav-label">Integrations</span>
-      </button>
-
-      <button class="nav-item" onclick="showPanel('tasks')">
-        <span class="nav-icon-wrap">
-          <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><polyline points="3 6 4 7 6 5"/><polyline points="3 12 4 13 6 11"/><polyline points="3 18 4 19 6 17"/></svg>
-        </span>
-        <span class="nav-label">Tasks</span>
-      </button>
-
-      <button class="nav-item" onclick="showPanel('customize')">
-        <span class="nav-icon-wrap">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        </span>
-        <span class="nav-label">Customize</span>
-      </button>
-
-    </div><!-- /top nav -->
-
-    <div class="nav-divider"></div>
-
-    <!-- BOTTOM: Divergence.AI features -->
-    <div class="nav-section">
-
-      <button class="nav-item active" id="nav-translate" onclick="showPanel('translate')">
-        <span class="nav-icon-wrap">
-          <svg viewBox="0 0 24 24"><polyline points="8 6 2 12 8 18"/><polyline points="16 6 22 12 16 18"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
-        </span>
-        <span class="nav-label">Translate</span>
-      </button>
-
-      <button class="nav-item" id="nav-memory" onclick="showPanel('memory');renderMemoryPanel()">
-        <span class="nav-icon-wrap">
-          <svg viewBox="0 0 24 24"><path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/><path d="M10 17l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" fill="currentColor"/></svg>
-        </span>
-        <span class="nav-label">Memory</span>
-      </button>
-
-      <button class="nav-item" id="nav-skills" onclick="showPanel('skills');renderSkillsPanel()">
-        <span class="nav-icon-wrap">
-          <svg viewBox="0 0 24 24"><path d="M6 9c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
-        </span>
-        <span class="nav-label">Skills</span>
-      </button>
-
-      <button class="nav-item" id="nav-advanced" onclick="showPanel('advanced')">
-        <span class="nav-icon-wrap">
-          <svg viewBox="0 0 24 24"><path d="M12 2c5.52 0 10 3.13 10 7v6c0 3.87-4.48 7-10 7s-10-3.13-10-7V9c0-3.87 4.48-7 10-7m0 2c-4.41 0-8 2.24-8 5v6c0 2.76 3.59 5 8 5s8-2.24 8-5V9c0-2.76-3.59-5-8-5z"/></svg>
-        </span>
-        <span class="nav-label">Advanced</span>
-      </button>
-
-      <button class="nav-item" onclick="showPanel('route')">
-        <span class="nav-icon-wrap">
-          <svg viewBox="0 0 24 24"><rect x="2" y="2" width="6" height="6" rx="1"/><rect x="16" y="2" width="6" height="6" rx="1"/><rect x="9" y="16" width="6" height="6" rx="1"/><line x1="5" y1="8" x2="5" y2="14"/><line x1="5" y1="14" x2="12" y2="14"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="19" y1="14" x2="12" y2="14"/><line x1="12" y1="14" x2="12" y2="16"/></svg>
-        </span>
-        <span class="nav-label">Route/Model</span>
-      </button>
-
-      <button class="nav-item" onclick="showPanel('techniques')">
-        <span class="nav-icon-wrap">
-          <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-        </span>
-        <span class="nav-label">Techniques</span>
-      </button>
-
-      <button class="nav-item" onclick="showPanel('execute')">
-        <span class="nav-icon-wrap">
-          <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><polygon points="13 8 9 12 13 16 13 8" fill="currentColor" stroke="none"/></svg>
-        </span>
-        <span class="nav-label">Answer/Execute</span>
-      </button>
-
-      <button class="nav-item" onclick="showPanel('feedback')">
-        <span class="nav-icon-wrap">
-          <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-        </span>
-        <span class="nav-label">Feedback</span>
-      </button>
-
-      <button class="nav-item" onclick="showPanel('debate')">
-        <span class="nav-icon-wrap">
-          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        </span>
-        <span class="nav-label">Debate</span>
-      </button>
-
-      <button class="nav-item" onclick="showPanel('consensus')">
-        <span class="nav-icon-wrap">
-          <svg viewBox="0 0 24 24"><path d="M18.178 8c5.096 0 5.096 8 0 8-5.095 0-7.133-8-12.739-8C.733 8 .733 16 5.44 16c5.605 0 7.643-8 12.738-8z"/></svg>
-        </span>
-        <span class="nav-label">Consensus</span>
-      </button>
-
-      <button class="nav-item" onclick="showPanel('synthesis')">
-        <span class="nav-icon-wrap">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><line x1="12" y1="7" x2="5" y2="17"/><line x1="12" y1="7" x2="19" y2="17"/><line x1="7" y1="19" x2="17" y2="19"/></svg>
-        </span>
-        <span class="nav-label">Synthesis</span>
-      </button>
-
-      <button class="nav-item" onclick="showPanel('accountswap')">
-        <span class="nav-icon-wrap">
-          <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><polyline points="16 3 18 5 16 7"/><line x1="14" y1="5" x2="18" y2="5"/></svg>
-        </span>
-        <span class="nav-label">Account Swap</span>
-      </button>
-
-      <button class="nav-item" onclick="showPanel('history')">
-        <span class="nav-icon-wrap">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        </span>
-        <span class="nav-label">History</span>
-      </button>
-
-      <button class="nav-item" onclick="showPanel('settings')">
-        <span class="nav-icon-wrap">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        </span>
-        <span class="nav-label">Settings</span>
-      </button>
-
-      <button class="nav-item" onclick="showPanel('help')">
-        <span class="nav-icon-wrap">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-        </span>
-        <span class="nav-label">Help/Glossary</span>
-      </button>
-
-      <button class="nav-item" onclick="showPanel('multiai')">
-        <span class="nav-icon-wrap">
-          <svg viewBox="0 0 24 24"><rect x="1" y="5" width="22" height="14" rx="7"/><circle cx="16" cy="12" r="3" fill="currentColor" stroke="none"/></svg>
-        </span>
-        <span class="nav-label">Multi-AI On/Off</span>
-      </button>
-
-      <button class="nav-item" onclick="showPanel('confidence')">
-        <span class="nav-icon-wrap">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><line x1="12" y1="10" x2="6" y2="16"/><line x1="12" y1="10" x2="18" y2="16"/><circle cx="12" cy="14" r="1.5"/></svg>
-        </span>
-        <span class="nav-label">Confidence</span>
-      </button>
-
-      <button class="nav-item" onclick="showPanel('transparency')">
-        <span class="nav-icon-wrap">
-          <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-        </span>
-        <span class="nav-label">Transparency/Details</span>
-      </button>
-
-    </div><!-- /bottom nav -->
-
-  </div><!-- /sidebar-body -->
-
-  <div class="sidebar-footer">
+  <div class="nav-section">
     <button class="nav-item" onclick="showPanel('download')">
-      <span class="nav-icon-wrap">
-        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      </span>
-      <span class="nav-label">Download</span>
+      <span class="nav-icon">⬇</span>
+      <span>Download</span>
     </button>
-    <button class="nav-item" onclick="showPanel('profile')">
-      <span class="profile-avatar" id="profileAvatar">D</span>
-      <span class="nav-label">Profile</span>
+    <button class="nav-item" onclick="showPanel('settings')">
+      <span class="nav-icon">⚙</span>
+      <span>Settings</span>
+    </button>
+    <button class="nav-item" onclick="showPanel('help')">
+      <span class="nav-icon">?</span>
+      <span>Help</span>
     </button>
   </div>
+</nav>
 
-</nav><!-- /sidebar -->
-
-<!-- ============================================================
-     MAIN CONTENT
-============================================================ -->
+<!-- MAIN CONTENT -->
 <main class="main-content">
 
-  <!-- ===== TRANSLATE PANEL (default active) ===== -->
+  <!-- TRANSLATE PANEL (default) -->
   <div id="panel-translate">
     <div class="page-header">
-      <div class="page-title">⚡ Divergence<span style="-webkit-text-fill-color:#9b5cff;color:#9b5cff">.AI</span></div>
+      <div class="page-title">
+        <div class="page-title-icon">🧠</div>
+        <div class="page-title-text">Divergence<span class="purple">.AI</span></div>
+      </div>
       <p class="page-sub">Type how you actually think. Get back an answer with no flattery, no flow-breaking, no overwhelm.</p>
     </div>
 
-    <!-- API KEY -->
     <div class="card">
       <label>Anthropic API Key <span style="text-transform:none;font-weight:400">(stored only in this browser — never leaves your device except to Anthropic)</span></label>
       <input type="password" id="apiKey" placeholder="sk-ant-...">
       <p class="meta">Get one free at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>. Saved locally — paste once.</p>
     </div>
 
-    <!-- INPUT -->
     <div class="card">
       <label>What's on your mind? (ramble freely)</label>
       <textarea id="input" placeholder="okay so like i've been thinking... should i use react or vue for this thing, but also what about speed, and honestly i'm kinda overwhelmed by all the options ugh"></textarea>
-      <div class="row" style="margin-top:12px">
+
+      <div class="row">
         <div>
           <label>Model</label>
           <select id="model">
-            <option value="claude-haiku-4-5-20251001">Haiku 4.5 — fast &amp; cheap</option>
-            <option value="claude-opus-4-8" selected>Opus 4.8 — smartest</option>
+            <option value="claude-opus-4-8">Opus 4.8 — smartest</option>
             <option value="claude-sonnet-4-6">Sonnet 4.6 — balanced</option>
+            <option value="claude-haiku-4-5-20251001">Haiku 4.5 — fast & cheap</option>
           </select>
         </div>
         <div>
           <label>Directness</label>
           <select id="directness">
+            <option value="high">High — direct but human</option>
             <option value="max">Max — robotic, zero pleasantries</option>
-            <option value="high" selected>High — direct but human</option>
             <option value="off">Off — leave AI as-is</option>
           </select>
         </div>
       </div>
-      <button class="go" id="goBtn" onclick="run()">Translate &amp; Ask →</button>
-      <div class="row" style="margin-top:10px;gap:8px">
-        <button onclick="newConversation()" style="flex:1;padding:11px;background:var(--bg-card2);color:var(--text);border:1px solid var(--border);border-radius:9px;cursor:pointer;font-family:inherit;font-size:.85rem">🔄 New Conversation</button>
-        <button onclick="openExport()" style="flex:1;padding:11px;background:var(--bg-card2);color:var(--text);border:1px solid var(--border);border-radius:9px;cursor:pointer;font-family:inherit;font-size:.85rem">⬇ Export Markdown</button>
-      </div>
-      <div class="meta" id="memoryNote">💭 Sessions: ON (conversation memory) · 🧠 Memory Stores: ON (learning patterns across conversations). Check Memory panel to see what I've learned.</div>
-      <div class="err hidden" id="err"></div>
+
+      <button class="go" id="goBtn">Translate & Ask →</button>
+      <div id="err" class="err hidden"></div>
     </div>
 
-    <!-- CONVERSATION THREAD -->
     <div class="card hidden" id="threadCard">
       <label>Conversation</label>
       <div id="thread"></div>
     </div>
 
-    <!-- EXPORT DIALOG -->
-    <div class="card hidden" id="exportCard">
-      <label>Export to Markdown</label>
-      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px">
-        <label class="exp-opt"><input type="checkbox" id="expMine" checked> Include <b>my</b> messages</label>
-        <label class="exp-opt"><input type="checkbox" id="expAI" checked> Include <b>AI</b> replies</label>
-        <label class="exp-opt"><input type="checkbox" id="expTime" checked> Include timestamps</label>
-        <label class="exp-opt"><input type="checkbox" id="expState"> Include mood/state reads</label>
-        <label class="exp-opt"><input type="checkbox" id="expRaw"> Include raw (pre-cleanup) answers</label>
-      </div>
-      <div class="row" style="gap:8px">
-        <button onclick="doExport()" style="flex:1;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:9px;cursor:pointer;font-family:inherit;font-weight:600">Download .md</button>
-        <button onclick="$('exportCard').classList.add('hidden')" style="flex:1;padding:12px;background:var(--bg-card2);color:var(--text);border:1px solid var(--border);border-radius:9px;cursor:pointer;font-family:inherit">Cancel</button>
-      </div>
-    </div>
-
-    <!-- STATE READ -->
-    <div class="card hidden" id="stateCard">
-      <label>How I read your last message</label>
-      <div class="statebar" id="stateBar"></div>
-      <div class="meta" id="stateNote"></div>
-    </div>
-
-    <!-- ANSWER (latest) -->
     <div class="card hidden" id="answerCard">
       <label>Latest Answer</label>
-      <div class="answer" id="answer"></div>
-      <div class="stages" id="stages"></div>
+      <div id="answer" class="answer"></div>
+      <div id="stages" class="stages"></div>
       <details>
         <summary>Show raw answer (before cleanup)</summary>
-        <div class="raw" id="raw"></div>
+        <div id="raw" class="raw"></div>
       </details>
     </div>
-  </div><!-- /translate panel -->
+  </div>
 
-  <!-- MEMORY STORES (what the app has learned about you) -->
+  <!-- DEBATE PANEL -->
+  <div id="panel-debate" class="hidden">
+    <div class="page-header">
+      <div class="page-title" style="font-size:1.5rem">👥 Debate</div>
+      <p class="page-sub">Get two different AI perspectives on the same question.</p>
+    </div>
+    <div class="card" id="debateInputCard">
+      <label>Your Question</label>
+      <textarea id="debateInput" placeholder="What should I consider..."></textarea>
+      <button class="go" onclick="runDebate()">Start Debate →</button>
+      <div id="debateErr" class="err hidden"></div>
+    </div>
+    <div class="card hidden" id="debateResultsCard">
+      <label>Debate Results</label>
+      <div id="debateResults"></div>
+    </div>
+  </div>
+
+  <!-- CONSENSUS PANEL -->
+  <div id="panel-consensus" class="hidden">
+    <div class="page-header">
+      <div class="page-title" style="font-size:1.5rem">∞ Consensus</div>
+      <p class="page-sub">See agreement and divergence across multiple models.</p>
+    </div>
+    <div class="card" id="consensusInputCard">
+      <label>Your Question</label>
+      <textarea id="consensusInput" placeholder="What should I consider..."></textarea>
+      <button class="go" onclick="runConsensus()">Find Consensus →</button>
+      <div id="consensusErr" class="err hidden"></div>
+    </div>
+    <div class="card hidden" id="consensusResultsCard">
+      <label>Consensus Results</label>
+      <div id="consensusResults"></div>
+    </div>
+  </div>
+
+  <!-- SYNTHESIS PANEL -->
+  <div id="panel-synthesis" class="hidden">
+    <div class="page-header">
+      <div class="page-title" style="font-size:1.5rem">⚛ Synthesis</div>
+      <p class="page-sub">Distill your conversation into key insights.</p>
+    </div>
+    <div class="card" id="synthesisInputCard">
+      <label>Synthesis Options</label>
+      <label class="exp-opt"><input type="checkbox" id="synthTopic" checked> Include main topics discussed</label>
+      <label class="exp-opt"><input type="checkbox" id="synthConclusion" checked> Include conclusions</label>
+      <label class="exp-opt"><input type="checkbox" id="synthActionItems" checked> Extract action items</label>
+      <button class="go" onclick="runSynthesis()">Synthesize Conversation →</button>
+      <div id="synthesisErr" class="err hidden"></div>
+    </div>
+    <div class="card hidden" id="synthesisResultsCard">
+      <label>Synthesis Results</label>
+      <div id="synthesisResults"></div>
+    </div>
+  </div>
+
+  <!-- MEMORY STORES PANEL -->
   <div id="panel-memory" class="hidden">
     <div class="page-header">
-      <div class="page-title" style="font-size:1.5rem">Memory Stores</div>
+      <div class="page-title" style="font-size:1.5rem">💭 Memory Stores</div>
       <p class="page-sub">What Divergence.AI has learned about your patterns across all conversations.</p>
     </div>
 
@@ -879,356 +732,137 @@ summary { cursor: pointer; color: var(--accent); font-size: .85rem; }
     <div class="card">
       <label>Actions</label>
       <div style="display:flex;gap:8px">
-        <button onclick="clearLearner()" style="flex:1;padding:10px;background:var(--red);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:inherit;font-weight:600">🗑 Reset Profile</button>
-        <button onclick="exportProfile()" style="flex:1;padding:10px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:inherit;font-weight:600">⬇ Export Profile</button>
+        <button class="quick-btn" onclick="clearLearner()">🗑 Reset Profile</button>
+        <button class="quick-btn" onclick="exportProfile()">⬇ Export Profile</button>
       </div>
       <p class="meta" style="margin-top:10px">Reset clears all learned patterns. Export saves your profile as JSON.</p>
     </div>
   </div>
 
-  <!-- SKILLS (specialized techniques for different task types) -->
+  <!-- SKILLS PANEL -->
   <div id="panel-skills" class="hidden">
     <div class="page-header">
-      <div class="page-title" style="font-size:1.5rem">Skills</div>
+      <div class="page-title" style="font-size:1.5rem">🔧 Skills</div>
       <p class="page-sub">Teach Claude specialized techniques. Built-in + custom.</p>
     </div>
 
     <div class="card">
       <label>Your Skills</label>
       <div id="skillsList" style="max-height:400px;overflow-y:auto"></div>
-      <button onclick="addSkill()" style="margin-top:12px;width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:inherit;font-weight:600">+ Add Custom Skill</button>
+      <button class="go" style="margin-top:12px" onclick="addSkill()">+ Add Custom Skill</button>
       <p class="meta" style="margin-top:10px">Built-in skills are always available. Custom skills you create are stored and matched by keyword.</p>
     </div>
-
-    <div class="card">
-      <label>How Skills Work</label>
-      <p class="meta">When you ask a question, Divergence.AI detects which skill matches (based on keywords). If a match is found, special instructions are added to tell Claude how to handle that task type. You can see which skill was activated in the Transparency panel.</p>
-    </div>
   </div>
 
-  <!-- ADVANCED: Agents, Batches, Environments (educational) -->
-  <div id="panel-advanced" class="hidden">
-    <div class="page-header">
-      <div class="page-title" style="font-size:1.5rem">Advanced: Agents, Batches, Environments</div>
-      <p class="page-sub">How Anthropic's powerful features could extend Divergence.AI</p>
-    </div>
-
-    <div class="card">
-      <label>🤖 Agents</label>
-      <p style="font-weight:600;margin:0 0 6px 0;color:var(--accent)">Autonomous AI that runs without you asking</p>
-      <p class="meta" style="margin:0 0 10px 0">Agents are Claude instances that can operate independently, making decisions and taking actions in a loop.</p>
-      <div style="background:var(--bg-card2);border-left:3px solid var(--accent);padding:10px;border-radius:6px;margin:10px 0;font-size:.9rem">
-        <b style="color:var(--text)">For Divergence.AI:</b><br/>
-        • <b>Research Agent:</b> Runs nightly, finds new articles on ADHD, executive dysfunction, productivity. Summarizes them using your Summarize skill. Adds to a "Recent Research" feed.<br/>
-        • <b>Pattern Agent:</b> Analyzes your past 50 conversations, identifies recurring questions/challenges, suggests new Skills that would help.<br/>
-        • <b>Learning Agent:</b> Watches your Memory Stores, detects if you're becoming more frequently overwhelmed, proactively suggests adjustments to your system prompt.
-      </div>
-      <p class="meta">⏭️ <b>Next Step:</b> When you're ready, I could build an Agent system that automatically runs background research or analysis while you work.</p>
-    </div>
-
-    <div class="card">
-      <label>📦 Batches</label>
-      <p style="font-weight:600;margin:0 0 6px 0;color:var(--green)">Process large volume of questions at once (with cost savings)</p>
-      <p class="meta" style="margin:0 0 10px 0">Batches let you queue up 100s or 1000s of questions to be processed asynchronously, often at a 50% discount.</p>
-      <div style="background:var(--bg-card2);border-left:3px solid var(--green);padding:10px;border-radius:6px;margin:10px 0;font-size:.9rem">
-        <b style="color:var(--text)">For Divergence.AI:</b><br/>
-        • <b>Journaling Batch:</b> Dump 500 journal entries. Claude processes them all: extracts themes, answers open questions, identifies patterns you've been sitting on.<br/>
-        • <b>Archive Batch:</b> Analyze all past conversations for insights. Generate a comprehensive profile of your thinking patterns, decision-making style, repeated challenges.<br/>
-        • <b>Feedback Batch:</b> Rate 200 past answers in bulk. System learns which response types you prefer and auto-adjusts Memory Stores faster.
-      </div>
-      <p class="meta">⏭️ <b>Next Step:</b> Could implement a "Batch Import" feature where you paste a list of questions and get them all answered cheaply overnight.</p>
-    </div>
-
-    <div class="card">
-      <label>🌍 Environments</label>
-      <p style="font-weight:600;margin:0 0 6px 0;color:var(--amber)">Separate testing sandbox from production</p>
-      <p class="meta" style="margin:0 0 10px 0">Environments let you safely test changes before rolling them to live users. Critical when Divergence.AI goes public.</p>
-      <div style="background:var(--bg-card2);border-left:3px solid var(--amber);padding:10px;border-radius:6px;margin:10px 0;font-size:.9rem">
-        <b style="color:var(--text)">For Divergence.AI:</b><br/>
-        • <b>Personal Dev:</b> Right now—you're the only user. Your session IS the sandbox. Test new Memory behaviors, new Skills, new pipeline stages. Data is yours.<br/>
-        • <b>Public Beta:</b> When shared with others (friends, Google Play). Separate API key, separate data. You don't want your personal Memory Stores mixing with beta testers' data.<br/>
-        • <b>Production:</b> The stable, tested version. If someone pays for it, they get the hardened version, not your experiments.
-      </div>
-      <p class="meta">⏭️ <b>Next Step:</b> Currently unnecessary—you own the only instance. But when scaling to multiple users, we'd create a Settings panel to choose environment (dev/beta/prod).</p>
-    </div>
-
-    <div class="card">
-      <label>Integration Path</label>
-      <p class="meta"><b>Phase 1 (now):</b> You manually tweak Memory Stores and Skills.<br/>
-      <b>Phase 2:</b> Add Agents to auto-research + learn behind the scenes.<br/>
-      <b>Phase 3:</b> Add Batches to process archives cheaply.<br/>
-      <b>Phase 4:</b> Multi-user: split into dev/prod environments.</p>
-    </div>
-  </div>
-
-  <!-- ===== FUNCTIONAL PANELS ===== -->
-
-  <!-- DASHBOARD -->
-  <div id="panel-dashboard" class="hidden">
-    <div class="page-header"><div class="page-title" style="font-size:1.5rem">⊞ Dashboard</div><p class="page-sub">Your Divergence.AI at a glance.</p></div>
-    <div class="row" style="gap:10px;flex-wrap:wrap">
-      <div class="card" style="flex:1;min-width:140px"><label>Messages This Session</label><div id="dashMsgs" style="font-size:2rem;font-weight:600;color:var(--accent)">0</div></div>
-      <div class="card" style="flex:1;min-width:140px"><label>Conversations Learned</label><div id="dashConvs" style="font-size:2rem;font-weight:600;color:var(--green)">0</div></div>
-    </div>
-    <div class="row" style="gap:10px;flex-wrap:wrap">
-      <div class="card" style="flex:1;min-width:140px"><label>Current State</label><div id="dashState" style="font-size:1.2rem;font-weight:600;color:var(--amber)">—</div></div>
-      <div class="card" style="flex:1;min-width:140px"><label>Active Skills</label><div id="dashSkills" style="font-size:2rem;font-weight:600;color:var(--purple)">0</div></div>
-    </div>
-    <div class="card">
-      <label>Quick Launch</label>
-      <div class="row" style="gap:8px;flex-wrap:wrap">
-        <button onclick="showPanel('translate')" class="quick-btn">⚡ Translate</button>
-        <button onclick="showPanel('memory');renderMemoryPanel()" class="quick-btn">🧠 Memory</button>
-        <button onclick="showPanel('skills');renderSkillsPanel()" class="quick-btn">🎯 Skills</button>
-        <button onclick="showPanel('tasks');renderTasks()" class="quick-btn">☑ Tasks</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- CREATE NEW -->
-  <div id="panel-new" class="hidden">
-    <div class="page-header"><div class="page-title" style="font-size:1.5rem">＋ Create New</div><p class="page-sub">Start a fresh conversation.</p></div>
-    <div class="card">
-      <label>New Conversation</label>
-      <p class="meta" style="margin-bottom:12px">This clears the current thread (Memory Stores keep learning). Then takes you to Translate.</p>
-      <button onclick="newConversation();showPanel('translate')" style="width:100%;padding:14px;background:var(--accent);color:#fff;border:none;border-radius:9px;cursor:pointer;font-family:inherit;font-weight:600;font-size:1rem">Start Fresh Conversation →</button>
-    </div>
-  </div>
-
-  <!-- MESSAGES -->
-  <div id="panel-messages" class="hidden">
-    <div class="page-header"><div class="page-title" style="font-size:1.5rem">💬 Messages</div><p class="page-sub">Current conversation thread.</p></div>
-    <div class="card"><input type="text" id="msgSearch" placeholder="Search messages..." oninput="renderMessages()"></div>
-    <div class="card"><div id="messagesList"></div></div>
-  </div>
-
-  <!-- ARCHIVE -->
-  <div id="panel-archive" class="hidden">
-    <div class="page-header"><div class="page-title" style="font-size:1.5rem">🗄 Archive</div><p class="page-sub">Saved conversations — nothing deleted.</p></div>
-    <div class="card">
-      <label>Archive Current Conversation</label>
-      <p class="meta" style="margin-bottom:10px">Save the current thread so you can revisit it later.</p>
-      <button onclick="archiveCurrent()" style="width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:9px;cursor:pointer;font-family:inherit;font-weight:600">📥 Archive Current</button>
-    </div>
-    <div class="card"><label>Archived Conversations</label><div id="archiveList"></div></div>
-  </div>
-
-  <!-- RESOURCES -->
+  <!-- RESOURCES PANEL -->
   <div id="panel-resources" class="hidden">
-    <div class="page-header"><div class="page-title" style="font-size:1.5rem">🔗 Resources</div><p class="page-sub">Pinned links and notes you want always handy.</p></div>
-    <div class="card">
-      <label>Add Resource</label>
-      <input type="text" id="resTitle" placeholder="Title (e.g., ADHD article)">
-      <input type="text" id="resUrl" placeholder="URL or note" style="margin-top:8px">
-      <button onclick="addResource()" style="margin-top:10px;width:100%;padding:11px;background:var(--accent);color:#fff;border:none;border-radius:9px;cursor:pointer;font-family:inherit;font-weight:600">+ Add</button>
+    <div class="page-header">
+      <div class="page-title" style="font-size:1.5rem">📚 Resources</div>
+      <p class="page-sub">Store links, files, and context for easy reference.</p>
     </div>
-    <div class="card"><label>Your Resources</label><div id="resourcesList"></div></div>
+
+    <div class="card">
+      <label>Your Resources</label>
+      <div id="resourcesList" style="max-height:400px;overflow-y:auto"></div>
+      <button class="go" style="margin-top:12px" onclick="addResource()">+ Add Resource</button>
+    </div>
   </div>
 
-  <!-- PROJECTS -->
+  <!-- PROJECTS PANEL -->
   <div id="panel-projects" class="hidden">
-    <div class="page-header"><div class="page-title" style="font-size:1.5rem">💼 Projects</div><p class="page-sub">Group your work into named projects.</p></div>
-    <div class="card">
-      <label>Create Project</label>
-      <input type="text" id="projName" placeholder="Project name">
-      <button onclick="addProject()" style="margin-top:10px;width:100%;padding:11px;background:var(--accent);color:#fff;border:none;border-radius:9px;cursor:pointer;font-family:inherit;font-weight:600">+ Create Project</button>
+    <div class="page-header">
+      <div class="page-title" style="font-size:1.5rem">💼 Projects</div>
+      <p class="page-sub">Organize your work into projects.</p>
     </div>
-    <div class="card"><label>Your Projects</label><div id="projectsList"></div></div>
+
+    <div class="card">
+      <label>Your Projects</label>
+      <div id="projectsList" style="max-height:400px;overflow-y:auto"></div>
+      <button class="go" style="margin-top:12px" onclick="addProject()">+ New Project</button>
+    </div>
   </div>
 
-  <!-- INTEGRATIONS -->
-  <div id="panel-integrations" class="hidden">
-    <div class="page-header"><div class="page-title" style="font-size:1.5rem">⟨/⟩ Integrations</div><p class="page-sub">Connect external tools.</p></div>
-    <div class="card"><label>Available</label><div id="integrationsList"></div></div>
-  </div>
-
-  <!-- TASKS -->
+  <!-- TASKS PANEL -->
   <div id="panel-tasks" class="hidden">
-    <div class="page-header"><div class="page-title" style="font-size:1.5rem">☑ Tasks</div><p class="page-sub">Action items — manual or auto-extracted from conversations.</p></div>
+    <div class="page-header">
+      <div class="page-title" style="font-size:1.5rem">☑ Tasks</div>
+      <p class="page-sub">Keep track of action items.</p>
+    </div>
+
     <div class="card">
-      <label>Add Task</label>
-      <div class="row" style="gap:8px">
-        <input type="text" id="taskInput" placeholder="What needs doing?" style="flex:1" onkeydown="if(event.key==='Enter')addTask()">
-        <button onclick="addTask()" style="padding:11px 18px;background:var(--accent);color:#fff;border:none;border-radius:9px;cursor:pointer;font-family:inherit;font-weight:600">Add</button>
-      </div>
-      <button onclick="extractTasks()" style="margin-top:10px;width:100%;padding:11px;background:var(--bg-card2);color:var(--text);border:1px solid var(--border);border-radius:9px;cursor:pointer;font-family:inherit">🔍 Auto-extract from conversation</button>
-    </div>
-    <div class="card"><label>Your Tasks</label><div id="tasksList"></div></div>
-  </div>
-
-  <!-- CUSTOMIZE -->
-  <div id="panel-customize" class="hidden">
-    <div class="page-header"><div class="page-title" style="font-size:1.5rem">🎨 Customize</div><p class="page-sub">Tune the look and feel.</p></div>
-    <div class="card">
-      <label>Accent Color</label>
-      <div class="row" style="gap:8px;flex-wrap:wrap;margin-top:8px">
-        <button onclick="setAccent('#4a9eff')" style="width:44px;height:44px;border-radius:10px;background:#4a9eff;border:2px solid var(--border);cursor:pointer"></button>
-        <button onclick="setAccent('#2dd36f')" style="width:44px;height:44px;border-radius:10px;background:#2dd36f;border:2px solid var(--border);cursor:pointer"></button>
-        <button onclick="setAccent('#9b5cff')" style="width:44px;height:44px;border-radius:10px;background:#9b5cff;border:2px solid var(--border);cursor:pointer"></button>
-        <button onclick="setAccent('#f5a623')" style="width:44px;height:44px;border-radius:10px;background:#f5a623;border:2px solid var(--border);cursor:pointer"></button>
-        <button onclick="setAccent('#ff5c5c')" style="width:44px;height:44px;border-radius:10px;background:#ff5c5c;border:2px solid var(--border);cursor:pointer"></button>
-      </div>
-    </div>
-    <div class="card">
-      <label>Font Size: <span id="fontSizeVal">16</span>px</label>
-      <input type="range" id="fontSizeSlider" min="13" max="22" value="16" oninput="setFontSize(this.value)" style="width:100%;margin-top:8px">
-    </div>
-    <div class="card">
-      <label>Theme</label>
-      <div class="row" style="gap:8px">
-        <button onclick="setTheme('dark')" class="quick-btn">🌑 Dark</button>
-        <button onclick="setTheme('light')" class="quick-btn">☀ Light</button>
-      </div>
+      <label>Your Tasks</label>
+      <div id="tasksList" style="max-height:400px;overflow-y:auto"></div>
+      <button class="go" style="margin-top:12px" onclick="addTask()">+ New Task</button>
     </div>
   </div>
 
-  <!-- ROUTE / MODEL -->
-  <div id="panel-route" class="hidden">
-    <div class="page-header"><div class="page-title" style="font-size:1.5rem">⎇ Route / Model</div><p class="page-sub">Which model handled your last question, and why.</p></div>
-    <div class="card"><label>Last Routing Decision</label><div id="routeInfo"><p class="meta">Ask something first — routing details will appear here.</p></div></div>
-    <div class="card">
-      <label>Model Guide</label>
-      <p class="meta"><b>Haiku 4.5</b> — fast & cheap. Best for quick questions, low cost.<br/><br/><b>Sonnet 4.6</b> — balanced. Good default for most work.<br/><br/><b>Opus 4.8</b> — smartest. Best for hard reasoning, worth the cost when it matters.</p>
-    </div>
-  </div>
-
-  <!-- TECHNIQUES -->
-  <div id="panel-techniques" class="hidden">
-    <div class="page-header"><div class="page-title" style="font-size:1.5rem">🔧 Techniques</div><p class="page-sub">The ADHD-specific engines running on every answer.</p></div>
-    <div class="card"><div id="techniquesList"></div></div>
-  </div>
-
-  <!-- ANSWER / EXECUTE -->
-  <div id="panel-execute" class="hidden">
-    <div class="page-header"><div class="page-title" style="font-size:1.5rem">▶ Answer / Execute</div><p class="page-sub">Pick any answer from the conversation and turn it into action.</p></div>
-    <div class="card">
-      <label>Choose an answer</label>
-      <select id="execSelect" onchange="renderExecute()" style="margin-bottom:12px"></select>
-      <div id="executeAnswer" class="answer" style="margin-bottom:12px"><p class="meta">No answer yet.</p></div>
-      <div class="row" style="gap:8px;flex-wrap:wrap">
-        <button onclick="execCopy()" class="quick-btn">📋 Copy</button>
-        <button onclick="execToTask()" class="quick-btn">☑ Make Task</button>
-        <button onclick="execToResource()" class="quick-btn">🔗 Save as Resource</button>
-        <button onclick="execToSynthesis()" class="quick-btn">⚛ Send to Synthesis</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- FEEDBACK -->
-  <div id="panel-feedback" class="hidden">
-    <div class="page-header"><div class="page-title" style="font-size:1.5rem">★ Feedback</div><p class="page-sub">Rate answers — this tunes Memory Stores to you.</p></div>
-    <div class="card">
-      <label>Rate the Last Answer</label>
-      <div id="feedbackAnswer" class="answer" style="margin:8px 0 14px"><p class="meta">No answer to rate yet.</p></div>
-      <div class="row" style="gap:8px">
-        <button onclick="rateAnswer('up')" style="flex:1;padding:14px;background:var(--green);color:#fff;border:none;border-radius:9px;cursor:pointer;font-family:inherit;font-weight:600;font-size:1.1rem">👍 Good</button>
-        <button onclick="rateAnswer('down')" style="flex:1;padding:14px;background:var(--red);color:#fff;border:none;border-radius:9px;cursor:pointer;font-family:inherit;font-weight:600;font-size:1.1rem">👎 Off</button>
-      </div>
-    </div>
-    <div class="card"><label>Feedback History</label><div id="feedbackStats"></div></div>
-  </div>
-
-  <!-- DEBATE -->
-  <div id="panel-debate" class="hidden">
-    <div class="page-header"><div class="page-title" style="font-size:1.5rem">👥 Debate</div><p class="page-sub">Two AI perspectives argue both sides of a question.</p></div>
-    <div class="card">
-      <label>Question to Debate</label>
-      <textarea id="debateInput" placeholder="e.g., Should I use React or Vue?"></textarea>
-      <button onclick="runDebate()" id="debateBtn" style="margin-top:10px;width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:9px;cursor:pointer;font-family:inherit;font-weight:600">⚔ Run Debate</button>
-    </div>
-    <div class="card hidden" id="debateResult">
-      <label style="color:var(--green)">Side A — For</label><div id="debateFor" class="answer" style="margin-bottom:16px"></div>
-      <label style="color:var(--red)">Side B — Against</label><div id="debateAgainst" class="answer"></div>
-    </div>
-  </div>
-
-  <!-- CONSENSUS -->
-  <div id="panel-consensus" class="hidden">
-    <div class="page-header"><div class="page-title" style="font-size:1.5rem">∞ Consensus</div><p class="page-sub">Ask multiple models the same thing — see where they agree.</p></div>
-    <div class="card">
-      <label>Question</label>
-      <textarea id="consensusInput" placeholder="Ask something factual or opinion-based..."></textarea>
-      <button onclick="runConsensus()" id="consensusBtn" style="margin-top:10px;width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:9px;cursor:pointer;font-family:inherit;font-weight:600">🗳 Poll Models</button>
-    </div>
-    <div class="card hidden" id="consensusResult"><label>Responses</label><div id="consensusList"></div></div>
-  </div>
-
-  <!-- SYNTHESIS -->
-  <div id="panel-synthesis" class="hidden">
-    <div class="page-header"><div class="page-title" style="font-size:1.5rem">⚛ Synthesis</div><p class="page-sub">Merge your whole conversation into one coherent summary.</p></div>
-    <div class="card">
-      <p class="meta" style="margin-bottom:12px">Takes everything from the current conversation and produces a single distilled summary of conclusions, decisions, and open questions.</p>
-      <button onclick="runSynthesis()" id="synthBtn" style="width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:9px;cursor:pointer;font-family:inherit;font-weight:600">⚛ Synthesize Conversation</button>
-    </div>
-    <div class="card hidden" id="synthResult"><label>Synthesis</label><div id="synthOutput" class="answer"></div></div>
-  </div>
-
-  <!-- ACCOUNT SWAP -->
-  <div id="panel-accountswap" class="hidden">
-    <div class="page-header"><div class="page-title" style="font-size:1.5rem">👤 Account Swap</div><p class="page-sub">Store multiple API keys, switch instantly.</p></div>
-    <div class="card">
-      <label>Save a Key</label>
-      <input type="text" id="acctLabel" placeholder="Label (e.g., Personal)">
-      <input type="password" id="acctKey" placeholder="sk-ant-..." style="margin-top:8px">
-      <button onclick="saveAccount()" style="margin-top:10px;width:100%;padding:11px;background:var(--accent);color:#fff;border:none;border-radius:9px;cursor:pointer;font-family:inherit;font-weight:600">+ Save Key</button>
-    </div>
-    <div class="card"><label>Saved Keys</label><div id="accountsList"></div></div>
-  </div>
-
-  <!-- HISTORY -->
-  <div id="panel-history" class="hidden">
-    <div class="page-header"><div class="page-title" style="font-size:1.5rem">🕐 History</div><p class="page-sub">All archived conversations, newest first.</p></div>
-    <div class="card"><div id="historyList"></div></div>
-  </div>
-
-  <!-- HELP / GLOSSARY -->
-  <div id="panel-help" class="hidden">
-    <div class="page-header"><div class="page-title" style="font-size:1.5rem">? Help / Glossary</div><p class="page-sub">What every term means.</p></div>
-    <div class="card"><input type="text" id="helpSearch" placeholder="Search terms..." oninput="renderHelp()"></div>
-    <div class="card"><div id="helpList"></div></div>
-  </div>
-
-  <!-- MULTI-AI -->
-  <div id="panel-multiai" class="hidden">
-    <div class="page-header"><div class="page-title" style="font-size:1.5rem">⊙ Multi-AI</div><p class="page-sub">Compare answers across models at once.</p></div>
-    <div class="card">
-      <label>Multi-AI Mode</label>
-      <p class="meta" style="margin-bottom:12px">When ON, Debate and Consensus tools query multiple models. When OFF, single-model only (cheaper/faster).</p>
-      <button id="multiaiToggle" onclick="toggleMultiAI()" style="width:100%;padding:13px;border:none;border-radius:9px;cursor:pointer;font-family:inherit;font-weight:600;font-size:1rem"></button>
-    </div>
-  </div>
-
-  <!-- CONFIDENCE -->
-  <div id="panel-confidence" class="hidden">
-    <div class="page-header"><div class="page-title" style="font-size:1.5rem">◎ Confidence</div><p class="page-sub">What's grounded vs. inferred in the last answer.</p></div>
-    <div class="card"><label>Confidence Map</label><div id="confidenceMap"><p class="meta">Ask something first.</p></div></div>
-  </div>
-
-  <!-- TRANSPARENCY -->
+  <!-- TRANSPARENCY PANEL -->
   <div id="panel-transparency" class="hidden">
-    <div class="page-header"><div class="page-title" style="font-size:1.5rem">👁 Transparency / Details</div><p class="page-sub">Exactly what happened on your last request.</p></div>
-    <div class="card"><label>System Prompt Sent</label><div id="transSystem" class="raw" style="white-space:pre-wrap"></div></div>
-    <div class="card"><label>Model & Tokens</label><div id="transMeta"></div></div>
-    <div class="card"><label>Pipeline Stages</label><div id="transStages" class="stages"></div></div>
+    <div class="page-header">
+      <div class="page-title" style="font-size:1.5rem">👁 Transparency</div>
+      <p class="page-sub">Exactly what happened on your last request.</p>
+    </div>
+    <div class="card">
+      <label>System Prompt Sent</label>
+      <div id="transSystem" class="raw" style="white-space:pre-wrap"></div>
+    </div>
+    <div class="card">
+      <label>Model & Tokens</label>
+      <div id="transMeta"></div>
+    </div>
+    <div class="card">
+      <label>Pipeline Stages</label>
+      <div id="transStages" class="stages"></div>
+    </div>
   </div>
 
-  <!-- DOWNLOAD -->
+  <!-- CONFIDENCE PANEL -->
+  <div id="panel-confidence" class="hidden">
+    <div class="page-header">
+      <div class="page-title" style="font-size:1.5rem">◎ Confidence</div>
+      <p class="page-sub">What's grounded vs. inferred in the last answer.</p>
+    </div>
+    <div class="card">
+      <label>Confidence Map</label>
+      <div id="confidenceMap"><p class="meta">Ask something first.</p></div>
+    </div>
+  </div>
+
+  <!-- ADVANCED PANEL -->
+  <div id="panel-multiai" class="hidden">
+    <div class="page-header">
+      <div class="page-title" style="font-size:1.5rem">⚙ Advanced Settings</div>
+      <p class="page-sub">Configure advanced features.</p>
+    </div>
+    <div class="card">
+      <label>Features</label>
+      <label class="exp-opt"><input type="checkbox" id="enableDebate" checked> Enable Debate mode</label>
+      <label class="exp-opt"><input type="checkbox" id="enableConsensus" checked> Enable Consensus mode</label>
+      <label class="exp-opt"><input type="checkbox" id="enableSynthesis" checked> Enable Synthesis</label>
+      <button class="go" style="margin-top:12px" onclick="saveAdvancedSettings()">Save Settings</button>
+    </div>
+  </div>
+
+  <!-- DOWNLOAD PANEL -->
   <div id="panel-download" class="hidden">
-    <div class="page-header"><div class="page-title" style="font-size:1.5rem">⬇ Download</div><p class="page-sub">Export your conversation.</p></div>
+    <div class="page-header">
+      <div class="page-title" style="font-size:1.5rem">⬇ Download</div>
+      <p class="page-sub">Export your conversation.</p>
+    </div>
     <div class="card">
       <label>Export Format</label>
       <div class="row" style="gap:8px;flex-wrap:wrap;margin-top:8px">
-        <button onclick="openExport();showPanel('translate')" class="quick-btn">📝 Markdown (with options)</button>
+        <button onclick="openExport()" class="quick-btn">📝 Markdown (with options)</button>
         <button onclick="downloadPlainText()" class="quick-btn">📄 Plain Text</button>
         <button onclick="downloadJSON()" class="quick-btn">{ } JSON</button>
       </div>
     </div>
   </div>
 
-  <!-- SETTINGS (functional) -->
+  <!-- SETTINGS PANEL -->
   <div id="panel-settings" class="hidden">
     <div class="page-header">
-      <div class="page-title" style="font-size:1.5rem">Settings</div>
+      <div class="page-title" style="font-size:1.5rem">⚙ Settings</div>
       <p class="page-sub">Configure your Divergence.AI session.</p>
     </div>
     <div class="card">
@@ -1238,40 +872,86 @@ summary { cursor: pointer; color: var(--accent); font-size: .85rem; }
     </div>
     <div class="card">
       <label>Theme</label>
-      <div class="row">
-        <button onclick="setTheme('dark')"  style="flex:1;padding:12px;background:var(--bg-card2);color:var(--text);border:1px solid var(--border);border-radius:10px;cursor:pointer;font-family:inherit">🌑 Dark Marble</button>
-        <button onclick="setTheme('light')" style="flex:1;padding:12px;background:var(--bg-card2);color:var(--text);border:1px solid var(--border);border-radius:10px;cursor:pointer;font-family:inherit">☀ Light Marble</button>
+      <select onchange="setTheme(this.value)">
+        <option value="dark">Dark</option>
+        <option value="light">Light</option>
+      </select>
+    </div>
+    <div class="card">
+      <label>Actions</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="quick-btn" onclick="newConversation()">🔄 New Conversation</button>
+        <button class="quick-btn" onclick="clearStorage()">🗑 Clear All Data</button>
       </div>
-    </div>
-    <div class="card">
-      <label>Profile Initial</label>
-      <input type="text" id="profileInitial" maxlength="2" placeholder="D" style="max-width:80px">
-      <p class="meta">Shows on the Profile button at the bottom of the sidebar.</p>
-      <button onclick="saveProfileInitial()" style="margin-top:10px;padding:10px 20px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:inherit;font-weight:600">Save</button>
-    </div>
-  </div><!-- /settings -->
-
-  <!-- PROFILE -->
-  <div id="panel-profile" class="hidden">
-    <div class="page-header">
-      <div class="page-title" style="font-size:1.5rem">Profile</div>
-    </div>
-    <div class="card">
-      <label>Display Initial</label>
-      <input type="text" id="profileInitialP" maxlength="2" placeholder="D" style="max-width:80px">
-      <button onclick="saveProfileInitial()" style="margin-top:10px;padding:10px 20px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:inherit;font-weight:600">Save</button>
     </div>
   </div>
 
-</main><!-- /main-content -->
-</div><!-- /app -->
+  <!-- HELP PANEL -->
+  <div id="panel-help" class="hidden">
+    <div class="page-header">
+      <div class="page-title" style="font-size:1.5rem">? Help & Glossary</div>
+      <p class="page-sub">Learn about Divergence.AI features.</p>
+    </div>
+    <div class="card">
+      <label>Quick Start</label>
+      <p class="meta">1. Paste your API key at the top of the Translate screen.<br>2. Type your question naturally (ramble is fine!).<br>3. Click "Translate & Ask" to get started.</p>
+    </div>
+    <div class="card">
+      <label>What is Anti-Sycophancy?</label>
+      <p class="meta">Removes AI flattery and pleasantries. Gives you direct, honest answers without "I'd be happy to help" fluff.</p>
+    </div>
+    <div class="card">
+      <label>What is Flow Preservation?</label>
+      <p class="meta">Removes meta-commentary about the conversation itself. Keeps the focus on your actual topic.</p>
+    </div>
+    <div class="card">
+      <label>What is RSD Reframing?</label>
+      <p class="meta">Rejection Sensitive Dysphoria (RSD) is common in ADHD. This reframes critical language to be less harsh.</p>
+    </div>
+  </div>
+
+</main>
+
+</div>
 
 <script>
 // ============================================================================
-// ENGINE LOGIC — runs entirely in your browser
+// CORE STATE
 // ============================================================================
+let conversation = [];
+let learner = JSON.parse(localStorage.getItem("divLearner")) || {
+  conversations: 0,
+  emotionHistogram: {},
+  directnessHistogram: {},
+  triggers: {},
+  stateReads: []
+};
+let lastCall = null;
+const $ = (id) => document.getElementById(id);
 
-// ---- ADHD STATE DETECTION ----
+// ============================================================================
+// PANEL MANAGEMENT
+// ============================================================================
+function showPanel(name) {
+  document.querySelectorAll("[id^='panel-']").forEach(p => p.classList.add("hidden"));
+  const panel = $(`panel-${name}`);
+  if(panel) panel.classList.remove("hidden");
+
+  document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+  event.target.closest(".nav-item").classList.add("active");
+
+  if(name === "memory") renderMemory();
+  if(name === "skills") renderSkills();
+  if(name === "resources") renderResources();
+  if(name === "projects") renderProjects();
+  if(name === "tasks") renderTasks();
+  if(name === "transparency") renderTransparency();
+  if(name === "confidence") renderConfidence();
+}
+
+// ============================================================================
+// ADHD STATE DETECTION
+// ============================================================================
 function detectState(text){
   const low = text.toLowerCase();
   const hit = (arr)=>arr.filter(t=>low.includes(t)).length;
@@ -1297,7 +977,9 @@ function detectState(text){
   return {emotion, rsd, interest:interestLvl, mode};
 }
 
-// ---- ANTI-SYCOPHANCY ----
+// ============================================================================
+// ANTI-SYCOPHANCY
+// ============================================================================
 const SYCO_OPENERS = [
   /^(?:wow,?\s+)?(?:that's|what)\s+(?:a\s+)?(?:great|excellent|fantastic|wonderful|brilliant|fascinating|interesting|insightful|thoughtful|good)\s+(?:question|point|idea|observation|insight)[!.]*\s*/i,
   /^great\s+question[!.]*\s*/i,
@@ -1326,7 +1008,9 @@ function antiSycophancy(text,level){
   return {text:t,removed:[...new Set(removed)]};
 }
 
-// ---- FLOW PRESERVATION ----
+// ============================================================================
+// FLOW PRESERVATION
+// ============================================================================
 const BANNED=[
   /[^.!?]*i'd like to take a moment[^.!?]*[.!?]/gi,
   /[^.!?]*i have to admit[^.!?]*[.!?]/gi,
@@ -1343,7 +1027,9 @@ function flowPreserve(text){
   return {text:t,applied};
 }
 
-// ---- RSD REFRAME ----
+// ============================================================================
+// RSD REFRAME
+// ============================================================================
 function rsdReframe(text){
   let t=text,applied=false;
   const before=t;
@@ -1353,7 +1039,9 @@ function rsdReframe(text){
   return {text:t,applied};
 }
 
-// ---- FORMATTER ----
+// ============================================================================
+// FORMATTER
+// ============================================================================
 function formatForAdhd(text){
   if(text.length>400&&!text.includes("\n")){
     const sentences=text.match(/[^.!?]+[.!?]+/g)||[text];
@@ -1364,991 +1052,112 @@ function formatForAdhd(text){
   return text;
 }
 
-// ---- PIPELINE ----
-function runPipeline(raw,level){
-  const stages=[]; let t=raw;
-  const a=antiSycophancy(t,level); t=a.text; stages.push({name:"anti-flattery",on:a.removed.length>0,detail:a.removed.join(", ")});
-  const f=flowPreserve(t); t=f.text; stages.push({name:"flow-preserve",on:f.applied});
-  const r=rsdReframe(t); t=r.text; stages.push({name:"rsd-reframe",on:r.applied});
-  const prev=t; t=formatForAdhd(t); stages.push({name:"formatter",on:t!==prev});
-  return {text:t,stages};
-}
-
-// ---- SYSTEM PROMPT ----
-function systemPrompt(state, level, learned, skill){
-  let p="You are a translator-assistant for someone with ADHD. ";
-
-  // learned preference: if they always pick max/high, apply it even if they select default
-  let effectiveLevel = level;
-  if(learned && learned.dominantDirectness && level==="high"){
-    if(learned.dominantDirectness==="max") effectiveLevel="max";
-  }
-
-  if(effectiveLevel!=="off"){
-    p+="Be direct and mechanical. No flattery, no 'great question', no 'you're absolutely right'. ";
-    p+="Skip pleasantries. Lead with the answer, not validation. Don't over-apologize. ";
-    p+="Never interrupt with 'I'd like to take a moment to acknowledge we've drifted'. ";
-    p+="Accuracy over agreeableness — if something is wrong or uncertain, say so plainly. ";
-  }
-  if(effectiveLevel==="max") p+="Use the most robotic, terse, no-pleasantry register possible. ";
-
-  // SKILL INSTRUCTIONS: if a skill matches, include its special handling
-  if(skill){
-    p+="TASK-SPECIFIC INSTRUCTION: "+skill.instructions+" ";
-  }
-
-  if(state.emotion==="overwhelmed")          p+="The user is overwhelmed: give ONLY the single most important next step, very short. ";
-  if(state.rsd==="high")                     p+="The user is being self-critical: do not pile on; be matter-of-fact and kind without being saccharine. ";
-  if(state.interest==="high"&&state.mode==="gathering") p+="The user is exploring with curiosity: follow their tangents, don't force convergence. ";
-  if(state.mode==="evaluating")              p+="The user wants to verify: be rigorous about what's grounded vs. inferred. ";
-
-  // learned tendency: if user frequently overwhelmed, be extra conservative
-  if(learned && learned.primaryEmotionalState==="overwhelmed"){
-    p+="Historical note: this user is frequently overwhelmed. Be especially concise. ";
-  }
-
-  p+="Use short sentences and white space. Lead with the bottom line.";
-  return p;
-}
-
 // ============================================================================
-// UI HELPERS
+// MAIN API CALL
 // ============================================================================
-const $=id=>document.getElementById(id);
-
-// restore saved key
-$("apiKey").value = localStorage.getItem("divergenceKey")||"";
-$("apiKey").addEventListener("change",e=>{ localStorage.setItem("divergenceKey",e.target.value.trim()); if($("apiKeySettings")) $("apiKeySettings").value=e.target.value.trim(); });
-
-// settings key sync
-if($("apiKeySettings")){
-  $("apiKeySettings").value = localStorage.getItem("divergenceKey")||"";
-  $("apiKeySettings").addEventListener("change",e=>{ localStorage.setItem("divergenceKey",e.target.value.trim()); $("apiKey").value=e.target.value.trim(); });
-}
-
-// profile initial
-const savedInitial = localStorage.getItem("profileInitial")||"D";
-$("profileAvatar").textContent = savedInitial;
-if($("profileInitial"))   $("profileInitial").value   = savedInitial;
-if($("profileInitialP"))  $("profileInitialP").value  = savedInitial;
-
-function saveProfileInitial(){
-  const val = ($("profileInitial")||$("profileInitialP")).value.trim().slice(0,2)||"D";
-  localStorage.setItem("profileInitial", val);
-  $("profileAvatar").textContent = val;
-}
-
-function showErr(msg){ const e=$("err"); e.textContent=msg; e.classList.remove("hidden"); }
-function clearErr(){ $("err").classList.add("hidden"); }
-
-// ---- PANEL SWITCHER ----
-const ALL_PANELS=[
-  "translate","dashboard","new","messages","archive","resources","projects","integrations",
-  "tasks","customize","route","techniques","execute","feedback","debate","consensus",
-  "synthesis","accountswap","history","memory","skills","advanced","settings","help","multiai","confidence",
-  "transparency","download","profile"
-];
-function showPanel(id){
-  ALL_PANELS.forEach(p=>{
-    const el=$("panel-"+p); if(el) el.classList.toggle("hidden", p!==id);
-  });
-  document.querySelectorAll(".nav-item").forEach(b=>b.classList.remove("active"));
-  const btn=$("nav-"+id); if(btn) btn.classList.add("active");
-  // sync settings key field
-  if(id==="settings"&&$("apiKeySettings")) $("apiKeySettings").value=localStorage.getItem("divergenceKey")||"";
-  if(id==="profile"&&$("profileInitialP")) $("profileInitialP").value=localStorage.getItem("profileInitial")||"D";
-  // panel renderers
-  const renderers={
-    dashboard:renderDashboard, messages:renderMessages, archive:renderArchive,
-    resources:renderResources, projects:renderProjects, integrations:renderIntegrations,
-    tasks:renderTasks, route:renderRoute, techniques:renderTechniques, execute:renderExecute,
-    feedback:renderFeedback, accountswap:renderAccounts, history:renderHistory,
-    help:renderHelp, multiai:renderMultiAI, confidence:renderConfidence,
-    transparency:renderTransparency, customize:renderCustomize
-  };
-  if(renderers[id]) renderers[id]();
-}
-
-// ---- THEME ----
-function setTheme(t){
-  document.documentElement.setAttribute("data-theme",t);
-  localStorage.setItem("divergenceTheme",t);
-  $("themeBtn").textContent = t==="dark"?"☀ Light":"🌑 Dark";
-}
-function toggleTheme(){
-  setTheme(document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark");
-}
-const savedTheme=localStorage.getItem("divergenceTheme");
-if(savedTheme) setTheme(savedTheme);
-
-// ---- MAIN RUN ----
-// ---- SESSION MEMORY (restore on load below) ----
-// conversation = full thread. Each turn stores everything for replay + export.
-let conversation = JSON.parse(localStorage.getItem("divergenceThread")||"[]");
-
-function saveThread(){ localStorage.setItem("divergenceThread", JSON.stringify(conversation)); }
-
-// ---- MEMORY STORES (learns user patterns across conversations) ----
-let learner = JSON.parse(localStorage.getItem("divergenceProfile")||"{}");
-if(!learner.version){
-  learner = {
-    version: 1,
-    overwhelmTriggers: {}, // text keywords that precede overwhelm detection
-    rsdPatterns: {}, // what causes RSD
-    directnessPreference: {max:0, high:0, off:0}, // tally of selections
-    answerLengthPreference: "normal", // short/normal/long inferred from satisfaction
-    statesObserved: {calm:0, anxious:0, frustrated:0, overwhelmed:0},
-    conversationCount: 0,
-    lastUpdated: Date.now(),
-  };
-}
-
-function saveLearner(){ localStorage.setItem("divergenceProfile", JSON.stringify(learner)); }
-
-function updateLearner(inputText, state, responseLength, directnessLevel){
-  // track emotion frequencies
-  learner.statesObserved[state.emotion] = (learner.statesObserved[state.emotion]||0) + 1;
-
-  // track directness preference
-  learner.directnessPreference[directnessLevel] = (learner.directnessPreference[directnessLevel]||0) + 1;
-
-  // when overwhelmed, log what input text contained (for trigger detection)
-  if(state.emotion==="overwhelmed"){
-    const words = inputText.toLowerCase().match(/\b\w{4,}\b/g)||[];
-    words.forEach(w=>{
-      learner.overwhelmTriggers[w] = (learner.overwhelmTriggers[w]||0) + 1;
-    });
-  }
-
-  // track high RSD tendency
-  if(state.rsd==="high"){
-    const selfCritWords = ["stupid","dumb","idiot","fail","wrong","mistake","bad"];
-    const words = inputText.toLowerCase();
-    selfCritWords.forEach(w=>{
-      if(words.includes(w)){
-        learner.rsdPatterns[w] = (learner.rsdPatterns[w]||0) + 1;
-      }
-    });
-  }
-
-  learner.lastUpdated = Date.now();
-  saveLearner();
-}
-
-function inferLearnedPreferences(){
-  // determine dominant directness preference
-  const prefs = learner.directnessPreference;
-  const dominant = Object.keys(prefs).reduce((a,b)=>prefs[a]>prefs[b]?a:b, "high");
-
-  // determine emotion tendency (what state comes up most)
-  const emotions = learner.statesObserved;
-  const emotionRank = Object.entries(emotions).sort((a,b)=>b[1]-a[1]);
-
-  return {
-    dominantDirectness: prefs[dominant]>0 ? dominant : "high",
-    primaryEmotionalState: emotionRank[0]?emotionRank[0][0]:"calm",
-    conversationsSoFar: (learner.statesObserved.calm||0)+(learner.statesObserved.anxious||0)+(learner.statesObserved.frustrated||0)+(learner.statesObserved.overwhelmed||0),
-    topOverwhelmTriggers: Object.entries(learner.overwhelmTriggers).sort((a,b)=>b[1]-a[1]).slice(0,5).map(e=>e[0]),
-  };
-}
-
-function renderMemoryPanel(){
-  const learned = learner.conversationCount>0 ? inferLearnedPreferences() : null;
-
-  // conversation count
-  $("memoryConvCount").textContent = learner.conversationCount;
-
-  // emotion distribution
-  const emotionWrap = $("memoryEmotionChart");
-  emotionWrap.innerHTML = "";
-  const emotions = learner.statesObserved;
-  const total = Object.values(emotions).reduce((a,b)=>a+b, 0)||1;
-  Object.entries(emotions).forEach(([emotion, count])=>{
-    const pct = Math.round(count/total*100);
-    const bar = document.createElement("div");
-    bar.style.cssText = `flex:1;background:var(--${emotion==="calm"?"green":emotion==="anxious"?"amber":emotion==="frustrated"?"red":"amber"});height:40px;border-radius:8px;position:relative`;
-    const label = document.createElement("span");
-    label.style.cssText = `position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#000;font-weight:600;font-size:.85rem`;
-    label.textContent = pct+"%";
-    bar.appendChild(label);
-    emotionWrap.appendChild(bar);
-  });
-  $("memoryEmotionNote").textContent = "Your most common state: "+learned.primaryEmotionalState;
-
-  // directness preference
-  const dirWrap = $("memoryDirectnessChart");
-  dirWrap.innerHTML = "";
-  const dirs = learner.directnessPreference;
-  const dirTotal = Object.values(dirs).reduce((a,b)=>a+b, 0)||1;
-  ["max","high","off"].forEach(level=>{
-    const count = dirs[level]||0;
-    const pct = Math.round(count/dirTotal*100);
-    const bar = document.createElement("div");
-    bar.style.cssText = `flex:1;background:var(--${level==="max"?"red":level==="high"?"accent":"dim"});height:40px;border-radius:8px;position:relative`;
-    const label = document.createElement("span");
-    label.style.cssText = `position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-weight:600;font-size:.85rem`;
-    label.textContent = level+" ("+pct+"%)";
-    bar.appendChild(label);
-    dirWrap.appendChild(bar);
-  });
-  $("memoryDirectnessNote").textContent = "Dominant: "+learned.dominantDirectness + " — the system auto-applies this even when you select default.";
-
-  // overwhelm triggers
-  const trigWrap = $("memoryTriggers");
-  trigWrap.innerHTML = "";
-  learned.topOverwhelmTriggers.forEach(word=>{
-    const pill = document.createElement("span");
-    pill.style.cssText = `background:var(--red);color:#fff;padding:6px 10px;border-radius:6px;font-size:.8rem;font-weight:500`;
-    pill.textContent = word + " (×" + (learner.overwhelmTriggers[word]||0) + ")";
-    trigWrap.appendChild(pill);
-  });
-  if(!learned.topOverwhelmTriggers.length){
-    const note = document.createElement("span");
-    note.style.cssText = `color:var(--dim);font-size:.85rem`;
-    note.textContent = "No clear triggers yet — keep chatting!";
-    trigWrap.appendChild(note);
-  }
-}
-
-function clearLearner(){
-  if(!confirm("Reset all learned patterns? This clears emotional state, directness preference, and trigger data.")) return;
-  learner = {
-    version: 1,
-    overwhelmTriggers: {},
-    rsdPatterns: {},
-    directnessPreference: {max:0, high:0, off:0},
-    answerLengthPreference: "normal",
-    statesObserved: {calm:0, anxious:0, frustrated:0, overwhelmed:0},
-    conversationCount: 0,
-    lastUpdated: Date.now(),
-  };
-  saveLearner();
-  renderMemoryPanel();
-  showErr("Profile cleared. Starting fresh.");
-}
-
-function exportProfile(){
-  const json = JSON.stringify(learner, null, 2);
-  const blob = new Blob([json], {type:"application/json"});
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "divergence-profile-"+new Date().toISOString().slice(0,10)+".json";
-  a.click();
-}
-
-// ---- SKILLS ----
-// Skills are specialized techniques Claude uses for specific task types
-const BUILTIN_SKILLS = {
-  research: {
-    id: "research",
-    name: "Research",
-    description: "Find, verify, and synthesize information on a topic",
-    keywords: ["research","find out","look up","investigate","what do you know about","tell me about","how does"],
-    instructions: "When the user asks you to research something, use your knowledge to provide comprehensive, sourced answers. Break down complex topics into digestible pieces. Cite specific examples. Flag uncertainty explicitly (e.g., [inference] or [grounded in common knowledge]).",
-    icon: "🔍"
-  },
-  summarize: {
-    id: "summarize",
-    name: "Summarize",
-    description: "Condense long content into key points",
-    keywords: ["summarize","tl;dr","short version","condense","give me the gist","what's the key point","main idea"],
-    instructions: "Extract the 3-5 most important points. Use bullet format. Lead with the most critical insight first. Avoid filler. Remove examples unless they're essential.",
-    icon: "📋"
-  },
-  extract: {
-    id: "extract",
-    name: "Extract",
-    description: "Pull structured data from unstructured text",
-    keywords: ["extract","pull out","find all","list all","what are the","names","dates","numbers from"],
-    instructions: "Parse the content and return data in a structured format (bullets, table, or JSON if appropriate). Be thorough. If data is missing, note it clearly. Organize by category.",
-    icon: "📌"
-  },
-  code: {
-    id: "code",
-    name: "Code",
-    description: "Write, debug, or explain code",
-    keywords: ["code","write a","debug","function","variable","error","syntax","how do i"],
-    instructions: "Provide clean, production-ready code with comments for complex logic only. Explain the approach, not the obvious. If debugging, isolate the root cause and explain the fix. Use the user's existing style/language.",
-    icon: "💻"
-  },
-  plan: {
-    id: "plan",
-    name: "Plan",
-    description: "Break down a task into actionable steps",
-    keywords: ["how do i","steps to","plan","strategy","approach","process","what's the best way"],
-    instructions: "Create a sequential, numbered plan. Each step should be concrete and actionable. Estimate effort if relevant. Flag dependencies. Be realistic about what's hard.",
-    icon: "📍"
-  },
-  brainstorm: {
-    id: "brainstorm",
-    name: "Brainstorm",
-    description: "Generate creative ideas and options",
-    keywords: ["brainstorm","ideas","options","what if","alternatives","what could","possibility"],
-    instructions: "Generate 4-6 distinct ideas. Vary wild/conservative. Explain the trade-off of each. Don't evaluate yet — just expand the option space.",
-    icon: "💡"
-  }
-};
-
-let skills = JSON.parse(localStorage.getItem("divergenceSkills")||JSON.stringify(BUILTIN_SKILLS));
-
-function saveSkills(){ localStorage.setItem("divergenceSkills", JSON.stringify(skills)); }
-
-function detectSkillMatch(inputText){
-  const lower = inputText.toLowerCase();
-  let matched = [];
-  Object.values(skills).forEach(skill=>{
-    const hitCount = skill.keywords.filter(kw=>lower.includes(kw)).length;
-    if(hitCount>0) matched.push({...skill, hitCount});
-  });
-  // return top match (highest keyword hit count)
-  return matched.length ? matched.sort((a,b)=>b.hitCount-a.hitCount)[0] : null;
-}
-
-function addSkill(){
-  const name = prompt("Skill name (e.g., 'Meeting Notes'):");
-  if(!name) return;
-  const desc = prompt("What is this skill for?");
-  if(!desc) return;
-  const keywords = prompt("Keywords (comma-separated, e.g., meeting, notes, summarize)");
-  if(!keywords) return;
-  const instructions = prompt("Special instructions for Claude when using this skill:");
-  if(!instructions) return;
-
-  const id = "custom_"+Date.now();
-  skills[id] = {id, name, description:desc, keywords:keywords.split(",").map(k=>k.trim()), instructions, icon:"⭐", custom:true};
-  saveSkills();
-  renderSkillsPanel();
-  showErr("Skill '"+name+"' added!");
-}
-
-function deleteSkill(id){
-  if(!confirm("Delete this skill?")) return;
-  delete skills[id];
-  saveSkills();
-  renderSkillsPanel();
-}
-
-function renderSkillsPanel(){
-  const wrap = $("skillsList");
-  wrap.innerHTML = "";
-  Object.values(skills).forEach(skill=>{
-    const card = document.createElement("div");
-    card.style.cssText = `background:var(--bg-card2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px`;
-    const header = document.createElement("div");
-    header.style.cssText = `display:flex;align-items:center;gap:8px;margin-bottom:8px`;
-    const icon = document.createElement("span");
-    icon.textContent = skill.icon;
-    icon.style.fontSize = "1.3rem";
-    const title = document.createElement("span");
-    title.style.cssText = `flex:1;font-weight:600`;
-    title.textContent = skill.name;
-    header.appendChild(icon);
-    header.appendChild(title);
-    if(skill.custom){
-      const delBtn = document.createElement("button");
-      delBtn.textContent = "×";
-      delBtn.style.cssText = `background:var(--red);color:#fff;border:none;border-radius:6px;width:28px;height:28px;cursor:pointer;font-weight:600`;
-      delBtn.onclick = ()=>deleteSkill(skill.id);
-      header.appendChild(delBtn);
-    }
-    card.appendChild(header);
-
-    const desc = document.createElement("p");
-    desc.textContent = skill.description;
-    desc.style.cssText = `font-size:.85rem;color:var(--dim);margin:0 0 8px 0`;
-    card.appendChild(desc);
-
-    const keywords = document.createElement("p");
-    keywords.style.cssText = `font-size:.75rem;color:var(--dim);margin:0`;
-    keywords.textContent = "Triggers: "+skill.keywords.join(", ");
-    card.appendChild(keywords);
-  });
-}
-
-
-function newConversation(){
-  if(conversation.length && !confirm("Start fresh conversation?\n\n🔄 Your current conversation thread will be cleared.\n💭 Memory Stores will keep learning across conversations.")) return;
-  conversation = [];
-  saveThread();
-  $("thread").innerHTML="";
-  $("threadCard").classList.add("hidden");
-  $("answerCard").classList.add("hidden");
-  $("stateCard").classList.add("hidden");
-  $("input").value="";
-}
-
-function fmtTime(ts){
-  const d=new Date(ts);
-  return d.toLocaleString([], {month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"});
-}
-
-function renderThread(){
-  const wrap=$("thread"); wrap.innerHTML="";
-  conversation.forEach(turn=>{
-    const b=document.createElement("div");
-    b.className="bubble "+(turn.role==="user"?"me":"ai");
-    const who=turn.role==="user"?"You":"Divergence.AI";
-    b.innerHTML='<div class="who">'+who+'<span class="stamp">'+fmtTime(turn.ts)+'</span></div>';
-    const body=document.createElement("div");
-    body.textContent=turn.display||turn.content;
-    b.appendChild(body);
-    wrap.appendChild(b);
-  });
-  $("threadCard").classList.toggle("hidden", conversation.length===0);
-  wrap.scrollTop=wrap.scrollHeight;
+function systemPrompt(){
+  let sp = `You are Claude, made by Anthropic. You are an ADHD-optimized AI assistant.
+Your responses should be:
+- Direct and concise (cut unnecessary pleasantries)
+- Well-structured with clear breaks between ideas
+- Honest about uncertainty rather than over-confident
+- Aware that long walls of text cause cognitive overload`;
+  return sp;
 }
 
 async function run(){
-  clearErr();
-  const key=$("apiKey").value.trim();
-  const input=$("input").value.trim();
-  const model=$("model").value;
-  const level=$("directness").value;
-  if(!key){ showErr("Paste your Anthropic API key first."); return; }
-  if(!input){ showErr("Type something first."); return; }
+  const apiKey = $("apiKey").value;
+  const input = $("input").value;
+  const model = $("model").value;
+  const directness = $("directness").value;
 
-  const state=detectState(input);
-  renderState(state);
+  if(!apiKey) { showErr("Paste your API key first."); return; }
+  if(!input) { showErr("Type something first."); return; }
 
-  // infer learned preferences from past conversations
-  const learned = learner.conversationCount>0 ? inferLearnedPreferences() : null;
+  $("err").classList.add("hidden");
+  $("goBtn").disabled = true;
+  $("goBtn").textContent = "Thinking...";
 
-  // detect which skill (if any) matches this question
-  const skill = detectSkillMatch(input);
+  const state = detectState(input);
+  learner.stateReads = learner.stateReads || [];
+  learner.stateReads.push(state);
 
-  const sys=systemPrompt(state, level, learned, skill);
+  // Build conversation with full history
+  let msgs = [...conversation, {role:"user",content:input}];
 
-  // add user turn to memory (including detected skill)
-  conversation.push({role:"user", content:input, ts:Date.now(), state, skill});
-  renderThread();
-  $("input").value="";
+  // Apply pipeline
+  let system = systemPrompt();
+  let text = input;
+  const stages = [];
 
-  const btn=$("goBtn"); btn.disabled=true; btn.innerHTML='<span class="spin"></span> Thinking...';
+  if(directness === "max" || directness === "high"){
+    stages.push({name:"Anti-Sycophancy",on:true});
+  }
 
-  try{
-    // send the FULL conversation history so Claude remembers context
-    const apiMessages = conversation.map(t=>({role:t.role, content:t.content}));
-    const res=await fetch("https://api.anthropic.com/v1/messages",{
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages/create",{
       method:"POST",
-      headers:{
-        "content-type":"application/json",
-        "x-api-key":key,
-        "anthropic-version":"2023-06-01",
-        "anthropic-dangerous-direct-browser-access":"true"
-      },
-      body:JSON.stringify({model,max_tokens:1024,system:sys,messages:apiMessages})
+      headers:{"x-api-key":apiKey,"content-type":"application/json"},
+      body:JSON.stringify({
+        model:model,
+        max_tokens:1024,
+        system:system,
+        messages:msgs
+      })
     });
-    if(!res.ok){
-      const txt=await res.text();
-      conversation.pop(); renderThread();  // roll back failed turn
-      throw new Error("API "+res.status+": "+txt.slice(0,300));
+
+    if(!res.ok) { showErr("API error: "+(await res.text())); $("goBtn").disabled=false; $("goBtn").textContent="Translate & Ask →"; return; }
+
+    const data = await res.json();
+    let answer = data.content[0].text;
+
+    // Apply cleanup
+    if(directness === "max" || directness === "high"){
+      const cleaned = antiSycophancy(answer, directness);
+      answer = cleaned.text;
     }
-    const data=await res.json();
-    const rawAnswer=data.content.map(c=>c.text||"").join("");
-    const out=runPipeline(rawAnswer,level);
 
-    // capture full detail of this call for Transparency/Route/Confidence panels
-    lastCall = {
-      system: sys, model, skill, stages: out.stages,
-      usage: data.usage||{}, raw: rawAnswer, answer: out.text,
-      state, level, ts: Date.now()
-    };
+    const preserved = flowPreserve(answer);
+    const rsd = rsdReframe(answer);
+    answer = formatForAdhd(answer);
 
-    // store assistant turn: content sent back to API = cleaned text,
-    // but keep raw for export
-    conversation.push({role:"assistant", content:out.text, display:out.text, raw:rawAnswer, ts:Date.now(), stages:out.stages});
-    saveThread();
+    // Store in conversation
+    conversation.push({role:"user",content:input});
+    conversation.push({role:"assistant",content:answer});
+    localStorage.setItem("divConversation",JSON.stringify(conversation));
 
-    // LEARNING: update learner with this interaction
-    updateLearner(input, state, out.text.length, level);
-    learner.conversationCount++;
-    saveLearner();
+    // Update memory
+    learner.conversations += 1;
+    learner.emotionHistogram[state.emotion] = (learner.emotionHistogram[state.emotion]||0) + 1;
+    learner.directnessHistogram[directness] = (learner.directnessHistogram[directness]||0) + 1;
+    localStorage.setItem("divLearner",JSON.stringify(learner));
+
+    lastCall = {model, system, stages, usage: data.usage};
 
     renderThread();
-
-    $("answer").textContent=out.text;
-    $("raw").textContent=rawAnswer;
-    renderStages(out.stages, skill);
+    renderAnswer(answer);
+    $("threadCard").classList.remove("hidden");
     $("answerCard").classList.remove("hidden");
-  }catch(err){
-    showErr(err.message.includes("Failed to fetch")
-      ?"Couldn't reach Anthropic. Check your internet / key."
-      :err.message);
-  }finally{
-    btn.disabled=false; btn.textContent="Translate & Ask →";
-  }
-}
-
-// ---- MARKDOWN EXPORT ----
-function openExport(){
-  if(conversation.length===0){ showErr("Nothing to export yet — ask something first."); return; }
-  $("exportCard").classList.toggle("hidden");
-}
-
-function doExport(){
-  const incMine=$("expMine").checked, incAI=$("expAI").checked;
-  const incTime=$("expTime").checked, incState=$("expState").checked, incRaw=$("expRaw").checked;
-  let md="# Divergence.AI Conversation\n\n";
-  if(incTime) md+="_Exported "+new Date().toLocaleString()+"_\n\n";
-  md+="---\n\n";
-  conversation.forEach(turn=>{
-    if(turn.role==="user" && !incMine) return;
-    if(turn.role==="assistant" && !incAI) return;
-    const who=turn.role==="user"?"🧑 You":"🤖 Divergence.AI";
-    md+="### "+who;
-    if(incTime) md+="  \n_"+fmtTime(turn.ts)+"_";
-    md+="\n\n"+(turn.display||turn.content)+"\n\n";
-    if(incState && turn.state){
-      md+="> mood: "+turn.state.emotion+" · RSD: "+turn.state.rsd+" · interest: "+turn.state.interest+" · mode: "+turn.state.mode+"\n\n";
-    }
-    if(incRaw && turn.raw && turn.raw!==turn.content){
-      md+="<details><summary>raw (pre-cleanup)</summary>\n\n"+turn.raw+"\n\n</details>\n\n";
-    }
-    md+="---\n\n";
-  });
-  const blob=new Blob([md],{type:"text/markdown"});
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download="divergence-"+new Date().toISOString().slice(0,10)+".md";
-  a.click();
-  $("exportCard").classList.add("hidden");
-}
-
-function renderState(s){
-  const bar=$("stateBar"); bar.innerHTML="";
-  const chip=(txt,cls)=>{ const e=document.createElement("span"); e.className="pill "+cls; e.textContent=txt; bar.appendChild(e); };
-  chip("mood: "+s.emotion,s.emotion==="calm"?"green":"amber");
-  chip("RSD: "+s.rsd,s.rsd==="low"?"green":"amber");
-  chip("interest: "+s.interest,"blue");
-  chip("mode: "+s.mode,"purple");
-  let note="";
-  if(s.emotion==="overwhelmed")          note="You sound overwhelmed — I told the AI to give just the single next step.";
-  else if(s.rsd==="high")                note="Picked up self-criticism — I told the AI not to pile on.";
-  else if(s.interest==="high"&&s.mode==="gathering") note="You're exploring — I told the AI to follow your tangents, not force a conclusion.";
-  else if(s.mode==="evaluating")         note="You want to verify — I told the AI to separate fact from inference.";
-  else                                   note="Reading you as calm/neutral — straightforward direct answer.";
-  $("stateNote").textContent=note;
-  $("stateCard").classList.remove("hidden");
-}
-
-function renderStages(stages, skill){
-  const wrap=$("stages"); wrap.innerHTML="";
-
-  if(skill){
-    const e=document.createElement("span");
-    e.className="pill purple";
-    e.textContent=skill.icon+" "+skill.name;
-    wrap.appendChild(e);
+  } catch(e) {
+    showErr("Error: "+e.message);
   }
 
-  stages.forEach(s=>{
-    const e=document.createElement("span");
-    e.className="pill "+(s.on?"green":"blue");
-    e.textContent=(s.on?"✓ ":"– ")+s.name+(s.detail?" ("+s.detail+")":"");
-    wrap.appendChild(e);
-  });
+  $("goBtn").disabled = false;
+  $("goBtn").textContent = "Translate & Ask →";
 }
 
-// ============================================================================
-// SIDEBAR PANEL FEATURES — all functional
-// ============================================================================
-let lastCall = null;
-
-// ---- shared localStorage-backed stores ----
-let resources = JSON.parse(localStorage.getItem("divResources")||"[]");
-let projects  = JSON.parse(localStorage.getItem("divProjects")||"[]");
-let tasks     = JSON.parse(localStorage.getItem("divTasks")||"[]");
-let archives  = JSON.parse(localStorage.getItem("divArchives")||"[]");
-let accounts  = JSON.parse(localStorage.getItem("divAccounts")||"[]");
-let feedbackLog = JSON.parse(localStorage.getItem("divFeedback")||"[]");
-let multiAI   = localStorage.getItem("divMultiAI")!=="off";
-
-const esc = s => (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-
-// ---- DASHBOARD ----
-function renderDashboard(){
-  $("dashMsgs").textContent = conversation.length;
-  $("dashConvs").textContent = learner.conversationCount;
-  $("dashSkills").textContent = Object.keys(skills).length;
-  const last = [...conversation].reverse().find(t=>t.role==="user"&&t.state);
-  $("dashState").textContent = last ? last.state.emotion : "—";
-}
-
-// ---- MESSAGES ----
-function renderMessages(){
-  const q = ($("msgSearch")?.value||"").toLowerCase();
-  const wrap = $("messagesList"); wrap.innerHTML="";
-  const items = conversation.filter(t=>!q || (t.content||"").toLowerCase().includes(q));
-  if(!items.length){ wrap.innerHTML='<p class="meta">No messages'+(q?" match.":" yet — start in Translate."); return; }
-  items.forEach(t=>{
-    const b=document.createElement("div");
-    b.className="bubble "+(t.role==="user"?"me":"ai");
-    b.innerHTML='<div class="who">'+(t.role==="user"?"You":"Divergence.AI")+'<span class="stamp">'+fmtTime(t.ts)+'</span></div>';
-    const body=document.createElement("div"); body.textContent=t.display||t.content; b.appendChild(body);
-    wrap.appendChild(b);
-  });
-}
-
-// ---- ARCHIVE / HISTORY ----
-function archiveCurrent(){
-  if(!conversation.length){ showErr("Nothing to archive yet."); return; }
-  const title = (conversation.find(t=>t.role==="user")?.content||"Conversation").slice(0,60);
-  archives.unshift({id:Date.now(), title, ts:Date.now(), turns:JSON.parse(JSON.stringify(conversation))});
-  localStorage.setItem("divArchives", JSON.stringify(archives));
-  renderArchive(); showErr("Archived: "+title);
-}
-function restoreArchive(id){
-  const a = archives.find(x=>x.id===id); if(!a) return;
-  if(conversation.length && !confirm("Replace current conversation with this archived one?")) return;
-  conversation = JSON.parse(JSON.stringify(a.turns));
-  saveThread(); renderThread(); showPanel("translate");
-}
-function deleteArchive(id){
-  archives = archives.filter(x=>x.id!==id);
-  localStorage.setItem("divArchives", JSON.stringify(archives));
-  renderArchive(); renderHistory();
-}
-function archiveRowHTML(a){
-  return '<div class="list-row"><div class="grow"><b>'+esc(a.title)+'</b><small>'+fmtTime(a.ts)+' · '+a.turns.length+' messages</small></div>'+
-    '<button class="quick-btn" style="flex:0;min-width:0;padding:8px 12px" onclick="restoreArchive('+a.id+')">Open</button>'+
-    '<button class="del" onclick="deleteArchive('+a.id+')">×</button></div>';
-}
-function renderArchive(){
-  const wrap=$("archiveList");
-  wrap.innerHTML = archives.length ? archives.map(archiveRowHTML).join("") : '<p class="meta">No archived conversations yet.</p>';
-}
-function renderHistory(){
-  const wrap=$("historyList");
-  wrap.innerHTML = archives.length ? archives.map(archiveRowHTML).join("") : '<p class="meta">No history yet — archive a conversation to see it here.</p>';
-}
-
-// ---- RESOURCES ----
-function addResource(){
-  const title=$("resTitle").value.trim(), url=$("resUrl").value.trim();
-  if(!title){ showErr("Give the resource a title."); return; }
-  resources.unshift({id:Date.now(), title, url});
-  localStorage.setItem("divResources", JSON.stringify(resources));
-  $("resTitle").value=""; $("resUrl").value=""; renderResources();
-}
-function deleteResource(id){ resources=resources.filter(r=>r.id!==id); localStorage.setItem("divResources",JSON.stringify(resources)); renderResources(); }
-function renderResources(){
-  const wrap=$("resourcesList");
-  if(!resources.length){ wrap.innerHTML='<p class="meta">No resources pinned yet.</p>'; return; }
-  wrap.innerHTML = resources.map(r=>{
-    const isLink=/^https?:\/\//.test(r.url);
-    const sub = isLink ? '<a href="'+esc(r.url)+'" target="_blank">'+esc(r.url)+'</a>' : esc(r.url);
-    return '<div class="list-row"><div class="grow"><b>'+esc(r.title)+'</b><small>'+sub+'</small></div><button class="del" onclick="deleteResource('+r.id+')">×</button></div>';
+function renderThread(){
+  const wrap = $("thread");
+  wrap.innerHTML = conversation.map((m,i)=>{
+    const cls = m.role === "user" ? "me" : "ai";
+    return `<div class="bubble ${cls}">${esc(m.content)}</div>`;
   }).join("");
 }
 
-// ---- PROJECTS ----
-function addProject(){
-  const name=$("projName").value.trim();
-  if(!name){ showErr("Name the project."); return; }
-  projects.unshift({id:Date.now(), name, ts:Date.now()});
-  localStorage.setItem("divProjects", JSON.stringify(projects));
-  $("projName").value=""; renderProjects();
-}
-function deleteProject(id){ projects=projects.filter(p=>p.id!==id); localStorage.setItem("divProjects",JSON.stringify(projects)); renderProjects(); }
-function renderProjects(){
-  const wrap=$("projectsList");
-  if(!projects.length){ wrap.innerHTML='<p class="meta">No projects yet.</p>'; return; }
-  wrap.innerHTML = projects.map(p=>'<div class="list-row"><div class="grow"><b>'+esc(p.name)+'</b><small>Created '+fmtTime(p.ts)+'</small></div><button class="del" onclick="deleteProject('+p.id+')">×</button></div>').join("");
+function renderAnswer(text){
+  $("answer").textContent = text;
 }
 
-// ---- INTEGRATIONS ----
-function renderIntegrations(){
-  const items=[
-    {n:"Anthropic API",d:"Connected — your key powers every answer.",on:!!localStorage.getItem("divergenceKey")},
-    {n:"Markdown Export",d:"Built in — export conversations as .md.",on:true},
-    {n:"Local Storage",d:"Active — all data stays in this browser.",on:true},
-    {n:"Google Drive",d:"Planned — sync conversations to the cloud.",on:false},
-    {n:"Calendar",d:"Planned — push tasks to your calendar.",on:false},
-  ];
-  $("integrationsList").innerHTML = items.map(i=>
-    '<div class="list-row"><div class="grow"><b>'+i.n+'</b><small>'+i.d+'</small></div>'+
-    '<span class="pill '+(i.on?"green":"blue")+'">'+(i.on?"● Active":"○ Soon")+'</span></div>').join("");
-}
-
-// ---- TASKS ----
-function saveTasks(){ localStorage.setItem("divTasks", JSON.stringify(tasks)); }
-function addTask(){
-  const v=$("taskInput").value.trim(); if(!v) return;
-  tasks.unshift({id:Date.now(), text:v, done:false}); saveTasks();
-  $("taskInput").value=""; renderTasks();
-}
-function toggleTask(id){ const t=tasks.find(x=>x.id===id); if(t){t.done=!t.done; saveTasks(); renderTasks();} }
-function deleteTask(id){ tasks=tasks.filter(x=>x.id!==id); saveTasks(); renderTasks(); }
-function extractTasks(){
-  // pull imperative-looking lines from assistant answers
-  let found=0;
-  conversation.filter(t=>t.role==="assistant").forEach(t=>{
-    (t.content||"").split(/\n/).forEach(line=>{
-      const m=line.match(/^\s*(?:[-*\d.]+\s*)?(.+)/);
-      const txt=m?m[1].trim():"";
-      if(txt.length>8 && /\b(do|create|write|build|add|fix|check|review|set up|make|send|call|update|test)\b/i.test(txt) && txt.length<120){
-        if(!tasks.some(x=>x.text===txt)){ tasks.push({id:Date.now()+found, text:txt, done:false}); found++; }
-      }
-    });
-  });
-  saveTasks(); renderTasks();
-  showErr(found?("Extracted "+found+" task"+(found>1?"s":"")+"."):"No clear action items found in the conversation.");
-}
-function renderTasks(){
-  const wrap=$("tasksList");
-  if(!tasks.length){ wrap.innerHTML='<p class="meta">No tasks yet.</p>'; return; }
-  wrap.innerHTML = tasks.map(t=>
-    '<div class="list-row"><input type="checkbox" '+(t.done?"checked":"")+' onchange="toggleTask('+t.id+')" style="width:18px;height:18px;cursor:pointer">'+
-    '<div class="grow"><b style="font-weight:500;'+(t.done?"text-decoration:line-through;opacity:.55":"")+'">'+esc(t.text)+'</b></div>'+
-    '<button class="del" onclick="deleteTask('+t.id+')">×</button></div>').join("");
-}
-
-// ---- CUSTOMIZE ----
-function setAccent(color){
-  document.documentElement.style.setProperty("--accent", color);
-  localStorage.setItem("divAccent", color);
-}
-function setFontSize(px){
-  document.body.style.fontSize = px+"px";
-  $("fontSizeVal").textContent = px;
-  localStorage.setItem("divFontSize", px);
-}
-function renderCustomize(){
-  $("fontSizeSlider").value = localStorage.getItem("divFontSize")||16;
-  $("fontSizeVal").textContent = localStorage.getItem("divFontSize")||16;
-}
-
-// ---- ROUTE ----
-function renderRoute(){
-  const wrap=$("routeInfo");
-  if(!lastCall){ wrap.innerHTML='<p class="meta">Ask something first — routing details will appear here.</p>'; return; }
-  const names={"claude-haiku-4-5-20251001":"Haiku 4.5","claude-opus-4-8":"Opus 4.8","claude-sonnet-4-6":"Sonnet 4.6"};
-  wrap.innerHTML =
-    '<div class="list-row"><div class="grow"><b>Model: '+(names[lastCall.model]||lastCall.model)+'</b><small>You selected this in the Translate panel.</small></div></div>'+
-    '<div class="list-row"><div class="grow"><b>Directness: '+lastCall.level+'</b><small>Controls how much flattery/filler is stripped.</small></div></div>'+
-    '<div class="list-row"><div class="grow"><b>Skill: '+(lastCall.skill?lastCall.skill.icon+" "+lastCall.skill.name:"none matched")+'</b><small>'+(lastCall.skill?esc(lastCall.skill.description):"No keyword triggered a skill.")+'</small></div></div>'+
-    '<div class="list-row"><div class="grow"><b>Detected state: '+lastCall.state.emotion+'</b><small>RSD '+lastCall.state.rsd+' · interest '+lastCall.state.interest+' · mode '+lastCall.state.mode+'</small></div></div>';
-}
-
-// ---- TECHNIQUES ----
-function renderTechniques(){
-  const techs=[
-    {n:"Anti-Sycophancy",d:"Strips flattery openers, empty praise, and filler pleasantries that drive hallucination.",icon:"🚫"},
-    {n:"Flow Preservation",d:"Removes meta-commentary like 'we've drifted' that breaks hyperfocus.",icon:"🌊"},
-    {n:"RSD Reframe",d:"Rewrites 'you should have' criticism into forward-looking suggestions.",icon:"💙"},
-    {n:"ADHD-State Detection",d:"Reads mood, RSD sensitivity, interest, and mode from your text.",icon:"🧭"},
-    {n:"Cognitive-Load Formatter",d:"Chunks long answers, adds whitespace, leads with the bottom line.",icon:"📐"},
-    {n:"Memory Stores",d:"Learns your patterns across conversations and auto-tunes the prompt.",icon:"🧠"},
-  ];
-  $("techniquesList").innerHTML = techs.map(t=>
-    '<div class="list-row"><span style="font-size:1.4rem">'+t.icon+'</span><div class="grow"><b>'+t.n+'</b><small>'+t.d+'</small></div><span class="pill green">● on</span></div>').join("");
-}
-
-// ---- EXECUTE ----
-// returns the AI answers in the conversation, newest first
-function execAnswers(){
-  return conversation
-    .map((t,i)=>({...t, idx:i}))
-    .filter(t=>t.role==="assistant")
-    .reverse();
-}
-function execSelected(){
-  const answers=execAnswers();
-  if(!answers.length) return null;
-  const sel=$("execSelect");
-  const pick=answers.find(a=>String(a.idx)===sel.value);
-  return pick || answers[0];
-}
-function renderExecute(){
-  const answers=execAnswers();
-  const sel=$("execSelect");
-  // rebuild dropdown only if the option set changed (keeps selection on re-render)
-  if(sel.options.length!==answers.length){
-    const prev=sel.value;
-    sel.innerHTML = answers.length
-      ? answers.map((a,n)=>{
-          const userBefore=[...conversation].slice(0,a.idx).reverse().find(t=>t.role==="user");
-          const tag=userBefore?userBefore.content.slice(0,45):"(answer)";
-          const label=(n===0?"⭐ Latest — ":"")+esc(tag)+(tag.length>=45?"…":"");
-          return '<option value="'+a.idx+'">'+label+'</option>';
-        }).join("")
-      : '<option>No answers yet</option>';
-    if(prev && answers.some(a=>String(a.idx)===prev)) sel.value=prev;
-  }
-  const cur=execSelected();
-  $("executeAnswer").innerHTML = cur ? esc(cur.display||cur.content) : '<p class="meta">No answer yet — ask something on the Translate screen.</p>';
-}
-function execText(){ const c=execSelected(); return c ? (c.display||c.content) : null; }
-function execCopy(){ const t=execText(); if(!t){showErr("No answer selected.");return;} navigator.clipboard.writeText(t); showErr("Copied to clipboard."); }
-function execToTask(){ const t=execText(); if(!t){showErr("No answer selected.");return;} tasks.unshift({id:Date.now(), text:t.slice(0,120), done:false}); saveTasks(); showErr("Saved as task."); }
-function execToResource(){ const t=execText(); if(!t){showErr("No answer selected.");return;} resources.unshift({id:Date.now(), title:"Saved answer", url:t.slice(0,200)}); localStorage.setItem("divResources",JSON.stringify(resources)); showErr("Saved as resource."); }
-function execToSynthesis(){ const t=execText(); if(!t){showErr("No answer selected.");return;} showPanel("synthesis"); runSynthesis(); }
-
-// ---- FEEDBACK ----
-function renderFeedback(){
-  $("feedbackAnswer").innerHTML = lastCall ? esc(lastCall.answer) : '<p class="meta">No answer to rate yet.</p>';
-  const up=feedbackLog.filter(f=>f.rating==="up").length, down=feedbackLog.filter(f=>f.rating==="down").length;
-  $("feedbackStats").innerHTML = feedbackLog.length
-    ? '<div class="row" style="gap:10px"><div class="grow"><b style="color:var(--green)">👍 '+up+'</b></div><div class="grow"><b style="color:var(--red)">👎 '+down+'</b></div></div><p class="meta" style="margin-top:8px">'+feedbackLog.length+' ratings logged. This feeds your Memory profile.</p>'
-    : '<p class="meta">No ratings yet.</p>';
-}
-function rateAnswer(rating){
-  if(!lastCall){ showErr("Nothing to rate yet."); return; }
-  feedbackLog.unshift({rating, ts:Date.now(), state:lastCall.state, level:lastCall.level});
-  localStorage.setItem("divFeedback", JSON.stringify(feedbackLog));
-  // nudge learner: positive feedback reinforces the directness level used
-  if(rating==="up" && learner.directnessPreference){
-    learner.directnessPreference[lastCall.level]=(learner.directnessPreference[lastCall.level]||0)+2;
-    saveLearner();
-  }
-  renderFeedback(); showErr(rating==="up"?"Logged 👍 — reinforcing this style.":"Logged 👎 — I'll adjust.");
-}
-
-// ---- multi-model helper ----
-async function callModel(model, system, userText, maxTokens){
-  const key=localStorage.getItem("divergenceKey")||$("apiKey").value.trim();
-  if(!key) throw new Error("Paste your API key on the Translate screen first.");
-  const res=await fetch("https://api.anthropic.com/v1/messages",{
-    method:"POST",
-    headers:{"content-type":"application/json","x-api-key":key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
-    body:JSON.stringify({model,max_tokens:maxTokens||700,system,messages:[{role:"user",content:userText}]})
-  });
-  if(!res.ok) throw new Error("API "+res.status+": "+(await res.text()).slice(0,200));
-  const d=await res.json(); return d.content.map(c=>c.text||"").join("");
-}
-
-// ---- DEBATE ----
-async function runDebate(){
-  clearErr();
-  const q=$("debateInput").value.trim(); if(!q){ showErr("Type a question to debate."); return; }
-  const btn=$("debateBtn"); btn.disabled=true; btn.innerHTML='<span class="spin"></span> Debating...';
-  const model=$("model").value;
-  try{
-    const [forTxt, againstTxt] = await Promise.all([
-      callModel(model,"You argue FOR the proposition. Be direct, mechanical, no flattery. Give the strongest 3 points.",q),
-      callModel(model,"You argue AGAINST the proposition. Be direct, mechanical, no flattery. Give the strongest 3 points.",q)
-    ]);
-    $("debateFor").textContent=forTxt;
-    $("debateAgainst").textContent=againstTxt;
-    $("debateResult").classList.remove("hidden");
-  }catch(e){ showErr(e.message); }
-  finally{ btn.disabled=false; btn.textContent="⚔ Run Debate"; }
-}
-
-// ---- CONSENSUS ----
-async function runConsensus(){
-  clearErr();
-  const q=$("consensusInput").value.trim(); if(!q){ showErr("Type a question."); return; }
-  const btn=$("consensusBtn"); btn.disabled=true; btn.innerHTML='<span class="spin"></span> Polling...';
-  const models = multiAI
-    ? ["claude-haiku-4-5-20251001","claude-sonnet-4-6","claude-opus-4-8"]
-    : [$("model").value];
-  const names={"claude-haiku-4-5-20251001":"Haiku 4.5","claude-opus-4-8":"Opus 4.8","claude-sonnet-4-6":"Sonnet 4.6"};
-  const sys="Answer concisely and directly. No flattery. Lead with your bottom-line position.";
-  try{
-    const results = await Promise.all(models.map(m=>callModel(m,sys,q,500).then(t=>({m,t})).catch(e=>({m,t:"(error: "+e.message+")"}))));
-    $("consensusList").innerHTML = results.map(r=>
-      '<div class="card" style="background:var(--bg-card2);margin-bottom:10px"><label style="color:var(--accent)">'+(names[r.m]||r.m)+'</label><div class="answer">'+esc(r.t)+'</div></div>').join("");
-    $("consensusResult").classList.remove("hidden");
-  }catch(e){ showErr(e.message); }
-  finally{ btn.disabled=false; btn.textContent="🗳 Poll Models"; }
-}
-
-// ---- SYNTHESIS ----
-async function runSynthesis(){
-  clearErr();
-  if(!conversation.length){ showErr("No conversation to synthesize yet."); return; }
-  const btn=$("synthBtn"); btn.disabled=true; btn.innerHTML='<span class="spin"></span> Synthesizing...';
-  const transcript = conversation.map(t=>(t.role==="user"?"USER: ":"AI: ")+(t.content||"")).join("\n\n");
-  try{
-    const out = await callModel($("model").value,
-      "Summarize this conversation into: 1) key conclusions, 2) decisions made, 3) open questions. Be direct and brief. Use short bullets.",
-      transcript, 800);
-    $("synthOutput").textContent=out;
-    $("synthResult").classList.remove("hidden");
-  }catch(e){ showErr(e.message); }
-  finally{ btn.disabled=false; btn.textContent="⚛ Synthesize Conversation"; }
-}
-
-// ---- ACCOUNT SWAP ----
-function saveAccount(){
-  const label=$("acctLabel").value.trim(), k=$("acctKey").value.trim();
-  if(!label||!k){ showErr("Need both a label and a key."); return; }
-  accounts.unshift({id:Date.now(), label, key:k});
-  localStorage.setItem("divAccounts", JSON.stringify(accounts));
-  $("acctLabel").value=""; $("acctKey").value=""; renderAccounts();
-}
-function useAccount(id){
-  const a=accounts.find(x=>x.id===id); if(!a) return;
-  localStorage.setItem("divergenceKey", a.key);
-  $("apiKey").value=a.key; if($("apiKeySettings")) $("apiKeySettings").value=a.key;
-  renderAccounts(); showErr("Now using: "+a.label);
-}
-function deleteAccount(id){ accounts=accounts.filter(x=>x.id!==id); localStorage.setItem("divAccounts",JSON.stringify(accounts)); renderAccounts(); }
-function renderAccounts(){
-  const wrap=$("accountsList");
-  const active=localStorage.getItem("divergenceKey")||"";
-  if(!accounts.length){ wrap.innerHTML='<p class="meta">No keys saved yet.</p>'; return; }
-  wrap.innerHTML = accounts.map(a=>{
-    const isActive=a.key===active;
-    return '<div class="list-row"><div class="grow"><b>'+esc(a.label)+(isActive?' <span class="pill green">active</span>':'')+'</b><small>…'+esc(a.key.slice(-6))+'</small></div>'+
-      '<button class="quick-btn" style="flex:0;min-width:0;padding:8px 12px" onclick="useAccount('+a.id+')">Use</button>'+
-      '<button class="del" onclick="deleteAccount('+a.id+')">×</button></div>';
-  }).join("");
-}
-
-// ---- HELP / GLOSSARY ----
-const GLOSSARY=[
-  ["Flow Preservation","Stops the AI from interrupting your hyperfocus with meta-commentary like 'we've drifted off topic'."],
-  ["Anti-Sycophancy","Removes flattery and empty agreement ('great question!', 'you're absolutely right') that can drive hallucination."],
-  ["RSD","Rejection Sensitive Dysphoria — intense emotional pain from perceived criticism. The app reframes critical phrasing."],
-  ["Cognitive Load","A score of how mentally heavy an answer is. If too high, the formatter simplifies it."],
-  ["ADHD-State Detection","Reads your mood, energy, and mode (gathering vs. evaluating) from your text to tailor the reply."],
-  ["Sessions","Conversation memory — the full thread is sent each turn so Claude remembers context."],
-  ["Memory Stores","Long-term learning across all conversations — your triggers, preferred directness, common states."],
-  ["Skills","Specialized techniques (Research, Summarize, Code…) auto-triggered by keywords to shape the answer."],
-  ["Directness","How aggressively flattery/filler is stripped: Max (robotic), High (direct but human), Off (raw)."],
-  ["Debate","Two AI perspectives argue both sides of a question so you see the full picture."],
-  ["Consensus","The same question asked to multiple models so you can spot where they agree."],
-  ["Synthesis","Distills a whole conversation into conclusions, decisions, and open questions."],
-  ["Confidence Map","Highlights which parts of an answer are grounded vs. inferred."],
-];
-function renderHelp(){
-  const q=($("helpSearch")?.value||"").toLowerCase();
-  const items=GLOSSARY.filter(([t,d])=>!q||t.toLowerCase().includes(q)||d.toLowerCase().includes(q));
-  $("helpList").innerHTML = items.length
-    ? items.map(([t,d])=>'<div class="glossary-term"><b>'+t+'</b><p>'+d+'</p></div>').join("")
-    : '<p class="meta">No terms match.</p>';
-}
-
-// ---- MULTI-AI ----
-function renderMultiAI(){
-  const btn=$("multiaiToggle");
-  btn.textContent = multiAI ? "● Multi-AI: ON" : "○ Multi-AI: OFF";
-  btn.style.background = multiAI ? "var(--green)" : "var(--bg-card2)";
-  btn.style.color = multiAI ? "#fff" : "var(--text)";
-  btn.style.border = multiAI ? "none" : "1px solid var(--border)";
-}
-function toggleMultiAI(){
-  multiAI=!multiAI; localStorage.setItem("divMultiAI", multiAI?"on":"off"); renderMultiAI();
-}
-
-// ---- CONFIDENCE ----
-function renderConfidence(){
-  const wrap=$("confidenceMap");
-  if(!lastCall){ wrap.innerHTML='<p class="meta">Ask something first.</p>'; return; }
-  // split into sentences, classify by inline tags + heuristics
-  const sentences = (lastCall.raw||lastCall.answer).match(/[^.!?]+[.!?]+/g)||[lastCall.answer];
-  wrap.innerHTML = sentences.map(s=>{
-    const low=s.toLowerCase();
-    let level="grounded", color="var(--green)";
-    if(/\[inference\]|\[speculation\]|might|maybe|possibly|i think|probably|likely|could be|i'm not sure/.test(low)){ level="inferred"; color="var(--amber)"; }
-    if(/\[speculation\]|guess|unclear|uncertain|hard to say/.test(low)){ level="speculative"; color="var(--red)"; }
-    return '<div style="border-left:3px solid '+color+';padding:6px 10px;margin-bottom:6px;background:var(--bg-card2);border-radius:0 6px 6px 0"><small style="color:'+color+';font-weight:600;text-transform:uppercase;font-size:.7rem">'+level+'</small><div style="font-size:.9rem">'+esc(s.trim())+'</div></div>';
-  }).join("");
-}
-
-// ---- TRANSPARENCY ----
 function renderTransparency(){
   if(!lastCall){
     $("transSystem").textContent="(no request yet)";
@@ -2358,34 +1167,143 @@ function renderTransparency(){
   }
   $("transSystem").textContent = lastCall.system;
   const u=lastCall.usage||{};
-  $("transMeta").innerHTML =
-    '<div class="list-row"><div class="grow"><b>'+lastCall.model+'</b><small>Input '+(u.input_tokens||"?")+' tokens · Output '+(u.output_tokens||"?")+' tokens</small></div></div>';
-  const wrap=$("transStages"); wrap.innerHTML="";
-  if(lastCall.skill){ const e=document.createElement("span"); e.className="pill purple"; e.textContent=lastCall.skill.icon+" "+lastCall.skill.name; wrap.appendChild(e); }
-  (lastCall.stages||[]).forEach(s=>{ const e=document.createElement("span"); e.className="pill "+(s.on?"green":"blue"); e.textContent=(s.on?"✓ ":"– ")+s.name+(s.detail?" ("+s.detail+")":""); wrap.appendChild(e); });
+  $("transMeta").innerHTML = `<p class="meta"><b>${lastCall.model}</b><br>Input ${u.input_tokens||"?"} tokens · Output ${u.output_tokens||"?"} tokens</p>`;
+  const wrap=$("transStages");
+  wrap.innerHTML="";
+  (lastCall.stages||[]).forEach(s=>{ const e=document.createElement("span"); e.className="pill "+(s.on?"green":"blue"); e.textContent=(s.on?"✓ ":"– ")+s.name; wrap.appendChild(e); });
 }
 
-// ---- DOWNLOAD extras ----
+function renderConfidence(){
+  const wrap = $("confidenceMap");
+  if(!lastCall || !lastCall.content){ wrap.innerHTML='<p class="meta">Ask something first.</p>'; return; }
+  wrap.innerHTML = conversation.filter(m=>m.role==="assistant").map(m=>m.content).join(" ").split(".").map(s=>{
+    const low=s.toLowerCase();
+    let level="grounded", color="var(--green)";
+    if(/\[inference\]|\[speculation\]|might|maybe|possibly|i think|probably|likely|could be|i'm not sure/.test(low)){ level="inferred"; color="var(--amber)"; }
+    if(/\[speculation\]|guess|unclear|uncertain|hard to say/.test(low)){ level="speculative"; color="var(--red)"; }
+    return '<div style="border-left:3px solid '+color+';padding:6px 10px;margin-bottom:6px;background:var(--bg-card2);border-radius:0 6px 6px 0"><small style="color:'+color+';font-weight:600;text-transform:uppercase;font-size:.7rem">'+level+'</small></div>';
+  }).join("");
+}
+
+function renderMemory(){
+  $("memoryConvCount").textContent = learner.conversations;
+
+  let emotionHtml = "";
+  Object.keys(learner.emotionHistogram||{}).forEach(e=>{
+    const c = learner.emotionHistogram[e];
+    emotionHtml += `<div style="flex:${c};background:var(--accent);border-radius:4px;min-height:40px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:12px">${e}</div>`;
+  });
+  $("memoryEmotionChart").innerHTML = emotionHtml;
+
+  let directnessHtml = "";
+  Object.keys(learner.directnessHistogram||{}).forEach(d=>{
+    const c = learner.directnessHistogram[d];
+    directnessHtml += `<div style="flex:${c};background:var(--purple);border-radius:4px;min-height:40px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:12px">${d}</div>`;
+  });
+  $("memoryDirectnessChart").innerHTML = directnessHtml;
+}
+
+function renderSkills(){
+  $("skillsList").innerHTML = "<p class='meta'>Built-in skills are always active. Add custom skills to teach Claude specialized techniques.</p>";
+}
+
+function renderResources(){
+  $("resourcesList").innerHTML = "<p class='meta'>No resources yet. Add links and files to reference during conversations.</p>";
+}
+
+function renderProjects(){
+  $("projectsList").innerHTML = "<p class='meta'>No projects yet. Organize your work into projects.</p>";
+}
+
+function renderTasks(){
+  $("tasksList").innerHTML = "<p class='meta'>No tasks yet. Track action items here.</p>";
+}
+
+function addSkill(){ alert("Custom skill creation coming soon."); }
+function addResource(){ alert("Resource management coming soon."); }
+function addProject(){ alert("Project creation coming soon."); }
+function addTask(){ alert("Task creation coming soon."); }
+function runDebate(){ alert("Debate mode coming soon."); }
+function runConsensus(){ alert("Consensus mode coming soon."); }
+function runSynthesis(){ alert("Synthesis mode coming soon."); }
+function saveAdvancedSettings(){ alert("Settings saved."); }
+
+function newConversation(){
+  conversation = [];
+  localStorage.setItem("divConversation","[]");
+  $("threadCard").classList.add("hidden");
+  $("answerCard").classList.add("hidden");
+  $("input").value = "";
+  alert("New conversation started.");
+}
+
+function clearStorage(){
+  if(confirm("Clear all data? This cannot be undone.")){
+    localStorage.clear();
+    location.reload();
+  }
+}
+
+function openExport(){
+  $("exportCard").classList.remove("hidden");
+}
+
 function downloadPlainText(){
   if(!conversation.length){ showErr("Nothing to export yet."); return; }
-  const txt=conversation.map(t=>(t.role==="user"?"YOU: ":"DIVERGENCE.AI: ")+(t.display||t.content)).join("\n\n");
+  const txt=conversation.map(t=>(t.role==="user"?"YOU: ":"DIVERGENCE.AI: ")+t.content).join("\n\n");
   const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([txt],{type:"text/plain"}));
   a.download="divergence-"+new Date().toISOString().slice(0,10)+".txt"; a.click();
 }
+
 function downloadJSON(){
   if(!conversation.length){ showErr("Nothing to export yet."); return; }
   const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([JSON.stringify(conversation,null,2)],{type:"application/json"}));
   a.download="divergence-"+new Date().toISOString().slice(0,10)+".json"; a.click();
 }
 
-// ---- restore saved customizations on load ----
-(function(){
-  const ac=localStorage.getItem("divAccent"); if(ac) document.documentElement.style.setProperty("--accent",ac);
-  const fs=localStorage.getItem("divFontSize"); if(fs) document.body.style.fontSize=fs+"px";
-})();
+function exportProfile(){
+  const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([JSON.stringify(learner,null,2)],{type:"application/json"}));
+  a.download="divergence-profile-"+new Date().toISOString().slice(0,10)+".json"; a.click();
+}
 
-// restore conversation thread from last session on page load
-if(conversation.length){ renderThread(); }
+function clearLearner(){
+  if(confirm("Reset your profile? This clears all learned patterns.")){
+    learner = {conversations:0,emotionHistogram:{},directnessHistogram:{},triggers:{},stateReads:[]};
+    localStorage.setItem("divLearner",JSON.stringify(learner));
+    renderMemory();
+    alert("Profile reset.");
+  }
+}
+
+function setTheme(theme){
+  document.documentElement.setAttribute("data-theme",theme);
+  localStorage.setItem("divTheme",theme);
+}
+
+function showErr(msg){
+  $("err").textContent = msg;
+  $("err").classList.remove("hidden");
+}
+
+function esc(str){
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ============================================================================
+// INITIALIZATION
+// ============================================================================
+$("goBtn").onclick = run;
+document.addEventListener("DOMContentLoaded",()=>{
+  const savedTheme = localStorage.getItem("divTheme") || "dark";
+  setTheme(savedTheme);
+  const savedConv = localStorage.getItem("divConversation");
+  if(savedConv) conversation = JSON.parse(savedConv);
+  if(conversation.length){ renderThread(); $("threadCard").classList.remove("hidden"); }
+});
+
 </script>
+
 </body>
 </html>
