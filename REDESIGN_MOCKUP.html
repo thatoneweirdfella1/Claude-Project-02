@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Divergence.AI — Redesign Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --dark: #0d0f14;
+  --card: #161921;
+  --card2: #1d2030;
+  --border: #272b3a;
+  --text: #e8eaed;
+  --dim: #8a9099;
+  --accent-blue: #4a9eff;
+  --accent-purple: #9b5cff;
+  --green: #2dd36f;
+  --amber: #f5a623;
+  --red: #ff5c5c;
+}
+
+body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: var(--dark);
+  background-image: url('marble-bg.png');
+  color: var(--text);
+  overflow: hidden;
+  height: 100vh;
+}
+
+.container {
+  display: flex;
+  height: 100vh;
+  flex-direction: column;
+}
+
+/* ===== TOP BAR (Claude Code style) ===== */
+.topbar {
+  height: 40px;
+  background: rgba(0,0,0,.4);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  font-size: 12px;
+  justify-content: space-between;
+}
+
+.topbar-left, .topbar-right {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.topbar button {
+  background: none;
+  border: none;
+  color: var(--dim);
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.topbar button:hover {
+  color: var(--text);
+}
+
+/* ===== BREADCRUMB ===== */
+.breadcrumb {
+  height: 48px;
+  background: rgba(0,0,0,.2);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  font-size: 13px;
+  gap: 12px;
+}
+
+.breadcrumb-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--dim);
+}
+
+.breadcrumb-item.active {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.breadcrumb-sep {
+  color: var(--border);
+}
+
+/* ===== MAIN FLEX ===== */
+.main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+  width: 180px;
+  background: rgba(13, 15, 20, .8);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 16px 0;
+  font-size: 13px;
+}
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px 16px;
+  font-weight: 700;
+  font-family: 'Orbitron';
+  font-size: 16px;
+}
+
+.sidebar-logo span:first-child {
+  font-size: 20px;
+}
+
+.sidebar-section {
+  padding: 8px 0;
+}
+
+.sidebar-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 8px 0;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  color: var(--dim);
+  cursor: pointer;
+  font-size: 13px;
+  border-left: 3px solid transparent;
+}
+
+.sidebar-item:hover {
+  background: rgba(255,255,255,.07);
+  color: var(--text);
+}
+
+.sidebar-item.active {
+  background: rgba(74,158,255,.18);
+  color: var(--accent-blue);
+  border-left-color: var(--accent-blue);
+}
+
+.sidebar-item-icon {
+  font-size: 18px;
+}
+
+/* ===== MAIN CONTENT ===== */
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0;
+}
+
+.content-header {
+  padding: 32px 48px 24px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+}
+
+.content-header-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.content-header-title-icon {
+  font-size: 48px;
+  filter: drop-shadow(0 0 8px rgba(155,92,255,.4));
+}
+
+.content-header-title-text {
+  font-family: 'Orbitron';
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.content-header-title-text .purple {
+  color: var(--accent-purple);
+}
+
+.content-header-tagline {
+  font-size: 13px;
+  color: var(--dim);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.content-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ===== CARDS ===== */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.card-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+
+.card-input {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: var(--text);
+  font-family: 'Inter';
+  font-size: 14px;
+  width: 100%;
+}
+
+.card-input::placeholder {
+  color: var(--dim);
+}
+
+.card-input:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 8px rgba(74,158,255,.2);
+}
+
+/* ===== TEXTAREA ===== */
+.textarea-large {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  color: var(--text);
+  font-family: 'Inter';
+  font-size: 14px;
+  width: 100%;
+  min-height: 120px;
+  resize: vertical;
+}
+
+.textarea-large::placeholder {
+  color: var(--dim);
+}
+
+.textarea-large:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 8px rgba(74,158,255,.2);
+}
+
+/* ===== CONTROLS ROW ===== */
+.controls-row {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.control-group {
+  flex: 1;
+}
+
+.control-group select {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  color: var(--text);
+  font-family: 'Inter';
+  font-size: 13px;
+  width: 100%;
+  cursor: pointer;
+}
+
+.control-group select:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+}
+
+/* ===== STATS BAR ===== */
+.stats-bar {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  padding: 12px 0;
+  font-size: 12px;
+  color: var(--dim);
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stat-item-icon {
+  font-size: 16px;
+}
+
+/* ===== BUTTONS ===== */
+.button-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 9px;
+  font-family: 'Inter';
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.btn-primary {
+  background: var(--accent-blue);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: #3a8fe0;
+  box-shadow: 0 0 12px rgba(74,158,255,.3);
+}
+
+.btn-secondary {
+  background: var(--card2);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.btn-secondary:hover {
+  background: rgba(255,255,255,.07);
+}
+
+.btn-icon {
+  font-size: 16px;
+}
+
+/* ===== CONVERSATION THREAD (placeholder) ===== */
+.thread-placeholder {
+  background: rgba(0,0,0,.2);
+  border: 2px dashed var(--border);
+  border-radius: 10px;
+  padding: 32px;
+  text-align: center;
+  color: var(--dim);
+  font-size: 13px;
+  min-height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===== BOTTOM STATUS BAR ===== */
+.statusbar {
+  height: 40px;
+  background: rgba(0,0,0,.4);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  font-size: 12px;
+  justify-content: space-between;
+}
+
+.statusbar-left, .statusbar-right {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  color: var(--dim);
+}
+
+.statusbar-right button {
+  background: none;
+  border: none;
+  color: var(--dim);
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.statusbar-right button:hover {
+  color: var(--text);
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--dim);
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <span>File  Edit  View</span>
+    </div>
+    <div class="topbar-right">
+      <button title="Notifications">🔔</button>
+      <button title="Settings">⚙</button>
+      <button title="Menu">⋯</button>
+      <button title="Minimize">−</button>
+      <button title="Maximize">□</button>
+      <button title="Close">×</button>
+    </div>
+  </div>
+
+  <!-- BREADCRUMB -->
+  <div class="breadcrumb">
+    <span class="breadcrumb-item"><strong>🧠</strong> Divergence.AI</span>
+    <span class="breadcrumb-item">⚡ New session</span>
+    <span class="breadcrumb-sep">|</span>
+    <span class="breadcrumb-item active">Divergence</span>
+    <span class="breadcrumb-sep">•</span>
+    <span class="breadcrumb-item">quirky-rubin-s6rckq</span>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-logo">
+        <span>⚡</span>
+        <span>Divergence</span>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-item active">
+          <span class="sidebar-item-icon">⚡</span>
+          New session
+        </div>
+        <div class="sidebar-item">
+          <span class="sidebar-item-icon">📋</span>
+          Dashboard
+        </div>
+      </div>
+
+      <div class="sidebar-divider"></div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-item">
+          <span class="sidebar-item-icon">💬</span>
+          Messages
+        </div>
+        <div class="sidebar-item">
+          <span class="sidebar-item-icon">🗄</span>
+          Archive
+        </div>
+        <div class="sidebar-item">
+          <span class="sidebar-item-icon">🔗</span>
+          Resources
+        </div>
+        <div class="sidebar-item">
+          <span class="sidebar-item-icon">💼</span>
+          Projects
+        </div>
+        <div class="sidebar-item">
+          <span class="sidebar-item-icon">☑</span>
+          Tasks
+        </div>
+      </div>
+
+      <div class="sidebar-divider"></div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-item">
+          <span class="sidebar-item-icon">?</span>
+          Help
+        </div>
+        <div class="sidebar-item">
+          <span class="sidebar-item-icon">👤</span>
+          Profile
+        </div>
+        <div class="sidebar-item">
+          <span class="sidebar-item-icon">⚙</span>
+          Settings
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+      <div class="content-header">
+        <div class="content-header-title">
+          <div class="content-header-title-icon">🧠</div>
+          <div class="content-header-title-text">Divergence<span class="purple">.AI</span></div>
+        </div>
+        <div class="content-header-tagline">
+          Type how you actually think. Get back an answer with no flattery, no flow-breaking, no overwhelm.
+        </div>
+      </div>
+
+      <div class="content-body">
+        <!-- API KEY -->
+        <div class="card">
+          <div class="card-label">Anthropic API Key</div>
+          <input type="password" class="card-input" placeholder="sk-ant-..." value="sk-ant-...">
+          <div style="font-size: 11px; color: var(--dim); margin-top: 8px;">
+            Get one free at console.anthropic.com. Saved locally — paste once.
+          </div>
+        </div>
+
+        <!-- INPUT SECTION -->
+        <div class="card">
+          <div class="card-label">What's on your mind? (ramble freely)</div>
+          <textarea class="textarea-large" placeholder="okay so like i've been thinking... should i use react or vue for this thing, but also what about speed, and honestly i'm kinda overwhelmed by all the options ugh"></textarea>
+
+          <!-- CONTROLS -->
+          <div class="controls-row" style="margin-top: 14px;">
+            <div class="control-group">
+              <div class="card-label">Model</div>
+              <select>
+                <option>Opus 4.8 — smartest</option>
+                <option>Sonnet 4.6 — balanced</option>
+                <option>Haiku 4.5 — fast & cheap</option>
+              </select>
+            </div>
+            <div class="control-group">
+              <div class="card-label">Directness</div>
+              <select>
+                <option>High — direct but human</option>
+                <option>Max — robotic, zero pleasantries</option>
+                <option>Off — leave AI as-is</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- STATS BAR -->
+          <div class="stats-bar">
+            <span class="stat-item"><span class="stat-item-icon">💭</span> Memory: 5 convs learned</span>
+            <span class="stat-item"><span class="stat-item-icon">🎯</span> Skills: 6 active</span>
+            <span class="stat-item"><span class="stat-item-icon">😌</span> State: calm</span>
+            <button class="btn btn-secondary" style="margin-left: auto; font-size: 12px; padding: 6px 10px;">[← More ▼]</button>
+          </div>
+        </div>
+
+        <!-- CONVERSATION THREAD (placeholder) -->
+        <div class="card">
+          <div class="card-label">Conversation Thread</div>
+          <div class="thread-placeholder">
+            💬 Your messages and answers will flow here naturally<br/>
+            (Ask something to see the conversation start)
+          </div>
+        </div>
+
+        <!-- ACTION BUTTONS (Primary) -->
+        <div class="button-row">
+          <button class="btn btn-primary">
+            <span class="btn-icon">⚡</span>
+            <span>Translate →</span>
+          </button>
+          <button class="btn btn-primary">
+            <span class="btn-icon">👥</span>
+            <span>Debate</span>
+          </button>
+          <button class="btn btn-primary">
+            <span class="btn-icon">🗳</span>
+            <span>Consensus</span>
+          </button>
+          <button class="btn btn-primary">
+            <span class="btn-icon">⚛</span>
+            <span>Synthesis</span>
+          </button>
+          <button class="btn btn-secondary">
+            <span class="btn-icon">⚙</span>
+            <span>[Details ▼]</span>
+          </button>
+        </div>
+
+        <!-- ACTION BUTTONS (Secondary) -->
+        <div class="button-row">
+          <button class="btn btn-secondary">
+            <span class="btn-icon">⊞</span>
+            <span>[+ Actions ▼]</span>
+          </button>
+          <button class="btn btn-secondary">
+            <span class="btn-icon">💾</span>
+            <span>Save</span>
+          </button>
+          <button class="btn btn-secondary">
+            <span class="btn-icon">⬇</span>
+            <span>Export</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM STATUS BAR -->
+  <div class="statusbar">
+    <div class="statusbar-left">
+      <span>⏳ Approaching weekly usage limit</span>
+      <button>Upgrade</button>
+    </div>
+    <div class="statusbar-right">
+      <span>Haiku 4.5</span>
+      <button>🌙</button>
+      <button>🔃</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
