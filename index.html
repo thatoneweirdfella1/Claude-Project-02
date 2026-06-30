@@ -9,6 +9,23 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
+   MARBLE MATERIAL TEXTURES (Large, Non-Repeating)
+============================================================ */
+:root {
+  /* Graphite Marble — Dark base material */
+  --marble-graphite: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="2000" height="2000" viewBox="0 0 2000 2000"><defs><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="5" seed="1" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="40"/></filter></defs><rect width="2000" height="2000" fill="%230d0f14"/><g filter="url(%23noise)" opacity="0.15"><path d="M50,200 Q150,150 250,200 T450,200" stroke="%23ffffff" stroke-width="2" fill="none"/><path d="M100,500 Q250,480 350,520 T550,500" stroke="%23e8eaed" stroke-width="1.5" fill="none"/><path d="M300,800 Q400,750 500,800 T700,800" stroke="%23c0c0c0" stroke-width="1" fill="none"/><path d="M200,1200 Q350,1180 450,1220 T650,1200" stroke="%23ffffff" stroke-width="1.5" fill="none"/></g><g opacity="0.08"><circle cx="150" cy="300" r="40" fill="%23ffffff"/><circle cx="600" cy="700" r="60" fill="%23e8eaed"/><circle cx="1200" cy="1100" r="35" fill="%23ffffff"/><circle cx="400" cy="1600" r="50" fill="%23c0c0c0"/></g></svg>');
+
+  /* Slate Marble — Medium material for cards/panels */
+  --marble-slate: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="2000" height="2000" viewBox="0 0 2000 2000"><defs><filter id="noise2"><feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="6" seed="2" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="50"/></filter></defs><rect width="2000" height="2000" fill="%23161921"/><g filter="url(%23noise2)" opacity="0.12"><path d="M0,400 Q200,350 400,400 T800,400" stroke="%23d0d0d0" stroke-width="2.5" fill="none"/><path d="M600,900 Q800,880 1000,920 T1400,900" stroke="%23b0b0b0" stroke-width="2" fill="none"/><path d="M200,1400 Q500,1350 700,1400 T1100,1400" stroke="%23e0e0e0" stroke-width="1.5" fill="none"/><path d="M1200,600 Q1400,550 1600,600 T1900,600" stroke="%23c0c0c0" stroke-width="2" fill="none"/></g><g opacity="0.06"><ellipse cx="300" cy="500" rx="80" ry="120" fill="%23ffffff"/><ellipse cx="1100" cy="1200" rx="100" ry="70" fill="%23d0d0d0"/><ellipse cx="600" cy="1700" rx="90" ry="110" fill="%23ffffff"/></g></svg>');
+
+  /* Mist Marble — Light material for accents */
+  --marble-mist: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="2000" height="2000" viewBox="0 0 2000 2000"><defs><filter id="noise3"><feTurbulence type="fractalNoise" baseFrequency="0.032" numOctaves="4" seed="3" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="35"/></filter></defs><rect width="2000" height="2000" fill="%231a1f2e"/><g filter="url(%23noise3)" opacity="0.14"><path d="M100,300 Q250,280 400,300 T700,300" stroke="%23ffffff" stroke-width="2" fill="none"/><path d="M500,850 Q700,820 900,850 T1300,850" stroke="%23e8eaed" stroke-width="1.5" fill="none"/><path d="M0,1300 Q200,1250 400,1300 T800,1300" stroke="%23d8d8d8" stroke-width="2" fill="none"/><path d="M1000,500 Q1200,450 1400,500 T1800,500" stroke="%23f0f0f0" stroke-width="1.5" fill="none"/></g><g opacity="0.07"><polygon points="200,1500 280,1650 320,1550" fill="%23ffffff"/><polygon points="1200,400 1300,550 1350,450" fill="%23e0e0e0"/><polygon points="600,1800 700,1950 750,1850" fill="%23d0d0d0"/></g></svg>');
+
+  /* Pearl Marble — Bright material for highlights/buttons */
+  --marble-pearl: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="2000" height="2000" viewBox="0 0 2000 2000"><defs><filter id="noise4"><feTurbulence type="fractalNoise" baseFrequency="0.038" numOctaves="5" seed="4" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="45"/></filter></defs><rect width="2000" height="2000" fill="%232B4E9C"/><g filter="url(%23noise4)" opacity="0.18"><path d="M150,250 Q350,200 550,250 T950,250" stroke="%23ffffff" stroke-width="2.5" fill="none"/><path d="M400,700 Q650,670 850,700 T1250,700" stroke="%23f5f5f5" stroke-width="2" fill="none"/><path d="M200,1100 Q450,1070 650,1100 T1050,1100" stroke="%23e0e0ff" stroke-width="1.5" fill="none"/><path d="M900,1500 Q1150,1480 1350,1500 T1750,1500" stroke="%23ffffff" stroke-width="2" fill="none"/></g><g opacity="0.1"><circle cx="250" cy="1200" r="70" fill="%23ffffff"/><circle cx="1300" cy="600" r="85" fill="%23f0f0f0"/><circle cx="700" cy="1800" r="60" fill="%23ffffff"/></g></svg>');
+}
+
+/* ============================================================
    THEME TOKENS
 ============================================================ */
 :root {
@@ -91,6 +108,48 @@ body {
 }
 
 /* ============================================================
+   MATERIAL SYSTEM — Sampling from Large Textures
+============================================================ */
+
+/* Graphite (Dark base, foundation) */
+.material-graphite {
+  background-image: var(--marble-graphite);
+  background-size: 2000px 2000px;
+  background-repeat: no-repeat;
+}
+
+/* Slate (Cards, panels — medium tones) */
+.material-slate {
+  background-image: var(--marble-slate);
+  background-size: 2000px 2000px;
+  background-repeat: no-repeat;
+}
+
+/* Mist (Light accents) */
+.material-mist {
+  background-image: var(--marble-mist);
+  background-size: 2000px 2000px;
+  background-repeat: no-repeat;
+}
+
+/* Pearl (Bright, primary elements) */
+.material-pearl {
+  background-image: var(--marble-pearl);
+  background-size: 2000px 2000px;
+  background-repeat: no-repeat;
+}
+
+/* Sample positions (different components get different parts of same texture) */
+.sample-a { background-position: 0 0; }
+.sample-b { background-position: 200px 150px; }
+.sample-c { background-position: 400px 300px; }
+.sample-d { background-position: 600px 450px; }
+.sample-e { background-position: 800px 600px; }
+.sample-f { background-position: 1000px 750px; }
+.sample-g { background-position: 1200px 900px; }
+.sample-h { background-position: 1400px 1050px; }
+
+/* ============================================================
    SIDEBAR — MARBLE
 ============================================================ */
 .sidebar {
@@ -104,12 +163,12 @@ body {
   overflow-y: auto;
   overflow-x: hidden;
 
-  /* marble base — your actual marble image */
+  /* Use Graphite material as foundation */
   background-color: var(--sb-bg);
-  background-image: url('marble-bg.png');
-  background-size: cover;
+  background-image: var(--marble-graphite);
+  background-size: 2000px 2000px;
   background-attachment: fixed;
-  background-position: top left;
+  background-position: 0 0;
 }
 
 .sidebar::after {
@@ -317,15 +376,30 @@ body {
 .page-sub { color: var(--dim); font-size: .9rem; }
 
 /* ============================================================
-   CARDS
+   CARDS (Use Slate material with different sample positions)
 ============================================================ */
 .card {
-  background: var(--bg-card);
+  /* Base color fallback */
+  background-color: var(--bg-card);
+  background-image: var(--marble-slate);
+  background-size: 2000px 2000px;
+  background-repeat: no-repeat;
+  background-attachment: local;
   border: 1px solid var(--border);
   border-radius: 14px;
   padding: 18px;
   margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
 }
+
+/* Distribute sample positions across cards */
+.card:nth-child(1) { background-position: 0 0; }
+.card:nth-child(2) { background-position: 250px 200px; }
+.card:nth-child(3) { background-position: 500px 400px; }
+.card:nth-child(4) { background-position: 750px 600px; }
+.card:nth-child(5) { background-position: 1000px 800px; }
+.card:nth-child(n+6) { background-position: calc(250px * (var(--card-index, 6) - 6)) calc(200px * (var(--card-index, 6) - 6)); }
 
 label {
   display: block;
@@ -364,15 +438,79 @@ button.go {
   padding: 16px;
   font-size: 1.05rem;
   margin-top: 12px;
-  background: var(--accent);
+  /* Pearl material for primary buttons */
+  background-color: var(--accent);
+  background-image: var(--marble-pearl);
+  background-size: 2000px 2000px;
+  background-repeat: no-repeat;
+  background-attachment: local;
+  background-position: 0 0;
   color: #fff;
   border: none;
   border-radius: 10px;
   font-weight: 700;
   cursor: pointer;
   font-family: inherit;
-  transition: opacity var(--transition), background var(--transition);
+  transition: opacity var(--transition), filter var(--transition);
+  box-shadow: 0 4px 16px rgba(42, 78, 156, 0.3);
+  position: relative;
+  z-index: 1;
 }
+
+button.go:hover {
+  filter: brightness(1.1) drop-shadow(0 6px 20px rgba(42, 78, 156, 0.4));
+}
+
+button.go:active {
+  filter: brightness(0.95);
+}
+
+/* ============================================================
+   MATERIAL SYSTEM USAGE GUIDE
+============================================================
+
+FOUR MARBLE MATERIALS — Each is a 2000x2000px SVG texture
+
+1. GRAPHITE (--marble-graphite)
+   - Dark base material
+   - Foundation, sidebars, backgrounds
+   - Background position: 0 0 (default)
+
+2. SLATE (--marble-slate)
+   - Medium material
+   - Cards, panels, containers
+   - Sample at different positions for variety
+   - Positions: 0 0, 250px 200px, 500px 400px, etc.
+
+3. MIST (--marble-mist)
+   - Light material
+   - Accents, highlights, secondary elements
+   - Sample at lighter areas: 800px 600px and beyond
+
+4. PEARL (--marble-pearl)
+   - Bright material
+   - Primary buttons, highlights, active states
+   - Sample from start: 0 0
+
+SAMPLING STRATEGY:
+- Each component gets a different background-position
+- Prevents visual repetition across components
+- All sample from the same 2000x2000px texture
+- Texture size: large enough for 8-16 unique samples
+
+APPLYING MATERIALS:
+- Use CSS classes: material-graphite, material-slate, material-mist, material-pearl
+- Apply sample positions: sample-a through sample-h
+- Or use inline: background-image: var(--marble-slate); background-position: 250px 200px;
+
+PERFORMANCE:
+- 4 inline SVG data URIs (one per material type)
+- No image files needed
+- Cached as CSS custom properties
+- No performance penalty
+- Fully scalable
+
+============================================================ */
 button.go:hover  { opacity: .9; }
 button.go:disabled { opacity: .5; cursor: not-allowed; }
 
