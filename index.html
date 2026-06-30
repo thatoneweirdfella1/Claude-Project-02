@@ -1092,6 +1092,16 @@ summary { cursor: pointer; color: var(--accent); font-size: .85rem; }
     <div class="card">
       <label>What's on your mind? (ramble freely)</label>
       <textarea id="input" placeholder="okay so like i've been thinking... should i use react or vue for this thing, but also what about speed, and honestly i'm kinda overwhelmed by all the options ugh"></textarea>
+
+      <!-- STATE DETECTION PILLS -->
+      <div id="stateDetectionContainer" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;padding:12px;background:rgba(74,158,255,0.08);border-radius:8px;border:1px solid rgba(74,158,255,0.15)">
+        <div style="flex-basis:100%;font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-bottom:4px">Reading your message...</div>
+        <div class="pill blue" id="emotionPill" style="cursor:default">😐 Neutral</div>
+        <div class="pill purple" id="rsdPill" style="cursor:default">RSD: Low</div>
+        <div class="pill green" id="interestPill" style="cursor:default">⚡ Engaged</div>
+        <div class="pill amber" id="loadPill" style="cursor:default">Load: Normal</div>
+      </div>
+
       <div class="row" style="margin-top:12px">
         <div>
           <label>Model</label>
@@ -1901,6 +1911,62 @@ function saveProfileInitial(){
   localStorage.setItem("profileInitial", val);
   $("profileAvatar").textContent = val;
 }
+
+// ---- STATE DETECTION PILLS (real-time) ----
+function updateStatePills(text) {
+  if (!text.trim()) {
+    // Reset to default when empty
+    $("emotionPill").textContent = "😐 Neutral";
+    $("emotionPill").className = "pill blue";
+    $("rsdPill").textContent = "RSD: Low";
+    $("rsdPill").className = "pill purple";
+    $("interestPill").textContent = "⚡ Engaged";
+    $("interestPill").className = "pill green";
+    $("loadPill").textContent = "Load: Normal";
+    $("loadPill").className = "pill amber";
+    return;
+  }
+
+  const state = detectState(text);
+
+  // Emotion pill with emoji and color
+  const emotionEmojis = {calm:"😐", overwhelmed:"😰", anxious:"😟", frustrated:"😤"};
+  const emotionColors = {calm:"blue", overwhelmed:"amber", anxious:"purple", frustrated:"red"};
+  $("emotionPill").textContent = (emotionEmojis[state.emotion]||"😐")+" "+state.emotion.charAt(0).toUpperCase()+state.emotion.slice(1);
+  $("emotionPill").className = "pill "+emotionColors[state.emotion];
+
+  // RSD pill with color intensity
+  const rsdColors = {low:"green", medium:"amber", high:"red"};
+  const rsdLabels = {low:"Low", medium:"Medium", high:"High"};
+  $("rsdPill").textContent = "RSD: "+rsdLabels[state.rsd];
+  $("rsdPill").className = "pill "+rsdColors[state.rsd];
+
+  // Interest pill
+  const interestEmojis = {low:"😐", medium:"👀", high:"⚡"};
+  const interestLabels = {low:"Skimming", medium:"Interested", high:"Engaged"};
+  const interestColors = {low:"blue", medium:"green", high:"green"};
+  $("interestPill").textContent = interestEmojis[state.interest]+" "+interestLabels[state.interest];
+  $("interestPill").className = "pill "+interestColors[state.interest];
+
+  // Cognitive load (estimated from overwhelm + intensity)
+  const low = text.toLowerCase();
+  const overwhelm = ["too much","can't keep up","overwhelmed","everything at once","i can't","drowning","so many"].filter(t=>low.includes(t)).length;
+  const intensity = (text.match(/\b[A-Z]{3,}\b/g)||[]).length + (text.match(/!/g)||[]).length;
+  let load = "Normal";
+  let loadColor = "blue";
+  if (overwhelm > 0 || intensity > 5) {
+    load = "High";
+    loadColor = "red";
+  } else if (intensity > 2 || text.length > 500) {
+    load = "Elevated";
+    loadColor = "amber";
+  }
+  $("loadPill").textContent = "Load: "+load;
+  $("loadPill").className = "pill "+loadColor;
+}
+
+// Attach real-time state detection to textarea
+$("input").addEventListener("input", e => updateStatePills(e.target.value));
 
 function showErr(msg){ const e=$("err"); e.textContent=msg; e.classList.remove("hidden"); }
 function clearErr(){ $("err").classList.add("hidden"); }
