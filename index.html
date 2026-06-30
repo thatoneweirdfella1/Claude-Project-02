@@ -104,7 +104,34 @@ body {
 ============================================================ */
 .app {
   display: flex;
-  min-height: 100vh;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* TOP BAR: 60px fixed, full width */
+.topbar {
+  height: 60px;
+  background: linear-gradient(135deg, rgba(13,15,20,0.95), rgba(20,25,35,0.95));
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  gap: 20px;
+}
+
+/* Main container below topbar */
+.app-main {
+  display: flex;
+  flex: 1;
+  margin-top: 60px;
+  height: calc(100vh - 60px);
+  overflow: hidden;
 }
 
 /* ============================================================
@@ -153,21 +180,25 @@ body {
    SIDEBAR — MARBLE
 ============================================================ */
 .sidebar {
-  width: var(--sb-width);
-  min-height: 100vh;
-  position: fixed;
-  top: 0; left: 0;
+  width: 200px;
+  min-height: calc(100vh - 60px);
+  background: linear-gradient(135deg, rgba(13,15,20,0.95), rgba(20,25,35,0.95));
+  border-right: 1px solid var(--border);
+  padding: 20px 10px;
+  overflow-y: auto;
+  position: relative;
+  top: auto;
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   z-index: 100;
-  overflow-y: auto;
   overflow-x: hidden;
 
   /* Use Graphite material as foundation */
   background-color: var(--sb-bg);
   background-image: var(--marble-graphite);
   background-size: 2000px 2000px;
-  background-attachment: fixed;
+  background-attachment: local;
   background-position: 0 0;
 }
 
@@ -325,10 +356,143 @@ body {
    MAIN CONTENT AREA
 ============================================================ */
 .main-content {
-  margin-left: var(--sb-width);
   flex: 1;
+  margin-left: 0;
+  width: auto;
+  height: calc(100vh - 60px);
+  overflow-y: auto;
   padding: 28px 28px 48px;
-  max-width: 920px;
+  max-width: none;
+  background: linear-gradient(180deg, rgba(13,15,20,0.1), rgba(13,15,20,0.3));
+  border-right: 1px solid var(--border);
+}
+
+/* ============================================================
+   RIGHT SIDEBAR: 300px, fixed width
+============================================================ */
+.right-sidebar {
+  width: 300px;
+  min-height: calc(100vh - 60px);
+  background: linear-gradient(135deg, rgba(13,15,20,0.95), rgba(20,25,35,0.95));
+  border-left: 1px solid var(--border);
+  padding: 20px;
+  overflow-y: auto;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Visibility toggle (gear icon) */
+.visibility-toggle {
+  align-self: flex-end;
+  background: transparent;
+  border: none;
+  color: var(--accent);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 8px;
+  transition: all 0.15s ease;
+}
+
+.visibility-toggle:hover {
+  color: #5aafff;
+  transform: rotate(15deg);
+}
+
+/* Quick Tools Grid */
+.quick-tools {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 12px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 8px;
+}
+
+.quick-tool-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px;
+  background: rgba(74,158,255,0.1);
+  border: 1px solid rgba(74,158,255,0.2);
+  border-radius: 8px;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.15s ease;
+}
+
+.quick-tool-button:hover {
+  background: rgba(74,158,255,0.2);
+  border-color: rgba(74,158,255,0.4);
+}
+
+.quick-tool-icon {
+  font-size: 20px;
+}
+
+/* Accordion sections */
+.accordion-section {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.accordion-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: rgba(255,255,255,0.05);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.accordion-header:hover {
+  background: rgba(255,255,255,0.08);
+}
+
+.accordion-header.expanded {
+  background: rgba(255,255,255,0.1);
+}
+
+.accordion-title {
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.accordion-chevron {
+  font-size: 12px;
+  transition: transform 0.15s ease;
+}
+
+.accordion-chevron.expanded {
+  transform: rotate(90deg);
+}
+
+.accordion-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.15s ease;
+  border-top: 1px solid var(--border);
+}
+
+.accordion-content.expanded {
+  max-height: 500px;
+}
+
+.accordion-body {
+  padding: 12px 16px;
+  color: var(--dim);
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 /* ============================================================
@@ -661,10 +825,23 @@ summary { cursor: pointer; color: var(--accent); font-size: .85rem; }
 
 <div class="app">
 
-<!-- ============================================================
-     SIDEBAR
-============================================================ -->
-<nav class="sidebar">
+<!-- TOP BAR (NEW) -->
+<div class="topbar">
+  <div class="topbar-left">
+    <!-- Logo/brand can go here -->
+  </div>
+  <div class="topbar-center">
+    <!-- Search, icons, etc. -->
+  </div>
+  <div class="topbar-right">
+    <!-- User profile, notifications, etc. -->
+  </div>
+</div>
+
+<!-- APP MAIN (3-COLUMN LAYOUT) -->
+<div class="app-main">
+  <!-- LEFT SIDEBAR -->
+  <nav class="sidebar">
   <div class="brand-wrap">
     <div class="brand">
       <i class="bolt">⚡</i>
@@ -1402,9 +1579,158 @@ summary { cursor: pointer; color: var(--accent); font-size: .85rem; }
   </div>
 
 </main><!-- /main-content -->
+
+<!-- RIGHT SIDEBAR (NEW) -->
+<aside class="right-sidebar">
+  <button class="visibility-toggle" onclick="toggleVisibilityMenu()">⚙️</button>
+
+  <div class="quick-tools">
+    <button class="quick-tool-button" onclick="showPanel('router')">
+      <span class="quick-tool-icon">🧭</span>
+      <span>Router</span>
+    </button>
+    <button class="quick-tool-button" onclick="showPanel('techniques')">
+      <span class="quick-tool-icon">⚡</span>
+      <span>Techniques</span>
+    </button>
+    <button class="quick-tool-button" onclick="showPanel('prompts')">
+      <span class="quick-tool-icon">📝</span>
+      <span>Prompts</span>
+    </button>
+    <button class="quick-tool-button" onclick="showPanel('variables')">
+      <span class="quick-tool-icon">🔤</span>
+      <span>Variables</span>
+    </button>
+    <button class="quick-tool-button" onclick="showPanel('checkpoints')">
+      <span class="quick-tool-icon">🎯</span>
+      <span>Checkpoints</span>
+    </button>
+    <button class="quick-tool-button" onclick="showPanel('dashboard')">
+      <span class="quick-tool-icon">📊</span>
+      <span>Dashboard</span>
+    </button>
+  </div>
+
+  <!-- ACCORDIONS -->
+  <div class="accordion-section">
+    <div class="accordion-header" onclick="toggleAccordion(this)">
+      <span class="accordion-title">Recent Sessions</span>
+      <span class="accordion-chevron">▶</span>
+    </div>
+    <div class="accordion-content">
+      <div class="accordion-body">
+        Your recent sessions will appear here.
+      </div>
+    </div>
+  </div>
+
+  <div class="accordion-section">
+    <div class="accordion-header" onclick="toggleAccordion(this)">
+      <span class="accordion-title">Context Snapshot</span>
+      <span class="accordion-chevron">▶</span>
+    </div>
+    <div class="accordion-content">
+      <div class="accordion-body">
+        Current context information will appear here.
+      </div>
+    </div>
+  </div>
+
+  <div class="accordion-section">
+    <div class="accordion-header" onclick="toggleAccordion(this)">
+      <span class="accordion-title">Recent Activity</span>
+      <span class="accordion-chevron">▶</span>
+    </div>
+    <div class="accordion-content">
+      <div class="accordion-body">
+        Your recent activity will be displayed here.
+      </div>
+    </div>
+  </div>
+
+  <div class="accordion-section">
+    <div class="accordion-header" onclick="toggleAccordion(this)">
+      <span class="accordion-title">Token Usage</span>
+      <span class="accordion-chevron">▶</span>
+    </div>
+    <div class="accordion-content">
+      <div class="accordion-body">
+        Token usage stats will appear here.
+      </div>
+    </div>
+  </div>
+
+  <div class="accordion-section">
+    <div class="accordion-header" onclick="toggleAccordion(this)">
+      <span class="accordion-title">Model Status</span>
+      <span class="accordion-chevron">▶</span>
+    </div>
+    <div class="accordion-content">
+      <div class="accordion-body">
+        Current model status and info.
+      </div>
+    </div>
+  </div>
+
+  <div class="accordion-section">
+    <div class="accordion-header" onclick="toggleAccordion(this)">
+      <span class="accordion-title">Active Session</span>
+      <span class="accordion-chevron">▶</span>
+    </div>
+    <div class="accordion-content">
+      <div class="accordion-body">
+        Active session details here.
+      </div>
+    </div>
+  </div>
+</aside><!-- /right-sidebar -->
+
+</div><!-- /app-main -->
 </div><!-- /app -->
 
 <script>
+// ============================================================================
+// LAYOUT: Accordion & Visibility Management
+// ============================================================================
+
+let expandedAccordion = null;
+
+function toggleAccordion(headerElement) {
+  const section = headerElement.parentElement;
+  const content = section.querySelector('.accordion-content');
+  const chevron = headerElement.querySelector('.accordion-chevron');
+
+  // If this accordion is already expanded, collapse it
+  if (expandedAccordion === section) {
+    content.classList.remove('expanded');
+    headerElement.classList.remove('expanded');
+    chevron.classList.remove('expanded');
+    expandedAccordion = null;
+    return;
+  }
+
+  // Close previously expanded accordion
+  if (expandedAccordion) {
+    const prevContent = expandedAccordion.querySelector('.accordion-content');
+    const prevHeader = expandedAccordion.querySelector('.accordion-header');
+    const prevChevron = prevHeader.querySelector('.accordion-chevron');
+    prevContent.classList.remove('expanded');
+    prevHeader.classList.remove('expanded');
+    prevChevron.classList.remove('expanded');
+  }
+
+  // Open new accordion
+  content.classList.add('expanded');
+  headerElement.classList.add('expanded');
+  chevron.classList.add('expanded');
+  expandedAccordion = section;
+}
+
+function toggleVisibilityMenu() {
+  console.log('Visibility menu clicked');
+  // TODO: Show dropdown menu to toggle visibility of accordion sections
+}
+
 // ============================================================================
 // ENGINE LOGIC — runs entirely in your browser
 // ============================================================================
