@@ -12,17 +12,17 @@
    MARBLE MATERIAL TEXTURES (Large, Non-Repeating)
 ============================================================ */
 :root {
-  /* Graphite Marble — Dark base material */
-  --marble-graphite: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="2000" height="2000" viewBox="0 0 2000 2000"><defs><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="5" seed="1" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="40"/></filter></defs><rect width="2000" height="2000" fill="%230d0f14"/><g filter="url(%23noise)" opacity="0.15"><path d="M50,200 Q150,150 250,200 T450,200" stroke="%23ffffff" stroke-width="2" fill="none"/><path d="M100,500 Q250,480 350,520 T550,500" stroke="%23e8eaed" stroke-width="1.5" fill="none"/><path d="M300,800 Q400,750 500,800 T700,800" stroke="%23c0c0c0" stroke-width="1" fill="none"/><path d="M200,1200 Q350,1180 450,1220 T650,1200" stroke="%23ffffff" stroke-width="1.5" fill="none"/></g><g opacity="0.08"><circle cx="150" cy="300" r="40" fill="%23ffffff"/><circle cx="600" cy="700" r="60" fill="%23e8eaed"/><circle cx="1200" cy="1100" r="35" fill="%23ffffff"/><circle cx="400" cy="1600" r="50" fill="%23c0c0c0"/></g></svg>');
+  /* Graphite Marble — Dark base material (6000x4000 high-res) */
+  --marble-graphite: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="6000" height="4000" viewBox="0 0 6000 4000"><defs><filter id="noise-hires"><feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="6" seed="1" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="80"/></filter></defs><rect width="6000" height="4000" fill="%230d0f14"/><g filter="url(%23noise-hires)" opacity="0.15"><path d="M50,600 Q450,450 750,600 T1350,600" stroke="%23ffffff" stroke-width="4" fill="none"/><path d="M300,1500 Q750,1440 1050,1560 T1650,1500" stroke="%23e8eaed" stroke-width="3" fill="none"/><path d="M900,2400 Q1200,2250 1500,2400 T2100,2400" stroke="%23c0c0c0" stroke-width="2" fill="none"/><path d="M600,3600 Q1050,3540 1350,3660 T1950,3600" stroke="%23ffffff" stroke-width="3" fill="none"/></g><g opacity="0.08"><circle cx="450" cy="900" r="120" fill="%23ffffff"/><circle cx="1800" cy="2100" r="180" fill="%23e8eaed"/><circle cx="3600" cy="3300" r="105" fill="%23ffffff"/><circle cx="1200" cy="4800" r="150" fill="%23c0c0c0"/></g></svg>');
 
-  /* Slate Marble — Medium material for cards/panels */
-  --marble-slate: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="2000" height="2000" viewBox="0 0 2000 2000"><defs><filter id="noise2"><feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="6" seed="2" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="50"/></filter></defs><rect width="2000" height="2000" fill="%23161921"/><g filter="url(%23noise2)" opacity="0.12"><path d="M0,400 Q200,350 400,400 T800,400" stroke="%23d0d0d0" stroke-width="2.5" fill="none"/><path d="M600,900 Q800,880 1000,920 T1400,900" stroke="%23b0b0b0" stroke-width="2" fill="none"/><path d="M200,1400 Q500,1350 700,1400 T1100,1400" stroke="%23e0e0e0" stroke-width="1.5" fill="none"/><path d="M1200,600 Q1400,550 1600,600 T1900,600" stroke="%23c0c0c0" stroke-width="2" fill="none"/></g><g opacity="0.06"><ellipse cx="300" cy="500" rx="80" ry="120" fill="%23ffffff"/><ellipse cx="1100" cy="1200" rx="100" ry="70" fill="%23d0d0d0"/><ellipse cx="600" cy="1700" rx="90" ry="110" fill="%23ffffff"/></g></svg>');
+  /* Slate Marble — Medium material for cards/panels (6000x4000 high-res) */
+  --marble-slate: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="6000" height="4000" viewBox="0 0 6000 4000"><defs><filter id="noise2-hires"><feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="7" seed="2" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="120"/></filter></defs><rect width="6000" height="4000" fill="%23161921"/><g filter="url(%23noise2-hires)" opacity="0.12"><path d="M0,1200 Q600,1050 1200,1200 T2400,1200" stroke="%23d0d0d0" stroke-width="6" fill="none"/><path d="M1800,2700 Q2400,2640 3000,2760 T4200,2700" stroke="%23b0b0b0" stroke-width="5" fill="none"/><path d="M600,4200 Q1500,4050 2100,4200 T3300,4200" stroke="%23e0e0e0" stroke-width="4" fill="none"/><path d="M3600,1800 Q4200,1650 4800,1800 T5700,1800" stroke="%23c0c0c0" stroke-width="5" fill="none"/></g><g opacity="0.06"><ellipse cx="900" cy="1500" rx="240" ry="360" fill="%23ffffff"/><ellipse cx="3300" cy="3600" rx="300" ry="210" fill="%23d0d0d0"/><ellipse cx="1800" cy="5100" rx="270" ry="330" fill="%23ffffff"/></g></svg>');
 
-  /* Mist Marble — Light material for accents */
-  --marble-mist: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="2000" height="2000" viewBox="0 0 2000 2000"><defs><filter id="noise3"><feTurbulence type="fractalNoise" baseFrequency="0.032" numOctaves="4" seed="3" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="35"/></filter></defs><rect width="2000" height="2000" fill="%231a1f2e"/><g filter="url(%23noise3)" opacity="0.14"><path d="M100,300 Q250,280 400,300 T700,300" stroke="%23ffffff" stroke-width="2" fill="none"/><path d="M500,850 Q700,820 900,850 T1300,850" stroke="%23e8eaed" stroke-width="1.5" fill="none"/><path d="M0,1300 Q200,1250 400,1300 T800,1300" stroke="%23d8d8d8" stroke-width="2" fill="none"/><path d="M1000,500 Q1200,450 1400,500 T1800,500" stroke="%23f0f0f0" stroke-width="1.5" fill="none"/></g><g opacity="0.07"><polygon points="200,1500 280,1650 320,1550" fill="%23ffffff"/><polygon points="1200,400 1300,550 1350,450" fill="%23e0e0e0"/><polygon points="600,1800 700,1950 750,1850" fill="%23d0d0d0"/></g></svg>');
+  /* Mist Marble — Light material for accents (6000x4000 high-res) */
+  --marble-mist: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="6000" height="4000" viewBox="0 0 6000 4000"><defs><filter id="noise3-hires"><feTurbulence type="fractalNoise" baseFrequency="0.011" numOctaves="5" seed="3" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="105"/></filter></defs><rect width="6000" height="4000" fill="%231a1f2e"/><g filter="url(%23noise3-hires)" opacity="0.14"><path d="M300,900 Q750,840 1200,900 T2100,900" stroke="%23ffffff" stroke-width="5" fill="none"/><path d="M1500,2550 Q2100,2460 2700,2550 T3900,2550" stroke="%23e8eaed" stroke-width="4" fill="none"/><path d="M0,3900 Q600,3750 1200,3900 T2400,3900" stroke="%23d8d8d8" stroke-width="5" fill="none"/><path d="M3000,1500 Q3600,1350 4200,1500 T5400,1500" stroke="%23f0f0f0" stroke-width="4" fill="none"/></g><g opacity="0.07"><polygon points="600,4500 840,4950 960,4650" fill="%23ffffff"/><polygon points="3600,1200 3900,1650 4050,1350" fill="%23e0e0e0"/><polygon points="1800,5400 2100,5850 2250,5550" fill="%23d0d0d0"/></g></svg>');
 
-  /* Pearl Marble — Bright material for highlights/buttons */
-  --marble-pearl: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="2000" height="2000" viewBox="0 0 2000 2000"><defs><filter id="noise4"><feTurbulence type="fractalNoise" baseFrequency="0.038" numOctaves="5" seed="4" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="45"/></filter></defs><rect width="2000" height="2000" fill="%232B4E9C"/><g filter="url(%23noise4)" opacity="0.18"><path d="M150,250 Q350,200 550,250 T950,250" stroke="%23ffffff" stroke-width="2.5" fill="none"/><path d="M400,700 Q650,670 850,700 T1250,700" stroke="%23f5f5f5" stroke-width="2" fill="none"/><path d="M200,1100 Q450,1070 650,1100 T1050,1100" stroke="%23e0e0ff" stroke-width="1.5" fill="none"/><path d="M900,1500 Q1150,1480 1350,1500 T1750,1500" stroke="%23ffffff" stroke-width="2" fill="none"/></g><g opacity="0.1"><circle cx="250" cy="1200" r="70" fill="%23ffffff"/><circle cx="1300" cy="600" r="85" fill="%23f0f0f0"/><circle cx="700" cy="1800" r="60" fill="%23ffffff"/></g></svg>');
+  /* Pearl Marble — Bright material for highlights/buttons (6000x4000 high-res) */
+  --marble-pearl: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="6000" height="4000" viewBox="0 0 6000 4000"><defs><filter id="noise4-hires"><feTurbulence type="fractalNoise" baseFrequency="0.013" numOctaves="6" seed="4" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="135"/></filter></defs><rect width="6000" height="4000" fill="%232B4E9C"/><g filter="url(%23noise4-hires)" opacity="0.18"><path d="M450,750 Q1050,600 1650,750 T2850,750" stroke="%23ffffff" stroke-width="6" fill="none"/><path d="M1200,2100 Q1950,2010 2550,2100 T3750,2100" stroke="%23f5f5f5" stroke-width="5" fill="none"/><path d="M600,3300 Q1350,3210 1950,3300 T3150,3300" stroke="%23e0e0ff" stroke-width="4" fill="none"/><path d="M2700,4500 Q3450,4440 4050,4500 T5250,4500" stroke="%23ffffff" stroke-width="5" fill="none"/></g><g opacity="0.1"><circle cx="750" cy="3600" r="210" fill="%23ffffff"/><circle cx="3900" cy="1800" r="255" fill="%23f0f0f0"/><circle cx="2100" cy="5400" r="180" fill="%23ffffff"/></g></svg>');
 }
 
 /* ============================================================
@@ -141,28 +141,28 @@ body {
 /* Graphite (Dark base, foundation) */
 .material-graphite {
   background-image: var(--marble-graphite);
-  background-size: 2000px 2000px;
+  background-size: 6000px 4000px;
   background-repeat: no-repeat;
 }
 
 /* Slate (Cards, panels — medium tones) */
 .material-slate {
   background-image: var(--marble-slate);
-  background-size: 2000px 2000px;
+  background-size: 6000px 4000px;
   background-repeat: no-repeat;
 }
 
 /* Mist (Light accents) */
 .material-mist {
   background-image: var(--marble-mist);
-  background-size: 2000px 2000px;
+  background-size: 6000px 4000px;
   background-repeat: no-repeat;
 }
 
 /* Pearl (Bright, primary elements) */
 .material-pearl {
   background-image: var(--marble-pearl);
-  background-size: 2000px 2000px;
+  background-size: 6000px 4000px;
   background-repeat: no-repeat;
 }
 
@@ -197,7 +197,7 @@ body {
   /* Use Graphite material as foundation */
   background-color: var(--sb-bg);
   background-image: var(--marble-graphite);
-  background-size: 2000px 2000px;
+  background-size: 6000px 4000px;
   background-attachment: local;
   background-position: 0 0;
 }
@@ -546,7 +546,7 @@ body {
   /* Base color fallback */
   background-color: var(--bg-card);
   background-image: var(--marble-slate);
-  background-size: 2000px 2000px;
+  background-size: 6000px 4000px;
   background-repeat: no-repeat;
   background-attachment: local;
   border: 1px solid var(--border);
@@ -605,7 +605,7 @@ button.go {
   /* Pearl material for primary buttons */
   background-color: var(--accent);
   background-image: var(--marble-pearl);
-  background-size: 2000px 2000px;
+  background-size: 6000px 4000px;
   background-repeat: no-repeat;
   background-attachment: local;
   background-position: 0 0;

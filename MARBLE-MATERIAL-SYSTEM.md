@@ -9,7 +9,7 @@
 
 ## OVERVIEW
 
-Four marble materials, each 2000×2000px SVG texture. Components sample from different positions of the same texture to create visual variety without repetition.
+Four marble materials, each 6000×4000px SVG texture. Components sample from different positions of the same texture to create visual variety without repetition.
 
 **Key Feature:** Every component that uses a material gets a unique visual sample from the same large texture, preventing the flat "repeating pattern" look.
 
@@ -89,7 +89,7 @@ Each material is a 2000×2000px SVG embedded as a data URI. The SVG contains:
 Instead of repeating the texture (which creates obvious patterns), components use `background-position` to sample from different areas of the same 2000px texture.
 
 ```
-Texture: 2000×2000px
+Texture: 6000×4000px
 
 Component positions:
 ├── 0, 0       (top-left area)
@@ -103,7 +103,7 @@ Result: 6-8 unique visual samples from ONE texture
 ```
 
 ### Why This Works
-- **Large texture (2000px):** Provides enough unique data for multiple samples
+- **Large texture (6000×4000px):** Provides ample unique data for multiple samples without repetition
 - **Different positions:** Each component gets visually distinct marble grain
 - **Non-repeating:** No obvious pattern repetition across components
 - **Premium appearance:** Looks like each component has its own marble block carved from the same slab
@@ -177,7 +177,7 @@ Each provides a unique visual from the 2000×2000px texture.
 ### SVG Texture Structure
 
 ```svg
-<svg xmlns="http://www.w3.org/2000/svg" width="2000" height="2000">
+<svg xmlns="http://www.w3.org/2000/svg" width="6000" height="4000">
   <defs>
     <filter id="noise">
       <feTurbulence type="fractalNoise" 
@@ -366,7 +366,7 @@ Adjust SVG fill colors in data URI. All 4 materials defined in `:root` section o
 - Mist: `--marble-mist` (light)
 - Pearl: `--marble-pearl` (bright blue)
 
-**Total Size:** ~8-10KB data URIs (very efficient)
+**Total Size:** ~12-15KB data URIs (encoded SVGs, smaller than typical image assets)
 
 **Browser Support:** All modern browsers (SVG + CSS custom properties)
 
