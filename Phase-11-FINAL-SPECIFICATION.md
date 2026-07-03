@@ -428,15 +428,18 @@ Comment (optional):
 
 ---
 
-## PART 6: AWAITING CLARIFICATION
+## PART 6: B.12.3 CONFIRMED - GRANULAR FEEDBACK (YES)
 
-**B.12.3: Real-time feedback granularity**
-- Should system collect thumbs-down on routing card = "wrong model"?
-- And thumbs-down on techniques = "bad selection"?
-- **Answer needed: YES or NO (1-2 words)**
+✅ **LOCKED: Granular feedback system enabled**
+
+System collects:
+- **Thumbs-down on routing card** → "wrong model" signal
+- **Thumbs-down on techniques** → "bad selection" signal
+
+This data feeds learning system immediately (faster pattern detection).
 
 ---
 
-**Phase 11 Final Specification: COMPLETE (awaiting one clarification)**
+**Phase 11 Final Specification: COMPLETE ✅**
 
 **Status: Ready for Phase 12 (Implementation Planning)**
