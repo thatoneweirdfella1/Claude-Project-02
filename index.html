@@ -400,6 +400,219 @@ body {
   transform: rotate(15deg);
 }
 
+/* Visibility dropdown (gear menu) */
+.right-sidebar { position: relative; }
+
+.visibility-dropdown {
+  display: none;
+  position: absolute;
+  top: 44px;
+  right: 10px;
+  width: 250px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  z-index: 210;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.45);
+}
+
+.visibility-dropdown.active { display: block; }
+
+.visibility-dropdown__header {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+
+.visibility-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 2px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.visibility-checkbox input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+
+.visibility-dropdown__reset {
+  margin-top: 10px;
+  width: 100%;
+  padding: 9px 0;
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  transition: all 0.15s ease;
+}
+
+.visibility-dropdown__reset:hover { background: rgba(74,158,255,0.15); }
+
+/* Sidebar accordion data rows */
+.sb-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+.sb-row:last-child { border-bottom: none; }
+.sb-row .grow { flex: 1; min-width: 0; }
+.sb-row b {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  font-weight: 600;
+}
+.sb-row small { color: var(--dim); font-size: 11px; }
+
+.sb-btn {
+  background: rgba(74,158,255,0.1);
+  border: 1px solid rgba(74,158,255,0.2);
+  border-radius: 6px;
+  color: var(--text);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 11px;
+  padding: 5px 10px;
+  transition: all 0.15s ease;
+}
+.sb-btn:hover { background: rgba(74,158,255,0.2); }
+.sb-btn--wide { width: 100%; margin-top: 8px; }
+
+.sb-meter {
+  height: 8px;
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  overflow: hidden;
+  margin: 8px 0 4px;
+}
+.sb-meter__fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 5px;
+  transition: width 0.3s ease;
+}
+
+.sb-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  margin-right: 6px;
+}
+
+/* Modal system */
+.modal-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(2px);
+  z-index: 300;
+}
+.modal-backdrop.active { display: block; }
+
+.modal {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(480px, calc(100vw - 32px));
+  max-height: 85vh;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  z-index: 310;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.55);
+}
+.modal.active { display: block; }
+
+.modal__content { display: flex; flex-direction: column; max-height: 85vh; }
+
+.modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.modal__title { font-size: 1.05rem; font-weight: 600; margin: 0; }
+.modal__close {
+  background: transparent;
+  border: none;
+  color: var(--dim);
+  font-size: 22px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 2px 6px;
+}
+.modal__close:hover { color: var(--text); }
+
+.modal__body { padding: 16px 20px; overflow-y: auto; }
+.modal__section { margin-bottom: 16px; }
+.modal__section:last-child { margin-bottom: 0; }
+.modal__subtitle {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--accent);
+  margin: 0 0 8px;
+}
+.modal__checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 2px;
+  cursor: pointer;
+  font-size: 13px;
+}
+.modal__checkbox input { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
+
+.modal__footer {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  padding: 14px 20px;
+  border-top: 1px solid var(--border);
+}
+
+.button {
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+.button--primary { background: var(--accent); color: #fff; border: none; }
+.button--primary:hover { filter: brightness(1.1); }
+.button--secondary { background: var(--bg-card2); color: var(--text); border: 1px solid var(--border); }
+.button--secondary:hover { background: rgba(74,158,255,0.12); }
+
+.context-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
 /* Quick Tools Grid */
 .quick-tools {
   display: grid;
@@ -1163,6 +1376,10 @@ summary { cursor: pointer; color: var(--accent); font-size: .85rem; }
       <label>Latest Answer</label>
       <div class="answer" id="answer"></div>
       <div class="stages" id="stages"></div>
+      <div class="row" style="gap:8px;margin-top:10px">
+        <button onclick="openDownloadModal()" class="quick-btn" style="flex:1">⬇ Download this answer</button>
+        <button onclick="openContextModal()" class="quick-btn" style="flex:1">📎 Manage Context</button>
+      </div>
       <details>
         <summary>Show raw answer (before cleanup)</summary>
         <div class="raw" id="raw"></div>
@@ -1506,6 +1723,43 @@ summary { cursor: pointer; color: var(--accent); font-size: .85rem; }
     <div class="card"><div id="historyList"></div></div>
   </div>
 
+  <!-- PROMPT LIBRARY -->
+  <div id="panel-prompts" class="hidden">
+    <div class="page-header"><div class="page-title" style="font-size:1.5rem">📝 Prompt Library</div><p class="page-sub">Save questions you ask often — load them back with one click.</p></div>
+    <div class="card">
+      <label>Save a Prompt</label>
+      <input type="text" id="promptName" placeholder="Name (e.g., Weekly planning ramble)">
+      <textarea id="promptText" placeholder="Prompt text... (leave empty to save what's currently typed on the Translate screen)" style="margin-top:8px;min-height:80px"></textarea>
+      <button onclick="savePrompt()" style="margin-top:10px;width:100%;padding:11px;background:var(--accent);color:#fff;border:none;border-radius:9px;cursor:pointer;font-family:inherit;font-weight:600">+ Save Prompt</button>
+    </div>
+    <div class="card"><input type="text" id="promptSearch" placeholder="Search saved prompts..." oninput="renderPrompts()"></div>
+    <div class="card"><label>Saved Prompts</label><div id="promptsList"></div></div>
+  </div>
+
+  <!-- VARIABLES -->
+  <div id="panel-variables" class="hidden">
+    <div class="page-header"><div class="page-title" style="font-size:1.5rem">🔤 Variables</div><p class="page-sub">Define $name shortcuts — they expand automatically in your questions.</p></div>
+    <div class="card">
+      <label>Create Variable</label>
+      <input type="text" id="varName" placeholder="Name (letters/numbers only, e.g., project_name)">
+      <input type="text" id="varValue" placeholder="Value (e.g., Divergence.AI rebuild)" style="margin-top:8px">
+      <button onclick="addVariable()" style="margin-top:10px;width:100%;padding:11px;background:var(--accent);color:#fff;border:none;border-radius:9px;cursor:pointer;font-family:inherit;font-weight:600">+ Add Variable</button>
+      <p class="meta">Type <b>$project_name</b> in any question and it becomes the value before sending.</p>
+    </div>
+    <div class="card"><label>Your Variables</label><div id="variablesList"></div></div>
+  </div>
+
+  <!-- CHECKPOINTS -->
+  <div id="panel-checkpoints" class="hidden">
+    <div class="page-header"><div class="page-title" style="font-size:1.5rem">🎯 Checkpoints</div><p class="page-sub">Snapshot the conversation at key moments — jump back anytime.</p></div>
+    <div class="card">
+      <label>Save Checkpoint</label>
+      <input type="text" id="checkpointName" placeholder="Name (e.g., Before exploring option B)">
+      <button onclick="saveCheckpoint()" style="margin-top:10px;width:100%;padding:11px;background:var(--accent);color:#fff;border:none;border-radius:9px;cursor:pointer;font-family:inherit;font-weight:600">🎯 Save Current State</button>
+    </div>
+    <div class="card"><label>Saved Checkpoints</label><div id="checkpointsList"></div></div>
+  </div>
+
   <!-- HELP / GLOSSARY -->
   <div id="panel-help" class="hidden">
     <div class="page-header"><div class="page-title" style="font-size:1.5rem">? Help / Glossary</div><p class="page-sub">What every term means.</p></div>
@@ -1592,10 +1846,22 @@ summary { cursor: pointer; color: var(--accent); font-size: .85rem; }
 
 <!-- RIGHT SIDEBAR (NEW) -->
 <aside class="right-sidebar">
-  <button class="visibility-toggle" onclick="toggleVisibilityMenu()">⚙️</button>
+  <button class="visibility-toggle" onclick="toggleVisibilityMenu(event)" aria-label="Toggle sidebar visibility options">⚙️</button>
 
-  <div class="quick-tools">
-    <button class="quick-tool-button" onclick="showPanel('router')">
+  <div class="visibility-dropdown" id="visDropdown" role="menu">
+    <div class="visibility-dropdown__header">Sidebar Visibility</div>
+    <label class="visibility-checkbox"><input type="checkbox" data-toggle="recent-sessions" onchange="setVisibility('recent-sessions',this.checked)"><span>Recent Sessions</span></label>
+    <label class="visibility-checkbox"><input type="checkbox" data-toggle="context-snapshot" onchange="setVisibility('context-snapshot',this.checked)"><span>Context Snapshot</span></label>
+    <label class="visibility-checkbox"><input type="checkbox" data-toggle="recent-activity" onchange="setVisibility('recent-activity',this.checked)"><span>Recent Activity</span></label>
+    <label class="visibility-checkbox"><input type="checkbox" data-toggle="token-usage" onchange="setVisibility('token-usage',this.checked)"><span>Token Usage</span></label>
+    <label class="visibility-checkbox"><input type="checkbox" data-toggle="model-status" onchange="setVisibility('model-status',this.checked)"><span>Model Status</span></label>
+    <label class="visibility-checkbox"><input type="checkbox" data-toggle="quick-tools" onchange="setVisibility('quick-tools',this.checked)"><span>Quick Tools</span></label>
+    <label class="visibility-checkbox"><input type="checkbox" data-toggle="active-session" onchange="setVisibility('active-session',this.checked)"><span>Active Session</span></label>
+    <button class="visibility-dropdown__reset" onclick="resetVisibility()">Reset to defaults</button>
+  </div>
+
+  <div class="quick-tools" data-section="quick-tools">
+    <button class="quick-tool-button" onclick="showPanel('route')">
       <span class="quick-tool-icon">🧭</span>
       <span>Router</span>
     </button>
@@ -1622,81 +1888,146 @@ summary { cursor: pointer; color: var(--accent); font-size: .85rem; }
   </div>
 
   <!-- ACCORDIONS -->
-  <div class="accordion-section">
+  <div class="accordion-section" data-section="recent-sessions">
     <div class="accordion-header" onclick="toggleAccordion(this)">
       <span class="accordion-title">Recent Sessions</span>
       <span class="accordion-chevron">▶</span>
     </div>
     <div class="accordion-content">
-      <div class="accordion-body">
-        Your recent sessions will appear here.
-      </div>
+      <div class="accordion-body" id="sbSessions"></div>
     </div>
   </div>
 
-  <div class="accordion-section">
+  <div class="accordion-section" data-section="context-snapshot">
     <div class="accordion-header" onclick="toggleAccordion(this)">
       <span class="accordion-title">Context Snapshot</span>
       <span class="accordion-chevron">▶</span>
     </div>
     <div class="accordion-content">
-      <div class="accordion-body">
-        Current context information will appear here.
-      </div>
+      <div class="accordion-body" id="sbContext"></div>
     </div>
   </div>
 
-  <div class="accordion-section">
+  <div class="accordion-section" data-section="recent-activity">
     <div class="accordion-header" onclick="toggleAccordion(this)">
       <span class="accordion-title">Recent Activity</span>
       <span class="accordion-chevron">▶</span>
     </div>
     <div class="accordion-content">
-      <div class="accordion-body">
-        Your recent activity will be displayed here.
-      </div>
+      <div class="accordion-body" id="sbActivity"></div>
     </div>
   </div>
 
-  <div class="accordion-section">
+  <div class="accordion-section" data-section="token-usage">
     <div class="accordion-header" onclick="toggleAccordion(this)">
       <span class="accordion-title">Token Usage</span>
       <span class="accordion-chevron">▶</span>
     </div>
     <div class="accordion-content">
-      <div class="accordion-body">
-        Token usage stats will appear here.
-      </div>
+      <div class="accordion-body" id="sbTokens"></div>
     </div>
   </div>
 
-  <div class="accordion-section">
+  <div class="accordion-section" data-section="model-status">
     <div class="accordion-header" onclick="toggleAccordion(this)">
       <span class="accordion-title">Model Status</span>
       <span class="accordion-chevron">▶</span>
     </div>
     <div class="accordion-content">
-      <div class="accordion-body">
-        Current model status and info.
-      </div>
+      <div class="accordion-body" id="sbModel"></div>
     </div>
   </div>
 
-  <div class="accordion-section">
+  <div class="accordion-section" data-section="active-session">
     <div class="accordion-header" onclick="toggleAccordion(this)">
       <span class="accordion-title">Active Session</span>
       <span class="accordion-chevron">▶</span>
     </div>
     <div class="accordion-content">
-      <div class="accordion-body">
-        Active session details here.
-      </div>
+      <div class="accordion-body" id="sbSession"></div>
     </div>
   </div>
 </aside><!-- /right-sidebar -->
 
 </div><!-- /app-main -->
 </div><!-- /app -->
+
+<!-- ============ MODAL SYSTEM ============ -->
+<div class="modal-backdrop" id="modal-backdrop" onclick="closeModals()"></div>
+
+<!-- Download Answer Modal -->
+<div class="modal modal--download" id="modal-download">
+  <div class="modal__content">
+    <div class="modal__header">
+      <h2 class="modal__title">Download answer</h2>
+      <button class="modal__close" onclick="closeModals()">&times;</button>
+    </div>
+    <div class="modal__body">
+      <div class="modal__section">
+        <label class="modal__checkbox"><input type="checkbox" id="dlAnswer" checked><span>Answer text</span></label>
+        <label class="modal__checkbox"><input type="checkbox" id="dlConfidence" checked><span>Confidence</span></label>
+        <label class="modal__checkbox"><input type="checkbox" id="dlRating"><span>Rating</span></label>
+        <label class="modal__checkbox"><input type="checkbox" id="dlTransparency"><span>Transparency details</span></label>
+        <label class="modal__checkbox"><input type="checkbox" id="dlState"><span>State detection pills</span></label>
+      </div>
+      <div class="modal__section">
+        <label for="dlFormat">Format</label>
+        <select id="dlFormat" style="margin-top:6px">
+          <option value="markdown">Markdown</option>
+          <option value="html">HTML</option>
+          <option value="json">JSON</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal__footer">
+      <button class="button button--secondary" onclick="copyAnswerExport()">Copy</button>
+      <button class="button button--primary" onclick="downloadAnswerExport()">Download</button>
+      <button class="button button--secondary" onclick="closeModals()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Context Management Modal -->
+<div class="modal modal--context" id="modal-context">
+  <div class="modal__content">
+    <div class="modal__header">
+      <h2 class="modal__title">Manage Context</h2>
+      <button class="modal__close" onclick="closeModals()">&times;</button>
+    </div>
+    <div class="modal__body">
+      <div class="modal__section">
+        <h3 class="modal__subtitle">Loaded Context</h3>
+        <div id="contextList"></div>
+      </div>
+      <div class="modal__section">
+        <h3 class="modal__subtitle">Add Context</h3>
+        <div class="context-actions">
+          <button class="button button--secondary" onclick="$('ctxFile').click()">📄 Upload file</button>
+          <button class="button button--secondary" onclick="toggleCtxPaste('text')">✏️ Paste text</button>
+          <button class="button button--secondary" onclick="toggleCtxPaste('url')">🔗 Paste URL</button>
+          <button class="button button--secondary" onclick="closeModals();showPanel('variables')">🔤 Create variable</button>
+        </div>
+        <input type="file" id="ctxFile" accept=".txt,.md,.csv,.json,.html,.js,.py" style="display:none" onchange="ctxFileChosen(this.files)">
+        <div id="ctxPasteText" class="hidden" style="margin-top:10px">
+          <input type="text" id="ctxTextTitle" placeholder="Title (e.g., Meeting notes)">
+          <textarea id="ctxTextBody" placeholder="Paste the text to include as context..." style="margin-top:8px;min-height:80px"></textarea>
+          <button class="button button--primary" style="margin-top:8px;width:100%" onclick="addContextText()">Add text context</button>
+        </div>
+        <div id="ctxPasteUrl" class="hidden" style="margin-top:10px">
+          <input type="text" id="ctxUrlValue" placeholder="https://...">
+          <p class="meta">The URL is stored as a reference for the AI — page content is not fetched.</p>
+          <button class="button button--primary" style="margin-top:8px;width:100%" onclick="addContextUrl()">Add URL context</button>
+        </div>
+      </div>
+      <div class="modal__section">
+        <label class="modal__checkbox"><input type="checkbox" id="ctxUse" onchange="setUseContext(this.checked)"><span><b>Use Context</b> — include loaded items with the next question</span></label>
+      </div>
+    </div>
+    <div class="modal__footer">
+      <button class="button button--secondary" onclick="closeModals()">Close</button>
+    </div>
+  </div>
+</div>
 
 <script>
 // ============================================================================
@@ -1736,10 +2067,54 @@ function toggleAccordion(headerElement) {
   expandedAccordion = section;
 }
 
-function toggleVisibilityMenu() {
-  console.log('Visibility menu clicked');
-  // TODO: Show dropdown menu to toggle visibility of accordion sections
+// Visibility system: which right-sidebar sections are shown.
+// Defaults per FEATURE-SPECIFICATION-V2.0 §12 (Active Session hidden;
+// Quick Tools pinned open per §13).
+const VIS_DEFAULTS = {
+  "recent-sessions": true,
+  "context-snapshot": true,
+  "recent-activity": true,
+  "token-usage": true,
+  "model-status": true,
+  "quick-tools": true,
+  "active-session": false
+};
+let visSettings = Object.assign({}, VIS_DEFAULTS, JSON.parse(localStorage.getItem("divVisibility")||"{}"));
+
+function applyVisibility() {
+  document.querySelectorAll("[data-section]").forEach(el => {
+    const key = el.getAttribute("data-section");
+    el.style.display = visSettings[key] === false ? "none" : "";
+  });
+  document.querySelectorAll(".visibility-checkbox input").forEach(cb => {
+    cb.checked = visSettings[cb.dataset.toggle] !== false;
+  });
 }
+
+function setVisibility(key, on) {
+  visSettings[key] = on;
+  localStorage.setItem("divVisibility", JSON.stringify(visSettings));
+  applyVisibility();
+}
+
+function resetVisibility() {
+  visSettings = Object.assign({}, VIS_DEFAULTS);
+  localStorage.setItem("divVisibility", JSON.stringify(visSettings));
+  applyVisibility();
+}
+
+function toggleVisibilityMenu(ev) {
+  if (ev) ev.stopPropagation();
+  document.getElementById("visDropdown").classList.toggle("active");
+}
+
+// close the dropdown when clicking anywhere outside it
+document.addEventListener("click", e => {
+  const d = document.getElementById("visDropdown");
+  if (d && d.classList.contains("active") && !d.contains(e.target) && !e.target.closest(".visibility-toggle")) {
+    d.classList.remove("active");
+  }
+});
 
 // ============================================================================
 // ENGINE LOGIC — runs entirely in your browser
@@ -1976,7 +2351,7 @@ const ALL_PANELS=[
   "translate","dashboard","new","messages","archive","resources","projects","integrations",
   "tasks","customize","route","techniques","execute","feedback","debate","consensus",
   "synthesis","accountswap","history","memory","skills","advanced","settings","help","multiai","confidence",
-  "transparency","download","profile"
+  "transparency","download","profile","prompts","variables","checkpoints"
 ];
 function showPanel(id){
   ALL_PANELS.forEach(p=>{
@@ -1994,7 +2369,8 @@ function showPanel(id){
     tasks:renderTasks, route:renderRoute, techniques:renderTechniques, execute:renderExecute,
     feedback:renderFeedback, accountswap:renderAccounts, history:renderHistory,
     help:renderHelp, multiai:renderMultiAI, confidence:renderConfidence,
-    transparency:renderTransparency, customize:renderCustomize
+    transparency:renderTransparency, customize:renderCustomize,
+    prompts:renderPrompts, variables:renderVariables, checkpoints:renderCheckpoints
   };
   if(renderers[id]) renderers[id]();
 }
@@ -2300,11 +2676,13 @@ function newConversation(){
   if(conversation.length && !confirm("Start fresh conversation?\n\n🔄 Your current conversation thread will be cleared.\n💭 Memory Stores will keep learning across conversations.")) return;
   conversation = [];
   saveThread();
+  resetSessionTokens();
   $("thread").innerHTML="";
   $("threadCard").classList.add("hidden");
   $("answerCard").classList.add("hidden");
   $("stateCard").classList.add("hidden");
   $("input").value="";
+  logActivity("Started fresh conversation");
 }
 
 function fmtTime(ts){
@@ -2346,10 +2724,12 @@ async function run(){
   // detect which skill (if any) matches this question
   const skill = detectSkillMatch(input);
 
-  const sys=systemPrompt(state, level, learned, skill);
+  const sys=systemPrompt(state, level, learned, skill) + contextBlock();
 
   // add user turn to memory (including detected skill)
-  conversation.push({role:"user", content:input, ts:Date.now(), state, skill});
+  // content = variable-expanded text sent to the API; display = what the user typed
+  const outgoing = applyVariables(input);
+  conversation.push({role:"user", content:outgoing, display:input, ts:Date.now(), state, skill});
   renderThread();
   $("input").value="";
 
@@ -2388,6 +2768,8 @@ async function run(){
     // but keep raw for export
     conversation.push({role:"assistant", content:out.text, display:out.text, raw:rawAnswer, ts:Date.now(), stages:out.stages});
     saveThread();
+    addTokens(data.usage||{});
+    logActivity("Question answered · "+(((data.usage||{}).input_tokens||0)+((data.usage||{}).output_tokens||0))+" tokens");
 
     // LEARNING: update learner with this interaction
     updateLearner(input, state, out.text.length, level);
@@ -2526,17 +2908,19 @@ function archiveCurrent(){
   archives.unshift({id:Date.now(), title, ts:Date.now(), turns:JSON.parse(JSON.stringify(conversation))});
   localStorage.setItem("divArchives", JSON.stringify(archives));
   renderArchive(); showErr("Archived: "+title);
+  logActivity("Archived: "+title);
 }
 function restoreArchive(id){
   const a = archives.find(x=>x.id===id); if(!a) return;
   if(conversation.length && !confirm("Replace current conversation with this archived one?")) return;
   conversation = JSON.parse(JSON.stringify(a.turns));
   saveThread(); renderThread(); showPanel("translate");
+  logActivity("Restored: "+a.title);
 }
 function deleteArchive(id){
   archives = archives.filter(x=>x.id!==id);
   localStorage.setItem("divArchives", JSON.stringify(archives));
-  renderArchive(); renderHistory();
+  renderArchive(); renderHistory(); renderSidebar();
 }
 function archiveRowHTML(a){
   return '<div class="list-row"><div class="grow"><b>'+esc(a.title)+'</b><small>'+fmtTime(a.ts)+' · '+a.turns.length+' messages</small></div>'+
@@ -2908,6 +3292,332 @@ function downloadJSON(){
   a.download="divergence-"+new Date().toISOString().slice(0,10)+".json"; a.click();
 }
 
+// ============================================================================
+// SIDEBAR DATA, QUICK TOOLS & MODALS
+// ============================================================================
+
+// ---- persistent stores ----
+let activityLog   = JSON.parse(localStorage.getItem("divActivity")||"[]");
+let sessionTokens = JSON.parse(localStorage.getItem("divTokens")||'{"in":0,"out":0}');
+let contextItems  = JSON.parse(localStorage.getItem("divContext")||"[]");
+let useContext    = localStorage.getItem("divUseContext")==="on";
+let promptLib     = JSON.parse(localStorage.getItem("divPrompts")||"[]");
+let variables     = JSON.parse(localStorage.getItem("divVariables")||"[]");
+let checkpoints   = JSON.parse(localStorage.getItem("divCheckpoints")||"[]");
+
+function logActivity(text){
+  activityLog.unshift({text, ts:Date.now()});
+  activityLog = activityLog.slice(0,50);
+  localStorage.setItem("divActivity", JSON.stringify(activityLog));
+  renderSidebar();
+}
+function addTokens(u){
+  sessionTokens.in  += (u.input_tokens||0);
+  sessionTokens.out += (u.output_tokens||0);
+  localStorage.setItem("divTokens", JSON.stringify(sessionTokens));
+}
+function resetSessionTokens(){
+  sessionTokens = {in:0,out:0};
+  localStorage.setItem("divTokens", JSON.stringify(sessionTokens));
+}
+
+// ---- variables ($name expands in outgoing questions) ----
+function applyVariables(text){
+  let t = text;
+  variables.forEach(v=>{ t = t.split("$"+v.name).join(v.value); });
+  return t;
+}
+function addVariable(){
+  const name=($("varName").value||"").trim().replace(/[^\w]/g,""), value=$("varValue").value.trim();
+  if(!name||!value){ showErr("Variable needs a name and a value."); return; }
+  variables = variables.filter(v=>v.name!==name); // replace same-name var
+  variables.unshift({id:Date.now(), name, value});
+  localStorage.setItem("divVariables", JSON.stringify(variables));
+  $("varName").value=""; $("varValue").value="";
+  renderVariables(); logActivity("Variable saved: $"+name);
+}
+function deleteVariable(id){
+  variables=variables.filter(v=>v.id!==id);
+  localStorage.setItem("divVariables", JSON.stringify(variables));
+  renderVariables(); renderSidebar();
+}
+function renderVariables(){
+  $("variablesList").innerHTML = variables.length ? variables.map(v=>
+    '<div class="list-row"><div class="grow"><b>$'+esc(v.name)+'</b><small>'+esc(v.value)+'</small></div>'+
+    '<button class="del" onclick="deleteVariable('+v.id+')">×</button></div>').join("")
+    : '<p class="meta">No variables yet.</p>';
+}
+
+// ---- prompt library ----
+function savePrompt(){
+  const name=$("promptName").value.trim();
+  const text=$("promptText").value.trim() || $("input").value.trim();
+  if(!name){ showErr("Give the prompt a name."); return; }
+  if(!text){ showErr("Type prompt text here, or on the Translate screen first."); return; }
+  promptLib.unshift({id:Date.now(), name, text});
+  localStorage.setItem("divPrompts", JSON.stringify(promptLib));
+  $("promptName").value=""; $("promptText").value="";
+  renderPrompts(); logActivity("Prompt saved: "+name);
+}
+function loadPrompt(id){
+  const p=promptLib.find(x=>x.id===id); if(!p) return;
+  $("input").value=p.text; updateStatePills(p.text);
+  showPanel("translate");
+}
+function deletePrompt(id){
+  promptLib=promptLib.filter(x=>x.id!==id);
+  localStorage.setItem("divPrompts", JSON.stringify(promptLib));
+  renderPrompts();
+}
+function renderPrompts(){
+  const q=($("promptSearch")?.value||"").toLowerCase();
+  const items=promptLib.filter(p=>!q||p.name.toLowerCase().includes(q)||p.text.toLowerCase().includes(q));
+  $("promptsList").innerHTML = items.length ? items.map(p=>
+    '<div class="list-row"><div class="grow"><b>'+esc(p.name)+'</b><small>'+esc(p.text.slice(0,80))+(p.text.length>80?"…":"")+'</small></div>'+
+    '<button class="quick-btn" style="flex:0;min-width:0;padding:8px 12px" onclick="loadPrompt('+p.id+')">Load</button>'+
+    '<button class="del" onclick="deletePrompt('+p.id+')">×</button></div>').join("")
+    : '<p class="meta">'+(q?"No prompts match.":"No prompts saved yet.")+'</p>';
+}
+
+// ---- checkpoints (conversation snapshots) ----
+function saveCheckpoint(){
+  if(!conversation.length){ showErr("Nothing to checkpoint yet — ask something first."); return; }
+  const name=$("checkpointName").value.trim() || "Checkpoint "+(checkpoints.length+1);
+  checkpoints.unshift({id:Date.now(), name, ts:Date.now(), turns:JSON.parse(JSON.stringify(conversation))});
+  localStorage.setItem("divCheckpoints", JSON.stringify(checkpoints));
+  $("checkpointName").value="";
+  renderCheckpoints(); logActivity("Checkpoint saved: "+name);
+}
+function restoreCheckpoint(id){
+  const c=checkpoints.find(x=>x.id===id); if(!c) return;
+  if(conversation.length && !confirm('Rewind to "'+c.name+'"?\n\nYour current thread will be replaced by this snapshot.')) return;
+  conversation=JSON.parse(JSON.stringify(c.turns));
+  saveThread(); renderThread(); showPanel("translate");
+  logActivity("Checkpoint restored: "+c.name);
+}
+function deleteCheckpoint(id){
+  checkpoints=checkpoints.filter(x=>x.id!==id);
+  localStorage.setItem("divCheckpoints", JSON.stringify(checkpoints));
+  renderCheckpoints();
+}
+function renderCheckpoints(){
+  $("checkpointsList").innerHTML = checkpoints.length ? checkpoints.map(c=>
+    '<div class="list-row"><div class="grow"><b>'+esc(c.name)+'</b><small>'+fmtTime(c.ts)+' · '+c.turns.length+' messages</small></div>'+
+    '<button class="quick-btn" style="flex:0;min-width:0;padding:8px 12px" onclick="restoreCheckpoint('+c.id+')">Restore</button>'+
+    '<button class="del" onclick="deleteCheckpoint('+c.id+')">×</button></div>').join("")
+    : '<p class="meta">No checkpoints yet.</p>';
+}
+
+// ---- context management ----
+function contextBlock(){
+  if(!useContext || !contextItems.length) return "";
+  let b=" REFERENCE CONTEXT (provided by the user, use when relevant):";
+  contextItems.forEach(c=>{ b+="\n["+c.type.toUpperCase()+"] "+c.title+": "+(c.content||"").slice(0,1500); });
+  return b;
+}
+function setUseContext(on){
+  useContext=on; localStorage.setItem("divUseContext", on?"on":"off");
+  renderSidebar();
+}
+function saveContext(){ localStorage.setItem("divContext", JSON.stringify(contextItems)); }
+function removeContextItem(id){
+  contextItems=contextItems.filter(c=>c.id!==id);
+  saveContext(); renderContextModal(); renderSidebar();
+}
+function toggleCtxPaste(which){
+  const t=$("ctxPasteText"), u=$("ctxPasteUrl");
+  if(which==="text"){ t.classList.toggle("hidden"); u.classList.add("hidden"); }
+  else               { u.classList.toggle("hidden"); t.classList.add("hidden"); }
+}
+function ctxFileChosen(files){
+  const f=files&&files[0]; if(!f) return;
+  if(f.size>200*1024){ showErr("File too big — keep context files under 200 KB."); $("ctxFile").value=""; return; }
+  const r=new FileReader();
+  r.onload=()=>{
+    contextItems.unshift({id:Date.now(), type:"file", title:f.name, content:String(r.result)});
+    saveContext(); renderContextModal(); logActivity("Context added: "+f.name);
+  };
+  r.readAsText(f);
+  $("ctxFile").value="";
+}
+function addContextText(){
+  const title=$("ctxTextTitle").value.trim()||"Pasted text", body=$("ctxTextBody").value.trim();
+  if(!body){ showErr("Paste some text first."); return; }
+  contextItems.unshift({id:Date.now(), type:"text", title, content:body});
+  saveContext();
+  $("ctxTextTitle").value=""; $("ctxTextBody").value=""; $("ctxPasteText").classList.add("hidden");
+  renderContextModal(); logActivity("Context added: "+title);
+}
+function addContextUrl(){
+  const url=$("ctxUrlValue").value.trim();
+  if(!url){ showErr("Paste a URL first."); return; }
+  contextItems.unshift({id:Date.now(), type:"url", title:url, content:"The user references this URL: "+url});
+  saveContext();
+  $("ctxUrlValue").value=""; $("ctxPasteUrl").classList.add("hidden");
+  renderContextModal(); logActivity("Context added: URL");
+}
+function renderContextModal(){
+  $("contextList").innerHTML = contextItems.length ? contextItems.map(c=>
+    '<div class="list-row"><div class="grow"><b>'+esc(c.title)+'</b><small>'+c.type+' · '+((c.content||"").length)+' chars</small></div>'+
+    '<button class="del" onclick="removeContextItem('+c.id+')">×</button></div>').join("")
+    : '<p class="meta">Nothing loaded yet. Add a file, text, or URL below.</p>';
+  $("ctxUse").checked = useContext;
+}
+function openContextModal(){ renderContextModal(); openModal("modal-context"); }
+
+// ---- modal plumbing ----
+function openModal(id){
+  $("modal-backdrop").classList.add("active");
+  $(id).classList.add("active");
+}
+function closeModals(){
+  $("modal-backdrop").classList.remove("active");
+  document.querySelectorAll(".modal.active").forEach(m=>m.classList.remove("active"));
+}
+document.addEventListener("keydown", e=>{
+  if(e.key==="Escape"){
+    closeModals();
+    const d=$("visDropdown"); if(d) d.classList.remove("active");
+  }
+});
+
+// ---- download-answer modal ----
+function openDownloadModal(){
+  if(!lastCall){ showErr("Ask something first — there's no answer to download yet."); return; }
+  openModal("modal-download");
+}
+function confidenceLines(text){
+  const sentences=(text||"").match(/[^.!?]+[.!?]+/g)||[text||""];
+  return sentences.map(s=>{
+    const low=s.toLowerCase();
+    let level="grounded";
+    if(/\[inference\]|\[speculation\]|might|maybe|possibly|i think|probably|likely|could be|i'm not sure/.test(low)) level="inferred";
+    if(/\[speculation\]|guess|unclear|uncertain|hard to say/.test(low)) level="speculative";
+    return {level, text:s.trim()};
+  });
+}
+function buildAnswerExport(){
+  const inc={
+    answer:$("dlAnswer").checked, confidence:$("dlConfidence").checked, rating:$("dlRating").checked,
+    transparency:$("dlTransparency").checked, state:$("dlState").checked
+  };
+  const fmt=$("dlFormat").value;
+  const conf=inc.confidence?confidenceLines(lastCall.raw||lastCall.answer):[];
+  const lastRating=feedbackLog.length?feedbackLog[0]:null;
+  if(fmt==="json"){
+    const obj={exported:new Date().toISOString()};
+    if(inc.answer)       obj.answer=lastCall.answer;
+    if(inc.confidence)   obj.confidence=conf;
+    if(inc.rating)       obj.rating=lastRating?lastRating.rating:null;
+    if(inc.transparency) obj.transparency={model:lastCall.model, system:lastCall.system, usage:lastCall.usage, stages:lastCall.stages};
+    if(inc.state)        obj.state=lastCall.state;
+    return {content:JSON.stringify(obj,null,2), mime:"application/json", ext:"json"};
+  }
+  let md="# Divergence.AI Answer\n\n_"+new Date().toLocaleString()+"_\n\n";
+  if(inc.answer)     md+="## Answer\n\n"+lastCall.answer+"\n\n";
+  if(inc.confidence) md+="## Confidence\n\n"+conf.map(c=>"- **"+c.level+"** — "+c.text).join("\n")+"\n\n";
+  if(inc.rating)     md+="## Rating\n\n"+(lastRating?(lastRating.rating==="up"?"👍 up":"👎 down"):"not rated")+"\n\n";
+  if(inc.transparency) md+="## Transparency\n\n- Model: "+lastCall.model+"\n- Input tokens: "+(lastCall.usage.input_tokens||"?")+"\n- Output tokens: "+(lastCall.usage.output_tokens||"?")+"\n- Stages: "+(lastCall.stages||[]).map(s=>(s.on?"✓ ":"– ")+s.name).join(", ")+"\n\n";
+  if(inc.state)      md+="## State Detection\n\n- Mood: "+lastCall.state.emotion+"\n- RSD: "+lastCall.state.rsd+"\n- Interest: "+lastCall.state.interest+"\n- Mode: "+lastCall.state.mode+"\n";
+  if(fmt==="html"){
+    const esc2=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;");
+    const body=esc2(md)
+      .replace(/^# (.*)$/gm,"<h1>$1</h1>").replace(/^## (.*)$/gm,"<h2>$1</h2>")
+      .replace(/^- (.*)$/gm,"<li>$1</li>").replace(/\*\*(.+?)\*\*/g,"<b>$1</b>")
+      .replace(/\n\n/g,"<br><br>");
+    return {content:"<!doctype html><meta charset='utf-8'><title>Divergence.AI Answer</title><body style='font-family:sans-serif;max-width:720px;margin:40px auto;line-height:1.5'>"+body+"</body>", mime:"text/html", ext:"html"};
+  }
+  return {content:md, mime:"text/markdown", ext:"md"};
+}
+function downloadAnswerExport(){
+  const out=buildAnswerExport();
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([out.content],{type:out.mime}));
+  a.download="divergence-answer-"+new Date().toISOString().slice(0,10)+"."+out.ext;
+  a.click(); closeModals(); logActivity("Answer downloaded (."+out.ext+")");
+}
+function copyAnswerExport(){
+  const out=buildAnswerExport();
+  navigator.clipboard.writeText(out.content).then(
+    ()=>{ closeModals(); showErr("Copied to clipboard."); },
+    ()=>showErr("Couldn't copy — your browser blocked clipboard access.")
+  );
+}
+
+// ---- right sidebar renderers ----
+function modelLabel(){
+  const sel=$("model");
+  return sel && sel.selectedOptions.length ? sel.selectedOptions[0].textContent.split("—")[0].trim() : "—";
+}
+function renderSidebar(){
+  // Recent Sessions
+  if($("sbSessions")){
+    $("sbSessions").innerHTML = (archives.length ? archives.slice(0,6).map(a=>
+      '<div class="sb-row"><div class="grow"><b>'+esc(a.title)+'</b><small>'+fmtTime(a.ts)+' · '+a.turns.length+' msgs</small></div>'+
+      '<button class="sb-btn" onclick="restoreArchive('+a.id+')">Open</button></div>').join("")
+      : '<p class="meta" style="margin:0">No saved sessions yet — archive one from the Archive panel.</p>')
+      + (archives.length ? '<button class="sb-btn sb-btn--wide" onclick="showPanel(\'history\')">View All ('+archives.length+')</button>' : "");
+  }
+  // Context Snapshot
+  if($("sbContext")){
+    $("sbContext").innerHTML = (contextItems.length ? contextItems.slice(0,5).map(c=>
+      '<div class="sb-row"><div class="grow"><b>'+esc(c.title)+'</b><small>'+c.type+'</small></div>'+
+      '<button class="del" onclick="removeContextItem('+c.id+')">×</button></div>').join("")
+      : '<p class="meta" style="margin:0">No context loaded.</p>')
+      + '<div class="sb-row" style="border:none"><small>Use Context: '+(useContext?'<b style="color:var(--green)">ON</b>':'OFF')+' · '+contextItems.length+' item'+(contextItems.length===1?"":"s")+'</small></div>'
+      + '<button class="sb-btn sb-btn--wide" onclick="openContextModal()">📎 Add / Manage Context</button>';
+  }
+  // Recent Activity
+  if($("sbActivity")){
+    $("sbActivity").innerHTML = activityLog.length ? activityLog.slice(0,10).map(a=>
+      '<div class="sb-row"><div class="grow"><b style="font-weight:400">'+esc(a.text)+'</b><small>'+fmtTime(a.ts)+'</small></div></div>').join("")
+      : '<p class="meta" style="margin:0">No activity yet this session.</p>';
+  }
+  // Token Usage
+  if($("sbTokens")){
+    const total=sessionTokens.in+sessionTokens.out;
+    const pct=Math.min(100, Math.round(total/100000*100));
+    $("sbTokens").innerHTML =
+      '<div class="sb-row" style="border:none;padding-bottom:0"><div class="grow"><b>'+total.toLocaleString()+' / 100K tokens</b></div><small>'+pct+'%</small></div>'+
+      '<div class="sb-meter"><div class="sb-meter__fill" style="width:'+pct+'%"></div></div>'+
+      '<small style="color:var(--dim);font-size:11px">In '+sessionTokens.in.toLocaleString()+' · Out '+sessionTokens.out.toLocaleString()+' · resets on New Conversation</small>';
+  }
+  // Model Status
+  if($("sbModel")){
+    $("sbModel").innerHTML =
+      '<div class="sb-row"><div class="grow"><b><span class="sb-dot"></span>'+esc(modelLabel())+'</b><small>Active model</small></div></div>'+
+      '<div class="sb-row"><div class="grow"><b style="color:var(--green)">All Systems Operational</b><small>3 of 3 models available</small></div></div>';
+  }
+  // Active Session (hidden by default via visibility settings)
+  if($("sbSession")){
+    if(conversation.length){
+      const total=sessionTokens.in+sessionTokens.out;
+      $("sbSession").innerHTML =
+        '<div class="sb-row"><div class="grow"><b>Started</b></div><small>'+fmtTime(conversation[0].ts)+'</small></div>'+
+        '<div class="sb-row"><div class="grow"><b>Messages</b></div><small>'+conversation.length+'</small></div>'+
+        '<div class="sb-row"><div class="grow"><b>Tokens</b></div><small>'+total.toLocaleString()+'</small></div>'+
+        '<div class="sb-row"><div class="grow"><b>Context items</b></div><small>'+contextItems.length+'</small></div>'+
+        '<button class="sb-btn sb-btn--wide" onclick="closeSession()">Close Session</button>';
+    } else {
+      $("sbSession").innerHTML = '<p class="meta" style="margin:0">No active session — ask something to start one.</p>';
+    }
+  }
+}
+function closeSession(){
+  if(!conversation.length) return;
+  if(!confirm("Close this session?\n\nThe conversation is archived first, then the thread clears.")) return;
+  const title=(conversation.find(t=>t.role==="user")?.content||"Conversation").slice(0,60);
+  archives.unshift({id:Date.now(), title, ts:Date.now(), turns:JSON.parse(JSON.stringify(conversation))});
+  localStorage.setItem("divArchives", JSON.stringify(archives));
+  conversation=[]; saveThread(); resetSessionTokens();
+  $("thread").innerHTML=""; $("threadCard").classList.add("hidden");
+  $("answerCard").classList.add("hidden"); $("stateCard").classList.add("hidden");
+  renderArchive(); logActivity("Session closed & archived: "+title);
+}
+
+// keep Model Status accordion in sync with the model picker
+$("model").addEventListener("change", ()=>renderSidebar());
+
 // ---- restore saved customizations on load ----
 (function(){
   const ac=localStorage.getItem("divAccent"); if(ac) document.documentElement.style.setProperty("--accent",ac);
@@ -2916,6 +3626,10 @@ function downloadJSON(){
 
 // restore conversation thread from last session on page load
 if(conversation.length){ renderThread(); }
+
+// apply saved sidebar visibility + fill accordions with live data
+applyVisibility();
+renderSidebar();
 </script>
 </body>
 </html>
