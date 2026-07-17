@@ -1,0 +1,60 @@
+/* layout.css — app frame only.
+   Dimensions are LOCKED by CANON.md "LAYOUT":
+   top bar 60px, left column 200px, center flex, right column 300px.
+   Do not change these numbers without changing CANON.md first.
+   Materials/marble styling arrives in Step 3.x — keep this file structural. */
+
+:root {
+  --topbar-height: 60px;
+  --left-col-width: 200px;
+  --right-col-width: 300px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: system-ui, sans-serif;
+  /* Placeholder neutral dark; Black Marble background replaces this in Step 3.1 */
+  background: #111;
+  color: #eee;
+}
+
+.app-shell {
+  display: grid;
+  grid-template-rows: var(--topbar-height) 1fr;
+  grid-template-columns: var(--left-col-width) 1fr var(--right-col-width);
+  grid-template-areas:
+    "topbar topbar topbar"
+    "left   center right";
+  height: 100vh;
+}
+
+.topbar {
+  grid-area: topbar;
+  border-bottom: 1px solid #333;
+}
+
+.col-left {
+  grid-area: left;
+  border-right: 1px solid #333;
+}
+
+.col-center {
+  grid-area: center;
+  min-width: 0; /* lets the flex/center track shrink instead of overflowing */
+  overflow-y: auto;
+}
+
+.col-right {
+  grid-area: right;
+  border-left: 1px solid #333;
+}
