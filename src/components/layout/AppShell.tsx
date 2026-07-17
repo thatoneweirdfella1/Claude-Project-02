@@ -1,4 +1,5 @@
 import { GlassPanel } from "../primitives";
+import { ConversationArea } from "../translation";
 import { LeftNav } from "./LeftNav";
 import { TopBar } from "./TopBar";
 
@@ -28,7 +29,7 @@ export function AppShell() {
         <LeftNav />
       </nav>
       <main className="col-center" data-testid="col-center">
-        <p className="center-placeholder">Conversation placeholder — built in Steps 5.0+.</p>
+        <ConversationArea />
       </main>
       <aside className="col-right" aria-label="Sidebar panels" data-testid="col-right">
         <GlassPanel className="sidebar-placeholder">

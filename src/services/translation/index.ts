@@ -29,3 +29,13 @@ export {
   stubTranslationClient,
   SAMPLE_INPUTS,
 } from "./harness";
+export {
+  CONFIDENCE_GATES,
+  MODERATE_CONFIDENCE_NOTE,
+  evaluateConfidenceGate,
+  buildClarifyingQuestion,
+  gateTranslation,
+  type GateLevel,
+  type GateDecision,
+  type GatedTranslation,
+} from "./gate";
