@@ -22,8 +22,9 @@ violation of "no per-component marble" — it is the sole named exception to tha
 
 ## THE ASSETS
 
-Two tiers. See FILE-MANIFEST.md for full provenance and the seam-tiling finding that necessitated
-the split.
+Two tiers. See FILE-MANIFEST-STEP1.3-ADDENDUM.md for full provenance and the seam-tiling finding
+that necessitated the split (the root FILE-MANIFEST.md is the real Step 0 deliverable and predates
+the texture files being supplied; the addendum covers what Step 0 couldn't have known).
 
 **Rendered (what the CSS actually loads):**
 - `public/textures/black-marble-slab.jpg` — the slab background AND the Blue Marble buttons'
@@ -35,7 +36,7 @@ the split.
 **Canonical source (not loaded by any component, kept as source of record):**
 - `public/textures/black-marble.png`, `grey-marble-1.png`, `grey-marble-2.png` — the raw
   1254×1254 originals as supplied. Do not point CSS at these; they do not tile seamlessly (see
-  FILE-MANIFEST.md).
+  FILE-MANIFEST-STEP1.3-ADDENDUM.md).
 
 World scale is fixed at `--slab-tile-size: 2508px` (tokens.css), matching the rendered assets'
 native resolution. Forbidden on the slab: `cover`, `contain`, percentages, `vw`, `vh`, `auto` —
