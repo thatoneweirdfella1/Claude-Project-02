@@ -140,7 +140,12 @@ export interface LearnedPreferences {
 export interface SessionState {
   model: ModelSelection;
   directness: DirectnessLevel;
-  technique: TechniqueId;
+  /** Widened from a single TechniqueId to an array at Step 4.5: CANON Feature 4
+      allows manually stacking up to MAX_TECHNIQUE_STACK techniques (not just
+      one), which a singular field can't represent. `["auto-detect"]` means
+      auto mode (hand off to the Step 4.2 scorer); any other array is the
+      user's exact manual selection. See STORE-CONTRACT.md. */
+  techniques: TechniqueId[];
   context: ContextItem[];
   conversation: ConversationMessage[];
   statePills: StatePills;

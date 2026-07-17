@@ -14,7 +14,17 @@ export {
 export {
   autoDetectTechniques,
   selectTechniques,
+  dependencyClosure,
+  anyConflict,
   type TechniqueHints,
   type TechniqueScore,
   type TechniqueSelection,
 } from "./autoDetect";
+export {
+  AUTO_MODE,
+  isAutoMode,
+  canSelectManually,
+  selectManualTechnique,
+  deselectManualTechnique,
+  type ManualSelectVerdict,
+} from "./manualSelection";

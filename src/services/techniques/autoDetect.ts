@@ -121,8 +121,11 @@ function applyHints(
 }
 
 /** Transitive dependency closure of a technique, dependencies first, the
-    technique last (composition order: reason/show before verify/compare). */
-function dependencyClosure(id: TechniqueId): TechniqueId[] {
+    technique last (composition order: reason/show before verify/compare).
+    Exported (Step 4.5) so the manual-selection UI logic can reuse the exact
+    same closure walk the auto-detect scorer uses — no behavior change, just a
+    wider export surface on an existing pure function. */
+export function dependencyClosure(id: TechniqueId): TechniqueId[] {
   const out: TechniqueId[] = [];
   const seen = new Set<TechniqueId>();
   const visit = (t: TechniqueId) => {
@@ -135,7 +138,8 @@ function dependencyClosure(id: TechniqueId): TechniqueId[] {
   return out;
 }
 
-function anyConflict(ids: TechniqueId[]): boolean {
+/** Exported (Step 4.5) for the same reason as dependencyClosure above. */
+export function anyConflict(ids: TechniqueId[]): boolean {
   const set = new Set(ids);
   for (const id of ids) {
     for (const c of getTechnique(id).conflicts) {

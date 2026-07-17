@@ -30,13 +30,23 @@ Cleared on session close. Default produced by `createInitialSessionState()`.
 |---|---|---|---|
 | `model` | `ModelSelection` = `ModelId \| "auto"` | `"auto"` | Model registry: **Step 1.10**. Ids fixed by CANON/ROUTING. |
 | `directness` | `DirectnessLevel` = `1 \| 2 \| 3` | `2` | Directness control: **Step 4.4**. Default L2 per CANON Feature 3. |
-| `technique` | `TechniqueId` (12-value union) | `"socratic"` | Technique registry: **Step 4.1**. Union mirrors CANON Feature 4. |
+| `techniques` | `TechniqueId[]` (widened from a single `TechniqueId` at **Step 4.5** — see note below) | `["auto-detect"]` | Technique registry: **Step 4.1**; manual multi-select: **Step 4.5**. |
 | `context` | `ContextItem[]` | `[]` | Context management: **Steps 7.1–7.5**. Shape provisional. |
 | `conversation` | `ConversationMessage[]` | `[]` | Streaming/pipeline: **Steps 5.1–5.2**; rich metadata 8.x. Shape provisional. |
 | `statePills` | `StatePills` (emotion/rsd/interest/cognitive, each nullable) | all `null` | State detection: **Steps 6.1–6.3**. Values mirror CANON Feature 5. |
 
-Actions: `setModel`, `setDirectness`, `setTechnique`, `addContextItem`, `removeContextItem`,
+Actions: `setModel`, `setDirectness`, `setTechniques`, `addContextItem`, `removeContextItem`,
 `addMessage`, `setStatePills`, `resetSession`, `hydrate`.
+
+**`techniques` field-type change (Step 4.5):** Step 1.7 originally typed this field as a single
+`TechniqueId` (`"socratic"` default). Step 4.5's own spec explicitly requires manual selection to
+support stacking up to `MAX_TECHNIQUE_STACK` (4) techniques at once ("a conflicting pair cannot both
+be selected", "enforces the 4-technique stack limit" on manual choice) — a singular field cannot
+represent that, so it was widened to `TechniqueId[]`. `["auto-detect"]` (a single-element array
+holding the meta id) represents auto mode; any other array is the user's exact manual stack. This
+field was unconsumed by any other code at the time of the change (verified by a repo-wide search),
+so the rename carried no other blast radius. Persistence is unaffected — the autosave seam
+(`SESSION_PERSISTED_KEYS`) is generic over field names, per Step 1.8's design.
 
 Persisted keys for autosave: `SESSION_PERSISTED_KEYS`.
 

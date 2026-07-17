@@ -47,7 +47,7 @@ describe("persistence: kill and reload", () => {
     // Arrange: user does work in this session.
     useSessionStore.getState().setDirectness(3);
     useSessionStore.getState().setModel("claude-opus-4-8");
-    useSessionStore.getState().setTechnique("step-by-step");
+    useSessionStore.getState().setTechniques(["step-by-step"]);
     useSessionStore.getState().addMessage({
       id: "m1",
       role: "user",
@@ -75,7 +75,7 @@ describe("persistence: kill and reload", () => {
     const session = useSessionStore.getState();
     expect(session.directness).toBe(3);
     expect(session.model).toBe("claude-opus-4-8");
-    expect(session.technique).toBe("step-by-step");
+    expect(session.techniques).toEqual(["step-by-step"]);
     expect(session.conversation).toHaveLength(1);
     expect(session.conversation[0].content).toBe("what is the project codename");
 
@@ -152,7 +152,7 @@ describe("persistence: kill and reload", () => {
     const hasFunction = Object.values(raw).some((v) => typeof v === "function");
     expect(hasFunction).toBe(false);
     expect(Object.keys(raw).sort()).toEqual(
-      ["context", "conversation", "directness", "model", "statePills", "technique"].sort(),
+      ["context", "conversation", "directness", "model", "statePills", "techniques"].sort(),
     );
   });
 });
