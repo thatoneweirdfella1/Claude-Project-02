@@ -8,6 +8,7 @@ import "./styles/layout.css";
 import "./styles/marble.css";
 import "./styles/primitives.css";
 import "./styles/shell.css";
+import "./styles/keyboard.css";
 
 /* Restore persisted state before first paint so the user returns exactly
    where they were (no default-then-restored flicker), then mount and
