@@ -1,3 +1,4 @@
+import { DirectnessDemo } from "../directness";
 import { GlassPanel } from "../primitives";
 import { ModelRoutingDemo } from "../routing";
 import { ConversationArea } from "../translation";
@@ -32,6 +33,7 @@ export function AppShell() {
       <main className="col-center" data-testid="col-center">
         <ConversationArea />
         <ModelRoutingDemo />
+        <DirectnessDemo />
       </main>
       <aside className="col-right" aria-label="Sidebar panels" data-testid="col-right">
         <GlassPanel className="sidebar-placeholder">
