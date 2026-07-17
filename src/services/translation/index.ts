@@ -39,3 +39,23 @@ export {
   type GateDecision,
   type GatedTranslation,
 } from "./gate";
+export {
+  parseCorpus,
+  CORPUS_CATEGORIES,
+  CORPUS_CATEGORY_LABELS,
+  CORPUS_CATEGORY_TO_GAP,
+  type CorpusCase,
+  type CorpusCategory,
+} from "./corpus";
+export {
+  runCorpus,
+  formatCorpusReport,
+  gapDetectionJudge,
+  makeSemanticJudge,
+  CORPUS_TARGET_OVERALL,
+  CORPUS_TARGET_PER_CATEGORY,
+  type CorpusJudge,
+  type CorpusReport,
+  type CaseResult,
+  type CategoryTally,
+} from "./corpusHarness";
