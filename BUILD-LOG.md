@@ -1,8 +1,8 @@
 # DIVERGENCE.AI BUILD LOG
 
 ## WHERE YOU ARE
-Last completed: STEP 3.2 — Decision logic and override (done — ALREADY-BUILT override rule wired to a real Model dropdown, not reimplemented. New src/components/routing/ feature folder: modelDropdownOptions.ts [Auto + 3 models labeled "{label} — {descriptor}", matching the V3 screenshot's confirmed "Opus 4.8 — smartest"], ModelDropdown.tsx [bound to the Step 1.7 SessionState.model field via useSessionStore — no new store state needed], ModelRoutingDemo.tsx [calls routingService.route() live with the dropdown's value as override, proving both spot-checked behaviors on-screen: override always wins on paid, free plan gates Opus to Sonnet with a visible note]; routingService.ts gained overrideFromSelection() [ModelSelection → routing.js's ModelKey override, defensively null for "auto"/unknown]; mounted in AppShell's center column below ConversationArea. Verified by 7 new tests [overrideFromSelection mapping + defensive fallback + end-to-end route() proof, dropdown option shape/order/screenshot-label match] — suite now 85 passing — clean tsc+vite build [63 modules, bundle grew vs Step 3.1 confirming the service is now actually consumed, not just importable], clean oxlint, and the original unmodified tests.js re-confirmed passing via the scratch .cjs copy)
-Next step: STEP 3.3 — Low-confidence escalation (ALREADY BUILT — verify)
+Last completed: STEP 3.3 — Low-confidence escalation (done — VERIFY only, ALREADY-BUILT coupling in routing.js not touched. Spot check confirmed the three-band coupling lives in routing.js [conf<60 floors effective at 4/Balanced with a note; conf<80 escalates +1 with a note; 80+ trusts] and tests.js's CONFIDENCE COUPLING section. Added src/services/confidenceCoupling.test.ts: an end-to-end integration check driving the real seam translate() → TranslationResult.confidence → route({confidence}) across all three bands [80+ effective==complexity, 60-79 effective==min(10,complexity+1)+note, <60 effective floored to 4 → Balanced/sonnet + note], plus a monotonicity check that low confidence never routes cheaper. Verified: 4 new integration tests, suite now 89 passing, clean tsc+vite build, clean oxlint. No production code changed — routing.js/tests.js untouched, integration test only)
+Next step: STEP 4.1 — Technique registry and matrix
 Blocked: nothing. Only the proxy's live deploy + real streamed call (and therefore a real corpus accuracy run) remain unrun in this no-network sandbox (parked for deploy, Step 12.3).
 
 ## DECISIONS
@@ -100,6 +100,7 @@ Blocked: nothing. Only the proxy's live deploy + real streamed call (and therefo
 - overrideFromSelection() IS DEFENSIVE, NEVER THROWS (Step 3.2): a persisted `model` value that isn't "auto" and isn't a recognized ModelId (e.g. a stale api string from a future/removed model, or corrupted IndexedDB state) maps to `null` (auto) rather than crashing route(). Consistent with the app's existing defensive patterns (persistence.ts try/catch, gate.ts confidence clamping) — a UI control's stored value should never be trusted enough to crash the routing call.
 - ModelRoutingDemo REUSES THE EXISTING plan FLAG, ADDS NO NEW STATE (Step 3.2): the demo's "Paid plan" checkbox is bound to the Step 1.7 accountStore.plan/setPlan (already-existing, already-persisted) so BOTH spot-checked behaviors — override always wins on paid, free plan gates Opus with a note — are demonstrable live from the UI, without inventing a demo-only toggle. Toggling it here has the same real effect a future billing/plan step would have; Step 3.2 doesn't add billing, per ROUTING.md ("a routing layer flag, not billing infrastructure").
 - SAMPLE PROMPT IS FIXED, NOT USER-EDITABLE (Step 3.2): ModelRoutingDemo routes one hardcoded mid-complexity prompt ("design a caching strategy...") rather than exposing a text box, since there is no composer yet (Step 5.0) and building one would be scope creep beyond "wire the Model dropdown." The fixed prompt was chosen to actually reach Opus at complexity when unconstrained, so the free-plan downgrade note has something to show.
+- STEP 3.3 IS A TEST-ONLY VERIFY, NO PRODUCTION CODE (Step 3.3): the confidence coupling was already in routing.js and did not need building — confidenceCoupling.test.ts only proves the translation→routing SEAM works end to end at the confidence field. It asserts on route()'s complexity/effectiveComplexity/notes generically (base complexity read from the result, not pinned to a magic number) so it stays robust if the scorer's exact scores shift. The <60 band is documented as routing's SAFETY NET — the normal path is the Step 2.3 clarify gate catching <60 before it ever reaches route() (CONFIDENCE_COUPLING.md item 3), so both layers are intentional, not redundant.
 
 ## PARKED
 - ~~Marble texture files: location/source to be clarified before Step 3.1 (Marble system build).~~ RESOLVED at Step 1.3 — three texture files provided, saved, and wired into marble.css; see DECISIONS.
@@ -159,7 +160,7 @@ Blocked: nothing. Only the proxy's live deploy + real streamed call (and therefo
 - [x] STEP 2.4 — Test corpus harness
 - [x] STEP 3.1 — Six-dimension scorer
 - [x] STEP 3.2 — Decision logic and override
-- [ ] STEP 3.3 — Low-confidence escalation
+- [x] STEP 3.3 — Low-confidence escalation
 - [ ] STEP 4.1 — Technique registry and matrix
 - [ ] STEP 4.2 — Scoring and stacking
 - [ ] STEP 4.3 — Composition engine
