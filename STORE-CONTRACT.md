@@ -28,6 +28,7 @@ Cleared on session close. Default produced by `createInitialSessionState()`.
 
 | Field | Type | Default | Owning step for full detail |
 |---|---|---|---|
+| `draftInput` | `string` | `""` | Input composer: **Step 5.0**. The not-yet-submitted textarea content; autosaved so a crash mid-thought doesn't cost the user the thought (CANON persistence rule). |
 | `model` | `ModelSelection` = `ModelId \| "auto"` | `"auto"` | Model registry: **Step 1.10**. Ids fixed by CANON/ROUTING. |
 | `directness` | `DirectnessLevel` = `1 \| 2 \| 3` | `2` | Directness control: **Step 4.4**. Default L2 per CANON Feature 3. |
 | `techniques` | `TechniqueId[]` (widened from a single `TechniqueId` at **Step 4.5** — see note below) | `["auto-detect"]` | Technique registry: **Step 4.1**; manual multi-select: **Step 4.5**. |
@@ -35,8 +36,8 @@ Cleared on session close. Default produced by `createInitialSessionState()`.
 | `conversation` | `ConversationMessage[]` | `[]` | Streaming/pipeline: **Steps 5.1–5.2**; rich metadata 8.x. Shape provisional. |
 | `statePills` | `StatePills` (emotion/rsd/interest/cognitive, each nullable) | all `null` | State detection: **Steps 6.1–6.3**. Values mirror CANON Feature 5. |
 
-Actions: `setModel`, `setDirectness`, `setTechniques`, `addContextItem`, `removeContextItem`,
-`addMessage`, `setStatePills`, `resetSession`, `hydrate`.
+Actions: `setDraftInput`, `setModel`, `setDirectness`, `setTechniques`, `addContextItem`,
+`removeContextItem`, `addMessage`, `setStatePills`, `resetSession`, `hydrate`.
 
 **`techniques` field-type change (Step 4.5):** Step 1.7 originally typed this field as a single
 `TechniqueId` (`"socratic"` default). Step 4.5's own spec explicitly requires manual selection to

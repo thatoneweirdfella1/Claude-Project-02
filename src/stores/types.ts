@@ -138,6 +138,11 @@ export interface LearnedPreferences {
 
 /** Session store — cleared when a session closes (CANON). */
 export interface SessionState {
+  /** The composer's in-progress, not-yet-submitted text (Step 5.0). Lives here
+      (not local component state) so autosave (Step 1.8) covers it — CANON's
+      persistence rule that a crash mid-thought must not cost the user the
+      thought. Cleared to "" only on TRANSLATE & ASK submit or session close. */
+  draftInput: string;
   model: ModelSelection;
   directness: DirectnessLevel;
   /** Widened from a single TechniqueId to an array at Step 4.5: CANON Feature 4

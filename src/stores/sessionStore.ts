@@ -22,6 +22,7 @@ import type {
     for the same reason. */
 export function createInitialSessionState(): SessionState {
   return {
+    draftInput: "", // Step 5.0: the composer's not-yet-submitted text
     model: "auto", // CANON: free tier auto-routes; "auto" exercises the router by default
     directness: 2, // CANON Feature 3: Level 2 balanced is the default
     techniques: ["auto-detect"], // CANON Feature 4: Auto-detect is the default mode (Step 4.5)
@@ -34,6 +35,7 @@ export function createInitialSessionState(): SessionState {
 /** The persisted data keys, for the autosave layer (Step 1.8) to read and
     rehydrate without hardcoding field names or touching the actions. */
 export const SESSION_PERSISTED_KEYS: (keyof SessionState)[] = [
+  "draftInput",
   "model",
   "directness",
   "techniques",
@@ -43,6 +45,7 @@ export const SESSION_PERSISTED_KEYS: (keyof SessionState)[] = [
 ];
 
 interface SessionActions {
+  setDraftInput: (draftInput: string) => void;
   setModel: (model: ModelSelection) => void;
   setDirectness: (directness: DirectnessLevel) => void;
   /** Replaces the whole selection (Step 4.5): ["auto-detect"] for auto mode,
@@ -64,6 +67,7 @@ export type SessionStore = SessionState & SessionActions;
 export const useSessionStore = create<SessionStore>((set) => ({
   ...createInitialSessionState(),
 
+  setDraftInput: (draftInput) => set({ draftInput }),
   setModel: (model) => set({ model }),
   setDirectness: (directness) => set({ directness }),
   setTechniques: (techniques) => set({ techniques }),

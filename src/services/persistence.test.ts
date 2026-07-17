@@ -45,6 +45,10 @@ afterEach(() => {
 describe("persistence: kill and reload", () => {
   it("restores both stores' state after a simulated reload", async () => {
     // Arrange: user does work in this session.
+    // Step 5.0's own VERIFY requirement: "reload mid-sentence and confirm the
+    // text comes back" — draftInput is deliberately left mid-thought here,
+    // exactly the crash-mid-thought scenario CANON's persistence rule targets.
+    useSessionStore.getState().setDraftInput("okay so i was thinking about how");
     useSessionStore.getState().setDirectness(3);
     useSessionStore.getState().setModel("claude-opus-4-8");
     useSessionStore.getState().setTechniques(["step-by-step"]);
@@ -65,14 +69,17 @@ describe("persistence: kill and reload", () => {
     coldStartStores();
     _resetDbHandleForTests();
     expect(useSessionStore.getState().directness).toBe(2); // confirm the reset really happened
+    expect(useSessionStore.getState().draftInput).toBe(""); // the mid-sentence text is really gone
     expect(useAccountStore.getState().plan).toBe("free");
 
     // Reload restores.
     const result = await loadPersistedState();
     expect(result).toEqual({ hadSession: true, hadAccount: true });
 
-    // Session store returned exactly where it was.
+    // Session store returned exactly where it was — including the mid-sentence
+    // draft, which is the whole point of Step 5.0 binding it to store state.
     const session = useSessionStore.getState();
+    expect(session.draftInput).toBe("okay so i was thinking about how");
     expect(session.directness).toBe(3);
     expect(session.model).toBe("claude-opus-4-8");
     expect(session.techniques).toEqual(["step-by-step"]);
@@ -152,7 +159,7 @@ describe("persistence: kill and reload", () => {
     const hasFunction = Object.values(raw).some((v) => typeof v === "function");
     expect(hasFunction).toBe(false);
     expect(Object.keys(raw).sort()).toEqual(
-      ["context", "conversation", "directness", "model", "statePills", "techniques"].sort(),
+      ["context", "conversation", "directness", "draftInput", "model", "statePills", "techniques"].sort(),
     );
   });
 });

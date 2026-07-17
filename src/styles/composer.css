@@ -1,0 +1,126 @@
+/* composer.css — input box, control row, TRANSLATE & ASK, demo readout
+   (Step 5.0). Tokens only. */
+
+.composer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-row-margin);
+}
+
+.input-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* First real consumer of the section-header tokens (Step 1.2 built these,
+   unused until now) — MATERIALS.md: cyan is used for "section headers". */
+.input-box__label {
+  margin: 0;
+  color: var(--accent-cyan);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-section-header);
+  font-weight: var(--font-weight-section-header);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.input-box__textarea {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 96px;
+  max-height: 480px;
+  padding: var(--space-input-padding);
+  border-radius: var(--radius-card);
+  border: 1px solid var(--surface-smoked-glass-border);
+  background: var(--surface-smoked-glass);
+  backdrop-filter: blur(var(--blur-smoked-glass));
+  -webkit-backdrop-filter: blur(var(--blur-smoked-glass));
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-body);
+  line-height: var(--line-height-body);
+  resize: none; /* height is JS-driven (auto-grow); a manual resize handle would fight it */
+  overflow-y: auto;
+}
+
+.input-box__textarea::placeholder {
+  color: var(--text-secondary);
+}
+
+.input-box__counter {
+  align-self: flex-end;
+  margin: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-metadata);
+  font-weight: var(--font-weight-metadata);
+  opacity: var(--text-metadata-opacity);
+}
+
+/* Informational only when over the soft target — never blocks typing. */
+.input-box__counter--over {
+  color: var(--state-cognitive);
+  opacity: 1;
+}
+
+.control-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-row-margin);
+}
+
+.control-row__dropdowns {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-row-margin);
+}
+
+.control-row__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-row-margin);
+  flex-wrap: wrap;
+}
+
+.attach-context-controls {
+  display: flex;
+  gap: var(--space-list-item-margin);
+}
+
+.composer-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-list-item-margin);
+}
+
+.composer-section__readout {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.composer-section__readout-label {
+  margin: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-metadata);
+  font-weight: var(--font-weight-metadata);
+  opacity: var(--text-metadata-opacity);
+}
+
+.composer-section__readout-json {
+  margin: 0;
+  padding: var(--space-input-padding);
+  border-radius: var(--radius-button);
+  background: rgb(255 255 255 / 0.04);
+  color: var(--text-primary);
+  font-family: monospace;
+  font-size: var(--font-size-metadata);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 240px;
+  overflow-y: auto;
+}
