@@ -1,9 +1,9 @@
 # DIVERGENCE.AI BUILD LOG
 
 ## WHERE YOU ARE
-Last completed: STEP 2.1 — Gap taxonomy and prompt spec (done; TRANSLATION-SPEC.md + the schema/prompt in code under src/services/translation/ — schema.ts [GAP_TYPES, TranslationResult, tolerant-but-strict parseTranslationOutput validator], prompt.ts [canonical TRANSLATION_SYSTEM_PROMPT], index.ts barrel; verified by 8 new passing schema tests, clean tsc+vite build, clean oxlint. Design/spec only — no runtime service or live call, that's 2.2)
-Next step: STEP 2.2 — Translation engine
-Blocked: STEP 1.10 was SKIPPED by user instruction (blocked — REQUIRED FILE routing.js absent + deploy/live-call impossible in this sandbox; see PARKED). STEP 2.2 is buildable (PIPELINE.md + TRANSLATION-SPEC.md present, model-string spot check passes) but its LIVE claude-sonnet-5-through-proxy call can't be verified until 1.10's proxy exists — will build against an injected model-client seam and park live verification.
+Last completed: STEP 2.2 — Translation engine (done; runtime service in src/services/translation/ — translate.ts [raw text → typed TranslationOutcome {ok|empty|too-large|error}, never throws], client.ts [injected TranslationModelClient seam + TRANSLATION_MODEL=claude-sonnet-5], harness.ts [offline manual harness + stub client]; calls Sonnet-5 through the injected proxy client with the Step 2.1 prompt, validates via parseTranslationOutput; verified by 11 new passing tests [happy path, empty/huge/API-failure/malformed, fence+prose JSON recovery, model+prompt wiring, harness smoke], clean tsc+vite build, clean oxlint. NO live model call — proxy is Step 1.10, absent)
+Next step: STEP 2.3 — Confidence gates and clarify flow
+Blocked: STEP 2.3 is BLOCKED — its REQUIRED FILE CONFIDENCE_COUPLING.md is absent from the repo (see PARKED). STEP 1.10 remains skipped/blocked. STEP 2.2's live claude-sonnet-5-through-proxy call is unverified (service built against an injected client seam, stub-tested; live verification parked on 1.10).
 
 ## DECISIONS
 - Locked decisions verified: three-marble system (not seven), claude-sonnet-5 for Balanced tier, state detection on button press (not live-as-you-type), routing engine already built (not rebuilt).
@@ -70,6 +70,11 @@ Blocked: STEP 1.10 was SKIPPED by user instruction (blocked — REQUIRED FILE ro
 - SCHEMA ADDS `reasoning` BEYOND THE REQUIRED THREE FIELDS (Step 2.1): the step names translatedPrompt/confidence/detectedGaps; added a required `reasoning` string per CONVENTIONS rule 6 (design the data shape for the Transparency card now) and CANON ADHD Feedback (must be non-judgmental). Step 8.2's transparency card consumes it. A superset of the required schema, not a contradiction — later steps may read reasoning but must keep the three core fields.
 - VALIDATOR IS TOLERANT-BUT-STRICT (Step 2.1): parseTranslationOutput clamps confidence to 0-100 and rounds, treats missing/garbage confidence as 0 (safe — never fabricates a high score that would skip the gates), drops unknown gap ids + dedupes, fills a reasoning fallback — but THROWS TranslationSchemaError when translatedPrompt is missing/empty or the reply isn't an object. Only the buried-request field is load-bearing; LLM output is otherwise treated as noisy. Extracting JSON from raw response text (fences/streaming) is deliberately left to the 2.2 runtime, not the schema.
 - GAP TYPE IDS ARE THE STABLE CONTRACT (Step 2.1): the six kebab ids in GAP_TYPES are shared by the model output, the schema, the detected-gaps UI, and the transparency card; renaming any requires updating prompt.ts + TRANSLATION-SPEC.md together. GAP_TYPE_LABELS supplies display strings so UI steps don't hardcode gap names.
+- INJECTED MODEL-CLIENT SEAM, NOT A CONCRETE CLIENT (Step 2.2): translate() takes a TranslationModelClient (client.ts) as an injected dependency because the real proxy is Step 1.10 (absent). Step 1.10's proxy client implements the seam later with zero change to translate(); tests and the harness pass stubs. The seam is a single NON-streamed completion returning Promise<string> — translation emits one JSON object, not a user-visible stream (streaming is answer-display, PIPELINE Stage 5). TRANSLATION_MODEL="claude-sonnet-5" lives in client.ts provisionally; point it at 1.10's model registry once that exists.
+- translate() NEVER THROWS — TYPED TranslationOutcome (Step 2.2): the step's "handle empty, huge, API failure without crashing" is met with a discriminated union {ok|empty|too-large|error} the caller switches on, chosen over throwing so the clarify UI (2.3) and composer (5.0+) render each case deliberately. Empty/too-large short-circuit before ever calling the client.
+- HUGE INPUT REJECTED, NOT TRUNCATED (Step 2.2): input over MAX_TRANSLATION_INPUT_CHARS (24k chars ≈ ~6k tokens; provisional, per-call configurable) returns {too-large} rather than truncating — truncation could drop the real request, which in ADHD input often trails after preamble. CANON's 10/50MB limits are for loaded CONTEXT, not this box; revisit the cap when Step 1.10's registry exposes real token budgets.
+- RESPONSE-TEXT JSON EXTRACTION LIVES IN THE SERVICE (Step 2.2): extractJsonObject (translate.ts) strips ```json fences and, if needed, slices first-"{" to last-"}" before JSON.parse, tolerating models that wrap JSON in prose. Kept in the runtime service, NOT schema.ts (which by the 2.1 boundary validates already-parsed objects only). Any parse or schema failure becomes {error}, never a throw.
+- MANUAL HARNESS IS OFFLINE-BY-DEFAULT (Step 2.2): runTranslationHarness defaults to stubTranslationClient (canned schema-shaped JSON) so it runs the full input→service→validate→outcome path without the absent proxy; pass the real 1.10 client for genuine translations. Exercised by harness.test.ts. Satisfies the step's "small manual test harness"; a live-model manual run is parked on 1.10.
 
 ## PARKED
 - ~~Marble texture files: location/source to be clarified before Step 3.1 (Marble system build).~~ RESOLVED at Step 1.3 — three texture files provided, saved, and wired into marble.css; see DECISIONS.
@@ -100,6 +105,8 @@ Blocked: STEP 1.10 was SKIPPED by user instruction (blocked — REQUIRED FILE ro
 - Step 2.1's schema/prompt are present and unit-tested but NOT imported by any app entry yet, so they're tree-shaken out of the app bundle (build shows the JS bundle unchanged). Step 2.2's service is the first consumer; wiring into the actual composer UI is Steps 5.0+.
 - STEP 2.2 DEPENDS ON THE 1.10 PROXY, WHICH IS ABSENT: the runtime translation service must call claude-sonnet-5 "through the proxy (step 1.10)," but 1.10 is blocked/skipped. 2.2 will build the service against an injected model-client seam (an interface 1.10's real proxy client later satisfies) and unit-test it with a stub, but a LIVE streamed translation call cannot be verified in this build until the proxy exists. Live-call verification parked for whenever 1.10 lands.
 - The 50-case translation corpus (31_0_translation_test_cases.md) named in PIPELINE.md for the 90%-overall / no-category-below-80% target is not in the repo — parked for Step 2.4 (also noted in TRANSLATION-SPEC.md).
+- Step 2.2's translation service is verified with STUB clients only (11 tests: happy path, empty/huge/API-failure/malformed reply, fence+prose JSON recovery, model+prompt wiring, harness smoke). NO live claude-sonnet-5 call has been made — the proxy is Step 1.10 (absent), and the sandbox has no network. When 1.10 lands: implement TranslationModelClient with the real proxy client and run runTranslationHarness against it to verify genuine translations + real streaming/latency behavior.
+- MAX_TRANSLATION_INPUT_CHARS (24k) is a provisional guess — no CANON/PIPELINE number exists for the translation input box. Revisit against real per-model token budgets once Step 1.10's model registry exists.
 
 ## STEPS
 - [x] STEP 0 — File inventory and manifest
@@ -114,7 +121,7 @@ Blocked: STEP 1.10 was SKIPPED by user instruction (blocked — REQUIRED FILE ro
 - [x] STEP 1.9 — Keyboard framework
 - [ ] STEP 1.10 — API proxy and model registry  (SKIPPED for now — blocked, see PARKED)
 - [x] STEP 2.1 — Gap taxonomy and prompt spec
-- [ ] STEP 2.2 — Translation engine
+- [x] STEP 2.2 — Translation engine
 - [ ] STEP 2.3 — Confidence gates and clarify flow
 - [ ] STEP 2.4 — Test corpus harness
 - [ ] STEP 3.1 — Six-dimension scorer
