@@ -5,6 +5,7 @@ import { MarbleSlab } from "./components/layout/MarbleSlab";
 import "./styles/tokens.css";
 import "./styles/layout.css";
 import "./styles/marble.css";
+import "./styles/primitives.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
