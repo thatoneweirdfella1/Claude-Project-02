@@ -15,11 +15,11 @@
 }
 
 .topbar-logo {
-  font-family: var(--font-family-base);
-  font-size: var(--font-size-card-title);
-  font-weight: var(--font-weight-card-title);
-  color: var(--text-primary);
-  white-space: nowrap;
+  /* Slot for the Logo component (Step 1.6); the mark carries its own
+     type/color. Kept as a flex item so it aligns with the topbar rows. */
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
 }
 
 .topbar-center,

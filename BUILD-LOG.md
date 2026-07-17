@@ -1,8 +1,8 @@
 # DIVERGENCE.AI BUILD LOG
 
 ## WHERE YOU ARE
-Last completed: STEP 1.5 — Layout shell and top bar (done; real TopBar and LeftNav components built and mounted in AppShell, replacing all Step 1.3/1.4 demo content; center and right columns hold minimal structural placeholders per this step's explicit scope; production build clean, dev server verified serving app/shell.css/TopBar/LeftNav correctly; no in-browser visual check possible in build env — see PARKED)
-Next step: STEP 1.6 — Logo
+Last completed: STEP 1.6 — Logo (done; animated aurora-mix SVG brain logo built as Logo.tsx/Logo.css, wired into TopBar's logo slot replacing the text placeholder; production build clean, dev server verified serving Logo module + aurora tokens + reduced-motion guard; no in-browser visual check possible in build env — see PARKED)
+Next step: STEP 1.7 — Dual-store state architecture
 Blocked: nothing
 
 ## DECISIONS
@@ -44,12 +44,16 @@ Blocked: nothing
 - NEW `--status-online` TOKEN (Step 1.5): `#22c55e`, same value as `--state-interest` — MATERIALS.md's palette only defines one green — but a separate named token, since System Status (health/connectivity) and Interest (a detected emotional-state dimension) are unrelated concepts that could diverge later even though they start identical.
 - NEW `src/styles/shell.css` FILE (Step 1.5): structural layout for content *within* the topbar/left-nav regions (flex arrangement, gaps, the system-status row). Kept separate from `layout.css`, which CONVENTIONS.md scopes to "the structural frame ONLY (grid, dimensions)" — shell.css is the next layer in, parallel to how Step 1.3 got marble.css and Step 1.4 got primitives.css.
 - LEFTNAV ITEMS ARE INERT (Step 1.5): the ten nav buttons and Trash/Logout have no click handlers, routing, or active-state styling (the screenshot shows "Home" highlighted as active, not replicated here). Real navigation/active-state behavior is explicitly Step 9.7's job ("Left nav content"); Step 1.5 only places structure and spacing correctly.
+- LOGO AURORA COLORS AS LOGO-SCOPED TOKENS (Step 1.6): CANON names the aurora as "neon green, purple, pink blended" but gives exact hex for none of the three. Added `--logo-aurora-green` (#39ff14), `--logo-aurora-pink` (#ff4fd8), and `--logo-aurora-purple` (aliased to the existing `--accent-purple` #8b5cf6 so the "AI" text stays the app's one purple), plus a `--logo-aurora-gradient` composing them. Kept logo-scoped, not promoted to general accents — this three-color mix is the brand mark's identity, not a reusable UI accent. Green/pink hex are a confident pick from CANON's hue names; a session with the real brand source can retune the two token values without touching Logo.tsx.
+- LOGO ANIMATION IS OPT-OUT, NOT ALWAYS-ON (Step 1.6): CANON's LOGO section calls for a "subtle synapse animation" while its sensory hard rule says "No excessive auto-animation." Reconciled by making the synapse pulse (slow 3.6s ease-in-out, opacity 0.4↔1, staggered per-node delays) run ONLY under `@media (prefers-reduced-motion: no-preference)` — reduced-motion users get a fully static logo. This is the first `prefers-reduced-motion` guard in the codebase; later animated steps should follow the same pattern (Step 11.2/11.3 audits will expect it).
+- LOGO IS HAND-BUILT SVG, NOT AN ASSET FILE OR ICON LIBRARY (Step 1.6): the brain is an inline SVG path in Logo.tsx with a gradient stroke and pulsing `<circle>` synapse nodes, not a raster/exported asset and not from an icon set. Consistent with the Step 1.5 note that no icon library exists in this build; the logo specifically needs custom animation so it's bespoke regardless. The Vite template's placeholder public/favicon.svg and icons.svg are still unreplaced (see PARKED) — this step built the top-bar mark, not the favicon.
+- LOGO.CSS IS CO-LOCATED, NOT GLOBAL (Step 1.6): unlike shell.css/primitives.css/marble.css (global stylesheets imported from main.tsx), Logo.css sits next to Logo.tsx and is imported by it. CONVENTIONS.md explicitly permits `ComponentName.css` next to a component; used here because the logo's keyframes and SVG-gradient wiring are genuinely component-specific, not shared vocabulary. First component-scoped stylesheet in the repo.
 
 ## PARKED
 - ~~Marble texture files: location/source to be clarified before Step 3.1 (Marble system build).~~ RESOLVED at Step 1.3 — three texture files provided, saved, and wired into marble.css; see DECISIONS.
 - Translation corpus: available for Step 2.4 (Translation verification) if needed; not required for Steps 1–2.2.
 - No headless browser exists in the build environment and browser downloads are blocked by the network allowlist, so Step 1.1 layout was verified by serving the app and asserting the grid CSS values over HTTP plus a clean production build — not by rendered-pixel screenshot. First step run in an environment with a browser should eyeball the frame once.
-- Vite template's public/ shipped favicon.svg and icons.svg placeholders; replace when the logo (CANON "THE LOGO") is built.
+- Vite template's public/ shipped favicon.svg and icons.svg placeholders are still unreplaced. The top-bar logo now exists (Step 1.6, Logo.tsx) and a static favicon could be derived from its brain SVG, but that was out of Step 1.6's scope ("logo component placed in the top bar"). A later polish/deploy step (e.g. 12.3) should export a static favicon from the logo mark.
 - Step 1.2's three eyeballed pill colors (RSD, Interest, Cognitive Mode — see DECISIONS) are waiting on a future session with real pixel-sampling tools to confirm against the screenshot; current values are a confident visual match, not a measured one.
 - Inter is referenced by --font-family-base but the font file itself is not yet loaded/self-hosted anywhere in the repo; waiting on Step 3.4 (Typography and spacing application).
 - The two grey texture files (grey-marble-1.png / grey-marble-2.png, and their rendered supertiles grey-marble-slab-1.jpg / grey-marble-slab-2.jpg) read as visually near-identical to the black marble file — same vein pattern, barely distinguishable tone, not genuinely distinct textures. Flagged by the person supplying the files and deliberately deferred as cosmetic. Should be replaced with visually distinct textures before Step 11.4 (Visual verification). Currently moot for rendering since the grey files have no active consumer (see DECISIONS), but will matter once/if a future step gives grey marble a defined use.
@@ -60,6 +64,7 @@ Blocked: nothing
 - No icon library exists yet (Step 1.5): the logo, Settings/Notifications/Help buttons, and all left-nav items are text placeholders. Waiting on a future step to pick an icon approach (SVG set, icon font, or hand-built per CANON's logo spec for the one that needs custom animation) and wire it into TopBar.tsx/LeftNav.tsx.
 - Center column (one placeholder `<p>`) and right column (two placeholder `GlassPanel`s) are waiting on their owning steps: Steps 5.0+ (input composer, streaming display) and 6.x (state pills, transparency, multi-AI) for center; Steps 9.4 (Visibility toggle), 9.5 (Revolving-door accordions), 9.6 (Quick Tools grid) for right. Not blocking anything now — placeholders are intentional at this stage.
 - Step 1.5's shell was verified by production build, dev server HTTP checks, and confirming TopBar.tsx/LeftNav.tsx/AppShell.tsx transform through Vite without errors — not by an actual rendered/visual comparison against the V3 screenshot (same build-environment constraint as every step so far: no headless browser). A future step with a real browser should confirm topbar/left-nav spacing actually reads as the screenshot intends, particularly the topbar's three-group flex distribution and the left-nav's bottom-anchored Trash/System Status/Logout block.
+- Step 1.6's logo was verified by production build and dev-server HTTP checks (Logo module serves, aurora tokens + reduced-motion guard + background-clip present) — not by an actual rendered check of the brain shape, gradient, or animation (no headless browser). A future step with a real browser should confirm the hand-built brain path actually reads as a brain at 32px, the aurora gradient renders on both the SVG stroke and the "AI" text (background-clip:text has cross-browser quirks), and the synapse pulse looks subtle rather than distracting. The brain path is hand-drawn and approximate — Step 11.4 (Visual verification) may want it refined against a designer's eye.
 
 ## STEPS
 - [x] STEP 0 — File inventory and manifest
@@ -68,7 +73,7 @@ Blocked: nothing
 - [x] STEP 1.3 — Marble slab architecture
 - [x] STEP 1.4 — Glass and marble primitives
 - [x] STEP 1.5 — Layout shell and top bar
-- [ ] STEP 1.6 — Logo
+- [x] STEP 1.6 — Logo
 - [ ] STEP 1.7 — Dual-store state architecture
 - [ ] STEP 1.8 — Autosave and restore
 - [ ] STEP 1.9 — Keyboard framework

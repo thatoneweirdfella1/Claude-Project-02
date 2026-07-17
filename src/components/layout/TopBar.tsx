@@ -1,9 +1,9 @@
 import { GlassButton } from "../primitives";
+import { Logo } from "./Logo";
 
 /* Top bar, 60px, per CANON.md "LAYOUT": logo slot, Search/Templates/
-   Quick Reference, gear/bell/help, user chip. Structure and spacing
-   only (Step 1.5) — the logo is a text placeholder until Step 1.6
-   builds the real animated SVG; the icon buttons are text-label
+   Quick Reference, gear/bell/help, user chip. The logo is the real
+   animated SVG mark (Step 1.6); the icon buttons are still text-label
    placeholders, since no icon library exists in this build (adding
    one is a stack decision this step doesn't make — see BUILD-LOG.md
    DECISIONS). Click behavior belongs to whichever later step owns
@@ -13,7 +13,7 @@ export function TopBar() {
   return (
     <div className="topbar-content">
       <div className="topbar-logo" data-testid="logo-slot">
-        DIVERGENCE.AI
+        <Logo />
       </div>
       <div className="topbar-center">
         <GlassButton>Search</GlassButton>
