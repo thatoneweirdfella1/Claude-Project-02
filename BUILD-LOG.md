@@ -1,8 +1,8 @@
 # DIVERGENCE.AI BUILD LOG
 
 ## WHERE YOU ARE
-Last completed: STEP 1.1 — Repo scaffold and stack lock (done; dev server verified booting, layout CSS values verified over HTTP; no in-browser pixel check possible in build env)
-Next step: STEP 1.2 — Design tokens and CSS variables
+Last completed: STEP 1.2 — Design tokens and CSS variables (done; tokens.css built, swatch page at public/token-swatch.html verified serving over HTTP with correct values; no in-browser pixel check possible in build env, cross-checked visually against the V3 screenshot image directly instead)
+Next step: STEP 1.3 — TypeScript and build configuration
 Blocked: nothing
 
 ## DECISIONS
@@ -14,17 +14,24 @@ Blocked: nothing
 - Frame implemented as CSS grid (`grid-template-areas`), not nested flex: one declaration encodes all four locked dimensions (60/200/flex/300), harder for a later step to break one region in isolation. Regions carry data-testids: topbar, col-left, col-center, col-right.
 - Layout dimensions live as CSS custom properties in src/styles/layout.css (--topbar-height, --left-col-width, --right-col-width); Step 1.2 tokens should extend this pattern in src/styles/tokens.css (created empty as a landing point).
 - Vite 8 template ships oxlint (not eslint) — kept as-is rather than swapping.
+- FONT (Step 1.2): Anthropic Sans (named in MATERIALS.md) is not publicly licensed and cannot ship. Substituted Inter (SIL OFL, freely shippable) as --font-family-base — closest clean humanist-geometric sans at the same register, and the de facto standard at the 12-14px sizes this whole type scale runs at. Only the stack is fixed here; loading/self-hosting the actual font file is Step 3.4's job, not this one.
+- COLOR VALUES NOT GIVEN AS EXACT HEX (Step 1.2): MATERIALS.md/CANON.md give exact hex only for Black Marble, Blue Marble, cyan (#00D9FF), and purple (#8B5CF6). RSD, Interest, and Cognitive Mode pill colors are named only by hue ("red", "green", "blue"). Picked --state-rsd/--action-destructive #EF4444, --state-interest #22C55E from the screenshot by eye. --state-cognitive #3B9EFF deliberately kept distinct from Blue Marble's #2B4E9C-#4478E5 range so a state pill never visually reads as a button. --state-emotion aliases directly to --accent-purple (#8B5CF6) per MATERIALS.md's explicit statement they're the same purple. A later session with real pixel-sampling tools should verify these three against the screenshot and adjust the token values only (no component touches these directly).
+- RADIUS (Step 1.2): MATERIALS.md gives cards a 12-16px range, buttons a flat 8px. --radius-button is 8px (unambiguous). --radius-card is fixed at 14px, the range's midpoint, as a single token a later step can retune without touching any component.
+- TOKEN FILE ARCHITECTURE (Step 1.2): flat single-tier custom properties in tokens.css, no primitive/alias indirection layer. Simpler than a two-tier system and CONVENTIONS.md only asks for domain-prefixed semantic names, not a primitive layer — revisit only if token reuse patterns actually demand it later.
+- SWATCH PAGE (Step 1.2): public/token-swatch.html, a static HTML file referencing /src/styles/tokens.css directly. Dev-only, not linked from AppShell or main.tsx, not part of the shipped bundle — exists purely so a session with a real browser can open it and eyeball every token at once against the screenshot.
 
 ## PARKED
 - Marble texture files: location/source to be clarified before Step 3.1 (Marble system build). Not blocking Step 0 completion.
 - Translation corpus: available for Step 2.4 (Translation verification) if needed; not required for Steps 1–2.2.
 - No headless browser exists in the build environment and browser downloads are blocked by the network allowlist, so Step 1.1 layout was verified by serving the app and asserting the grid CSS values over HTTP plus a clean production build — not by rendered-pixel screenshot. First step run in an environment with a browser should eyeball the frame once.
 - Vite template's public/ shipped favicon.svg and icons.svg placeholders; replace when the logo (CANON "THE LOGO") is built.
+- Step 1.2's three eyeballed pill colors (RSD, Interest, Cognitive Mode — see DECISIONS) are waiting on a future session with real pixel-sampling tools to confirm against the screenshot; current values are a confident visual match, not a measured one.
+- Inter is referenced by --font-family-base but the font file itself is not yet loaded/self-hosted anywhere in the repo; waiting on Step 3.4 (Typography and spacing application).
 
 ## STEPS
 - [x] STEP 0 — File inventory and manifest
 - [x] STEP 1.1 — Repo scaffold and stack lock
-- [ ] STEP 1.2 — Design tokens and CSS variables
+- [x] STEP 1.2 — Design tokens and CSS variables
 - [ ] STEP 1.3 — TypeScript and build configuration
 - [ ] STEP 1.4 — Runtime environment and dependencies
 - [ ] STEP 1.5 — Routing engine wire-in (one string change: claude-sonnet-5)
