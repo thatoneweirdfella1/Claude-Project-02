@@ -1,59 +1,43 @@
-import { BlueMarbleButton, Dropdown, GlassButton, GlassCard, GlassPanel, Pill } from "../primitives";
+import { GlassPanel } from "../primitives";
+import { LeftNav } from "./LeftNav";
+import { TopBar } from "./TopBar";
 
 /* AppShell — the structural frame from CANON.md "LAYOUT".
-   Regions were empty by design at Step 1.1 (skeleton only). Later steps
-   mount content INTO these regions; they do not restructure them:
+   Regions were empty by design at Step 1.1 (skeleton only), then held
+   Step 1.3/1.4 demo content proving marble continuity and exercising
+   the primitive library. Step 1.5 replaces that demo content with the
+   real shell:
      - TopBar (60px): logo, Search, Templates, Quick Reference, gear, bell, help, user chip
      - LeftNav (200px): nav items, Trash, System Status, logout
-     - Center (flex): conversation, input, state pills, dropdowns, TRANSLATE & ASK
-     - RightSidebar (300px): Quick Tools grid + accordion stack
+     - Center (flex): empty conversation placeholder — real content is
+       Steps 5.0+ (input composer, streaming display, state pills, etc.)
+     - RightSidebar (300px): placeholders for Quick Tools and the
+       accordion stack — real content is Steps 9.4-9.6
 
-   Content below is a demo shell, not real feature UI: Step 1.3 proved
-   marble continuity with raw surface-* divs; Step 1.4 replaces those
-   with the real primitive library (GlassCard, GlassPanel,
-   BlueMarbleButton, GlassButton, Dropdown, Pill) so this doubles as
-   "a page rendering every primitive over the slab" against the
-   screenshot. Real feature components (Steps 1.5+) replace this demo
-   content; they do not need to touch the app-layer wrapper or the
-   grid itself. */
-
-const DEMO_TECHNIQUES = [
-  { value: "socratic", label: "Socratic" },
-  { value: "step-by-step", label: "Step-by-step" },
-  { value: "auto", label: "Auto-detect" },
-];
+   Structure and spacing only, per Step 1.5's own scope. Later feature
+   steps mount real content into center/right; they do not need to
+   touch the app-layer wrapper or the grid itself. */
 
 export function AppShell() {
   return (
     <div className="app-shell app-layer">
       <header className="topbar" aria-label="Top bar" data-testid="topbar">
-        <GlassCard style={{ margin: "12px 16px", padding: "8px 16px" }}>
-          DIVERGENCE.AI — primitive library demo (Step 1.4)
-        </GlassCard>
+        <TopBar />
       </header>
       <nav className="col-left" aria-label="Primary navigation" data-testid="col-left">
-        <GlassPanel style={{ margin: "16px" }}>
-          <span>Left nav demo (GlassPanel)</span>
-          <GlassButton>Secondary action</GlassButton>
-        </GlassPanel>
+        <LeftNav />
       </nav>
       <main className="col-center" data-testid="col-center">
-        <GlassCard style={{ margin: "16px" }}>
-          Center demo card (GlassCard) — resize the window; veins should not stretch.
-          <div style={{ display: "flex", gap: "12px", marginTop: "16px", flexWrap: "wrap" }}>
-            <Pill color="var(--state-emotion)">Emotion: Overwhelmed</Pill>
-            <Pill color="var(--state-rsd)">RSD: High</Pill>
-            <Pill color="var(--state-interest)">Interest: High</Pill>
-            <Pill color="var(--state-cognitive)">Cognitive Mode: Analytical</Pill>
-          </div>
-          <div style={{ marginTop: "16px", maxWidth: "220px" }}>
-            <Dropdown options={DEMO_TECHNIQUES} defaultValue="socratic" aria-label="Technique (demo)" />
-          </div>
-        </GlassCard>
-        <BlueMarbleButton style={{ margin: "0 16px" }}>TRANSLATE &amp; ASK (demo)</BlueMarbleButton>
+        <p className="center-placeholder">Conversation placeholder — built in Steps 5.0+.</p>
       </main>
       <aside className="col-right" aria-label="Sidebar panels" data-testid="col-right">
-        <GlassPanel style={{ margin: "16px" }}>Right sidebar demo (GlassPanel)</GlassPanel>
+        <GlassPanel className="sidebar-placeholder">
+          Quick Tools placeholder — hidden by default per CANON.md, built in Steps 9.4/9.6.
+        </GlassPanel>
+        <GlassPanel className="sidebar-placeholder">
+          Accordion stack placeholder (Recent Sessions, Context Snapshot, Recent Activity, Token
+          Usage, Model Status, Active Session) — built in Step 9.5.
+        </GlassPanel>
       </aside>
     </div>
   );

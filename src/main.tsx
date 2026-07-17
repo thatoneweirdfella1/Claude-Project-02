@@ -6,6 +6,7 @@ import "./styles/tokens.css";
 import "./styles/layout.css";
 import "./styles/marble.css";
 import "./styles/primitives.css";
+import "./styles/shell.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

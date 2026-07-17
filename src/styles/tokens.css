@@ -49,6 +49,8 @@
 
   --action-destructive: #ef4444; /* red, destructive actions only (Close Session, Replace Answer) */
 
+  --status-online: #22c55e; /* System Status dot. Same value as --state-interest — MATERIALS.md defines only one green in the palette — but a separate token, since the two concepts (system health vs. detected interest level) are unrelated and could diverge later. */
+
   /* ---------------------------------------------------------------------
      TEXT — monochrome base, 85% of the interface (MATERIALS.md "COLOR")
      --------------------------------------------------------------------- */

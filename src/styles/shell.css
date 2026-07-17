@@ -1,0 +1,89 @@
+/* shell.css — structural layout for the real top bar and left nav
+   content built at Step 1.5. layout.css stays scoped to the outer grid
+   (frame only, per CONVENTIONS.md); this file is the next layer in:
+   how content arranges *within* the topbar/col-left regions. No
+   surface/material rules here — those come from primitives.css and
+   marble.css via the GlassButton/GlassPanel classes already applied. */
+
+.topbar-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  padding: 0 16px;
+  gap: 16px;
+}
+
+.topbar-logo {
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-card-title);
+  font-weight: var(--font-weight-card-title);
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.topbar-center,
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.leftnav-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: var(--space-row-margin);
+  box-sizing: border-box;
+}
+
+.leftnav-items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-list-item-margin);
+}
+
+.leftnav-item {
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.leftnav-bottom {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-list-item-margin);
+  padding-top: var(--space-row-margin);
+  border-top: 1px solid var(--surface-smoked-glass-border);
+}
+
+.system-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: var(--space-button-vertical) var(--space-button-horizontal);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-secondary);
+  font-weight: var(--font-weight-label-secondary);
+  color: var(--text-secondary);
+}
+
+.system-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--status-online);
+  flex-shrink: 0;
+}
+
+.center-placeholder,
+.sidebar-placeholder {
+  margin: var(--space-row-margin);
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-body);
+}
+
+.sidebar-placeholder + .sidebar-placeholder {
+  margin-top: 0;
+}
