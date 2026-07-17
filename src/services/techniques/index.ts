@@ -11,3 +11,10 @@ export {
   isTechniqueId,
   type Technique,
 } from "./registry";
+export {
+  autoDetectTechniques,
+  selectTechniques,
+  type TechniqueHints,
+  type TechniqueScore,
+  type TechniqueSelection,
+} from "./autoDetect";
