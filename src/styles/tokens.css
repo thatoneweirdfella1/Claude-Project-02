@@ -120,4 +120,10 @@
 
   --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.15);
   --shadow-modal: 0 4px 16px rgba(0, 0, 0, 0.2);
+
+  /* ---------------------------------------------------------------------
+     SLAB (Step 1.3, MATERIALS.md "THE SLAB RULE" / MARBLE-CONTRACT.md)
+     --------------------------------------------------------------------- */
+
+  --slab-tile-size: 2508px; /* native resolution of the seamless mirrored supertile texture; never cover/contain/percent/vw/vh */
 }
