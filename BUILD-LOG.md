@@ -2,7 +2,7 @@
 
 ## WHERE YOU ARE
 Last completed: STEP 1.2 — Design tokens and CSS variables (done; tokens.css built, swatch page at public/token-swatch.html verified serving over HTTP with correct values; no in-browser pixel check possible in build env, cross-checked visually against the V3 screenshot image directly instead)
-Next step: STEP 1.3 — TypeScript and build configuration
+Next step: STEP 1.3 — Marble slab architecture
 Blocked: nothing
 
 ## DECISIONS
@@ -31,46 +31,64 @@ Blocked: nothing
 ## STEPS
 - [x] STEP 0 — File inventory and manifest
 - [x] STEP 1.1 — Repo scaffold and stack lock
-- [x] STEP 1.2 — Design tokens and CSS variables
-- [ ] STEP 1.3 — TypeScript and build configuration
-- [ ] STEP 1.4 — Runtime environment and dependencies
-- [ ] STEP 1.5 — Routing engine wire-in (one string change: claude-sonnet-5)
-- [ ] STEP 2.1 — Translation Engine specification
-- [ ] STEP 2.2 — Routing engine integration and configuration
-- [ ] STEP 2.3 — Routing engine tests (verification, not build)
-- [ ] STEP 2.4 — Translation Engine verification (optional: needs 31_0_translation_test_cases.md)
-- [ ] STEP 2.5 — Confidence coupling and gating logic
-- [ ] STEP 3.1 — Marble slab system (background, cards, buttons)
-- [ ] STEP 3.2 — Smoked Glass and layering (glassmorphism implementation)
-- [ ] STEP 3.3 — Blue Marble buttons and earned color
-- [ ] STEP 3.4 — Typography and spacing (MATERIALS.md)
-- [ ] STEP 3.5 — Component styling and polish
-- [ ] STEP 4.1 — Technique Selection engine specification
-- [ ] STEP 4.2 — Technique matrix and conflict/dependency resolution
-- [ ] STEP 4.3 — Auto-detect scoring and stacking (max 4 techniques)
-- [ ] STEP 4.4 — Composition and prompt assembly
-- [ ] STEP 5.1 — State Detection (Feature 5) on-demand classification
-- [ ] STEP 5.2 — Pipeline orchestrator and stage flow
-- [ ] STEP 5.3 — Execution and telemetry logging
-- [ ] STEP 6.1 — Context management (upload, paste, URL fetch, variables)
-- [ ] STEP 6.2 — Context Snapshot panel and persistence
-- [ ] STEP 6.3 — Store contracts (Session store, Account store)
-- [ ] STEP 7.1 — Feedback and 5-star rating UI
-- [ ] STEP 7.2 — Rating storage and learning loop (after 15+ questions)
-- [ ] STEP 8.1 — Transparency details card (Routing, Techniques, Confidence sub-cards)
-- [ ] STEP 8.2 — Expandable transparency panel
-- [ ] STEP 9.1 — Multi-AI Actions: Debate (two-column view)
-- [ ] STEP 9.2 — Consensus and Synthesis (Opus-backed, after debate)
-- [ ] STEP 9.3 — Replace/merge UI for synthesis results
-- [ ] STEP 10.1 — Download and Export modal
-- [ ] STEP 10.2 — Format support (Markdown, HTML, JSON, PDF)
-- [ ] STEP 10.3 — Copy to clipboard
-- [ ] STEP 11.1 — Session Management (New, Duplicate, Load Template, Close)
-- [ ] STEP 11.2 — Saved Prompts and Import (file, URL, previous conversation, variables, context, template)
-- [ ] STEP 11.3 — ADHD hard rules audit (cognitive load, time, sensory, decisions, persistence, feedback, accessibility)
-- [ ] STEP 12.1 — Visibility Toggle and sidebar management (seven checkboxes, Quick Tools grid OFF by default)
-- [ ] STEP 12.2 — Logged-in-by-default and autosave (5-second quiet background save)
-- [ ] STEP 12.3 — Deploy and launch
+- [x] STEP 1.2 — Design token system
+- [ ] STEP 1.3 — Marble slab architecture
+- [ ] STEP 1.4 — Glass and marble primitives
+- [ ] STEP 1.5 — Layout shell and top bar
+- [ ] STEP 1.6 — Logo
+- [ ] STEP 1.7 — Dual-store state architecture
+- [ ] STEP 1.8 — Autosave and restore
+- [ ] STEP 1.9 — Keyboard framework
+- [ ] STEP 1.10 — API proxy and model registry
+- [ ] STEP 2.1 — Gap taxonomy and prompt spec
+- [ ] STEP 2.2 — Translation engine
+- [ ] STEP 2.3 — Confidence gates and clarify flow
+- [ ] STEP 2.4 — Test corpus harness
+- [ ] STEP 3.1 — Six-dimension scorer
+- [ ] STEP 3.2 — Decision logic and override
+- [ ] STEP 3.3 — Low-confidence escalation
+- [ ] STEP 4.1 — Technique registry and matrix
+- [ ] STEP 4.2 — Scoring and stacking
+- [ ] STEP 4.3 — Composition engine
+- [ ] STEP 4.4 — Directness control
+- [ ] STEP 4.5 — Technique selector UI
+- [ ] STEP 5.0 — Input composer and control row
+- [ ] STEP 5.1 — Streaming display
+- [ ] STEP 5.2 — Pipeline orchestrator
+- [ ] STEP 5.3 — Error, retry, timeout
+- [ ] STEP 5.4 — Telemetry
+- [ ] STEP 6.1 — Detection architecture
+- [ ] STEP 6.2 — Four-dimension classifier prompt
+- [ ] STEP 6.3 — State pills UI
+- [ ] STEP 6.4 — Correction learning
+- [ ] STEP 6.5 — State feeds
+- [ ] STEP 7.1 — File upload and limits
+- [ ] STEP 7.2 — OCR pipeline
+- [ ] STEP 7.3 — URL fetch
+- [ ] STEP 7.4 — Variables
+- [ ] STEP 7.5 — Context Snapshot panel
+- [ ] STEP 8.1 — Feedback rating
+- [ ] STEP 8.2 — Transparency card
+- [ ] STEP 8.3 — Debate mode
+- [ ] STEP 8.4 — Consensus and Synthesis
+- [ ] STEP 8.5 — Download and export
+- [ ] STEP 9.1 — Session lifecycle
+- [ ] STEP 9.2 — Templates and saved prompts
+- [ ] STEP 9.3 — Import system
+- [ ] STEP 9.4 — Visibility toggle
+- [ ] STEP 9.5 — Revolving-door accordions
+- [ ] STEP 9.6 — Quick Tools grid
+- [ ] STEP 9.7 — Left nav content
+- [ ] STEP 10.1 — Pattern analysis engine
+- [ ] STEP 10.2 — Rule refinement application
+- [ ] STEP 11.1 — ADHD hard rules audit
+- [ ] STEP 11.2 — Performance pass
+- [ ] STEP 11.3 — Keyboard audit
+- [ ] STEP 11.4 — Visual verification
+- [ ] STEP 11.5 — Apply the audit fixes
+- [ ] STEP 12.1 — Unit tests
+- [ ] STEP 12.2 — End to end flows
+- [ ] STEP 12.3 — Deploy
 
 ---
 
