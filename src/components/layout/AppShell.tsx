@@ -1,4 +1,5 @@
 import { GlassPanel } from "../primitives";
+import { ModelRoutingDemo } from "../routing";
 import { ConversationArea } from "../translation";
 import { LeftNav } from "./LeftNav";
 import { TopBar } from "./TopBar";
@@ -30,6 +31,7 @@ export function AppShell() {
       </nav>
       <main className="col-center" data-testid="col-center">
         <ConversationArea />
+        <ModelRoutingDemo />
       </main>
       <aside className="col-right" aria-label="Sidebar panels" data-testid="col-right">
         <GlassPanel className="sidebar-placeholder">

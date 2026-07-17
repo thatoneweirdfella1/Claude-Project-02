@@ -20,7 +20,12 @@ import { describe, expect, it } from "vitest";
 import rootSource from "../../routing.js?raw";
 import embeddedSource from "./routing.js?raw";
 import { MODEL_REGISTRY } from "./modelRegistry";
-import { FREE_MODEL_KEYS, ROUTING_MODELS, route } from "./routingService";
+import {
+  FREE_MODEL_KEYS,
+  ROUTING_MODELS,
+  overrideFromSelection,
+  route,
+} from "./routingService";
 
 describe("embedding integrity", () => {
   it("src/services/routing.js is byte-identical to the repo-root vendor source", () => {
@@ -95,5 +100,38 @@ describe("routing.js MODELS agrees with modelRegistry.ts (independent sources, s
 
   it("no stale claude-sonnet-4-6 string anywhere in the wired-in engine", () => {
     expect(JSON.stringify(ROUTING_MODELS)).not.toContain("claude-sonnet-4-6");
+  });
+});
+
+describe("overrideFromSelection — Step 3.2's dropdown-to-engine wiring", () => {
+  it("maps 'auto' to null (no override; the scorer decides)", () => {
+    expect(overrideFromSelection("auto")).toBeNull();
+  });
+
+  it("maps each ModelId to its routing ModelKey", () => {
+    expect(overrideFromSelection("claude-haiku-4-5")).toBe("haiku");
+    expect(overrideFromSelection("claude-sonnet-5")).toBe("sonnet");
+    expect(overrideFromSelection("claude-opus-4-8")).toBe("opus");
+  });
+
+  it("falls back to null (never throws) for a stale/unknown persisted value", () => {
+    expect(overrideFromSelection("claude-sonnet-4-6" as never)).toBeNull();
+  });
+
+  it("the resulting override actually drives route(), proving the wiring end-to-end", () => {
+    const paidOverride = route({
+      prompt: "hello",
+      plan: "paid",
+      override: overrideFromSelection("claude-opus-4-8"),
+    });
+    expect(paidOverride.model).toBe("opus");
+
+    const freeOverride = route({
+      prompt: "hello",
+      plan: "free",
+      override: overrideFromSelection("claude-opus-4-8"),
+    });
+    expect(freeOverride.model).not.toBe("opus"); // free plan gates Opus, with a note
+    expect(freeOverride.notes.some((n) => /requires the paid plan/.test(n))).toBe(true);
   });
 });

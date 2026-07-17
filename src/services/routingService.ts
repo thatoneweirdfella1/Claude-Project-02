@@ -15,6 +15,8 @@ import engine, {
   type RouteInput,
   type RouteResult,
 } from "./routing.js";
+import { getModel, isModelId } from "./modelRegistry";
+import type { ModelSelection } from "../stores/types";
 
 export type { ModelKey, RouteInput, RouteResult } from "./routing.js";
 
@@ -32,3 +34,13 @@ export const FREE_MODEL_KEYS: ModelKey[] = engine.FREE_MODELS;
     this is exposed for callers that already have a routing ModelKey, e.g.
     reading tier/label off a RouteResult. */
 export const ROUTING_MODELS = engine.MODELS;
+
+/** Convert the Model dropdown's selection (SessionState.model, Step 1.7) into
+    routing.js's override input (Step 3.2). "auto" — and any value that isn't a
+    known ModelId, e.g. a stale value from an old persisted session — becomes
+    null (no override; the scorer decides), never a thrown error. A real
+    ModelId becomes its routing ModelKey via modelRegistry's key field. */
+export function overrideFromSelection(selection: ModelSelection): ModelKey | null {
+  if (selection === "auto" || !isModelId(selection)) return null;
+  return getModel(selection).key;
+}
