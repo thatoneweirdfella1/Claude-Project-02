@@ -69,6 +69,21 @@ export interface ConversationMessage {
   role: MessageRole;
   content: string;
   timestamp: number;
+  /* Assistant-only fields (Step 5.1 — STORE-CONTRACT.md named this step as
+     the owner of this type's full detail). Persisted (not just live-session
+     state) so the confidence line and router honesty note still show under a
+     historical answer after a reload, matching the screenshot's always-shown
+     confidence line. Rating's SAVE/learning behavior is Step 8.1's job; the
+     field isn't added here — see BUILD-LOG PARKED. */
+  /** Translation confidence 0-100 behind this answer — the "N% confident
+      this is what you meant" line. */
+  confidence?: number;
+  /** True when routing.js downgraded a Deep-tier route to Sonnet on the free
+      plan (ROUTING.md's honesty guarantee: never silently). */
+  downgraded?: boolean;
+  /** routing.js's own notes (escalation, downgrade, override, health floor),
+      shown verbatim alongside the confidence line, quiet monochrome. */
+  notes?: string[];
 }
 
 /* Loaded context. Provisional — upload limits, OCR, URL fetch, and

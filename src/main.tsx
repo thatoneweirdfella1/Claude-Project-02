@@ -14,6 +14,7 @@ import "./styles/routing.css";
 import "./styles/directness.css";
 import "./styles/techniques.css";
 import "./styles/composer.css";
+import "./styles/streaming.css";
 
 /* Restore persisted state before first paint so the user returns exactly
    where they were (no default-then-restored flicker), then mount and

@@ -33,7 +33,7 @@ Cleared on session close. Default produced by `createInitialSessionState()`.
 | `directness` | `DirectnessLevel` = `1 \| 2 \| 3` | `2` | Directness control: **Step 4.4**. Default L2 per CANON Feature 3. |
 | `techniques` | `TechniqueId[]` (widened from a single `TechniqueId` at **Step 4.5** — see note below) | `["auto-detect"]` | Technique registry: **Step 4.1**; manual multi-select: **Step 4.5**. |
 | `context` | `ContextItem[]` | `[]` | Context management: **Steps 7.1–7.5**. Shape provisional. |
-| `conversation` | `ConversationMessage[]` | `[]` | Streaming/pipeline: **Steps 5.1–5.2**; rich metadata 8.x. Shape provisional. |
+| `conversation` | `ConversationMessage[]` — Step 5.1 added optional `confidence`/`downgraded`/`notes` (assistant-only) | `[]` | Streaming/pipeline: **Steps 5.1–5.2**; a `rating` field is deliberately NOT added yet — Step 8.1 owns the feedback/rating shape and save behavior. |
 | `statePills` | `StatePills` (emotion/rsd/interest/cognitive, each nullable) | all `null` | State detection: **Steps 6.1–6.3**. Values mirror CANON Feature 5. |
 
 Actions: `setDraftInput`, `setModel`, `setDirectness`, `setTechniques`, `addContextItem`,

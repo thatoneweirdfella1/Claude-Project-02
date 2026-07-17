@@ -1,0 +1,180 @@
+/* streaming.css — message bubbles, confidence/honesty line, rating/download
+   row, stage indicator, streaming text (Step 5.1). Tokens only. */
+
+.conversation-area {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-row-margin);
+  padding: var(--space-card-padding);
+  overflow-y: auto;
+}
+
+.message-bubble {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: var(--space-row-margin);
+  border-bottom: 1px solid var(--surface-smoked-glass-border);
+}
+
+.message-bubble:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.message-bubble__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.message-bubble__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--surface-blue-marble-start);
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-metadata);
+  font-weight: 500;
+}
+
+.message-bubble__avatar--assistant {
+  background: var(--accent-purple);
+}
+
+.message-bubble__name {
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-card-title);
+  font-weight: var(--font-weight-card-title);
+}
+
+.message-bubble--assistant .message-bubble__name {
+  color: var(--accent-cyan);
+}
+
+.message-bubble__time {
+  margin-left: auto;
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-metadata);
+  font-weight: var(--font-weight-metadata);
+  opacity: var(--text-metadata-opacity);
+}
+
+.message-bubble__content {
+  margin: 0;
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-body);
+  line-height: var(--line-height-body);
+}
+
+/* Confidence line + router honesty note — same quiet monochrome, never
+   alarming (CANON ADHD Sensory rule; this step's own instruction that a
+   downgrade note is "information, not a warning and not an upsell"). */
+.answer-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.answer-meta__confidence,
+.answer-meta__note {
+  margin: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-secondary);
+  font-weight: var(--font-weight-label-secondary);
+  opacity: var(--text-metadata-opacity);
+}
+
+.rating-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.rating-row__stars {
+  display: flex;
+  gap: 4px;
+}
+
+.rating-row__star {
+  min-width: 32px;
+  min-height: 32px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.rating-row__star--filled {
+  color: var(--accent-cyan);
+}
+
+.rating-row__download {
+  min-width: 32px;
+  min-height: 32px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.stage-indicator {
+  margin: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-secondary);
+  font-weight: var(--font-weight-label-secondary);
+  font-style: italic;
+}
+
+.streaming-answer__text {
+  margin: 0;
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-body);
+  line-height: var(--line-height-body);
+}
+
+.streaming-answer__error {
+  margin: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-secondary);
+  font-weight: var(--font-weight-label-secondary);
+}
+
+.streaming-answer--done {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-list-item-margin);
+}
+
+.streaming-demo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-list-item-margin);
+}
+
+.streaming-demo__label {
+  margin: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-metadata);
+  font-weight: var(--font-weight-metadata);
+  opacity: var(--text-metadata-opacity);
+}
