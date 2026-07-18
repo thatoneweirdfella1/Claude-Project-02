@@ -29,6 +29,7 @@ export function createInitialSessionState(): SessionState {
     context: [],
     conversation: [],
     statePills: { emotion: null, rsd: null, interest: null, cognitive: null },
+    variables: {}, // Step 7.4: session-local variables, default empty
   };
 }
 
@@ -42,6 +43,7 @@ export const SESSION_PERSISTED_KEYS: (keyof SessionState)[] = [
   "context",
   "conversation",
   "statePills",
+  "variables",
 ];
 
 interface SessionActions {
@@ -56,6 +58,12 @@ interface SessionActions {
   removeContextItem: (id: string) => void;
   addMessage: (message: ConversationMessage) => void;
   setStatePills: (statePills: StatePills) => void;
+  /** Step 7.4 — create/update one session-local variable. Mirrors the
+      account store's existing setVariable (Step 1.7) so "explicitly save
+      to the account store" is a plain second call to that action, not a
+      different shape. */
+  setSessionVariable: (name: string, value: string) => void;
+  removeSessionVariable: (name: string) => void;
   /** Clear to defaults — CANON "cleared when a session closes". */
   resetSession: () => void;
   /** Replace persisted fields wholesale — used by autosave rehydrate (Step 1.8). */
@@ -76,6 +84,13 @@ export const useSessionStore = create<SessionStore>((set) => ({
     set((s) => ({ context: s.context.filter((c) => c.id !== id) })),
   addMessage: (message) => set((s) => ({ conversation: [...s.conversation, message] })),
   setStatePills: (statePills) => set({ statePills }),
+  setSessionVariable: (name, value) =>
+    set((s) => ({ variables: { ...s.variables, [name]: value } })),
+  removeSessionVariable: (name) =>
+    set((s) => {
+      const { [name]: _removed, ...rest } = s.variables;
+      return { variables: rest };
+    }),
   resetSession: () => set(createInitialSessionState()),
   hydrate: (state) => set(state),
 }));

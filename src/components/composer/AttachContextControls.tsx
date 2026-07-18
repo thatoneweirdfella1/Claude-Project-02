@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { GlassButton } from "../primitives";
 import { useDismissableLayer } from "../../keyboard";
+import { useAccountStore } from "../../stores/accountStore";
 import { useSessionStore } from "../../stores/sessionStore";
 import {
   FILE_INPUT_ACCEPT,
   createTesseractOcrClient,
   fetchUrlContext,
+  isValidVariableName,
   uploadFiles,
   type OcrClient,
   type RejectedFile,
@@ -13,23 +15,26 @@ import {
 
 /* Attach and Context controls (Step 5.0 built the buttons; Step 7.1 gave
    Attach its real file-upload behavior; Step 7.2 added OCR for images;
-   Step 7.3 adds "paste a URL" as a second way in).
+   Step 7.3 added "paste a URL"; Step 7.4 adds "create a variable").
 
-   "Attach ▾" now opens a small popover with two rows — "Upload a file" and
-   "Paste a URL" — finally using the "▾" chevron for what it always implied
-   (Step 7.1's own DECISIONS flagged this as "the simplest thing to extend
-   into a real menu later if a future step needs one," and this is that
-   step). Reuses the Step 1.9 keyboard framework's dismissable-layer +
-   outside-click pattern already established by TechniqueDropdown (4.5) and
-   StateDetectionPanel (6.3) — Escape and an outside click both close it.
+   "Attach ▾" opens a small popover with three rows — "Upload a file",
+   "Paste a URL", "Create a variable" — finally using the "▾" chevron for
+   what it always implied (Step 7.1's own DECISIONS flagged this as "the
+   simplest thing to extend into a real menu later if a future step needs
+   one," and each of 7.3/7.4 is that step, in turn). Reuses the Step 1.9
+   keyboard framework's dismissable-layer + outside-click pattern already
+   established by TechniqueDropdown (4.5) and StateDetectionPanel (6.3) —
+   Escape and an outside click both close it.
 
    File upload's own logic (uploadFiles, OCR, rejections, the CANON limits)
-   is completely UNCHANGED from Step 7.1/7.2, just now triggered from inside
-   the popover instead of directly off the visible button. URL fetch (Step
-   7.3, CANON Feature 6: "paste URL (fetched through the proxy)") calls
-   services/context/fetchUrlContext, which never fetches the page directly
-   from the browser — it POSTs to the server-side proxy (urlFetchHandler.ts
-   / api/fetch-url.ts) and only extracts/parses the returned HTML here.
+   is completely UNCHANGED from Step 7.1/7.2. URL fetch (Step 7.3) is
+   completely unchanged from that step. Step 7.4 adds variable creation
+   (CANON Feature 6: "create variables ($name)") — session store by
+   DEFAULT (setSessionVariable, Step 7.4 STORE ADD), with an "also save for
+   future sessions" checkbox that ADDITIONALLY calls the account store's
+   pre-existing setVariable (Step 1.7) — the exact "explicitly savable to
+   the account store" CANON/this step's own text calls for, not a new save
+   path.
 
    "Context ›" still defaults to a harmless no-op — the Context Snapshot
    panel is Step 7.5's job. */
@@ -48,7 +53,7 @@ function getOcrClient(): OcrClient {
   return sharedOcrClient;
 }
 
-type PopoverView = "menu" | "url";
+type PopoverView = "menu" | "url" | "variable";
 
 export function AttachContextControls({
   onAttach = () => {},
@@ -56,6 +61,8 @@ export function AttachContextControls({
 }: AttachContextControlsProps) {
   const context = useSessionStore((s) => s.context);
   const addContextItem = useSessionStore((s) => s.addContextItem);
+  const setSessionVariable = useSessionStore((s) => s.setSessionVariable);
+  const setAccountVariable = useAccountStore((s) => s.setVariable);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -66,6 +73,10 @@ export function AttachContextControls({
   const [urlValue, setUrlValue] = useState("");
   const [urlFetching, setUrlFetching] = useState(false);
   const [urlError, setUrlError] = useState<string | null>(null);
+  const [variableName, setVariableName] = useState("");
+  const [variableValue, setVariableValue] = useState("");
+  const [saveVariableToAccount, setSaveVariableToAccount] = useState(false);
+  const [variableError, setVariableError] = useState<string | null>(null);
 
   useDismissableLayer(open, () => setOpen(false));
 
@@ -87,6 +98,10 @@ export function AttachContextControls({
     setView("menu");
     setUrlValue("");
     setUrlError(null);
+    setVariableName("");
+    setVariableValue("");
+    setSaveVariableToAccount(false);
+    setVariableError(null);
   }
 
   function togglePopover() {
@@ -139,6 +154,19 @@ export function AttachContextControls({
     }
   }
 
+  function handleCreateVariable() {
+    const name = variableName.trim();
+    if (!isValidVariableName(name)) {
+      setVariableError("Use letters, numbers, and underscores only — starting with a letter or underscore.");
+      return;
+    }
+    setSessionVariable(name, variableValue);
+    if (saveVariableToAccount) {
+      setAccountVariable(name, variableValue);
+    }
+    closePopover();
+  }
+
   return (
     <div className="attach-context-controls" ref={rootRef}>
       <input
@@ -186,6 +214,14 @@ export function AttachContextControls({
               >
                 Paste a URL
               </button>
+              <button
+                type="button"
+                role="menuitem"
+                className="attach-context-controls__popover-row"
+                onClick={() => setView("variable")}
+              >
+                Create a variable
+              </button>
             </>
           )}
 
@@ -231,6 +267,71 @@ export function AttachContextControls({
                   disabled={urlFetching || urlValue.trim().length === 0}
                 >
                   {urlFetching ? "Fetching…" : "Fetch"}
+                </button>
+              </div>
+            </form>
+          )}
+
+          {view === "variable" && (
+            <form
+              className="attach-context-controls__variable-form"
+              onSubmit={(event) => {
+                event.preventDefault();
+                handleCreateVariable();
+              }}
+            >
+              <label htmlFor="attach-variable-name" className="attach-context-controls__url-label">
+                Create a variable — use it in a question as $name
+              </label>
+              <div className="attach-context-controls__variable-name-row">
+                <span className="attach-context-controls__variable-prefix" aria-hidden="true">
+                  $
+                </span>
+                <input
+                  id="attach-variable-name"
+                  type="text"
+                  placeholder="project_name"
+                  className="attach-context-controls__url-input"
+                  value={variableName}
+                  onChange={(event) => setVariableName(event.target.value)}
+                  autoFocus
+                />
+              </div>
+              <input
+                id="attach-variable-value"
+                type="text"
+                placeholder="Value"
+                className="attach-context-controls__url-input"
+                value={variableValue}
+                onChange={(event) => setVariableValue(event.target.value)}
+              />
+              <label className="attach-context-controls__variable-save-label">
+                <input
+                  type="checkbox"
+                  checked={saveVariableToAccount}
+                  onChange={(event) => setSaveVariableToAccount(event.target.checked)}
+                />
+                Also save for future sessions
+              </label>
+              {variableError && (
+                <p className="attach-context-controls__url-error" data-testid="variable-error">
+                  {variableError}
+                </p>
+              )}
+              <div className="attach-context-controls__url-actions">
+                <button
+                  type="button"
+                  className="attach-context-controls__url-back"
+                  onClick={() => setView("menu")}
+                >
+                  Back
+                </button>
+                <button
+                  type="submit"
+                  className="attach-context-controls__url-fetch"
+                  disabled={variableName.trim().length === 0}
+                >
+                  Save
                 </button>
               </div>
             </form>

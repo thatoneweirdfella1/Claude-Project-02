@@ -190,6 +190,13 @@ export interface SessionState {
   context: ContextItem[];
   conversation: ConversationMessage[];
   statePills: StatePills;
+  /** Step 7.4 ADD — CANON Feature 6 "create variables ($name)": named values
+      the user creates for prompt substitution. Session store by DEFAULT
+      (this field); explicitly savable to the account store's own,
+      already-existing `variables` field (Step 1.7) for persistence across
+      sessions — same `SavedVariables` shape (Record<string,string>, keys are
+      the bare name without the "$"), reused rather than redeclared. */
+  variables: SavedVariables;
 }
 
 /** Account store — persists across browser closes (CANON). */

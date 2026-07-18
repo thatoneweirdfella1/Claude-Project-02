@@ -1,4 +1,6 @@
 import { buildTranslateAskRequest, type TranslateAskRequest } from "../../services/composer";
+import { mergeVariables, substituteVariables } from "../../services/context";
+import { useAccountStore } from "../../stores/accountStore";
 import { useSessionStore } from "../../stores/sessionStore";
 import type { StateDetectionResult } from "../../services/detection";
 import type { DirectnessLevel } from "../../stores/types";
@@ -16,7 +18,16 @@ import { InputBox } from "./InputBox";
    ControlRow (the exact position the Step 5.0 PARKED note named). `detection`
    is owned by whoever actually fires detectState() alongside the pipeline
    (CenterColumn, Step 6.3) — Composer stays a thin, prop-driven shell for it,
-   same as onSubmit/onAttach/onContext. */
+   same as onSubmit/onAttach/onContext.
+
+   Step 7.4: variable substitution ($name -> value, CANON Feature 6) runs
+   HERE, on the raw draftInput, before buildTranslateAskRequest ever sees it
+   — so the SAME substituted text is both what gets submitted to the
+   pipeline and what CenterColumn adds to the conversation as "what was
+   asked" (CANON "no black box": the user sees what was actually sent, not a
+   raw $token they never resolved). Session variables win over account
+   (persisted) ones when both define the same name — mergeVariables'
+   documented precedence. */
 
 export interface ComposerProps {
   onSubmit: (request: TranslateAskRequest) => void;
@@ -48,9 +59,15 @@ export function Composer({
   const directness = useSessionStore((s) => s.directness);
   const techniques = useSessionStore((s) => s.techniques);
   const context = useSessionStore((s) => s.context);
+  const sessionVariables = useSessionStore((s) => s.variables);
+  const accountVariables = useAccountStore((s) => s.variables);
 
   function handleTranslateAsk() {
-    onSubmit(buildTranslateAskRequest(draftInput, { model, directness, techniques }, context));
+    const substituted = substituteVariables(
+      draftInput,
+      mergeVariables(accountVariables, sessionVariables),
+    );
+    onSubmit(buildTranslateAskRequest(substituted, { model, directness, techniques }, context));
     // Clears immediately — matches the screenshot's pattern (empty box, ready
     // for the next thought, conversation history holds what was asked) and
     // gives instant visual feedback with no wait on anything downstream.

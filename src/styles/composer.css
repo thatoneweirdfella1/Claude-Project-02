@@ -215,6 +215,41 @@
   cursor: not-allowed;
 }
 
+/* Step 7.4 — the variable-creation form reuses .url-form/.url-input/
+   .url-actions/.url-error wholesale (identical layout needs); only the
+   $-prefixed name row and the save-to-account checkbox are new. */
+.attach-context-controls__variable-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.attach-context-controls__variable-name-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.attach-context-controls__variable-prefix {
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-secondary);
+}
+
+.attach-context-controls__variable-name-row .attach-context-controls__url-input {
+  flex: 1;
+}
+
+.attach-context-controls__variable-save-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-metadata);
+  font-weight: var(--font-weight-metadata);
+}
+
 .attach-context-controls__rejections {
   position: absolute;
   top: 100%;

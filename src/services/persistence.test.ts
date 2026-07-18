@@ -52,6 +52,9 @@ describe("persistence: kill and reload", () => {
     useSessionStore.getState().setDirectness(3);
     useSessionStore.getState().setModel("claude-opus-4-8");
     useSessionStore.getState().setTechniques(["step-by-step"]);
+    // Step 7.4: a session-local variable must survive a reload too — it's
+    // "cleared when a session closes," not "cleared on a page refresh."
+    useSessionStore.getState().setSessionVariable("project_name", "Divergence.AI");
     useSessionStore.getState().addMessage({
       id: "m1",
       role: "user",
@@ -91,6 +94,7 @@ describe("persistence: kill and reload", () => {
     expect(session.directness).toBe(3);
     expect(session.model).toBe("claude-opus-4-8");
     expect(session.techniques).toEqual(["step-by-step"]);
+    expect(session.variables).toEqual({ project_name: "Divergence.AI" });
     expect(session.conversation).toHaveLength(1);
     expect(session.conversation[0].content).toBe("what is the project codename");
 
@@ -170,7 +174,7 @@ describe("persistence: kill and reload", () => {
     const hasFunction = Object.values(raw).some((v) => typeof v === "function");
     expect(hasFunction).toBe(false);
     expect(Object.keys(raw).sort()).toEqual(
-      ["context", "conversation", "directness", "draftInput", "model", "statePills", "techniques"].sort(),
+      ["context", "conversation", "directness", "draftInput", "model", "statePills", "techniques", "variables"].sort(),
     );
   });
 });

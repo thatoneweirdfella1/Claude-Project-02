@@ -10,6 +10,7 @@ import {
   toStatePills,
   type StateDetectionResult,
 } from "../../services/detection";
+import { mergeVariables, substituteVariables } from "../../services/context";
 import { useAccountStore } from "../../stores/accountStore";
 import { useSessionStore } from "../../stores/sessionStore";
 import { Composer } from "../composer";
@@ -132,19 +133,29 @@ export function CenterColumn() {
   }
 
   function handleRefine(refinedInput: string) {
+    // Step 7.4: substitute the NEWLY typed addition only — lastRawRef.current
+    // is the original submission's text, which Composer already substituted
+    // before this run ever started, so re-running substitution on it would
+    // be redundant (and, if a variable's own value happened to contain a
+    // "$name" pattern, could re-substitute unexpectedly). Only fresh user
+    // input gets substitution applied.
+    const s = useSessionStore.getState();
+    const substitutedAddition = substituteVariables(
+      refinedInput,
+      mergeVariables(useAccountStore.getState().variables, s.variables),
+    );
     addMessage({
       id: newMessageId(),
       role: "user",
-      content: refinedInput,
+      content: substitutedAddition,
       timestamp: Date.now(),
     });
     // Original + addition, so translation sees the whole thought; settings are
     // read fresh from the store (the user may have changed a dropdown since).
     // startRun also re-fires detection on this same combined text.
-    const s = useSessionStore.getState();
     startRun(
       buildTranslateAskRequest(
-        `${lastRawRef.current}\n\n${refinedInput}`,
+        `${lastRawRef.current}\n\n${substitutedAddition}`,
         { model: s.model, directness: s.directness, techniques: s.techniques },
         s.context,
       ),

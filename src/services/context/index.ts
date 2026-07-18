@@ -3,6 +3,12 @@
    for images (real OCR). Step 7.3 adds URL fetch. Step 7.4 adds variables. */
 
 export {
+  isValidVariableName,
+  substituteVariables,
+  mergeVariables,
+} from "./variables";
+
+export {
   MAX_FILE_BYTES,
   MAX_SESSION_BYTES,
   ACCEPTED_DOCUMENT_EXTENSIONS,

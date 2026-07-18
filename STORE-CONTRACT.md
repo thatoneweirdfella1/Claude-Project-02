@@ -35,9 +35,11 @@ Cleared on session close. Default produced by `createInitialSessionState()`.
 | `context` | `ContextItem[]` | `[]` | Context management: **Steps 7.1–7.5**. Shape provisional. |
 | `conversation` | `ConversationMessage[]` — Step 5.1 added optional `confidence`/`downgraded`/`notes` (assistant-only) | `[]` | Streaming/pipeline: **Steps 5.1–5.2**; a `rating` field is deliberately NOT added yet — Step 8.1 owns the feedback/rating shape and save behavior. |
 | `statePills` | `StatePills` (emotion/rsd/interest/cognitive, each nullable) | all `null` | State detection: **Steps 6.1–6.3**. Values mirror CANON Feature 5. |
+| `variables` | `SavedVariables` = `Record<string,string>` (same type as the account store's own `variables` field) | `{}` | Variables: **Step 7.4**. CANON Feature 6 "create variables ($name)" — session store by DEFAULT; explicitly savable to the account store's pre-existing `variables` field (Step 1.7) via a second `accountStore.setVariable` call, not a different save path. |
 
 Actions: `setDraftInput`, `setModel`, `setDirectness`, `setTechniques`, `addContextItem`,
-`removeContextItem`, `addMessage`, `setStatePills`, `resetSession`, `hydrate`.
+`removeContextItem`, `addMessage`, `setStatePills`, `setSessionVariable`, `removeSessionVariable`,
+`resetSession`, `hydrate`.
 
 **`techniques` field-type change (Step 4.5):** Step 1.7 originally typed this field as a single
 `TechniqueId` (`"socratic"` default). Step 4.5's own spec explicitly requires manual selection to
