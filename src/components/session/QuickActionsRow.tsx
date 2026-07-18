@@ -4,12 +4,14 @@ import { useConfirmable, useDismissableLayer } from "../../keyboard";
 import { buildSessionRecord } from "../../services/sessionLifecycle";
 import { useAccountStore } from "../../stores/accountStore";
 import { useSessionStore } from "../../stores/sessionStore";
+import { LoadTemplateMenu } from "./LoadTemplateMenu";
+import { SavedPromptsMenu } from "./SavedPromptsMenu";
 
-/* QUICK ACTIONS row (Step 9.1) — CANON Feature 11 / LAYOUT's center-column
-   "quick actions". This step's own scope is New Session, Duplicate Session,
-   and Close Session; Load Template and Saved Prompts (screenshot's other
-   two top-level buttons, between New Session and Duplicate Session) are
-   Step 9.2's job, added into this same row right after this step.
+/* QUICK ACTIONS row (Step 9.1: New Session, Duplicate Session, Close
+   Session; Step 9.2 added Load Template and Saved Prompts, own files —
+   LoadTemplateMenu.tsx/SavedPromptsMenu.tsx — into the same row, in the
+   screenshot's order) — CANON Feature 11 / LAYOUT's center-column
+   "quick actions".
 
    New Session calls sessionStore.newSession() (Step 9.1 STORE ADD) — keeps
    model/directness/techniques, clears conversation/context/variables/
@@ -102,6 +104,8 @@ export function QuickActionsRow() {
       <GlassButton onClick={newSession}>
         <span aria-hidden="true">↻</span> New Session
       </GlassButton>
+      <LoadTemplateMenu />
+      <SavedPromptsMenu />
       <GlassButton onClick={handleDuplicateSession}>
         <span aria-hidden="true">⧉</span> Duplicate Session
       </GlassButton>

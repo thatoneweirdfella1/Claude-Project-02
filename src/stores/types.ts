@@ -176,11 +176,28 @@ export interface Rating {
   timestamp: number;
 }
 
-/* Saved prompt (CANON Feature 11). */
+/* Saved prompt (CANON Feature 11: "reuse previous questions"). */
 export interface SavedPrompt {
   id: string;
   title: string;
   text: string;
+}
+
+/* Prompt template (CANON Feature 11: "Load Template — pre-populate settings
+   and a starter question"; Feature 12's Prompt Library tile is "save/load
+   prompt templates" — the same list, a fuller management view over it,
+   Step 9.6). `context`/`starterQuestion` are optional per CANON's own
+   wording ("optional context and starter question"); model/directness/
+   techniques are always set since CANON lists them as the template's actual
+   settings, not optional extras. */
+export interface PromptTemplate {
+  id: string;
+  title: string;
+  model: ModelSelection;
+  directness: DirectnessLevel;
+  techniques: TechniqueId[];
+  context?: ContextItem[];
+  starterQuestion?: string;
 }
 
 /* Explicitly-saved variables ($name -> value), CANON Feature 6/11.
@@ -278,4 +295,9 @@ export interface AccountState {
       NAVIGATION, Step 9.7) — both read this same list, filtered by
       `archived`. */
   sessions: SessionRecord[];
+  /** Step 9.2 ADD — CANON Feature 11 "Load Template" / Feature 12's Prompt
+      Library tile ("save/load prompt templates") — the same list. Seeded
+      with a few built-in presets (accountStore.ts) so the feature is
+      immediately usable before any user has saved one of their own. */
+  templates: PromptTemplate[];
 }

@@ -4,6 +4,7 @@ import type {
   ArchivedPair,
   LearnedPreferences,
   PlanFlag,
+  PromptTemplate,
   Rating,
   SavedPrompt,
   SessionRecord,
@@ -41,6 +42,37 @@ export const DEFAULT_VISIBILITY: VisibilitySettings = {
     is dropped (oldest first). */
 export const MAX_STATE_CORRECTIONS = 1000;
 
+/** Step 9.2 — a few built-in presets so Load Template is immediately usable
+    before any user has saved one of their own (CANON names the feature but
+    not what should ship in it). Fixed string ids, not generated, so they
+    stay stable across reloads/hydration. `model: "auto"` on every one —
+    never forcing a paid-tier model regardless of plan (ROUTING.md: free
+    auto-routes Haiku/Sonnet only). */
+export const DEFAULT_TEMPLATES: PromptTemplate[] = [
+  {
+    id: "template-quick-question",
+    title: "Quick Question",
+    model: "auto",
+    directness: 3,
+    techniques: ["auto-detect"],
+  },
+  {
+    id: "template-deep-analysis",
+    title: "Deep Analysis",
+    model: "auto",
+    directness: 2,
+    techniques: ["chain-of-thought", "verify"],
+    starterQuestion: "Walk me through your reasoning for...",
+  },
+  {
+    id: "template-learning-mode",
+    title: "Learning Mode",
+    model: "auto",
+    directness: 1,
+    techniques: ["socratic", "examples"],
+  },
+];
+
 /** Fresh default state (factory — see sessionStore for the why). */
 export function createInitialAccountState(): AccountState {
   return {
@@ -53,6 +85,7 @@ export function createInitialAccountState(): AccountState {
     learnedPreferences: { routing: {}, technique: {} },
     stateCorrections: [], // Step 6.4
     sessions: [], // Step 9.1
+    templates: DEFAULT_TEMPLATES.map((t) => ({ ...t, techniques: [...t.techniques] })), // Step 9.2 — fresh objects/arrays, no shared references
   };
 }
 
@@ -67,6 +100,7 @@ export const ACCOUNT_PERSISTED_KEYS: (keyof AccountState)[] = [
   "learnedPreferences",
   "stateCorrections",
   "sessions",
+  "templates",
 ];
 
 interface AccountActions {
@@ -91,6 +125,10 @@ interface AccountActions {
   /** Step 9.1 — files one duplicated or closed-and-archived session. Pure
       append; nothing here ever removes or mutates a past record. */
   addSessionRecord: (record: SessionRecord) => void;
+  /** Step 9.2 — save the current settings (+ optional context/starter
+      question) as a reusable template. */
+  addTemplate: (template: PromptTemplate) => void;
+  removeTemplate: (id: string) => void;
   /** Replace persisted fields wholesale — used by autosave rehydrate (Step 1.8). */
   hydrate: (state: Partial<AccountState>) => void;
 }
@@ -134,5 +172,8 @@ export const useAccountStore = create<AccountStore>((set) => ({
       };
     }),
   addSessionRecord: (record) => set((s) => ({ sessions: [...s.sessions, record] })),
+  addTemplate: (template) => set((s) => ({ templates: [...s.templates, template] })),
+  removeTemplate: (id) =>
+    set((s) => ({ templates: s.templates.filter((t) => t.id !== id) })),
   hydrate: (state) => set(state),
 }));
