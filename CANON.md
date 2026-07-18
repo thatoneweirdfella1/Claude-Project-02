@@ -54,7 +54,7 @@ Consensus and Synthesis run on Opus at runtime, reading both sides' transcripts 
 
 **11. Session Management.** New Session (fresh conversation, keeps settings, clears history and context), Duplicate Session (copy conversation, context, and settings), Load Template (pre-populate settings and a starter question), Saved Prompts (reuse questions), Import (from file, URL, previous conversation, variables, context snapshot, saved prompts, template settings), Close Session (save and archive, discard, or archive tagged).
 
-**12. Visibility Toggle and Sidebar Management.** A gear dropdown (top right) with 7 checkboxes: Recent Sessions (ON), Context Snapshot (ON), Recent Activity (ON), Token Usage (ON), Model Status (ON), Quick Tools (OFF), Active Session (OFF), plus Reset to defaults. Quick Tools is a 2x3 grid: Router, Techniques, Prompt Library, Variables, Checkpoints, Dashboard. Sidebar accordions are revolving-door: only one panel expanded at a time.
+**12. Visibility Toggle and Sidebar Management.** A gear dropdown (top right) with 7 checkboxes: Recent Sessions (ON), Context Snapshot (ON), Recent Activity (ON), Token Usage (ON), Model Status (ON), Quick Tools (OFF), Active Session (OFF), plus Reset to defaults. Quick Tools is a 2x3 grid: Router (click to view detailed routing decision), Techniques (click to view applied techniques in detail), Prompt Library (click to save/load prompt templates), Variables (click to manage context variables), Checkpoints (click to save/restore conversation states), Dashboard (click to view session statistics — same destination as the left-nav Dashboard item, see LEFT NAVIGATION). Sidebar accordions are revolving-door: only one panel expanded at a time.
 
 ---
 
