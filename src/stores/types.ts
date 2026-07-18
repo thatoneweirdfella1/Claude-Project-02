@@ -94,6 +94,23 @@ export interface ConversationMessage {
       the other. */
   ratingStars?: number;
   ratingComment?: string;
+  /** Step 8.5 ADD — CANON Feature 10: Download and Export needs "transparency"
+      and "state pills" as exportable per-message content, but neither is
+      stored on the message itself anywhere before this. `telemetryId`
+      references the TelemetryEntry (services/telemetry/log.ts) this answer's
+      pipeline run recorded — set once, at the same moment confidence/
+      downgraded/notes are, in CenterColumn.handleDone. It is only a lookup
+      key, not a copy: telemetry's own log is in-memory-only and bounded
+      (MAX_TELEMETRY_ENTRIES), so an old enough message's transparency data
+      may no longer be resolvable — the export modal disables that checkbox
+      when the lookup misses, same "don't fabricate what isn't there" posture
+      as everything else in this build. `statePills` is a snapshot of
+      session.statePills at the moment this answer finished — best-effort,
+      since state detection runs in parallel and may not have resolved THIS
+      turn's own reading by the time the answer completes (same known
+      tension Step 6.5's DECISIONS already logged for deriveStateFeeds). */
+  telemetryId?: string;
+  statePills?: StatePills;
 }
 
 /* Loaded context. Provisional — upload limits, OCR, URL fetch, and

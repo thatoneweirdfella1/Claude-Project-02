@@ -1,0 +1,110 @@
+/* export.css — the Download modal (Step 8.5). Tokens only. First real
+   modal in this build (Step 1.9's focus trap / dismissable layer built
+   anticipating one). */
+
+.download-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(0 0 0 / 0.5);
+}
+
+.download-modal {
+  width: min(420px, 90vw);
+  max-height: 85vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-row-margin);
+  box-shadow: var(--shadow-modal);
+}
+
+.download-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.download-modal__title {
+  margin: 0;
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-section-header);
+  font-weight: var(--font-weight-section-header);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.download-modal__close {
+  min-width: 32px;
+  min-height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.download-modal__close:hover {
+  color: var(--text-primary);
+}
+
+.download-modal__section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0;
+  border: none;
+}
+
+.download-modal__section legend {
+  margin: 0 0 4px;
+  padding: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-metadata);
+  font-weight: var(--font-weight-metadata);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.download-modal__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-secondary);
+  font-weight: var(--font-weight-label-secondary);
+  cursor: pointer;
+}
+
+.download-modal__row:has(input:disabled) {
+  cursor: not-allowed;
+  color: var(--text-secondary);
+}
+
+.download-modal__unavailable {
+  color: var(--text-secondary);
+  opacity: var(--text-metadata-opacity);
+}
+
+.download-modal__status {
+  margin: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-metadata);
+  font-weight: var(--font-weight-metadata);
+  opacity: var(--text-metadata-opacity);
+}
+
+.download-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-list-item-margin);
+}

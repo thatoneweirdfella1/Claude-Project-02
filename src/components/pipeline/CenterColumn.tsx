@@ -2,7 +2,7 @@ import { useCallback, useRef, useState } from "react";
 import { buildTranslateAskRequest, type TranslateAskRequest } from "../../services/composer";
 import { createProxyClient } from "../../services/proxyClient";
 import type { PipelineDone } from "../../services/pipeline";
-import { observePipeline } from "../../services/telemetry";
+import { getTelemetryEntries, observePipeline } from "../../services/telemetry";
 import {
   buildAdaptationNote,
   deriveStateFeeds,
@@ -164,6 +164,16 @@ export function CenterColumn() {
 
   const handleDone = useCallback(
     (done: PipelineDone) => {
+      // Step 8.5: snapshot this turn's telemetry-log id + current state pills
+      // onto the message, so the download modal can look up transparency/
+      // state-pills content for THIS specific answer later, not just "the
+      // most recent one." observePipeline (Step 5.4) has already recorded
+      // this run's entry via recordTelemetryEntry by the time its "done"
+      // event reaches here (usePipelineRun -> this callback), so the last
+      // entry in the log IS this run's — same timing this component already
+      // relies on nowhere else, first read here.
+      const entries = getTelemetryEntries();
+      const telemetryId = entries.length > 0 ? entries[entries.length - 1].id : undefined;
       addMessage({
         id: newMessageId(),
         role: "assistant",
@@ -172,6 +182,8 @@ export function CenterColumn() {
         confidence: done.confidence,
         downgraded: done.downgraded,
         notes: done.notes,
+        telemetryId,
+        statePills: useSessionStore.getState().statePills,
       });
       setRun(null); // the stored message takes over rendering from here
     },
