@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { GlassCard } from "../primitives";
 import { useDismissableLayer } from "../../keyboard";
 import type { StateDetectionResult } from "../../services/detection";
+import type { DirectnessLevel } from "../../stores/types";
 import { PILL_CONFIGS, type PillDimension } from "./pillOptions";
 import { StatePill } from "./StatePill";
 import { PillCorrector } from "./PillCorrector";
@@ -20,7 +21,12 @@ import { PillCorrector } from "./PillCorrector";
    instruction) opens every visible pill's corrector at once — a bulk-edit
    affordance distinct from clicking one pill for a single correction (a
    documented interpretation; CANON/PIPELINE.md don't spell out what Adjust
-   does beyond it existing). */
+   does beyond it existing).
+
+   Step 6.5: a directness suggestion line appears between the pills and the
+   summary/Adjust footer when the state bus's recommendation (deriveStateFeeds,
+   CenterColumn) differs from the current selection — visible, one click to
+   apply, never silently applied. */
 
 export interface StateDetectionPanelProps {
   result: StateDetectionResult;
@@ -28,9 +34,22 @@ export interface StateDetectionPanelProps {
       job stops at making the correction visible immediately; RECORDING it for
       the 15+ threshold learning loop is Step 6.4's. */
   onCorrect?: (dimension: PillDimension, value: string) => void;
+  /** Step 6.5 directness consumer — present only when the state bus's
+      recommendation differs from what's currently selected (the caller,
+      CenterColumn, computes that comparison). Rendering this is the whole of
+      "auto-recommendation" here: a visible suggestion, never applied without
+      the explicit click below (CANON "no black box" / Step 4.4's own
+      warning against silently overriding a manual pick). */
+  suggestedDirectness?: DirectnessLevel | null;
+  onApplyDirectness?: () => void;
 }
 
-export function StateDetectionPanel({ result, onCorrect }: StateDetectionPanelProps) {
+export function StateDetectionPanel({
+  result,
+  onCorrect,
+  suggestedDirectness,
+  onApplyDirectness,
+}: StateDetectionPanelProps) {
   const [panelDismissed, setPanelDismissed] = useState(false);
   const [dismissedPills, setDismissedPills] = useState<ReadonlySet<PillDimension>>(new Set());
   const [openCorrectors, setOpenCorrectors] = useState<ReadonlySet<PillDimension>>(new Set());
@@ -130,6 +149,21 @@ export function StateDetectionPanel({ result, onCorrect }: StateDetectionPanelPr
             );
           })}
         </div>
+
+        {suggestedDirectness != null && (
+          <div className="state-detection-panel__suggestion" data-testid="directness-suggestion">
+            <p className="state-detection-panel__suggestion-text">
+              Suggested: Directness Level {suggestedDirectness}
+            </p>
+            <button
+              type="button"
+              className="state-detection-panel__suggestion-apply"
+              onClick={onApplyDirectness}
+            >
+              Apply
+            </button>
+          </div>
+        )}
 
         <div className="state-detection-panel__footer">
           <p className="state-detection-panel__summary">{result.summary}</p>

@@ -24,6 +24,10 @@ export interface TechniqueHints {
   complexity?: number;
   /** routing.js domain (health/code/creative/decision-making/analytical/...). */
   domain?: string;
+  /** Step 6.5 state bus — technique candidates the detected state points at
+      (e.g. Emotion=frustrated → simplify). A HINT like the others, not a
+      forced pick: still subject to conflicts/dependencies/the ≤4 cap below. */
+  stateTechniques?: TechniqueId[];
 }
 
 export interface TechniqueScore {
@@ -117,6 +121,14 @@ function applyHints(
       break;
     default:
       break;
+  }
+
+  // Step 6.5 state bus: the detected state (Emotion/Interest/Cognitive Mode)
+  // points at these as candidates — a hint like complexity/domain above, not
+  // a forced pick. Same +1 weight as a single domain/complexity signal, so a
+  // state hint alone doesn't overpower an actual lexical match in the text.
+  for (const id of hints.stateTechniques ?? []) {
+    bump(id, 1, "detected state");
   }
 }
 

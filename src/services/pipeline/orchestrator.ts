@@ -73,6 +73,18 @@ export interface PipelineDeps {
       attempts, 30s per-attempt timeout, exponential backoff). Tests override
       this with tiny values so retry/timeout paths don't take real seconds. */
   resilience?: ResilienceOptions;
+  /** Step 6.5 state bus — technique candidates the detected state points at
+      (services/detection's deriveStateFeeds().techniqueCandidates), fed into
+      auto-detect scoring as hints alongside routing's complexity/domain.
+      Deliberately primitive-typed here rather than importing a StateFeeds
+      type from services/detection — the orchestrator stays unaware that
+      "state detection" is the source, the same way it's unaware routing.js
+      is a vendor scorer; it just consumes typed hints. */
+  stateTechniques?: TechniqueId[];
+  /** Step 6.5 state bus — RSD's tone guidance
+      (deriveStateFeeds().toneGuidance), fed into composition's directness
+      section. Same reasoning as stateTechniques above. */
+  stateTone?: string | null;
 }
 
 function errorMessage(error: unknown): string {
@@ -112,6 +124,7 @@ export function resolveTechniqueSelection(
   stored: TechniqueId[],
   question: string,
   routeResult: RouteResult,
+  stateTechniques?: TechniqueId[],
 ): TechniqueSelection {
   const manual = stored
     .filter((id) => isTechniqueId(id) && !getTechnique(id).isMeta)
@@ -123,6 +136,10 @@ export function resolveTechniqueSelection(
     return autoDetectTechniques(question, {
       complexity: routeResult.complexity,
       domain: routeResult.dimensions.domain,
+      // Step 6.5: state-derived candidates only ever apply in AUTO mode —
+      // same reasoning as Step 4.2's manual-selection decision (the user's
+      // explicit literal choice is honored as-is, never augmented).
+      stateTechniques,
     });
   }
   return {
@@ -196,12 +213,18 @@ export async function* runPipeline(
   let selection: TechniqueSelection;
   let composed: ComposedPrompt;
   try {
-    selection = resolveTechniqueSelection(request.techniques, result.translatedPrompt, routeResult);
+    selection = resolveTechniqueSelection(
+      request.techniques,
+      result.translatedPrompt,
+      routeResult,
+      deps.stateTechniques,
+    );
     composed = composeFinalPrompt({
       question: result.translatedPrompt,
       techniques: selection.selected,
       directness: request.directness,
       confidence: result.confidence,
+      stateTone: deps.stateTone ?? undefined,
     });
   } catch (error) {
     yield { kind: "error", message: errorMessage(error) };

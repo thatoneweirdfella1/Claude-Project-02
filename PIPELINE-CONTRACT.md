@@ -1,4 +1,4 @@
-# PIPELINE-CONTRACT.md — the five-stage handoffs (Steps 5.2/5.3/5.4)
+# PIPELINE-CONTRACT.md — the five-stage handoffs (Steps 5.2/5.3/5.4/6.5)
 
 What every pipeline stage **receives** and **returns**, including the confidence
 gates, the routing coupling, and which fields are allowed to be absent. Written
@@ -54,6 +54,8 @@ interface PipelineDeps {
   plan: PlanFlag;              // accountStore.plan — "free" | "paid"
   signal?: AbortSignal;        // optional; cancels in-flight model calls on resubmit
   resilience?: ResilienceOptions; // optional (Step 5.3); omit for production defaults
+  stateTechniques?: TechniqueId[]; // optional (Step 6.5) — state bus hints into Stage 3, auto-mode only
+  stateTone?: string | null;       // optional (Step 6.5) — state bus hint into Stage 4's directness section
 }
 ```
 
@@ -270,17 +272,24 @@ Code: `src/services/techniques/` (Step 4.2) dispatched by
 `result.translatedPrompt` (scored text — never rawInput), and from Stage 2:
 `routeResult.complexity` + `routeResult.dimensions.domain` as `TechniqueHints`
 (auto mode only). Hints use base `complexity`, not `effectiveComplexity` —
-confidence escalation is about model choice, not technique fit.
+confidence escalation is about model choice, not technique fit. `TechniqueHints`
+also carries `deps.stateTechniques` (Step 6.5's state bus, `PipelineDeps` above)
+— candidate ids the CURRENTLY-detected state points at (`deriveStateFeeds`,
+`services/detection/stateBus.ts`), scored the same +1 weight as a single
+domain/complexity signal (not a forced pick).
 
 **Mode dispatch:**
 - array containing `"auto-detect"` → `autoDetectTechniques(question, hints)` —
-  scores all 11 composable techniques, greedy-stacks ≤ 4, conflict-free,
-  dependency closures included, dep-before-dependent order.
+  scores all 11 composable techniques (including `stateTechniques` hints),
+  greedy-stacks ≤ 4, conflict-free, dependency closures included,
+  dep-before-dependent order.
 - any other non-empty valid array → used **literally, in the user's order**
   (validated at selection time by Step 4.5's UI; the orchestrator defensively
   filters out non-composable/unknown ids and re-truncates to
   MAX_TECHNIQUE_STACK = 4, so the ≤4 guarantee holds even against a corrupted
-  persisted array).
+  persisted array). **`stateTechniques` is ignored on this path** — a manual
+  stack is the user's literal explicit choice (Step 4.2's own rule), state
+  hints only ever apply in auto mode.
 - empty/corrupted array → falls back to auto (defensive; store default is
   `["auto-detect"]`).
 
@@ -302,6 +311,7 @@ Code: `src/services/composition/compose.ts` (Step 4.3).
   techniques: selection.selected,        // Stage 3 (Role-Prime, if present, is hoisted to the role section)
   directness: request.directness,        // Stage 0 (the user's dropdown; encodings live in templates.ts)
   confidence: result.confidence,         // Stage 1 — <80 injects the score + a check-the-question nudge
+  stateTone:  deps.stateTone ?? undefined, // Step 6.5 — RSD's tone guidance, appended into the directness section
 }
 ```
 `role` and `outputFormat` are NOT passed — the defaults (neutral role prime,
@@ -409,3 +419,4 @@ PIPELINE.md Stage 5's "log telemetry" in its current honest form.
 | `PipelineDeps.resilience` | optional; absent = production defaults (3 attempts, 300ms backoff, 30s per-attempt timeout) |
 | `ProxyCompletionRequest.onUsage` | optional; translate.ts's narrower `ModelCompletionRequest` never sets it — only `observePipeline`'s client wrapper does |
 | `TelemetryEntry.translationTokens` / `executionTokens` | null if that call never happened, or its response carried no usage field |
+| `PipelineDeps.stateTechniques` / `stateTone` | optional (Step 6.5); absent = no state-bus influence on that run (e.g. first message of a session, before any state has been detected) |

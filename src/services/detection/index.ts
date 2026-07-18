@@ -42,3 +42,4 @@ export {
   buildAdaptationNote,
   type CorrectionDimension,
 } from "./correctionLearning";
+export { deriveStateFeeds, type StateFeeds, type TransparencyEntry } from "./stateBus";

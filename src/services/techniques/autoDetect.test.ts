@@ -86,6 +86,24 @@ describe("autoDetectTechniques — cap and hints", () => {
     expect(analytical.selected).toContain("chain-of-thought");
   });
 
+  it("Step 6.5 state-bus hints (stateTechniques) nudge selection the same way domain/complexity do", () => {
+    const withState = autoDetectTechniques("what is going on here", {
+      stateTechniques: ["metaphor"],
+    });
+    assertCoherent(withState);
+    expect(withState.selected).toContain("metaphor");
+    expect(withState.scores.find((s) => s.id === "metaphor")?.reasons).toContain("detected state");
+  });
+
+  it("a coherence-breaking state hint is still subject to conflicts/deps/the cap, same as any other signal", () => {
+    // detailed conflicts with socratic/simplify; feeding it as a state hint
+    // must not bypass the conflict check any more than a lexical signal would.
+    const sel = autoDetectTechniques("help me think this through, not sure what I want", {
+      stateTechniques: ["detailed"],
+    });
+    assertCoherent(sel); // the shared checker fails if a conflict slipped through
+  });
+
   it("is deterministic: same input, same output", () => {
     const q = "how do I compare these two approaches?";
     expect(autoDetectTechniques(q).selected).toEqual(autoDetectTechniques(q).selected);

@@ -1,6 +1,7 @@
 import { buildTranslateAskRequest, type TranslateAskRequest } from "../../services/composer";
 import { useSessionStore } from "../../stores/sessionStore";
 import type { StateDetectionResult } from "../../services/detection";
+import type { DirectnessLevel } from "../../stores/types";
 import { StateDetectionPanel, type PillDimension } from "../detection";
 import { ControlRow } from "./ControlRow";
 import { InputBox } from "./InputBox";
@@ -25,9 +26,22 @@ export interface ComposerProps {
       the user dismissed it. Panel renders nothing when null. */
   detection?: StateDetectionResult | null;
   onCorrectState?: (dimension: PillDimension, value: string) => void;
+  /** Step 6.5 directness consumer — non-null only when the state bus's
+      recommendation differs from the current selection; the panel shows it
+      as a one-click suggestion, never applies it on its own. */
+  suggestedDirectness?: DirectnessLevel | null;
+  onApplyDirectness?: () => void;
 }
 
-export function Composer({ onSubmit, onAttach, onContext, detection, onCorrectState }: ComposerProps) {
+export function Composer({
+  onSubmit,
+  onAttach,
+  onContext,
+  detection,
+  onCorrectState,
+  suggestedDirectness,
+  onApplyDirectness,
+}: ComposerProps) {
   const draftInput = useSessionStore((s) => s.draftInput);
   const setDraftInput = useSessionStore((s) => s.setDraftInput);
   const model = useSessionStore((s) => s.model);
@@ -46,7 +60,14 @@ export function Composer({ onSubmit, onAttach, onContext, detection, onCorrectSt
   return (
     <div className="composer" data-testid="composer">
       <InputBox />
-      {detection && <StateDetectionPanel result={detection} onCorrect={onCorrectState} />}
+      {detection && (
+        <StateDetectionPanel
+          result={detection}
+          onCorrect={onCorrectState}
+          suggestedDirectness={suggestedDirectness}
+          onApplyDirectness={onApplyDirectness}
+        />
+      )}
       <ControlRow onAttach={onAttach} onContext={onContext} onTranslateAsk={handleTranslateAsk} />
     </div>
   );

@@ -230,6 +230,50 @@ describe("runPipeline — user choices are honored", () => {
   });
 });
 
+describe("runPipeline — Step 6.5 state bus (deps.stateTechniques / deps.stateTone)", () => {
+  it("stateTechniques nudges AUTO-mode technique selection, same as any other hint", async () => {
+    const events = await collect(
+      runPipeline(request("what should I do about this"), {
+        client: stubClient(),
+        plan: "free",
+        stateTechniques: ["metaphor"],
+      }),
+    );
+    expect(byKind(events, "techniques").selection.selected).toContain("metaphor");
+  });
+
+  it("stateTechniques is IGNORED when the user picked a manual technique stack (their literal choice wins)", async () => {
+    const events = await collect(
+      runPipeline(request("how does quantum entanglement work?", { techniques: ["chain-of-thought"] }), {
+        client: stubClient(),
+        plan: "free",
+        stateTechniques: ["metaphor"],
+      }),
+    );
+    expect(byKind(events, "techniques").selection.selected).toEqual(["chain-of-thought"]);
+  });
+
+  it("stateTone is appended into the composed prompt's directness section", async () => {
+    const events = await collect(
+      runPipeline(request("how does quantum entanglement work?"), {
+        client: stubClient(),
+        plan: "free",
+        stateTone: "extra warm, with explicit positive framing",
+      }),
+    );
+    const composed = byKind(events, "composed").composed;
+    const directnessSection = composed.sections.find((s) => s.name === "directness");
+    expect(directnessSection?.content).toContain("extra warm, with explicit positive framing");
+  });
+
+  it("absent stateTechniques/stateTone changes nothing (backward compatible with every pre-6.5 test)", async () => {
+    const events = await collect(
+      runPipeline(request("how does quantum entanglement work?"), { client: stubClient(), plan: "free" }),
+    );
+    expect(events.some((e) => e.kind === "done")).toBe(true);
+  });
+});
+
 describe("runPipeline — execution failure", () => {
   it("a failed stream (proxy down — the sandbox's actual state) becomes a typed error event", async () => {
     const events = await collect(

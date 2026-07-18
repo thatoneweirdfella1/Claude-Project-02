@@ -91,6 +91,43 @@
   line-height: var(--line-height-body);
 }
 
+.state-detection-panel__suggestion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-list-item-margin);
+  padding: 8px 10px;
+  border: 1px solid var(--accent-cyan);
+  border-radius: var(--radius-button);
+  background: rgb(0 217 255 / 0.06);
+}
+
+.state-detection-panel__suggestion-text {
+  margin: 0;
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-secondary);
+  font-weight: var(--font-weight-label-secondary);
+}
+
+.state-detection-panel__suggestion-apply {
+  flex-shrink: 0;
+  min-height: 32px;
+  padding: 4px 12px;
+  border: 1px solid var(--accent-cyan);
+  border-radius: var(--radius-button);
+  background: transparent;
+  color: var(--accent-cyan);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-metadata);
+  font-weight: var(--font-weight-metadata);
+  cursor: pointer;
+}
+
+.state-detection-panel__suggestion-apply:hover {
+  background: rgb(0 217 255 / 0.12);
+}
+
 .state-detection-panel__adjust {
   flex-shrink: 0;
   min-height: 36px;

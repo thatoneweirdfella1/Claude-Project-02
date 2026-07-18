@@ -65,6 +65,27 @@ describe("composeFinalPrompt — assembly rules", () => {
     expect(d3.content).toContain("direct");
   });
 
+  it("Step 6.5 stateTone appends to the directness section without replacing its fixed wording", () => {
+    const plain = composeFinalPrompt({ question: "x", directness: 2 }).sections.find(
+      (s) => s.name === "directness",
+    )!;
+    const toned = composeFinalPrompt({
+      question: "x",
+      directness: 2,
+      stateTone: "extra warm, with explicit positive framing",
+    }).sections.find((s) => s.name === "directness")!;
+    expect(toned.content).toContain(plain.content); // base wording preserved verbatim
+    expect(toned.content).toContain("extra warm, with explicit positive framing");
+    expect(toned.content).not.toBe(plain.content); // genuinely extended, not identical
+  });
+
+  it("omits any tone addendum when stateTone is absent (the common case, unchanged from before Step 6.5)", () => {
+    const d2 = composeFinalPrompt({ question: "x", directness: 2 }).sections.find(
+      (s) => s.name === "directness",
+    )!;
+    expect(d2.content).not.toContain("Also: keep the tone");
+  });
+
   it("hoists the Role-Prime technique into the ROLE section, not the techniques body", () => {
     const { sections } = composeFinalPrompt({
       question: "x",

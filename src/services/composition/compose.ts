@@ -63,6 +63,11 @@ export interface CompositionInput {
   role?: string;
   /** Explicit output format; overrides the ADHD-default. */
   outputFormat?: string;
+  /** Step 6.5 state bus — RSD's tone guidance (e.g. "extra warm, with
+      explicit positive framing"), appended to the directness section's
+      content. Additive: DIRECTNESS_ENCODINGS' fixed wording is never
+      replaced, only extended with one more sentence. */
+  stateTone?: string;
 }
 
 export interface CompositionSection {
@@ -108,7 +113,9 @@ export function composeFinalPrompt(input: CompositionInput): ComposedPrompt {
     "base-template": BASE_TEMPLATE,
     "role-prime": rolePrime,
     question: input.question.trim(),
-    directness: DIRECTNESS_ENCODINGS[directness],
+    directness: input.stateTone
+      ? `${DIRECTNESS_ENCODINGS[directness]} Also: keep the tone ${input.stateTone}.`
+      : DIRECTNESS_ENCODINGS[directness],
     techniques: techniquesBody,
     "output-format": input.outputFormat ?? DEFAULT_OUTPUT_FORMAT,
     "confidence-requirement": confidenceRequirement(input.confidence),

@@ -5,6 +5,7 @@ import type { PipelineDone } from "../../services/pipeline";
 import { observePipeline } from "../../services/telemetry";
 import {
   buildAdaptationNote,
+  deriveStateFeeds,
   detectState,
   toStatePills,
   type StateDetectionResult,
@@ -58,6 +59,8 @@ function newMessageId(): string {
 export function CenterColumn() {
   const addMessage = useSessionStore((s) => s.addMessage);
   const plan = useAccountStore((s) => s.plan);
+  const currentDirectness = useSessionStore((s) => s.directness);
+  const setDirectness = useSessionStore((s) => s.setDirectness);
 
   const [run, setRun] = useState<ActivePipelineRun | null>(null);
   const [detection, setDetection] = useState<StateDetectionResult | null>(null);
@@ -73,9 +76,23 @@ export function CenterColumn() {
       controllerRef.current = controller;
       runIdRef.current += 1;
       lastRawRef.current = request.rawInput;
+      // Step 6.5 state bus: read from whatever session.statePills CURRENTLY
+      // holds (the last completed detection — usually the prior turn's,
+      // since this turn's own detection runs in parallel and isn't in yet).
+      // One source (statePills), fed to two of its four consumers here —
+      // technique selection and answer tone; the other two (directness
+      // suggestion, transparency data) are consumed directly below/elsewhere.
+      const feeds = deriveStateFeeds(useSessionStore.getState().statePills);
       setRun({
         id: runIdRef.current,
-        start: () => observePipeline(request, { client, plan, signal: controller.signal }),
+        start: () =>
+          observePipeline(request, {
+            client,
+            plan,
+            signal: controller.signal,
+            stateTechniques: feeds.techniqueCandidates,
+            stateTone: feeds.toneGuidance,
+          }),
       });
 
       // State Detection — fires alongside translation, on the SAME raw input,
@@ -179,13 +196,32 @@ export function CenterColumn() {
 
   const { gated, display } = usePipelineRun(run, handleDone);
 
+  // Step 6.5, directness consumer: a visible, never-silent suggestion — only
+  // shown when it actually differs from what's currently selected, and only
+  // applied on an explicit click (CenterColumn never calls setDirectness on
+  // its own). Derived from the SAME deriveStateFeeds() every other consumer
+  // reads, via this turn's detection result once it's in.
+  const directnessSuggestion = detection
+    ? deriveStateFeeds(toStatePills(detection)).directnessSuggestion
+    : null;
+  const suggestedDirectness =
+    directnessSuggestion !== null && directnessSuggestion !== currentDirectness
+      ? directnessSuggestion
+      : null;
+
   return (
     <>
       <ConversationArea>
         {gated && <TranslationCard gated={gated} onRefine={handleRefine} />}
         {display && <StreamingAnswer state={display} />}
       </ConversationArea>
-      <Composer onSubmit={handleSubmit} detection={detection} onCorrectState={handleCorrectState} />
+      <Composer
+        onSubmit={handleSubmit}
+        detection={detection}
+        onCorrectState={handleCorrectState}
+        suggestedDirectness={suggestedDirectness}
+        onApplyDirectness={() => setDirectness(suggestedDirectness!)}
+      />
     </>
   );
 }
