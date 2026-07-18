@@ -134,13 +134,47 @@ may independently be null. An unknown/garbage value → that dimension `null`
 
 ---
 
+## The pills UI (Step 6.3)
+
+`src/components/detection/` — `StateDetectionPanel` (the whole card),
+`StatePill` (one "Label: Value" badge, colored per `pillOptions.ts`'s
+`PILL_CONFIGS`, purple/red/green/blue matching the screenshot), `PillCorrector`
+(the "small correction control" — offers a dimension's other valid values).
+Each pill is independently dismissible (×) and correctable (click); a
+panel-level × hides the whole card; "Adjust" opens every visible pill's
+corrector at once. Wired for real in `CenterColumn.tsx`: `detectState()` fires
+alongside the pipeline on every submit/refine (parallel side effect, not a
+pipeline stage), and a successful result feeds both the panel's display and
+`session.statePills`.
+
+## Correction learning (Step 6.4)
+
+`src/services/detection/correctionLearning.ts`. Every correction (a pill
+clicked, a different value picked) is recorded to
+`AccountState.stateCorrections: StateCorrection[]` (`{ dimension, from, to,
+timestamp }`, `accountStore.ts` — persists across browser closes, since
+corrections must accumulate over many sessions to ever reach the threshold).
+**Not** stored in `learnedPreferences` — see `STORE-CONTRACT.md`'s note on why
+that field's ratings-driven `Record<string, unknown>` bags aren't the right
+shape for this.
+
+`CORRECTION_THRESHOLD = 15` (CANON/PIPELINE.md, verbatim). Read as **per
+(dimension, corrected-to value) pair**: "this user has corrected `emotion` to
+`frustrated` 15+ times" is what "detection adapts for that user" can actually
+act on — a bare per-dimension count wouldn't say which value to lean toward.
+`adaptedValueFor()` returns the value that's crossed threshold for a
+dimension (highest count wins if more than one has, tie-broken by recency);
+`buildAdaptationNote()` turns whichever dimensions have adapted into a short
+addendum appended to `DETECTION_SYSTEM_PROMPT` via `detectState()`'s new
+`adaptationNote` option (additive — the base prompt is never replaced). The
+note is a **weighted hint the model still reasons over**, not a silent
+override: a clearly different per-message signal can still win.
+
 ## What this spec does NOT cover (later steps)
 
-- **The pills UI** (colored dismissible/correctable pills, the explanatory
-  line, the Adjust control) — Step 6.3.
-- **Correction learning** (adapt after 15+ corrections for a state) — Step 6.4.
 - **State feeds** (applying the impacts to directness/technique/answer-tone,
   and the transparency card) — Step 6.5. `impactsFor` / `recommendedDirectness`
   / `suggestedTechniques` (`impacts.ts`) are the seam it consumes.
-- **Firing detection on submit** alongside translation, and a real accuracy
-  measurement against a live Haiku call — parked on the Step 12.3 deploy.
+- **A real accuracy measurement** against a live Haiku call, and confirming
+  the adaptation note actually shifts real classifications — parked on the
+  Step 12.3 deploy.

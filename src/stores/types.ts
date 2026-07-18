@@ -142,11 +142,32 @@ export interface VisibilitySettings {
 }
 
 /* Learned routing and technique preferences. Provisional — the pattern
-   analysis and rule refinement engines are Steps 10.1/10.2, and
-   correction learning is Step 6.4. Shape kept open (Record) until then. */
+   analysis and rule refinement engines are Steps 10.1/10.2. Shape kept
+   open (Record) until then. (State-DETECTION correction learning is a
+   separate concept — see StateCorrection/AccountState.stateCorrections,
+   Step 6.4 — not stored here: this Record pair is specifically the
+   ratings-driven routing/technique rule refinement PIPELINE.md's LEARNING
+   LOOP describes, e.g. "low ratings + 'too verbose' reduce Detailed".) */
 export interface LearnedPreferences {
   routing: Record<string, unknown>;
   technique: Record<string, unknown>;
+}
+
+/* One state-pill correction (CANON Feature 5 / PIPELINE.md STATE DETECTION,
+   Step 6.4 — "Correction learning"). Recorded every time a user picks a
+   different value than what was detected for a dimension; the threshold
+   logic (services/detection/correctionLearning.ts) counts these per
+   (dimension, correctedValue) pair to decide when detection should adapt
+   for this user (15+, per CANON/PIPELINE.md). `dimension` mirrors
+   components/detection's PillDimension union but is declared independently
+   here — the store layer must not import from components/. */
+export interface StateCorrection {
+  dimension: "emotion" | "rsd" | "interest" | "cognitive";
+  /** The value that was actually detected before the user corrected it. */
+  from: string;
+  /** The value the user picked instead. */
+  to: string;
+  timestamp: number;
 }
 
 /* ── The two store state shapes (top-level: authoritative at Step 1.7) ── */
@@ -180,4 +201,10 @@ export interface AccountState {
   variables: SavedVariables;
   visibility: VisibilitySettings;
   learnedPreferences: LearnedPreferences;
+  /** Step 6.4 ADD: every state-pill correction the user has made, across all
+      sessions (this store persists across browser closes — corrections must
+      accumulate over time for the 15+ threshold to ever be reachable).
+      Bounded (see accountStore.ts) so a very long-lived account can't grow
+      this unboundedly. */
+  stateCorrections: StateCorrection[];
 }

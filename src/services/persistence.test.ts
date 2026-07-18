@@ -61,6 +61,14 @@ describe("persistence: kill and reload", () => {
     useAccountStore.getState().setPlan("paid");
     useAccountStore.getState().setVariable("codename", "Zarquith");
     useAccountStore.getState().setVisibility({ quickTools: true });
+    // Step 6.4: a state-pill correction must survive a reload too — the
+    // 15+ threshold logic needs corrections to accumulate across sessions.
+    useAccountStore.getState().recordStateCorrection({
+      dimension: "emotion",
+      from: "overwhelmed",
+      to: "frustrated",
+      timestamp: 222,
+    });
 
     // Autosave writes both stores.
     await saveNow();
@@ -92,6 +100,9 @@ describe("persistence: kill and reload", () => {
     expect(account.variables.codename).toBe("Zarquith");
     expect(account.visibility.quickTools).toBe(true);
     expect(account.visibility.recentSessions).toBe(true); // untouched default preserved
+    expect(account.stateCorrections).toEqual([
+      { dimension: "emotion", from: "overwhelmed", to: "frustrated", timestamp: 222 },
+    ]);
   });
 
   it("leaves stores at defaults when nothing was ever saved", async () => {

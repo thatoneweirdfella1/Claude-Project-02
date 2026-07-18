@@ -65,10 +65,12 @@ Persists across browser closes. Default produced by `createInitialAccountState()
 | `savedPrompts` | `SavedPrompt[]` | `[]` | Saved prompts: **Step 9.2**. |
 | `variables` | `SavedVariables` = `Record<string,string>` | `{}` | Variables: **Step 7.4**. |
 | `visibility` | `VisibilitySettings` (7 booleans) | `DEFAULT_VISIBILITY` | Visibility toggle: **Step 9.4**. Defaults fully specified by CANON Feature 12. |
-| `learnedPreferences` | `LearnedPreferences` (`routing` + `technique` records) | `{ routing:{}, technique:{} }` | Pattern analysis / rule refinement: **Steps 10.1–10.2**; correction learning 6.4. Shape provisional. |
+| `learnedPreferences` | `LearnedPreferences` (`routing` + `technique` records) | `{ routing:{}, technique:{} }` | Pattern analysis / rule refinement: **Steps 10.1–10.2**. Shape provisional. |
+| `stateCorrections` | `StateCorrection[]` (`dimension`, `from`, `to`, `timestamp`) | `[]` | State-detection correction learning: **Step 6.4**. See note below — deliberately NOT `learnedPreferences`. |
 
 Actions: `setPlan`, `archivePair`, `addRating`, `addSavedPrompt`, `removeSavedPrompt`,
-`setVariable`, `removeVariable`, `setVisibility`, `setLearnedPreferences`, `hydrate`.
+`setVariable`, `removeVariable`, `setVisibility`, `setLearnedPreferences`,
+`recordStateCorrection`, `hydrate`.
 
 Persisted keys for autosave: `ACCOUNT_PERSISTED_KEYS`.
 
@@ -80,6 +82,17 @@ thinking on it, but nothing supplies it until it is wired in. It lives in the ac
 defaults to `"free"` so the gated (free) path is what gets exercised by default. **Do not** build
 billing, auth, or an upgrade flow against this field — that is a later stage the current build
 does not include.
+
+### stateCorrections is a new field, not a repurposed learnedPreferences (Step 6.4)
+
+This table's `learnedPreferences` row originally noted "correction learning 6.4" as a
+candidate owner — that field's `routing`/`technique` `Record<string, unknown>` bags are
+earmarked for the Steps 10.1–10.2 RATINGS-driven rule-refinement loop (PIPELINE.md LEARNING
+LOOP: "low ratings + 'too verbose' reduce Detailed"), a different concept from raw state-pill
+corrections and not naturally shaped for them. Step 6.4 instead ADDs a properly-typed sibling
+field, `stateCorrections: StateCorrection[]`, per this contract's own ADD rule (below) — the
+prior row's mention was a provisional placeholder in an admittedly-provisional shape, not a
+locked decision being reversed.
 
 ### VisibilitySettings defaults (CANON Feature 12)
 
@@ -100,6 +113,8 @@ does not include.
 - **Provisional nested types** (`ContextItem`, `ConversationMessage`, `StatePills`, `ArchivedPair`,
   `LearnedPreferences`) hold the minimum Step 1.7 needed. Their owning steps (above) may ADD fields;
   they should not remove or rename the top-level store fields in this contract without updating it.
+- **`StateCorrection`** (Step 6.4) is settled, not provisional — `{ dimension, from, to, timestamp }`,
+  four plain fields, unlikely to need extension.
 - **Serialization:** keep all state plain JSON — no functions, `Map`, `Set`, `Date` (use epoch-ms
   `number` timestamps, as the current types do). Autosave (Step 1.8) relies on this.
 - **Rehydration:** both stores expose `hydrate(partial)` for the autosave layer to restore persisted

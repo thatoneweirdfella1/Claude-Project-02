@@ -56,6 +56,23 @@ describe("detectState — the happy path", () => {
   });
 });
 
+describe("detectState — Step 6.4 adaptationNote", () => {
+  it("appends the adaptationNote to the base system prompt when supplied", async () => {
+    const client = vi.fn<ClientFn>(async () => detectionJson());
+    await detectState("hello", { client, adaptationNote: "\n\nADAPTED: lean toward frustrated." });
+
+    const req = client.mock.calls[0][0];
+    expect(req.system).toBe(DETECTION_SYSTEM_PROMPT + "\n\nADAPTED: lean toward frustrated.");
+  });
+
+  it("sends the unmodified base prompt when adaptationNote is omitted (the common case)", async () => {
+    const client = vi.fn<ClientFn>(async () => detectionJson());
+    await detectState("hello", { client });
+
+    expect(client.mock.calls[0][0].system).toBe(DETECTION_SYSTEM_PROMPT);
+  });
+});
+
 describe("detectState — never throws, always a typed outcome", () => {
   it("returns 'empty' for whitespace-only input without calling the model", async () => {
     const client = vi.fn(async () => detectionJson());

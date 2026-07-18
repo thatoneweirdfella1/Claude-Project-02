@@ -11,9 +11,13 @@ import {
   EMOTION_STATES,
   INTEREST_LEVELS,
   RSD_LEVELS,
+  type CorrectionDimension,
 } from "../../services/detection";
 
-export type PillDimension = "emotion" | "rsd" | "interest" | "cognitive";
+/** Same four-value union as StateCorrection["dimension"] (stores/types.ts,
+    Step 6.4) and services/detection's CorrectionDimension — aliased, not
+    redeclared, so the store/service/UI layers can't drift apart. */
+export type PillDimension = CorrectionDimension;
 
 export interface PillConfig {
   dimension: PillDimension;

@@ -34,3 +34,11 @@ export {
   type StateImpact,
   type AppliedImpact,
 } from "./impacts";
+export {
+  CORRECTION_THRESHOLD,
+  countCorrectionsTo,
+  adaptedValueFor,
+  adaptedValues,
+  buildAdaptationNote,
+  type CorrectionDimension,
+} from "./correctionLearning";

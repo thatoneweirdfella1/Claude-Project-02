@@ -3,7 +3,12 @@ import { buildTranslateAskRequest, type TranslateAskRequest } from "../../servic
 import { createProxyClient } from "../../services/proxyClient";
 import type { PipelineDone } from "../../services/pipeline";
 import { observePipeline } from "../../services/telemetry";
-import { detectState, toStatePills, type StateDetectionResult } from "../../services/detection";
+import {
+  buildAdaptationNote,
+  detectState,
+  toStatePills,
+  type StateDetectionResult,
+} from "../../services/detection";
 import { useAccountStore } from "../../stores/accountStore";
 import { useSessionStore } from "../../stores/sessionStore";
 import { Composer } from "../composer";
@@ -75,10 +80,15 @@ export function CenterColumn() {
 
       // State Detection — fires alongside translation, on the SAME raw input,
       // sharing this submission's AbortController so a resubmit cancels both.
+      // Step 6.4: the adaptation note is built fresh from this user's current
+      // corrections every call (never stale — a correction made moments ago
+      // on THIS session already counts toward the next classification).
       setDetection(null); // clear the panel immediately; this turn's read isn't in yet
+      const adaptationNote = buildAdaptationNote(useAccountStore.getState().stateCorrections);
       void detectState(request.rawInput, {
         client: (req) => client.complete(req),
         signal: controller.signal,
+        adaptationNote,
       }).then((outcome) => {
         if (controller.signal.aborted) return; // superseded by a resubmit
         if (outcome.status === "ok") {
@@ -141,18 +151,28 @@ export function CenterColumn() {
   );
 
   // Step 6.3: makes a correction visible immediately (updates the displayed
-  // pill + the committed session.statePills). Step 6.4 owns RECORDING the
-  // correction for the 15+ threshold learning loop — this does not persist
-  // to the account store.
+  // pill + the committed session.statePills). Step 6.4: ALSO records it to
+  // the account store (persists across sessions) so countCorrectionsTo/
+  // adaptedValueFor can see it — this is the single call site both steps'
+  // BUILD-LOG PARKED notes named as where the correction store should hook in.
   function handleCorrectState(dimension: PillDimension, value: string) {
     setDetection((prev) => {
       if (!prev) return prev;
+      const previousReading = prev[dimension];
       // `value` is always one of this exact dimension's own valid values
       // (PillCorrector only ever offers config.values for its own config) —
       // safe by construction, though TS can't prove it through the generic
       // PillDimension key here.
       const corrected = { ...prev, [dimension]: { value, confidence: 100 } } as StateDetectionResult;
       useSessionStore.getState().setStatePills(toStatePills(corrected));
+      if (previousReading && previousReading.value !== value) {
+        useAccountStore.getState().recordStateCorrection({
+          dimension,
+          from: previousReading.value,
+          to: value,
+          timestamp: Date.now(),
+        });
+      }
       return corrected;
     });
   }

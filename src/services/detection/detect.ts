@@ -44,6 +44,12 @@ export interface DetectOptions {
   client: DetectionModelClient;
   signal?: AbortSignal;
   maxInputChars?: number;
+  /** Step 6.4 addition — an optional addendum appended to
+      DETECTION_SYSTEM_PROMPT, e.g. buildAdaptationNote()'s output. Additive
+      only: the base classifier prompt (Step 6.2) is never replaced, only
+      extended, and this defaults to nothing (unmodified prompt) when
+      omitted — every Step 6.1/6.2 caller and test is unaffected. */
+  adaptationNote?: string;
 }
 
 function errorMessage(error: unknown): string {
@@ -90,7 +96,7 @@ export async function detectState(
   try {
     reply = await options.client({
       model: DETECTION_MODEL,
-      system: DETECTION_SYSTEM_PROMPT,
+      system: DETECTION_SYSTEM_PROMPT + (options.adaptationNote ?? ""),
       input: text.trim(),
       signal: options.signal,
     });
