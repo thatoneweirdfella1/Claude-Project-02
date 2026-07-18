@@ -128,12 +128,43 @@ export interface ContextItem {
 /* ── Account-store domain types ───────────────────────────────────────── */
 
 /* Archived question/answer pair. Provisional — archive/session lifecycle
-   is Steps 9.1–9.2; minimal here. */
+   is Steps 9.1–9.2; minimal here. Step 9.1 confirmed this per-PAIR shape
+   doesn't fit Feature 11's actual needs (Duplicate/Close Session and the
+   Recent Sessions/Archive screens all operate on a whole SESSION —
+   conversation + context + settings — not one Q/A pair at a time), so it's
+   left exactly as-is here: unused, not repurposed, not deleted. See
+   SessionRecord below and the Step 9.1 DECISIONS entry. */
 export interface ArchivedPair {
   id: string;
   question: string;
   answer: string;
   timestamp: number;
+}
+
+/* A whole session snapshot (CANON Feature 11: Duplicate Session "copy
+   conversation, context, and settings"; Close Session "save and archive,
+   discard, or archive tagged"; LEFT NAVIGATION's Archive screen; the Recent
+   Sessions accordion, Step 9.5). Duplicating writes one of these with
+   `archived: false` (a filed-away copy, live session keeps running
+   untouched) — closed-and-saved sessions write one with `archived: true`
+   (optionally `tag`ged); a *discarded* close writes nothing here at all,
+   by design ("discard" means don't keep it). */
+export interface SessionRecord {
+  id: string;
+  createdAt: number;
+  /** Set only when archived via Close Session; undefined for a duplicated,
+      still-conceptually-open copy. */
+  closedAt?: number;
+  archived: boolean;
+  /** User-entered label from "archive tagged" — absent for a plain "save
+      and archive". */
+  tag?: string;
+  model: ModelSelection;
+  directness: DirectnessLevel;
+  techniques: TechniqueId[];
+  context: ContextItem[];
+  variables: SavedVariables;
+  conversation: ConversationMessage[];
 }
 
 /* Feedback rating (CANON Feature 7). Full rating UI + learning loop is
@@ -241,4 +272,10 @@ export interface AccountState {
       Bounded (see accountStore.ts) so a very long-lived account can't grow
       this unboundedly. */
   stateCorrections: StateCorrection[];
+  /** Step 9.1 ADD — CANON Feature 11: every duplicated or closed-and-archived
+      session (a plain "discard" close writes nothing here). Feeds the
+      Recent Sessions accordion (Step 9.5) and the Archive screen (LEFT
+      NAVIGATION, Step 9.7) — both read this same list, filtered by
+      `archived`. */
+  sessions: SessionRecord[];
 }

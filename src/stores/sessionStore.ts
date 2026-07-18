@@ -70,8 +70,20 @@ interface SessionActions {
       message with that id exists (defensive — a stale id should never
       throw, same posture as every other store action taking an id). */
   setMessageRating: (messageId: string, stars: number, comment?: string) => void;
-  /** Clear to defaults — CANON "cleared when a session closes". */
+  /** Clear to defaults — CANON "cleared when a session closes". Its first
+      real caller is Close Session (Step 9.1): a closed session is done, not
+      just refreshed, so it resets model/directness/techniques too, unlike
+      newSession() below. */
   resetSession: () => void;
+  /** Step 9.1 — CANON Feature 11 "New Session (fresh conversation, keeps
+      settings, clears history and context)". Deliberately narrower than
+      resetSession(): model/directness/techniques are UNTOUCHED. "Context"
+      is read as covering both session.context and session.variables (both
+      are Feature 6 "Context Management" concepts); statePills and
+      draftInput are cleared too since they belong to the conversation
+      being cleared, not to "settings" — a documented reading, not stated
+      verbatim in CANON (see BUILD-LOG DECISIONS). */
+  newSession: () => void;
   /** Replace persisted fields wholesale — used by autosave rehydrate (Step 1.8). */
   hydrate: (state: Partial<SessionState>) => void;
 }
@@ -106,5 +118,13 @@ export const useSessionStore = create<SessionStore>((set) => ({
       ),
     })),
   resetSession: () => set(createInitialSessionState()),
+  newSession: () =>
+    set({
+      draftInput: "",
+      conversation: [],
+      context: [],
+      variables: {},
+      statePills: { emotion: null, rsd: null, interest: null, cognitive: null },
+    }),
   hydrate: (state) => set(state),
 }));

@@ -15,6 +15,7 @@ import { useAccountStore } from "../../stores/accountStore";
 import { useSessionStore } from "../../stores/sessionStore";
 import { Composer } from "../composer";
 import type { PillDimension } from "../detection";
+import { QuickActionsRow } from "../session";
 import { ConversationArea, TranslationCard } from "../translation";
 import { StreamingAnswer } from "../streaming";
 import { usePipelineRun, type ActivePipelineRun } from "./usePipelineRun";
@@ -245,6 +246,7 @@ export function CenterColumn() {
         suggestedDirectness={suggestedDirectness}
         onApplyDirectness={() => setDirectness(suggestedDirectness!)}
       />
+      <QuickActionsRow />
     </>
   );
 }

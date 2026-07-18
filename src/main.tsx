@@ -20,6 +20,7 @@ import "./styles/context-snapshot.css";
 import "./styles/transparency.css";
 import "./styles/multi-ai.css";
 import "./styles/export.css";
+import "./styles/session.css";
 
 /* Restore persisted state before first paint so the user returns exactly
    where they were (no default-then-restored flicker), then mount and

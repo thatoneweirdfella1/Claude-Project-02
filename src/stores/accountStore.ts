@@ -6,6 +6,7 @@ import type {
   PlanFlag,
   Rating,
   SavedPrompt,
+  SessionRecord,
   StateCorrection,
   VisibilitySettings,
 } from "./types";
@@ -51,6 +52,7 @@ export function createInitialAccountState(): AccountState {
     visibility: { ...DEFAULT_VISIBILITY },
     learnedPreferences: { routing: {}, technique: {} },
     stateCorrections: [], // Step 6.4
+    sessions: [], // Step 9.1
   };
 }
 
@@ -64,6 +66,7 @@ export const ACCOUNT_PERSISTED_KEYS: (keyof AccountState)[] = [
   "visibility",
   "learnedPreferences",
   "stateCorrections",
+  "sessions",
 ];
 
 interface AccountActions {
@@ -85,6 +88,9 @@ interface AccountActions {
   /** Record one state-pill correction (Step 6.4). Appends, capped at
       MAX_STATE_CORRECTIONS (oldest dropped first). */
   recordStateCorrection: (correction: StateCorrection) => void;
+  /** Step 9.1 — files one duplicated or closed-and-archived session. Pure
+      append; nothing here ever removes or mutates a past record. */
+  addSessionRecord: (record: SessionRecord) => void;
   /** Replace persisted fields wholesale — used by autosave rehydrate (Step 1.8). */
   hydrate: (state: Partial<AccountState>) => void;
 }
@@ -127,5 +133,6 @@ export const useAccountStore = create<AccountStore>((set) => ({
             : next,
       };
     }),
+  addSessionRecord: (record) => set((s) => ({ sessions: [...s.sessions, record] })),
   hydrate: (state) => set(state),
 }));
