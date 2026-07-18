@@ -26,3 +26,11 @@ export {
   type DetectionOutcome,
   type DetectOptions,
 } from "./detect";
+export {
+  STATE_IMPACTS,
+  impactsFor,
+  recommendedDirectness,
+  suggestedTechniques,
+  type StateImpact,
+  type AppliedImpact,
+} from "./impacts";
