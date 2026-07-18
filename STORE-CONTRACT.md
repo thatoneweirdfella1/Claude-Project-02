@@ -77,12 +77,20 @@ Persists across browser closes. Default produced by `createInitialAccountState()
 | `savedPrompts` | `SavedPrompt[]` | `[]` | Saved prompts: **Step 9.2**. |
 | `variables` | `SavedVariables` = `Record<string,string>` | `{}` | Variables: **Step 7.4**. |
 | `visibility` | `VisibilitySettings` (7 booleans) | `DEFAULT_VISIBILITY` | Visibility toggle: **Step 9.4**. Defaults fully specified by CANON Feature 12. |
-| `learnedPreferences` | `LearnedPreferences` (`routing` + `technique` records) | `{ routing:{}, technique:{} }` | Pattern analysis / rule refinement: **Steps 10.1–10.2**. Shape provisional. |
+| `learnedPreferences` | `LearnedPreferences` (`routing: Record<string,unknown>` + `technique: Record<string, TechniquePreference>`) | `{ routing:{}, technique:{} }` | Pattern analysis / rule refinement: **Steps 10.1–10.2**. `technique` shape settled at Step 10.2 (`TechniquePreference` = `weight`/`lastAdjustedAt`/`totalAdjustments`); `routing` stays an open `Record<string, unknown>` — the analyzer never emits a routing-targeted proposal, nothing to shape yet. |
 | `stateCorrections` | `StateCorrection[]` (`dimension`, `from`, `to`, `timestamp`) | `[]` | State-detection correction learning: **Step 6.4**. See note below — deliberately NOT `learnedPreferences`. |
+| `learningAuditLog` | `LearningAuditEntry[]` (`id`, `timestamp`, `proposalType`, `target`, `adjustment`, `previousWeight`, `newWeight`, `confidence`, `reasoning`, `affectedRunCount`) | `[]` | Rule refinement audit trail: **Step 10.2**. PIPELINE.md LEARNING LOOP: "An applier writes accepted refinements to the account store with an audit log." Bounded at `MAX_LEARNING_AUDIT_ENTRIES` (500, oldest dropped first). |
 
 Actions: `setPlan`, `archivePair`, `addRating`, `setRating`, `addSavedPrompt`, `removeSavedPrompt`,
 `setVariable`, `removeVariable`, `setVisibility`, `setLearnedPreferences`,
 `recordStateCorrection`, `addSessionRecord`, `hydrate`.
+
+**`applyLearningRefinements` (Step 10.2):** a second, more specific write path alongside the
+pre-existing `setLearnedPreferences` (wholesale replace, Step 1.7, left untouched). Takes the
+already-computed result of `services/learningLoop/applier.ts`'s pure `applyRefinements()` — the
+store itself never imports from `services/` (no store action does) — and sets `learnedPreferences`
+AND appends to `learningAuditLog` in one atomic `set()` call, so the two fields can never be
+observed out of sync with each other.
 
 Persisted keys for autosave: `ACCOUNT_PERSISTED_KEYS`.
 

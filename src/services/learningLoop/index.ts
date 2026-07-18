@@ -4,3 +4,5 @@
 export { startLearningLoop } from "./backgroundJob";
 export type { LearningJobConfig } from "./backgroundJob";
 export { analyzePatterns } from "./analyzer";
+export { applyRefinements, MAX_TECHNIQUE_WEIGHT, MIN_TECHNIQUE_WEIGHT } from "./applier";
+export type { ApplyRefinementsResult } from "./applier";

@@ -3,6 +3,7 @@ import type {
   AccountState,
   ArchivedPair,
   LearnedPreferences,
+  LearningAuditEntry,
   PlanFlag,
   PromptTemplate,
   Rating,
@@ -41,6 +42,11 @@ export const DEFAULT_VISIBILITY: VisibilitySettings = {
     crossing threshold on several different values each before anything
     is dropped (oldest first). */
 export const MAX_STATE_CORRECTIONS = 1000;
+
+/** Cap on stored learning-loop audit entries (Step 10.2) — bounded so a
+    very long-lived account can't grow this unboundedly, same reasoning as
+    MAX_STATE_CORRECTIONS/telemetry's MAX_TELEMETRY_ENTRIES. */
+export const MAX_LEARNING_AUDIT_ENTRIES = 500;
 
 /** Step 9.2 — a few built-in presets so Load Template is immediately usable
     before any user has saved one of their own (CANON names the feature but
@@ -86,6 +92,7 @@ export function createInitialAccountState(): AccountState {
     stateCorrections: [], // Step 6.4
     sessions: [], // Step 9.1
     templates: DEFAULT_TEMPLATES.map((t) => ({ ...t, techniques: [...t.techniques] })), // Step 9.2 — fresh objects/arrays, no shared references
+    learningAuditLog: [], // Step 10.2
   };
 }
 
@@ -101,6 +108,7 @@ export const ACCOUNT_PERSISTED_KEYS: (keyof AccountState)[] = [
   "stateCorrections",
   "sessions",
   "templates",
+  "learningAuditLog",
 ];
 
 interface AccountActions {
@@ -119,6 +127,20 @@ interface AccountActions {
   /** Merge a partial visibility change (one or more of the seven checkboxes). */
   setVisibility: (patch: Partial<VisibilitySettings>) => void;
   setLearnedPreferences: (prefs: LearnedPreferences) => void;
+  /** Step 10.2 — atomic write for the learning-loop applier
+      (services/learningLoop/applier.ts): sets the updated
+      LearnedPreferences AND appends the batch's audit entries together, so
+      learnedPreferences and learningAuditLog can never observe one updated
+      without the other (same "written together, never one without the
+      other" reasoning as Step 8.1's rating pair). Bounded, oldest dropped
+      first, same as recordStateCorrection. Takes the already-computed
+      result of applyRefinements() — the store stays dumb/pure-data, same
+      convention as every other store action (no store ever imports from
+      services/). */
+  applyLearningRefinements: (
+    updated: LearnedPreferences,
+    newAuditEntries: LearningAuditEntry[],
+  ) => void;
   /** Record one state-pill correction (Step 6.4). Appends, capped at
       MAX_STATE_CORRECTIONS (oldest dropped first). */
   recordStateCorrection: (correction: StateCorrection) => void;
@@ -161,6 +183,17 @@ export const useAccountStore = create<AccountStore>((set) => ({
     }),
   setVisibility: (patch) => set((s) => ({ visibility: { ...s.visibility, ...patch } })),
   setLearnedPreferences: (learnedPreferences) => set({ learnedPreferences }),
+  applyLearningRefinements: (updated, newAuditEntries) =>
+    set((s) => {
+      const nextLog = [...s.learningAuditLog, ...newAuditEntries];
+      return {
+        learnedPreferences: updated,
+        learningAuditLog:
+          nextLog.length > MAX_LEARNING_AUDIT_ENTRIES
+            ? nextLog.slice(nextLog.length - MAX_LEARNING_AUDIT_ENTRIES)
+            : nextLog,
+      };
+    }),
   recordStateCorrection: (correction) =>
     set((s) => {
       const next = [...s.stateCorrections, correction];

@@ -1,10 +1,14 @@
-/* Background learning loop job (Step 10.1).
-   Triggers after 15+ questions, analyzes patterns, proposes refinements.
-   Runs async, never blocks. */
+/* Background learning loop job (Step 10.1 analysis + Step 10.2 apply).
+   Triggers after 15+ questions, analyzes patterns, proposes refinements,
+   then applies accepted refinements to the account store with an audit
+   log (PIPELINE.md LEARNING LOOP). Runs async, never blocks. */
 
 import { subscribeTelemetry } from "../telemetry/log";
 import { useAccountStore } from "../../stores/accountStore";
 import { analyzePatterns } from "./analyzer";
+import { applyRefinements } from "./applier";
+import type { TelemetryEntry } from "../telemetry/types";
+import type { Rating, StateCorrection } from "../../stores/types";
 
 let lastAnalysisId: string | null = null;
 
@@ -56,9 +60,9 @@ export function startLearningLoop(config?: LearningJobConfig): () => void {
 }
 
 async function runAnalysisJob(
-  telemetry: any[],
-  ratings: any[],
-  stateCorrections: any[]
+  telemetry: TelemetryEntry[],
+  ratings: Rating[],
+  stateCorrections: StateCorrection[]
 ): Promise<void> {
   const result = analyzePatterns(telemetry, ratings, stateCorrections);
 
@@ -70,8 +74,19 @@ async function runAnalysisJob(
   if (lastAnalysisId === jobId) return;
   lastAnalysisId = jobId;
 
-  // Step 10.1 analysis complete — proposals are ready for Step 10.2 (applier)
-  // to consume. The applier runs this same analyzer function when needed.
-  // This background job's role is to complete when 15+ questions exist,
-  // proving the pattern detection engine works end-to-end.
+  // Step 10.2 — apply the accepted proposals to learnedPreferences, with
+  // an audit entry per applied proposal (PIPELINE.md: "An applier writes
+  // accepted refinements to the account store with an audit log"). The
+  // pure applier is called here (not inside the store — stores stay
+  // dumb/pure-data, no store imports from services/, same convention as
+  // every other store action) and its already-computed result is written
+  // back via one atomic store action.
+  const accountStore = useAccountStore.getState();
+  const { updated, auditEntries } = applyRefinements(
+    accountStore.learnedPreferences,
+    result.proposals,
+  );
+  if (auditEntries.length > 0) {
+    accountStore.applyLearningRefinements(updated, auditEntries);
+  }
 }

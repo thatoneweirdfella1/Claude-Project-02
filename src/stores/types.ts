@@ -216,16 +216,61 @@ export interface VisibilitySettings {
   activeSession: boolean;
 }
 
-/* Learned routing and technique preferences. Provisional — the pattern
-   analysis and rule refinement engines are Steps 10.1/10.2. Shape kept
-   open (Record) until then. (State-DETECTION correction learning is a
-   separate concept — see StateCorrection/AccountState.stateCorrections,
-   Step 6.4 — not stored here: this Record pair is specifically the
-   ratings-driven routing/technique rule refinement PIPELINE.md's LEARNING
-   LOOP describes, e.g. "low ratings + 'too verbose' reduce Detailed".) */
+/* Learned routing and technique preferences (CANON "STORES AND
+   PERSISTENCE": "learned routing and technique preferences"). Written by
+   Step 10.2's applier from Step 10.1's analyzer proposals. (State-
+   DETECTION correction learning is a separate concept — see
+   StateCorrection/AccountState.stateCorrections, Step 6.4 — not stored
+   here: this pair is specifically the ratings-driven routing/technique
+   rule refinement PIPELINE.md's LEARNING LOOP describes, e.g. "low
+   ratings + 'too verbose' reduce Detailed".)
+
+   `routing` stays an open Record — Step 10.1's analyzer computes routing/
+   complexity patterns but never actually emits a routing-targeted
+   RefinementProposal (only "technique-weight" proposals are produced),
+   so there is nothing yet to give this a firmer shape. A future step
+   that adds routing proposals should shape this the same way `technique`
+   is shaped below, not invent a second convention. */
 export interface LearnedPreferences {
   routing: Record<string, unknown>;
-  technique: Record<string, unknown>;
+  technique: Record<string, TechniquePreference>;
+}
+
+/* One technique's learned weight (Step 10.2). `weight` is a small signed
+   integer nudge (not a percentage or multiplier) — +1 per applied
+   "increase" proposal, -1 per "decrease", clamped to
+   [MIN_TECHNIQUE_WEIGHT, MAX_TECHNIQUE_WEIGHT] (services/learningLoop/
+   applier.ts) so repeated learning-loop runs over an account's lifetime
+   can't drift a technique's standing without bound. A negative weight
+   deprioritizes a technique in auto-detect scoring; it never fully
+   suppresses one (CANON "never a black box" — no technique silently
+   vanishes from the registry). Consuming this weight in the actual
+   auto-detect scorer (services/techniques/autoDetect.ts) is NOT wired by
+   Step 10.2 — this is the seam, a future step is the consumer, same
+   "seam ready, owning step consumes it" pattern as Step 6.5's
+   deriveStateFeeds().transparency sitting unconsumed until Step 8.2. */
+export interface TechniquePreference {
+  weight: number;
+  lastAdjustedAt: number;
+  totalAdjustments: number;
+}
+
+/* One audit entry for a learning-loop refinement actually applied to
+   learnedPreferences (Step 10.2, PIPELINE.md LEARNING LOOP: "An applier
+   writes accepted refinements to the account store with an audit log").
+   One entry per proposal applied, in the same batch a background
+   analysis run produces (services/learningLoop/backgroundJob.ts). */
+export interface LearningAuditEntry {
+  id: string;
+  timestamp: number;
+  proposalType: "technique-weight" | "detection-threshold";
+  target: string;
+  adjustment: "increase" | "decrease";
+  previousWeight: number;
+  newWeight: number;
+  confidence: number;
+  reasoning: string;
+  affectedRunCount: number;
 }
 
 /* One state-pill correction (CANON Feature 5 / PIPELINE.md STATE DETECTION,
@@ -316,4 +361,9 @@ export interface AccountState {
       with a few built-in presets (accountStore.ts) so the feature is
       immediately usable before any user has saved one of their own. */
   templates: PromptTemplate[];
+  /** Step 10.2 ADD — PIPELINE.md LEARNING LOOP: "An applier writes accepted
+      refinements to the account store with an audit log." One entry per
+      refinement actually applied to learnedPreferences. Bounded (see
+      accountStore.ts) — same reasoning as stateCorrections/telemetry. */
+  learningAuditLog: LearningAuditEntry[];
 }
