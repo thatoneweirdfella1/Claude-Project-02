@@ -43,6 +43,10 @@ export interface ComposerProps {
   /** The most recent detection result, or null before any has arrived / after
       the user dismissed it. Panel renders nothing when null. */
   detection?: StateDetectionResult | null;
+  /** Step 11.2 (latency): true while this turn's state classification is in
+      flight. Shows a quiet inline status in the panel's slot so the >1s wait
+      has an indicator (CANON 1-second rule) instead of a silent blank. */
+  detecting?: boolean;
   onCorrectState?: (dimension: PillDimension, value: string) => void;
   /** Step 6.5 directness consumer — non-null only when the state bus's
       recommendation differs from the current selection; the panel shows it
@@ -56,6 +60,7 @@ export function Composer({
   onAttach,
   onContext,
   detection,
+  detecting = false,
   onCorrectState,
   suggestedDirectness,
   onApplyDirectness,
@@ -84,6 +89,15 @@ export function Composer({
   return (
     <div className="composer" data-testid="composer">
       <InputBox />
+      {detecting && !detection && (
+        <p
+          className="state-detection-panel__detecting"
+          role="status"
+          data-testid="detection-detecting"
+        >
+          Reading your message…
+        </p>
+      )}
       {detection && (
         <StateDetectionPanel
           result={detection}

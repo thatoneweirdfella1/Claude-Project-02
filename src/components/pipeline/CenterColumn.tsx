@@ -66,6 +66,12 @@ export function CenterColumn() {
 
   const [run, setRun] = useState<ActivePipelineRun | null>(null);
   const [detection, setDetection] = useState<StateDetectionResult | null>(null);
+  // Step 11.2 (latency): true while this turn's classification call is in
+  // flight. The pill panel is cleared on submit and the classification is a
+  // network round-trip that routinely exceeds 1s, so without this the panel
+  // would blank and silently reappear with no indicator — a CANON 1-second-rule
+  // miss. Drives a quiet inline "reading" status in the panel's own slot.
+  const [detecting, setDetecting] = useState(false);
   const runIdRef = useRef(0);
   const controllerRef = useRef<AbortController | null>(null);
   /** The raw text behind the current run — the base a refinement extends. */
@@ -103,13 +109,15 @@ export function CenterColumn() {
       // corrections every call (never stale — a correction made moments ago
       // on THIS session already counts toward the next classification).
       setDetection(null); // clear the panel immediately; this turn's read isn't in yet
+      setDetecting(true); // show the in-flight indicator until this call resolves (or is superseded)
       const adaptationNote = buildAdaptationNote(useAccountStore.getState().stateCorrections);
       void detectState(request.rawInput, {
         client: (req) => client.complete(req),
         signal: controller.signal,
         adaptationNote,
       }).then((outcome) => {
-        if (controller.signal.aborted) return; // superseded by a resubmit
+        if (controller.signal.aborted) return; // superseded by a resubmit — the newer run now owns `detecting`
+        setDetecting(false); // detectState never throws, so this .then always runs for the live call
         if (outcome.status === "ok") {
           setDetection(outcome.result);
           useSessionStore.getState().setStatePills(toStatePills(outcome.result));
@@ -242,6 +250,7 @@ export function CenterColumn() {
       <Composer
         onSubmit={handleSubmit}
         detection={detection}
+        detecting={detecting}
         onCorrectState={handleCorrectState}
         suggestedDirectness={suggestedDirectness}
         onApplyDirectness={() => setDirectness(suggestedDirectness!)}

@@ -10,6 +10,19 @@
   padding: var(--space-card-padding);
 }
 
+/* Step 11.2 (latency): the in-flight indicator shown in the panel's slot while
+   the classification call is running. Quiet, static metadata text — same idiom
+   as the attach/URL/import status lines, no animation (CANON sensory rule). */
+.state-detection-panel__detecting {
+  margin: 0;
+  padding: var(--space-card-padding);
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-metadata);
+  font-weight: var(--font-weight-metadata);
+  opacity: var(--text-metadata-opacity);
+}
+
 .state-detection-panel__header {
   display: flex;
   align-items: center;
