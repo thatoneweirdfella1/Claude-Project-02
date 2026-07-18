@@ -1,3 +1,4 @@
+import { ContextSnapshotPanel } from "../context";
 import { CenterColumn } from "../pipeline";
 import { GlassPanel } from "../primitives";
 import { LeftNav } from "./LeftNav";
@@ -12,8 +13,10 @@ import { TopBar } from "./TopBar";
      - LeftNav (200px): nav items, Trash, System Status, logout
      - Center (flex): empty conversation placeholder — real content is
        Steps 5.0+ (input composer, streaming display, state pills, etc.)
-     - RightSidebar (300px): placeholders for Quick Tools and the
-       accordion stack — real content is Steps 9.4-9.6
+     - RightSidebar (300px): placeholders for Quick Tools and most of the
+       accordion stack — real content is Steps 9.4-9.6. Context Snapshot
+       (Step 7.5) is the one accordion section built for real ahead of the
+       others; see below.
 
    Structure and spacing only, per Step 1.5's own scope. Later feature
    steps mount real content into center/right; they do not need to
@@ -23,7 +26,13 @@ import { TopBar } from "./TopBar";
    the real ConversationArea and the real Composer through the pipeline
    orchestrator (services/pipeline). The Step 5.0 ComposerSection (JSON
    readout) and Step 5.1 StreamingAnswerDemo existed only because no
-   orchestrator did yet; both are superseded and removed. */
+   orchestrator did yet; both are superseded and removed.
+
+   Step 7.5: ContextSnapshotPanel replaces the "accordion stack placeholder"
+   GlassPanel's Context Snapshot portion with real content reading
+   session.context/session.variables; the other five accordion names
+   (Recent Sessions, Recent Activity, Token Usage, Model Status, Active
+   Session) stay as placeholder text, still Steps 9.4-9.6's job. */
 
 export function AppShell() {
   return (
@@ -41,9 +50,10 @@ export function AppShell() {
         <GlassPanel className="sidebar-placeholder">
           Quick Tools placeholder — hidden by default per CANON.md, built in Steps 9.4/9.6.
         </GlassPanel>
+        <ContextSnapshotPanel />
         <GlassPanel className="sidebar-placeholder">
-          Accordion stack placeholder (Recent Sessions, Context Snapshot, Recent Activity, Token
-          Usage, Model Status, Active Session) — built in Step 9.5.
+          Remaining accordion placeholders (Recent Sessions, Recent Activity, Token Usage, Model
+          Status, Active Session) — built in Step 9.5.
         </GlassPanel>
       </aside>
     </div>
