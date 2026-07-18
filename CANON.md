@@ -44,7 +44,11 @@ Web first. One browser codebase. Windows and Android come later by wrapping this
 
 **8. Transparency Details.** An expandable card with three sub-cards: Routing (model, complexity score, domain, scope), Techniques (which applied and why), Confidence (translation, routing, technique, overall). The user always sees what the app decided and why. Never a black box.
 
-**9. Multi-AI Actions.** After an answer: Debate (two AIs argue opposite sides, two-column view), Consensus (common ground after a debate), Synthesis (combine perspectives into one refined answer the user can use to replace or merge). Consensus and Synthesis run on Opus at runtime.
+**9. Multi-AI Actions.** After an answer: Debate (two AIs argue opposite sides, two-column view), Consensus (common ground after a debate), Synthesis (combine perspectives into one refined answer the user can use to replace or merge).
+
+Debate mode uses two DIFFERENT AI providers, never two Claude calls arguing with itself — same-model debate is known to converge into agreement-theater rather than surfacing real disagreement. Claude is always one side. The user picks the second side from a roster: GPT-5.5 (agentic generalist, strong practical reasoning), Gemini 3.1 Pro (abstract/reframing reasoning, best multimodal), Grok 4.3 (real-time grounded, blunt/unfiltered counterpoint), DeepSeek V4 Pro (near-frontier reasoning at low cost, for high-frequency debate use). If no side is picked, default to GPT-5.5 as the counterpart.
+
+Consensus and Synthesis run on Opus at runtime, reading both sides' transcripts regardless of which two providers argued.
 
 **10. Download and Export.** Download modal: pick content (answer text, confidence, rating, transparency, state pills) and format (Markdown default, HTML, JSON, PDF), then download or copy to clipboard.
 

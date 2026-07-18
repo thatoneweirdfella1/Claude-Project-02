@@ -35,6 +35,24 @@ The free/paid split is currently a flag in the routing layer, not real billing. 
 
 ---
 
+## DEBATE PARTNERS (Feature 9 — separate from primary routing)
+
+Debate mode calls a SECOND provider alongside Claude. This is a distinct code path from the Claude-only router above — it does not go through the MODELS table or the complexity scorer.
+
+Roster (api string : provider : role):
+- gpt-5.5 : OpenAI : agentic generalist
+- gemini-3.1-pro : Google : abstract reasoning, multimodal
+- grok-4.3 : xAI : real-time grounded, blunt counterpoint
+- deepseek-v4-pro : DeepSeek : low-cost near-frontier
+
+Each requires its own serverless proxy (api/proxy-<provider>.ts + a src/services/debate/<provider>Handler.ts), mirroring the existing api/proxy.ts pattern: server-side only call, own API key as its own env var, never exposed to the client, own timeout/error handling since a partner API being down must not break the whole debate turn — fail that side gracefully with a visible retry, not a crash.
+
+Each provider's API key is a separate secret (OPENAI_API_KEY, GOOGLE_API_KEY, XAI_API_KEY, DEEPSEEK_API_KEY), set at deploy time same as the existing Anthropic key. Not committed to the repo, ever.
+
+Default partner if the user doesn't pick one: gpt-5.5.
+
+---
+
 ## COMPLEXITY (how the scorer works, for reference)
 
 Complexity 1 to 10 is the reasoning load of a question: how many dependent inference steps a competent answerer must chain, under how many simultaneous constraints, before an answer exists. It is not length. Pure retrieval is 1. A design task that must satisfy interacting constraints and prove properties is 10.
