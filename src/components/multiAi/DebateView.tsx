@@ -1,27 +1,26 @@
 import type { DebateSide } from "../../services/debate";
 
-/* The dual-stream debate view (Step 8.3) — PIPELINE.md MULTI-AI ACTIONS:
-   "two AI streams argue opposite sides in a two-column view." This component
+/* The multi-column debate view (Step 8.3) — PIPELINE.md MULTI-AI ACTIONS:
+   "2 to 4 AIs argue different sides in a multi-column view." This component
    IS this step's named OUTPUT.
 
-   Each column is independent: one side can be showing its argument while the
-   other shows an error with its own retry, because ROUTING.md requires a
-   partner outage to fail only that side ("fail that side gracefully with a
+   Each column is independent: one participant can be showing its argument
+   while another shows an error with its own retry, because ROUTING.md requires
+   a partner outage to fail only that side ("fail that side gracefully with a
    visible retry, not a crash"). Purely presentational — runDebate() and its
    loading/error state belong to whoever mounts this (MultiAiActions), same
    split as ConsensusView/SynthesisView (Step 8.4).
 
-   Columns stack to one column on narrow viewports (multi-ai.css) — CANON's
-   ADHD rule against dense walls applies harder at small widths, where two
-   ~40-character columns would be unreadable. */
+   Supports 2-4 columns (Claude + 1-3 partners). Columns stack to one column
+   on narrow viewports (multi-ai.css) — CANON's ADHD rule against dense walls
+   applies harder at small widths, where narrow columns would be unreadable. */
 
 export interface DebateViewProps {
-  claude: DebateSide;
-  partner: DebateSide;
-  /** Fires with the side that failed, so only that column is re-run. */
-  onRetrySide?: (side: "claude" | "partner") => void;
-  /** True while a re-run of that specific side is in flight. */
-  retrying?: "claude" | "partner" | null;
+  sides: DebateSide[];
+  /** Fires with the index in sides[] that failed, so only that column is re-run. */
+  onRetrySide?: (sideIndex: number) => void;
+  /** True while a re-run of that specific side index is in flight. */
+  retrying?: number | null;
 }
 
 const STANCE_LABEL: Record<DebateSide["stance"], string> = {
@@ -31,13 +30,13 @@ const STANCE_LABEL: Record<DebateSide["stance"], string> = {
 
 function DebateColumn({
   side,
-  which,
+  sideIndex,
   onRetry,
   retrying,
 }: {
   side: DebateSide;
-  which: "claude" | "partner";
-  onRetry?: (side: "claude" | "partner") => void;
+  sideIndex: number;
+  onRetry?: (index: number) => void;
   retrying: boolean;
 }) {
   return (
@@ -55,7 +54,7 @@ function DebateColumn({
           <button
             type="button"
             className="debate-view__retry"
-            onClick={() => onRetry?.(which)}
+            onClick={() => onRetry?.(sideIndex)}
             disabled={retrying}
           >
             {retrying ? "Retrying…" : "Try this side again"}
@@ -66,21 +65,18 @@ function DebateColumn({
   );
 }
 
-export function DebateView({ claude, partner, onRetrySide, retrying = null }: DebateViewProps) {
+export function DebateView({ sides, onRetrySide, retrying = null }: DebateViewProps) {
   return (
     <div className="debate-view" data-testid="debate-view">
-      <DebateColumn
-        side={claude}
-        which="claude"
-        onRetry={onRetrySide}
-        retrying={retrying === "claude"}
-      />
-      <DebateColumn
-        side={partner}
-        which="partner"
-        onRetry={onRetrySide}
-        retrying={retrying === "partner"}
-      />
+      {sides.map((side, index) => (
+        <DebateColumn
+          key={index}
+          side={side}
+          sideIndex={index}
+          onRetry={onRetrySide}
+          retrying={retrying === index}
+        />
+      ))}
     </div>
   );
 }

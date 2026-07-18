@@ -18,17 +18,17 @@ const failing = () => vi.fn(async () => { throw new Error("provider down"); });
 const QUESTION = "Should we migrate the service to event sourcing?";
 
 describe("runDebate — the happy path", () => {
-  it("returns a complete outcome with both sides and a DebateTranscript", async () => {
+  it("returns a complete outcome with all sides and a DebateTranscript", async () => {
     const outcome = await runDebate(QUESTION, {
       claudeClient: claudeOk(),
       partnerClient: partnerOk(),
-      partnerId: "gpt-5.5",
+      partnerIds: ["gpt-5.5"],
     });
 
     expect(outcome.status).toBe("complete");
     if (outcome.status !== "complete") return;
-    expect(outcome.claude.status).toBe("ok");
-    expect(outcome.partner.status).toBe("ok");
+    expect(outcome.sides[0].status).toBe("ok"); // Claude
+    expect(outcome.sides[1].status).toBe("ok"); // Partner
     expect(outcome.transcript).toEqual({
       question: QUESTION,
       claudeText: "Claude's argument.",
@@ -37,20 +37,20 @@ describe("runDebate — the happy path", () => {
     });
   });
 
-  it("gives the two sides OPPOSITE stances — never the same side twice", async () => {
+  it("gives Claude and partners OPPOSITE stances — never the same side twice", async () => {
     const outcome = await runDebate(QUESTION, {
       claudeClient: claudeOk(),
       partnerClient: partnerOk(),
-      partnerId: "grok-4.3",
+      partnerIds: ["grok-4.3"],
     });
     if (outcome.status === "empty-question") throw new Error("unexpected");
-    expect(outcome.claude.stance).not.toBe(outcome.partner.stance);
+    expect(outcome.sides[0].stance).not.toBe(outcome.sides[1].stance);
   });
 
-  it("sends each side a prompt naming its own assigned stance, and the same question to both", async () => {
+  it("sends each side a prompt naming its own assigned stance, and the same question to all", async () => {
     const claudeClient = claudeOk();
     const partnerClient = partnerOk();
-    await runDebate(QUESTION, { claudeClient, partnerClient, partnerId: "gpt-5.5" });
+    await runDebate(QUESTION, { claudeClient, partnerClient, partnerIds: ["gpt-5.5"] });
 
     const claudeArgs = vi.mocked(claudeClient).mock.calls[0][0];
     const partnerArgs = vi.mocked(partnerClient).mock.calls[0][0];
@@ -59,7 +59,7 @@ describe("runDebate — the happy path", () => {
     expect(claudeArgs.system).toContain("arguing FOR");
     expect(partnerArgs.system).toContain("arguing AGAINST");
     expect(partnerArgs.partner.id).toBe("gpt-5.5");
-    // Identical framing of the question for both sides.
+    // Identical framing of the question for all sides.
     expect(claudeArgs.input).toBe(partnerArgs.input);
     expect(claudeArgs.input).toContain(QUESTION);
   });
@@ -68,19 +68,19 @@ describe("runDebate — the happy path", () => {
     const outcome = await runDebate(QUESTION, {
       claudeClient: claudeOk(),
       partnerClient: partnerOk(),
-      partnerId: "deepseek-v4-pro",
+      partnerIds: ["deepseek-v4-pro"],
       claudeStance: "against",
     });
     if (outcome.status === "empty-question") throw new Error("unexpected");
-    expect(outcome.claude.stance).toBe("against");
-    expect(outcome.partner.stance).toBe("for");
+    expect(outcome.sides[0].stance).toBe("against"); // Claude
+    expect(outcome.sides[1].stance).toBe("for"); // Partner
   });
 
   it("uses the picked partner's real roster label, not its api string", async () => {
     const outcome = await runDebate(QUESTION, {
       claudeClient: claudeOk(),
       partnerClient: partnerOk(),
-      partnerId: "gemini-3.1-pro",
+      partnerIds: ["gemini-3.1-pro"],
     });
     if (outcome.status !== "complete") throw new Error("unexpected");
     expect(outcome.transcript.partnerLabel).toBe("Gemini 3.1 Pro");
@@ -88,26 +88,26 @@ describe("runDebate — the happy path", () => {
 });
 
 describe("runDebate — one side down never breaks the turn (ROUTING.md)", () => {
-  it("returns 'partial' with Claude's side intact when the partner fails", async () => {
+  it("returns 'partial' with Claude's side intact when a partner fails", async () => {
     const outcome = await runDebate(QUESTION, {
       claudeClient: claudeOk(),
       partnerClient: failing(),
-      partnerId: "gpt-5.5",
+      partnerIds: ["gpt-5.5"],
     });
 
     expect(outcome.status).toBe("partial");
     if (outcome.status === "empty-question") return;
-    expect(outcome.claude.status).toBe("ok");
-    expect(outcome.claude.text).toBe("Claude's argument.");
-    expect(outcome.partner.status).toBe("error");
-    expect(outcome.partner.message).toBeTruthy();
+    expect(outcome.sides[0].status).toBe("ok");
+    expect(outcome.sides[0].text).toBe("Claude's argument.");
+    expect(outcome.sides[1].status).toBe("error");
+    expect(outcome.sides[1].message).toBeTruthy();
   });
 
   it("returns 'partial' with the partner intact when Claude fails", async () => {
     const outcome = await runDebate(QUESTION, {
       claudeClient: failing(),
       partnerClient: partnerOk(),
-      partnerId: "gpt-5.5",
+      partnerIds: ["gpt-5.5"],
     });
     expect(outcome.status).toBe("partial");
   });
@@ -116,7 +116,7 @@ describe("runDebate — one side down never breaks the turn (ROUTING.md)", () =>
     const outcome = await runDebate(QUESTION, {
       claudeClient: failing(),
       partnerClient: failing(),
-      partnerId: "gpt-5.5",
+      partnerIds: ["gpt-5.5"],
     });
     expect(outcome.status).toBe("failed");
   });
@@ -127,36 +127,36 @@ describe("runDebate — one side down never breaks the turn (ROUTING.md)", () =>
       partnerClient: vi.fn(async () => {
         throw new Error("401 Unauthorized: sk-secret-key-leaked");
       }),
-      partnerId: "gpt-5.5",
+      partnerIds: ["gpt-5.5"],
     });
     if (outcome.status === "empty-question") throw new Error("unexpected");
-    expect(outcome.partner.message).not.toContain("sk-secret");
-    expect(outcome.partner.message).not.toContain("401");
+    expect(outcome.sides[1].message).not.toContain("sk-secret");
+    expect(outcome.sides[1].message).not.toContain("401");
   });
 
   it("treats an empty/whitespace reply as a failed side, not a silent empty column", async () => {
     const outcome = await runDebate(QUESTION, {
       claudeClient: claudeOk(),
       partnerClient: partnerOk("   \n  "),
-      partnerId: "gpt-5.5",
+      partnerIds: ["gpt-5.5"],
     });
     if (outcome.status === "empty-question") throw new Error("unexpected");
-    expect(outcome.partner.status).toBe("error");
+    expect(outcome.sides[1].status).toBe("error");
   });
 });
 
 describe("runDebate — guards", () => {
-  it("short-circuits an empty question without spending either call", async () => {
+  it("short-circuits an empty question without spending any calls", async () => {
     const claudeClient = claudeOk();
     const partnerClient = partnerOk();
-    const outcome = await runDebate("   ", { claudeClient, partnerClient, partnerId: "gpt-5.5" });
+    const outcome = await runDebate("   ", { claudeClient, partnerClient, partnerIds: ["gpt-5.5"] });
 
     expect(outcome.status).toBe("empty-question");
     expect(claudeClient).not.toHaveBeenCalled();
     expect(partnerClient).not.toHaveBeenCalled();
   });
 
-  it("runs both sides concurrently rather than one after the other", async () => {
+  it("runs all sides concurrently rather than sequentially", async () => {
     let active = 0;
     let peak = 0;
     const slow = async () => {
@@ -170,8 +170,8 @@ describe("runDebate — guards", () => {
     await runDebate(QUESTION, {
       claudeClient: slow,
       partnerClient: slow,
-      partnerId: "gpt-5.5",
+      partnerIds: ["gpt-5.5"],
     });
-    expect(peak).toBe(2);
+    expect(peak).toBe(2); // Claude + 1 partner
   });
 });

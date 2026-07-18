@@ -3,13 +3,12 @@ import { GlassButton, GlassCard } from "../primitives";
 import { createProxyClient } from "../../services/proxyClient";
 import { useSessionStore } from "../../stores/sessionStore";
 import {
-  DEFAULT_DEBATE_PARTNER,
   createPartnerClient,
   runDebate,
   type DebateOutcome,
   type DebatePartnerId,
-  type DebateSide,
 } from "../../services/debate";
+import { autoSelectPartners } from "../../services/debate/autoSelect";
 import {
   runConsensus,
   runSynthesis,
@@ -19,6 +18,7 @@ import {
 } from "../../services/multiAi";
 import { DebateView } from "./DebateView";
 import { PartnerPicker } from "./PartnerPicker";
+import { AutoSelectButton } from "./AutoSelectButton";
 import { ConsensusView } from "./ConsensusView";
 import { SynthesisView } from "./SynthesisView";
 
@@ -47,10 +47,11 @@ export function MultiAiActions() {
   const conversation = useSessionStore((s) => s.conversation);
 
   const [expanded, setExpanded] = useState(false);
-  const [partnerId, setPartnerId] = useState<DebatePartnerId>(DEFAULT_DEBATE_PARTNER);
+  const [partnerIds, setPartnerIds] = useState<DebatePartnerId[]>([]);
+  const [useAutoSelect, setUseAutoSelect] = useState(true);
   const [phase, setPhase] = useState<Phase>("idle");
   const [outcome, setOutcome] = useState<DebateOutcome | null>(null);
-  const [retrying, setRetrying] = useState<"claude" | "partner" | null>(null);
+  const [retrying, setRetrying] = useState<number | null>(null);
   const [consensus, setConsensus] = useState<ConsensusResult | null>(null);
   const [synthesis, setSynthesis] = useState<SynthesisResult | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -61,6 +62,8 @@ export function MultiAiActions() {
 
   const transcript: DebateTranscript | null =
     outcome?.status === "complete" ? outcome.transcript : null;
+
+  const selectedPartnerIds = useAutoSelect ? autoSelectPartners(lastQuestion) : partnerIds;
 
   const startDebate = useCallback(async () => {
     controllerRef.current?.abort();
@@ -73,64 +76,73 @@ export function MultiAiActions() {
     setSynthesis(null);
     setActionError(null);
 
+    if (selectedPartnerIds.length === 0) {
+      setActionError("Select at least one debate partner or use Auto-select.");
+      setPhase("idle");
+      return;
+    }
+
     const result = await runDebate(lastQuestion, {
       claudeClient: (req) => claudeClient.complete(req),
       partnerClient,
-      partnerId,
+      partnerIds: selectedPartnerIds,
       signal: controller.signal,
     });
 
     if (controller.signal.aborted) return;
     setOutcome(result);
     setPhase("idle");
-  }, [lastQuestion, partnerId]);
+  }, [lastQuestion, selectedPartnerIds]);
 
-  /* Re-runs ONE side. The other side's existing text is kept as-is rather
-     than re-fetched: it already succeeded, and re-asking would spend a call
-     to replace a good argument with a different good argument the user
+  /* Re-runs ONE side by index. The other sides' existing text is kept as-is
+     rather than re-fetched: they already succeeded, and re-asking would spend
+     calls to replace good arguments with different good arguments the user
      didn't ask to change. */
   const retrySide = useCallback(
-    async (which: "claude" | "partner") => {
+    async (sideIndex: number) => {
       if (!outcome || outcome.status === "empty-question") return;
-      setRetrying(which);
+      setRetrying(sideIndex);
       setActionError(null);
 
       const rerun = await runDebate(lastQuestion, {
         claudeClient: (req) => claudeClient.complete(req),
         partnerClient,
-        partnerId,
-        // Keep each side on the stance it already had, so a retry doesn't
-        // silently flip which side is arguing what mid-debate.
-        claudeStance: outcome.claude.stance,
+        partnerIds: selectedPartnerIds,
+        // Keep Claude on the stance it already had, so a retry doesn't
+        // silently flip sides mid-debate.
+        claudeStance: outcome.sides[0].stance,
       });
 
       setRetrying(null);
       if (rerun.status === "empty-question") return;
 
-      const fresh: DebateSide = which === "claude" ? rerun.claude : rerun.partner;
-      const kept: DebateSide = which === "claude" ? outcome.partner : outcome.claude;
-      const claude = which === "claude" ? fresh : kept;
-      const partner = which === "claude" ? kept : fresh;
+      // Merge rerun.sides[sideIndex] into the existing sides array
+      const newSides = [...outcome.sides];
+      newSides[sideIndex] = rerun.sides[sideIndex];
 
-      if (claude.status === "ok" && partner.status === "ok") {
-        setOutcome({
-          status: "complete",
-          claude,
-          partner,
-          transcript: {
-            question: lastQuestion.trim(),
-            claudeText: claude.text!,
-            partnerLabel: partner.label,
-            partnerText: partner.text!,
-          },
-        });
-      } else if (claude.status === "ok" || partner.status === "ok") {
-        setOutcome({ status: "partial", claude, partner });
+      const allOk = newSides.every((s) => s.status === "ok");
+      if (allOk) {
+        // Create a transcript from the first non-Claude side
+        const firstPartnerSide = newSides.find((s) => s.partnerId);
+        if (firstPartnerSide) {
+          setOutcome({
+            status: "complete",
+            sides: newSides,
+            transcript: {
+              question: lastQuestion.trim(),
+              claudeText: newSides[0].text!,
+              partnerLabel: firstPartnerSide.label,
+              partnerText: firstPartnerSide.text!,
+            },
+          });
+        }
+      } else if (newSides.some((s) => s.status === "ok")) {
+        setOutcome({ status: "partial", sides: newSides });
       } else {
-        setOutcome({ status: "failed", claude, partner });
+        setOutcome({ status: "failed", sides: newSides });
       }
     },
-    [outcome, lastQuestion, partnerId],
+    [outcome, lastQuestion, selectedPartnerIds],
   );
 
   const doConsensus = useCallback(async () => {
@@ -183,10 +195,31 @@ export function MultiAiActions() {
             </p>
           ) : (
             <>
-              <PartnerPicker value={partnerId} onChange={setPartnerId} disabled={busy} />
+              <div className="multi-ai-actions__selection">
+                <AutoSelectButton
+                  question={lastQuestion}
+                  onSelect={(ids) => {
+                    setPartnerIds(ids);
+                    setUseAutoSelect(false);
+                  }}
+                  disabled={busy}
+                />
+                <button
+                  type="button"
+                  className="multi-ai-actions__toggle-manual"
+                  onClick={() => setUseAutoSelect(!useAutoSelect)}
+                  disabled={busy}
+                >
+                  {useAutoSelect ? "Manual selection" : "Auto-select"}
+                </button>
+              </div>
+
+              {!useAutoSelect && (
+                <PartnerPicker value={partnerIds} onChange={setPartnerIds} disabled={busy} />
+              )}
 
               <div className="multi-ai-actions__row">
-                <GlassButton onClick={() => void startDebate()} disabled={busy}>
+                <GlassButton onClick={() => void startDebate()} disabled={busy || selectedPartnerIds.length === 0}>
                   {phase === "debating" ? "Debating…" : outcome ? "Run debate again" : "Start debate"}
                 </GlassButton>
                 <GlassButton onClick={() => void doConsensus()} disabled={busy || !transcript}>
@@ -199,17 +232,16 @@ export function MultiAiActions() {
 
               {outcome && outcome.status !== "empty-question" && (
                 <DebateView
-                  claude={outcome.claude}
-                  partner={outcome.partner}
-                  onRetrySide={(side) => void retrySide(side)}
+                  sides={outcome.sides}
+                  onRetrySide={(index) => void retrySide(index)}
                   retrying={retrying}
                 />
               )}
 
               {outcome && outcome.status === "partial" && (
                 <p className="multi-ai-actions__note" role="status">
-                  One side didn't come back. Consensus and Synthesis need both sides — retry the
-                  missing one to enable them.
+                  Not all sides came back. Consensus and Synthesis need all participants — retry the
+                  missing one(s) to enable them.
                 </p>
               )}
 
