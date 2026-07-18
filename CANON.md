@@ -44,11 +44,15 @@ Web first. One browser codebase. Windows and Android come later by wrapping this
 
 **8. Transparency Details.** An expandable card with three sub-cards: Routing (model, complexity score, domain, scope), Techniques (which applied and why), Confidence (translation, routing, technique, overall). The user always sees what the app decided and why. Never a black box.
 
-**9. Multi-AI Actions.** After an answer: Debate (two AIs argue opposite sides, two-column view), Consensus (common ground after a debate), Synthesis (combine perspectives into one refined answer the user can use to replace or merge).
+**9. Multi-AI Actions.** After an answer: Debate (2 to 4 AIs argue different sides in a multi-column view), Consensus (common ground after a debate), Synthesis (combine perspectives into one refined answer the user can use to replace or merge).
 
-Debate mode uses two DIFFERENT AI providers, never two Claude calls arguing with itself — same-model debate is known to converge into agreement-theater rather than surfacing real disagreement. Claude is always one side. The user picks the second side from a roster: GPT-5.5 (agentic generalist, strong practical reasoning), Gemini 3.1 Pro (abstract/reframing reasoning, best multimodal), Grok 4.3 (real-time grounded, blunt/unfiltered counterpoint), DeepSeek V4 Pro (near-frontier reasoning at low cost, for high-frequency debate use). If no side is picked, default to GPT-5.5 as the counterpart.
+Debate mode requires AT LEAST ONE non-Claude provider — never two-plus Claude calls arguing with itself, since same-model debate is known to converge into agreement-theater rather than surfacing real disagreement. Claude is always one participant. The user chooses in one of two ways:
 
-Consensus and Synthesis run on Opus at runtime, reading both sides' transcripts regardless of which two providers argued.
+(a) **MANUAL** — pick 1 to 3 additional partners directly from the roster (GPT-5.5: agentic generalist; Gemini 3.1 Pro: abstract/reframing reasoning, best multimodal; Grok 4.3: real-time grounded, blunt counterpoint; DeepSeek V4 Pro: near-frontier reasoning at low cost), for a 2-to-4-way debate.
+
+(b) **AUTO-SELECT** — a single button lets the system choose the best partner(s) automatically, based on the roster's stated strengths (see ROUTING.md DEBATE PARTNERS) matched against the question's domain/complexity — e.g. an abstract-reasoning question favors Gemini, a real-time/current-events question favors Grok. Auto-select defaults to a single best-fit partner (2-way) unless the question's complexity or scope clearly benefits from more perspectives, in which case it may select up to 3.
+
+Consensus and Synthesis run on Opus at runtime, reading all participants' transcripts regardless of how many providers argued or how they were chosen.
 
 **10. Download and Export.** Download modal: pick content (answer text, confidence, rating, transparency, state pills) and format (Markdown default, HTML, JSON, PDF), then download or copy to clipboard.
 
