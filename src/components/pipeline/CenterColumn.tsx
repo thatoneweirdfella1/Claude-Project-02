@@ -1,7 +1,8 @@
 import { useCallback, useRef, useState } from "react";
 import { buildTranslateAskRequest, type TranslateAskRequest } from "../../services/composer";
 import { createProxyClient } from "../../services/proxyClient";
-import { runPipeline, type PipelineDone } from "../../services/pipeline";
+import type { PipelineDone } from "../../services/pipeline";
+import { observePipeline } from "../../services/telemetry";
 import { useAccountStore } from "../../stores/accountStore";
 import { useSessionStore } from "../../stores/sessionStore";
 import { Composer } from "../composer";
@@ -15,11 +16,12 @@ import { usePipelineRun, type ActivePipelineRun } from "./usePipelineRun";
    no orchestrator did yet) and Step 5.1's StreamingAnswerDemo (same reason).
 
    TRANSLATE & ASK now does the real thing: the emitted TranslateAskRequest
-   goes straight into runPipeline() against the Step 1.10 proxy client, the
-   user's text is appended to the conversation, the stage indicator / gated
-   translation / streamed answer render as the run progresses, and the
-   finished answer is appended to the session store (so it persists via the
-   Step 1.8 autosave) carrying confidence + routing's downgraded/notes.
+   goes straight into observePipeline() (Step 5.4's transparent telemetry tee
+   around runPipeline) against the Step 1.10 proxy client, the user's text is
+   appended to the conversation, the stage indicator / gated translation /
+   streamed answer render as the run progresses, and the finished answer is
+   appended to the session store (so it persists via the Step 1.8 autosave)
+   carrying confidence + routing's downgraded/notes.
 
    The <60 clarify path finally closes the Step 2.3 loop: TranslationCard
    renders the ClarifyPrompt, and onRefine re-runs the WHOLE pipeline with the
@@ -53,7 +55,7 @@ export function CenterColumn() {
       lastRawRef.current = request.rawInput;
       setRun({
         id: runIdRef.current,
-        start: () => runPipeline(request, { client, plan, signal: controller.signal }),
+        start: () => observePipeline(request, { client, plan, signal: controller.signal }),
       });
     },
     [plan],

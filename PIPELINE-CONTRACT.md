@@ -1,4 +1,4 @@
-# PIPELINE-CONTRACT.md — the five-stage handoffs (Steps 5.2/5.3)
+# PIPELINE-CONTRACT.md — the five-stage handoffs (Steps 5.2/5.3/5.4)
 
 What every pipeline stage **receives** and **returns**, including the confidence
 gates, the routing coupling, and which fields are allowed to be absent. Written
@@ -136,6 +136,58 @@ wasn't you. Give it another try in a moment."* The real underlying message
 (e.g. `"Timed out after 30000ms"`, `"Proxy call failed (503)"`) is kept on the
 event for whatever reads it for diagnostics (Step 5.4's telemetry service),
 never shown to the user verbatim.
+
+---
+
+## Telemetry (Step 5.4)
+
+Code: `src/services/telemetry/` (`observePipeline`, `log.ts`, `types.ts`).
+
+**`observePipeline(request, deps)` replaces `runPipeline(request, deps)` at
+the one production call site** (CenterColumn) — same signature, same
+`AsyncGenerator<PipelineEvent>` return, **identical event sequence**. It is a
+transparent tee: every event `runPipeline` yields passes through unchanged,
+observed (timed, read) but never edited, delayed, or withheld. Tests and any
+other consumer that doesn't need telemetry may still call `runPipeline`
+directly — both are exported from `services/pipeline`.
+
+**One `TelemetryEntry` per request** (`types.ts`), finalized and recorded via
+`recordTelemetryEntry` (`log.ts`) at whichever terminal event ends the run —
+`done`, `error`, or a `translation` event whose `gated.kind` is
+`clarify`/`empty`/`too-large`/`error` (PIPELINE-CONTRACT's gate table, above).
+An entry the generator never reaches a terminal event for (the consumer stops
+iterating early — a resubmit, an unmount) is finalized as `outcome:
+"cancelled"` by the tee's own `finally` block, which the implicit
+`generator.return()` a broken `for await` triggers always runs.
+
+**Fields, and where each comes from:**
+
+| Field | Source event | Absent when |
+|---|---|---|
+| `confidence` | `translation` (`gated.result.confidence`) — `proceed`/`moderate`/`clarify` all carry a `TranslationResult` | `empty`/`too-large`/`error` (no result exists) |
+| `complexity`, `effectiveComplexity`, `domain`, `model`, `modelTier`, `downgraded`, `notes` | `route` | routing never reached (gate stopped at translation) |
+| `techniques` | `techniques` | Stage 3 never reached |
+| `translationTokens` | `onUsage` on the Stage-1 `complete()` call | the proxy response carried no `usage` field |
+| `executionTokens` | `onUsage` on the Stage-5 `stream()` call | Stage 5 never reached, or its response carried no usage events |
+| `stageDurationsMs[stage]` | wall-clock between consecutive `stage` events (or a stage event and the terminal event) | a stage the run never reached is simply absent from the map, not zero |
+| `outcome`, `errorMessage`, `finishedAt`, `totalDurationMs` | set once, by whichever `finalize()` call ends the entry | never absent on a recorded entry |
+
+**Token counts are captured without touching either protected seam.**
+`translate.ts` (Step 2.2) and `orchestrator.ts` (Step 5.2) are both unchanged
+— `observePipeline` wraps `deps.client` itself, attaching an `onUsage`
+callback (`proxyClient.ts`'s Step 5.4 addition to `ProxyCompletionRequest`,
+purely additive — `complete()`/`stream()`'s return shapes are unchanged) to
+every `complete()`/`stream()` call before handing the wrapped client to
+`runPipeline`. `runPipeline` wraps that same client again internally with
+`makeResilientClient` (Resilience, above) — both wrappers compose cleanly
+since each only adds behavior around the same `complete`/`stream` contract.
+
+**The log is in-memory, bounded, local-only** (`MAX_TELEMETRY_ENTRIES = 200`,
+oldest entries drop first) — no third-party analytics, nothing leaves the
+browser. `getTelemetryEntries()`/`subscribeTelemetry()` are the seam a future
+reader (Token Usage panel — Step 9.6; Learning Loop pattern analysis — Step
+10.1; Transparency card — Step 8.2) subscribes to; none of those readers exist
+yet, so nothing currently calls them outside tests.
 
 ---
 
@@ -324,6 +376,11 @@ PIPELINE.md Stage 5's "log telemetry" in its current honest form.
 
 ## The UI/store contract (components/pipeline/, Step 5.2)
 
+- CenterColumn calls `observePipeline` (`src/services/telemetry/`, Step 5.4),
+  **not** `runPipeline` directly — a transparent tee that yields the identical
+  event sequence while recording one `TelemetryEntry` per request (Telemetry,
+  above). Every claim in this section holds for the events the UI sees either
+  way; telemetry never edits, delays, or withholds one.
 - On submit, CenterColumn appends the **raw** input as a user
   `ConversationMessage` (skipped for whitespace-only input) and starts a run;
   a resubmit aborts the previous run's in-flight call via AbortController.
@@ -350,3 +407,5 @@ PIPELINE.md Stage 5's "log telemetry" in its current honest form.
 | `ProxyCompletionRequest.extendedThinking` | absent unless routing applied it |
 | `ConversationMessage.confidence/downgraded/notes` | assistant messages from this flow: always set; user messages: never set |
 | `PipelineDeps.resilience` | optional; absent = production defaults (3 attempts, 300ms backoff, 30s per-attempt timeout) |
+| `ProxyCompletionRequest.onUsage` | optional; translate.ts's narrower `ModelCompletionRequest` never sets it — only `observePipeline`'s client wrapper does |
+| `TelemetryEntry.translationTokens` / `executionTokens` | null if that call never happened, or its response carried no usage field |
