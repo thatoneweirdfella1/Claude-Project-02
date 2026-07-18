@@ -40,37 +40,53 @@ blur/glow interaction under a real GPU (see V8).
 
 ## FINDINGS (deviation first, then the fix — all deferred to 11.5)
 
-**V1 — Quick Tools grid is 2×3; V3 shows 3×2.**
+**[FIXED — Step 11.5, verified with a real headless-Chrome capture]** **V1 — Quick Tools grid is 2×3; V3 shows 3×2.**
 Capture: app-quicktools.png (2 columns) vs V3 right rail (3 columns: Router/Techniques/Prompt
 Library over Variables/Checkpoints/Dashboard). Code: `grid-template-columns: repeat(2, 1fr)`
 (quicktools.css:5). CANON's "2x3 grid" wording is ambiguous; the screenshot resolves it — 3 across.
 **Fix:** `repeat(3, 1fr)` and confirm tile order matches V3's row order.
+**Applied** (quicktools.css `.quick-tools-grid`) — `repeat(3, 1fr)`. Tile DOM order was already
+Router/Techniques/Prompt Library, Variables/Checkpoints/Dashboard (QuickToolsGrid.tsx), so no
+reordering was needed — grid auto-flow alone produces V3's row layout. Confirmed with a real
+Playwright capture at 1525×1030 against a `vite preview` build: 3 columns, correct row order.
 
-**V2 — Quick Tools tile icons are all cyan; V3 gives each tile its own color.**
+**[FIXED — Step 11.5, verified with a real headless-Chrome capture]** **V2 — Quick Tools tile icons are all cyan; V3 gives each tile its own color.**
 V3: Router green, Techniques purple, Prompt Library orange, Variables cyan, Checkpoints red,
 Dashboard blue. App: uniform cyan (app-quicktools.png). **Fix:** per-tile icon color via existing
 tokens where meanings align (--state-interest green, --accent-purple, --state-cognitive blue,
 --accent-cyan, --action-destructive red); orange has no token yet — add `--tile-prompt-library`
 rather than hardcoding.
+**Applied exactly as mapped** — Router `--state-interest` (green), Techniques `--accent-purple`,
+Prompt Library new `--tile-prompt-library: #f97316` (tokens.css — a standard Tailwind-500-register
+orange, matching the saturation/lightness of the app's other state hues, since the audit named the
+hue but not an exact value), Variables kept the existing base cyan (already correct, no change
+needed), Checkpoints `--action-destructive` (red), Dashboard `--state-cognitive` (blue). Per-tile
+`iconClassName` prop threaded through `Tile`/`NotYetAvailableTile` (QuickToolsGrid.tsx). Verified
+with a real Playwright capture: all six tiles show distinct, correctly-mapped colors.
 
-**V3 — Quick Tools has no "QUICK TOOLS" header; V3 shows a cyan header with a gear at right.**
+**[FIXED — Step 11.5, verified with a real headless-Chrome capture]** **V3 — Quick Tools has no "QUICK TOOLS" header; V3 shows a cyan header with a gear at right.**
 Capture: app-quicktools.png (grid starts with no title). **Fix:** header row above the grid using
 the section-header type tokens, matching V3.
+**Applied** (QuickToolsGrid.tsx + quicktools.css) — a `.quick-tools__header` row with a cyan
+"QUICK TOOLS" label (same `--font-size-section-header`/`--font-weight-section-header` tokens as
+`.quick-actions__header`/`.quick-tools-tile__title`) and a decorative gear glyph at right (⚙, `aria-hidden`,
+no behavior invented — no step in the plan gives this gear an action, same posture as the
+Checkpoints/Dashboard/Integrations placeholders). Verified with a real Playwright capture.
 
-**V4 — Left nav items have no icons; V3 shows an icon on every item.**
+**[ESCALATED — Step 11.5, blocked on an icon-library decision]** **V4 — Left nav items have no icons; V3 shows an icon on every item.**
 All captures; Step 9.7's own step text says "with icons" and the screenshot confirms. Icons were
 deferred at Step 1.5 (no icon library — logged) and 9.7 built routing without revisiting.
 **Fix (11.5):** add icons — requires the deferred icon decision (hand-rolled SVGs like Logo.tsx,
 or a logged dependency per CONVENTIONS rule 3). Same decision unblocks V5/V6/V13.
 
-**V5 — Top bar buttons are text-only; V3 shows icons in Search/Templates/Quick Reference and
+**[ESCALATED — Step 11.5, blocked on the same icon-library decision as V4]** **V5 — Top bar buttons are text-only; V3 shows icons in Search/Templates/Quick Reference and
 icon-only gear/bell/help plus an avatar chip.**
 App renders "⚙Settings / Notifications / Help / Devan" as labeled buttons (app-default.png);
 V3 shows icon buttons and a "D Devan ▾" chip with a blue avatar circle and chevron.
 **Fix:** iconify the three right-side controls, add avatar circle + chevron to the user chip,
 add leading icons to the three center buttons. Blocked on the same icon decision as V4.
 
-**V6 — Logo mark is small and dim; wordmark case differs from V3.**
+**[ESCALATED — Step 11.5, audit's own instruction ("flag to the operator... rather than silently picking")]** **V6 — Logo mark is small and dim; wordmark case differs from V3.**
 App: compact outline brain + "DIVERGENCE AI" (uppercase, thin). V3: larger aurora-gradient brain
 + "Divergence.AI" (mixed case with dot). CANON's THE LOGO text says '"DIVERGENCE" in white' —
 but CANON's own precedence rule says the screenshot wins on visual disagreement.
@@ -78,11 +94,14 @@ but CANON's own precedence rule says the screenshot wins on visual disagreement.
 wordmark or get an explicit product call to keep CANON's text version — flag to the operator at 11.5
 rather than silently picking.
 
-**V7 — Context Snapshot accordion defaults expanded; V3 shows all six collapsed.**
+**[FIXED — Step 11.5, verified with a real headless-Chrome capture]** **V7 — Context Snapshot accordion defaults expanded; V3 shows all six collapsed.**
 Capture: app-default.png ("Nothing loaded yet." visible). Code: `useState<AccordionPanelKey |
 null>("contextSnapshot")` (AccordionStack.tsx:49). **Fix:** default `null` (all collapsed, like V3).
+**Applied** (AccordionStack.tsx) — `useState<AccordionPanelKey | null>(null)`. Verified with a real
+Playwright capture: all six panels render collapsed (0 `aria-expanded="true"` headers, all chevrons
+`›`).
 
-**V8 — TRANSLATE & ASK reads near-black at some positions; V3 shows a consistent deep sapphire
+**[ESCALATED — Step 11.5, no concrete implementation values in the audit]** **V8 — TRANSLATE & ASK reads near-black at some positions; V3 shows a consistent deep sapphire
 with a soft top glow.**
 At 1525px the button is barely distinguishable from the background (app-default.png); at 900px it
 renders vivid blue (app-narrow.png) — appearance depends on which slab region the fixed-attachment
@@ -91,7 +110,7 @@ sampling lands on. MATERIALS wants "deep sapphire, soft top glow, not neon" cons
 regardless of sampled slab region; keep the coordinate-sampling for texture continuity. Verify under
 a real GPU — the color-blend layer may interact with backdrop-filter differently than headless shows.
 
-**V9 — Popover occlusion depends entirely on backdrop-filter.**
+**[ESCALATED — Step 11.5, ambiguous scope across ~12 files]** **V9 — Popover occlusion depends entirely on backdrop-filter.**
 With blur unavailable (this session's captures), "TRANSPARENCY DETAILS" / "MULTI-AI ACTIONS" text
 is legible through the Attach popover's rows (app-attach-popover.png) — `--surface-smoked-glass`
 is `rgba(17,19,24,0.9)`, so 10% of whatever sits behind bleeds through every popover/menu. In a
@@ -100,37 +119,46 @@ real browser the blur most likely obscures it (unverified here — stated, not a
 or bump floating-layer surfaces (popovers/modals only, not cards) to ~0.97 alpha. Robustness fix,
 not a V3-mismatch per se.
 
-**V10 — Token values duplicated as rgb() literals.**
+**[FIXED — Step 11.5]** **V10 — Token values duplicated as rgb() literals.**
 detection.css:115,141 use `rgb(0 217 255 / 0.06|0.12)` — that is `--accent-cyan` (#00D9FF)
 re-encoded; retuning the token silently strands these. Also `rgb(255 255 255 / 0.04)` hover tint
 duplicated across 7 files and `rgb(0 0 0 / 0.5)` backdrop in export.css+import.css. No hex
 violation (the step's named check passes) but the same drift risk one layer down. **Fix:** add
 `--accent-cyan-tint-06/12`, `--hover-tint`, `--modal-backdrop` tokens and reference them.
+**Applied exactly as specified** (tokens.css: all four new tokens added) — `rgb(0 217 255 / 0.06)`
+→ `var(--accent-cyan-tint-06)` and `rgb(0 217 255 / 0.12)` → `var(--accent-cyan-tint-12)` in
+detection.css; `rgb(255 255 255 / 0.04)` → `var(--hover-tint)` across all 6 files (primitives.css,
+session.css, techniques.css, translation.css, visibility.css, composer.css ×2 occurrences);
+`rgb(0 0 0 / 0.5)` → `var(--modal-backdrop)` in import.css + export.css.
 
-**V11 — "What's on your mind?" lacks the brain icon V3 shows before it.**
+**[ESCALATED — Step 11.5, blocked on the same icon-library decision as V4]** **V11 — "What's on your mind?" lacks the brain icon V3 shows before it.**
 InputBox.tsx:34 renders the text alone. Minor; blocked on the V4 icon decision.
 
-**V12 — No "QUICK ACTIONS" section label; V3 shows a small cyan header above the row.**
+**[FIXED — Step 11.5, verified with a real headless-Chrome capture]** **V12 — No "QUICK ACTIONS" section label; V3 shows a small cyan header above the row.**
 QuickActionsRow renders bare buttons (grep: no rendered label, only the CSS class name).
 **Fix:** add the section label above the row, same header tokens as V3's other section titles.
+**Applied** (QuickActionsRow.tsx + session.css) — new `.quick-actions__header` wrapper with a cyan
+"QUICK ACTIONS" label, same tokens as `.transparency-card__toggle-label`/`.quick-tools-tile__title`.
+Verified with a real Playwright capture, rendered above the button row exactly like TRANSPARENCY
+DETAILS / MULTI-AI ACTIONS's own headers.
 
-**V13 — Buttons/rows generally lack leading icons vs V3** (New Session ↻ exists, Load Template/
+**[ESCALATED — Step 11.5, blocked on the same icon-library decision as V4]** **V13 — Buttons/rows generally lack leading icons vs V3** (New Session ↻ exists, Load Template/
 Saved Prompts/Duplicate Session have text-adjacent glyph characters; V3 uses consistent drawn
 icons). Cosmetic tier of the same V4 icon decision.
 
-**V14 — Marble reads brighter/busier than V3's near-black slab.**
+**[ESCALATED — Step 11.5, audit's own instruction ("needs a product call... flagged not chosen")]** **V14 — Marble reads brighter/busier than V3's near-black slab.**
 All captures show prominent white-gold veining; V3's background is near-black with faint veins.
 The texture files are the user-provided, Step 1.3-locked assets — this may be the asset itself,
 not a build error. **Fix option for 11.5:** a subtle darkening overlay on `.marble-slab` (e.g.
 `linear-gradient(rgb(0 0 0 / 0.35), rgb(0 0 0 / 0.35))` above the texture layer) would move the
 rendered slab toward V3 without touching the locked assets — needs a product call, flagged not chosen.
 
-**V15 — V3's center-bottom "RECENT SESSIONS" strip doesn't exist in the app.**
+**[NOT APPLIED — Step 11.5, unbuilt feature, no owning step, needs a product call]** **V15 — V3's center-bottom "RECENT SESSIONS" strip doesn't exist in the app.**
 V3 shows a footer strip below Quick Actions in the center column. No build step owns it (same
 plan-gap class as Checkpoints/Dashboard screens, already logged). Noted for completeness; needs a
 product call on whether it's wanted, since CANON's LAYOUT text doesn't name it.
 
-**V16 — (spec gap found during capture, not a V3 mismatch) Theme toggle missing from Settings.**
+**[NOT APPLIED — Step 11.5, unbuilt feature, needs an owning step before 12.3]** **V16 — (spec gap found during capture, not a V3 mismatch) Theme toggle missing from Settings.**
 CANON Feature 12 (as amended this build): "gear dropdown (top right) with theme toggle
 (Light / Dark / Auto) and 7 visibility checkboxes." The rendered menu has the 7 checkboxes +
 Reset only (app-settings-menu.png). No step in the plan builds the toggle — same unowned-feature

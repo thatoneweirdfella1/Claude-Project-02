@@ -77,7 +77,7 @@
   padding: 6px 12px;
   border-radius: 999px;
   border: 1px solid var(--pill-color);
-  background: rgb(255 255 255 / 0.04);
+  background: var(--hover-tint);
   color: var(--pill-color);
   font-family: var(--font-family-base);
   font-size: var(--font-size-label-secondary);

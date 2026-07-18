@@ -18,7 +18,12 @@ import { SavedPromptsMenu } from "./SavedPromptsMenu";
    model/directness/techniques, clears conversation/context/variables/
    statePills/draftInput. Not confirmable: CANON's own text states what it
    does with no mention of a save/confirm step, unlike Close Session, which
-   explicitly names three distinct outcomes.
+   explicitly names three distinct outcomes. ADHD-AUDIT P2 (Step 11.5): the
+   handler now archives a copy first (addSessionRecord(buildSessionRecord(...,
+   { archived: false }))) before calling newSession() — CANON's defined
+   clearing behavior is unchanged, but the conversation is no longer lost
+   with nothing saved, so the no-confirm UX stays correct rather than merely
+   convenient.
 
    Duplicate Session reads the live session (useSessionStore.getState(), a
    one-time read at click time, not a subscription) and files a
@@ -47,8 +52,9 @@ import { SavedPromptsMenu } from "./SavedPromptsMenu";
        no save) — gated by useConfirmable (Step 1.9's two-step confirm gate,
        unused until now), matching CANON's ADHD rule "only confirm
        destructive actions." New/Duplicate/Save-and-Archive/Archive-Tagged
-       all keep or file the conversation somewhere, so none of them get
-       this gate — only Discard actually loses it. */
+       all keep or file the conversation somewhere (New Session included,
+       as of the ADHD-AUDIT P2 fix above), so none of them get this gate —
+       only Discard actually loses it. */
 
 type CloseView = "menu" | "tag";
 
@@ -102,6 +108,17 @@ export function QuickActionsRow() {
     addSessionRecord(buildSessionRecord(current, { archived: false }));
   }
 
+  function handleNewSession(): void {
+    // ADHD-AUDIT P2: file a copy before clearing — newSession() (CANON
+    // Feature 11: "clears history and context") previously lost the
+    // conversation with nothing archived, unlike every other Quick Action.
+    // Archiving keeps CANON's defined clearing behavior and needs no confirm
+    // dialog since nothing is actually lost (same pattern as Duplicate/Close).
+    const current = useSessionStore.getState();
+    addSessionRecord(buildSessionRecord(current, { archived: false }));
+    newSession();
+  }
+
   function archiveAndClose(tag?: string): void {
     const current = useSessionStore.getState();
     addSessionRecord(buildSessionRecord(current, { archived: true, tag }));
@@ -110,103 +127,109 @@ export function QuickActionsRow() {
   }
 
   return (
-    <div ref={rootRef} className="quick-actions-row" data-testid="quick-actions-row">
-      <GlassButton onClick={newSession}>
-        <span aria-hidden="true">↻</span> New Session
-      </GlassButton>
-      <LoadTemplateMenu />
-      <SavedPromptsMenu />
-      <GlassButton onClick={handleDuplicateSession}>
-        <span aria-hidden="true">⧉</span> Duplicate Session
-      </GlassButton>
-      <div className="quick-actions-row__more">
-        <GlassButton aria-expanded={moreOpen} aria-haspopup="menu" onClick={toggleMore}>
-          <span aria-hidden="true">•••</span> More{" "}
-          <span aria-hidden="true">{moreOpen ? "⌃" : "⌄"}</span>
+    <div className="quick-actions">
+      {/* VISUAL-AUDIT V12 (Step 11.5): V3 shows a small cyan "QUICK ACTIONS"
+          label above the row; the app previously rendered bare buttons with
+          no section label. */}
+      <p className="quick-actions__header">QUICK ACTIONS</p>
+      <div ref={rootRef} className="quick-actions-row" data-testid="quick-actions-row">
+        <GlassButton onClick={handleNewSession}>
+          <span aria-hidden="true">↻</span> New Session
         </GlassButton>
+        <LoadTemplateMenu />
+        <SavedPromptsMenu />
+        <GlassButton onClick={handleDuplicateSession}>
+          <span aria-hidden="true">⧉</span> Duplicate Session
+        </GlassButton>
+        <div className="quick-actions-row__more">
+          <GlassButton aria-expanded={moreOpen} aria-haspopup="menu" onClick={toggleMore}>
+            <span aria-hidden="true">•••</span> More{" "}
+            <span aria-hidden="true">{moreOpen ? "⌃" : "⌄"}</span>
+          </GlassButton>
 
-        {moreOpen && (
-          <div className="quick-actions-row__popover" role="menu">
-            {closeView === "menu" && (
-              <button
-                type="button"
-                role="menuitem"
-                className="quick-actions-row__popover-row"
-                onClick={() => {
-                  closeMore();
-                  setImportOpen(true);
-                }}
-              >
-                Import…
-              </button>
-            )}
-
-            <p className="quick-actions-row__popover-title">Close Session</p>
-
-            {closeView === "menu" && (
-              <>
+          {moreOpen && (
+            <div className="quick-actions-row__popover" role="menu">
+              {closeView === "menu" && (
                 <button
                   type="button"
                   role="menuitem"
                   className="quick-actions-row__popover-row"
-                  onClick={() => archiveAndClose()}
+                  onClick={() => {
+                    closeMore();
+                    setImportOpen(true);
+                  }}
                 >
-                  Save and Archive
+                  Import…
                 </button>
-                <button
-                  type="button"
-                  role="menuitem"
-                  className="quick-actions-row__popover-row"
-                  onClick={() => setCloseView("tag")}
-                >
-                  Archive Tagged
-                </button>
-                <button
-                  type="button"
-                  role="menuitem"
-                  className="quick-actions-row__popover-row quick-actions-row__popover-row--destructive"
-                  onClick={discardConfirm.trigger}
-                >
-                  {discardConfirm.armed ? "Press again to confirm discard" : "Discard"}
-                </button>
-              </>
-            )}
+              )}
 
-            {closeView === "tag" && (
-              <div className="quick-actions-row__tag-form">
-                <input
-                  type="text"
-                  className="quick-actions-row__tag-input"
-                  placeholder="Tag this session"
-                  aria-label="Tag this session"
-                  value={tagValue}
-                  onChange={(event) => setTagValue(event.target.value)}
-                  autoFocus
-                />
-                <div className="quick-actions-row__tag-actions">
+              <p className="quick-actions-row__popover-title">Close Session</p>
+
+              {closeView === "menu" && (
+                <>
                   <button
                     type="button"
-                    className="quick-actions-row__tag-back"
-                    onClick={() => setCloseView("menu")}
+                    role="menuitem"
+                    className="quick-actions-row__popover-row"
+                    onClick={() => archiveAndClose()}
                   >
-                    Back
+                    Save and Archive
                   </button>
                   <button
                     type="button"
-                    className="quick-actions-row__tag-archive"
-                    disabled={tagValue.trim().length === 0}
-                    onClick={() => archiveAndClose(tagValue.trim())}
+                    role="menuitem"
+                    className="quick-actions-row__popover-row"
+                    onClick={() => setCloseView("tag")}
                   >
-                    Archive
+                    Archive Tagged
                   </button>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className="quick-actions-row__popover-row quick-actions-row__popover-row--destructive"
+                    onClick={discardConfirm.trigger}
+                  >
+                    {discardConfirm.armed ? "Press again to confirm discard" : "Discard"}
+                  </button>
+                </>
+              )}
+
+              {closeView === "tag" && (
+                <div className="quick-actions-row__tag-form">
+                  <input
+                    type="text"
+                    className="quick-actions-row__tag-input"
+                    placeholder="Tag this session"
+                    aria-label="Tag this session"
+                    value={tagValue}
+                    onChange={(event) => setTagValue(event.target.value)}
+                    autoFocus
+                  />
+                  <div className="quick-actions-row__tag-actions">
+                    <button
+                      type="button"
+                      className="quick-actions-row__tag-back"
+                      onClick={() => setCloseView("menu")}
+                    >
+                      Back
+                    </button>
+                    <button
+                      type="button"
+                      className="quick-actions-row__tag-archive"
+                      disabled={tagValue.trim().length === 0}
+                      onClick={() => archiveAndClose(tagValue.trim())}
+                    >
+                      Archive
+                    </button>
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+              )}
+            </div>
+          )}
+        </div>
 
-      {importOpen && <ImportModal onClose={() => setImportOpen(false)} />}
+        {importOpen && <ImportModal onClose={() => setImportOpen(false)} />}
+      </div>
     </div>
   );
 }

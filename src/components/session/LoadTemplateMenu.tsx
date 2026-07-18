@@ -1,9 +1,16 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { GlassButton } from "../primitives";
 import { useDismissableLayer } from "../../keyboard";
-import { useAccountStore } from "../../stores/accountStore";
+import { DEFAULT_TEMPLATES, useAccountStore } from "../../stores/accountStore";
 import { useSessionStore } from "../../stores/sessionStore";
 import type { PromptTemplate } from "../../stores/types";
+
+// ADHD-AUDIT D1 (Step 11.5): the three shipped presets are deletable but not
+// user-recreatable — Reset to defaults only restores visibility, not
+// templates. Excluding their ids from the remove control avoids an
+// unrecoverable loss without adding a confirm dialog or a new "restore"
+// feature the audit didn't specify.
+const DEFAULT_TEMPLATE_IDS = new Set(DEFAULT_TEMPLATES.map((t) => t.id));
 
 /* Load Template (Step 9.2) — CANON Feature 11: "pre-populate model,
    directness, technique, optional context and starter question." Reads/
@@ -131,14 +138,16 @@ export function LoadTemplateMenu({ renderTrigger }: LoadTemplateMenuProps = {}) 
                   >
                     {template.title}
                   </button>
-                  <button
-                    type="button"
-                    className="quick-actions-row__list-remove"
-                    aria-label={`Delete template ${template.title}`}
-                    onClick={() => removeTemplate(template.id)}
-                  >
-                    ×
-                  </button>
+                  {!DEFAULT_TEMPLATE_IDS.has(template.id) && (
+                    <button
+                      type="button"
+                      className="quick-actions-row__list-remove"
+                      aria-label={`Delete template ${template.title}`}
+                      onClick={() => removeTemplate(template.id)}
+                    >
+                      ×
+                    </button>
+                  )}
                 </div>
               ))}
               <button

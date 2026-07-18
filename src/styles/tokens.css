@@ -68,6 +68,29 @@
 
   --status-online: #22c55e; /* System Status dot. Same value as --state-interest — MATERIALS.md defines only one green in the palette — but a separate token, since the two concepts (system health vs. detected interest level) are unrelated and could diverge later. */
 
+  /* Step 11.5 (ADHD-AUDIT S2/S3): confidence-badge colors, decoupled from the
+     Emotion-detection state tokens they used to borrow (--state-cognitive,
+     --status-online) — a badge and a state pill can render on the same
+     message, so they need their own tokens even where the color matches. */
+  --confidence-high: #22c55e; /* same green as --state-interest/--status-online (the codebase's one green — MATERIALS.md), own token so the three concepts can diverge later */
+  --confidence-moderate: var(--accent-cyan); /* cyan was already the documented intent (translation.css); --accent-cyan is a general secondary-interactive color, not a single-meaning state token, so reusing it here doesn't reintroduce the collision */
+
+  /* Step 11.5 (VISUAL-AUDIT V2): Quick Tools per-tile icon color, matching
+     V3's screenshot — Router/Techniques/Variables/Checkpoints/Dashboard reuse
+     existing tokens whose meaning aligns; Prompt Library's orange has no
+     existing token, so it gets its own rather than a hardcoded hex. */
+  --tile-prompt-library: #f97316;
+
+  /* Step 11.5 (VISUAL-AUDIT V10): rgb() literals that were re-encoding token
+     values (or duplicating the same one-off tint across many files) — no
+     hex-outside-tokens.css violation existed, but retuning the underlying
+     token silently wouldn't reach these. Named for what they're for, not
+     what they look like, same convention as the rest of this file. */
+  --accent-cyan-tint-06: rgb(0 217 255 / 0.06); /* re-encodes --accent-cyan at 6% */
+  --accent-cyan-tint-12: rgb(0 217 255 / 0.12); /* re-encodes --accent-cyan at 12% */
+  --hover-tint: rgb(255 255 255 / 0.04); /* generic subtle hover background, reused across 6 files */
+  --modal-backdrop: rgb(0 0 0 / 0.5); /* modal/dialog backdrop scrim */
+
   /* ---------------------------------------------------------------------
      TEXT — monochrome base, 85% of the interface (MATERIALS.md "COLOR")
      --------------------------------------------------------------------- */

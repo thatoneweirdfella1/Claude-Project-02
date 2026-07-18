@@ -112,7 +112,7 @@
   padding: 8px 10px;
   border: 1px solid var(--accent-cyan);
   border-radius: var(--radius-button);
-  background: rgb(0 217 255 / 0.06);
+  background: var(--accent-cyan-tint-06);
 }
 
 .state-detection-panel__suggestion-text {
@@ -138,7 +138,7 @@
 }
 
 .state-detection-panel__suggestion-apply:hover {
-  background: rgb(0 217 255 / 0.12);
+  background: var(--accent-cyan-tint-12);
 }
 
 .state-detection-panel__adjust {

@@ -38,7 +38,20 @@ import { useSessionStore } from "../../stores/sessionStore";
    Integrations precedent (LEFT NAVIGATION: "decorative placeholder... do
    not invent behavior for it") rather than fabricated functionality. */
 
-function Tile({ icon, label, children }: { icon: string; label: string; children: ReactNode }) {
+function Tile({
+  icon,
+  iconClassName,
+  label,
+  children,
+}: {
+  icon: string;
+  /** Step 11.5 (VISUAL-AUDIT V2): per-tile icon color, matching V3's
+      screenshot instead of the previous uniform cyan. Defaults to the
+      original cyan so a tile that doesn't specify one is unchanged. */
+  iconClassName?: string;
+  label: string;
+  children: ReactNode;
+}) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -63,7 +76,7 @@ function Tile({ icon, label, children }: { icon: string; label: string; children
         aria-haspopup="dialog"
         onClick={() => setOpen((wasOpen) => !wasOpen)}
       >
-        <span aria-hidden="true" className="quick-tools-tile__icon">
+        <span aria-hidden="true" className={`quick-tools-tile__icon ${iconClassName ?? ""}`.trim()}>
           {icon}
         </span>
         <span className="quick-tools-tile__label">{label}</span>
@@ -80,7 +93,7 @@ function Tile({ icon, label, children }: { icon: string; label: string; children
 function RouterTile() {
   const entry = useLatestTelemetry();
   return (
-    <Tile icon="⇢" label="Router">
+    <Tile icon="⇢" iconClassName="quick-tools-tile__icon--router" label="Router">
       {entry ? <RoutingSubCard entry={entry} /> : <p className="quick-tools-tile__empty">Nothing to show yet.</p>}
     </Tile>
   );
@@ -89,7 +102,7 @@ function RouterTile() {
 function TechniquesTile() {
   const entry = useLatestTelemetry();
   return (
-    <Tile icon="✳" label="Techniques">
+    <Tile icon="✳" iconClassName="quick-tools-tile__icon--techniques" label="Techniques">
       {entry ? (
         <TechniquesSubCard entry={entry} />
       ) : (
@@ -111,7 +124,7 @@ function PromptLibraryTile() {
             aria-haspopup="menu"
             onClick={onClick}
           >
-            <span aria-hidden="true" className="quick-tools-tile__icon">
+            <span aria-hidden="true" className="quick-tools-tile__icon quick-tools-tile__icon--library">
               ▤
             </span>
             <span className="quick-tools-tile__label">Prompt Library</span>
@@ -190,15 +203,17 @@ function VariablesTile() {
 
 function NotYetAvailableTile({
   icon,
+  iconClassName,
   label,
   description,
 }: {
   icon: string;
+  iconClassName?: string;
   label: string;
   description: string;
 }) {
   return (
-    <Tile icon={icon} label={label}>
+    <Tile icon={icon} iconClassName={iconClassName} label={label}>
       <p className="quick-tools-tile__empty">{description}</p>
     </Tile>
   );
@@ -206,21 +221,36 @@ function NotYetAvailableTile({
 
 export function QuickToolsGrid() {
   return (
-    <div className="quick-tools-grid" data-testid="quick-tools-grid">
-      <RouterTile />
-      <TechniquesTile />
-      <PromptLibraryTile />
-      <VariablesTile />
-      <NotYetAvailableTile
-        icon="⛃"
-        label="Checkpoints"
-        description="Checkpoints (save/restore conversation states) isn't built yet."
-      />
-      <NotYetAvailableTile
-        icon="▦"
-        label="Dashboard"
-        description="Dashboard (session statistics) isn't built yet — the left-nav Dashboard item will link here once it is."
-      />
+    <div className="quick-tools">
+      {/* VISUAL-AUDIT V3 (Step 11.5): V3 shows a cyan "QUICK TOOLS" header
+          above the grid; a gear glyph sits at the header's right in the
+          screenshot but no step in the build plan gives it behavior, so it's
+          rendered decorative-only — same "don't invent behavior" posture
+          already used for Checkpoints/Dashboard/Integrations. */}
+      <div className="quick-tools__header">
+        <p className="quick-tools__header-label">QUICK TOOLS</p>
+        <span aria-hidden="true" className="quick-tools__header-gear">
+          ⚙
+        </span>
+      </div>
+      <div className="quick-tools-grid" data-testid="quick-tools-grid">
+        <RouterTile />
+        <TechniquesTile />
+        <PromptLibraryTile />
+        <VariablesTile />
+        <NotYetAvailableTile
+          icon="⛃"
+          iconClassName="quick-tools-tile__icon--checkpoints"
+          label="Checkpoints"
+          description="Checkpoints (save/restore conversation states) isn't built yet."
+        />
+        <NotYetAvailableTile
+          icon="▦"
+          iconClassName="quick-tools-tile__icon--dashboard"
+          label="Dashboard"
+          description="Dashboard (session statistics) isn't built yet — the left-nav Dashboard item will link here once it is."
+        />
+      </div>
     </div>
   );
 }

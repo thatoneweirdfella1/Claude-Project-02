@@ -8,6 +8,7 @@ import {
   uploadFiles,
 } from "../../services/context";
 import { parseImportText, type ImportPayloadKind } from "../../services/import";
+import { buildSessionRecord } from "../../services/sessionLifecycle";
 import { useAccountStore } from "../../stores/accountStore";
 import { useSessionStore } from "../../stores/sessionStore";
 import type { SessionRecord } from "../../stores/types";
@@ -77,6 +78,7 @@ export function ImportModal({ onClose }: ImportModalProps) {
   const addSavedPrompt = useAccountStore((s) => s.addSavedPrompt);
   const addTemplate = useAccountStore((s) => s.addTemplate);
   const sessions = useAccountStore((s) => s.sessions);
+  const addSessionRecord = useAccountStore((s) => s.addSessionRecord);
 
   function currentSessionBytes(): number {
     return useSessionStore.getState().context.reduce((sum, item) => sum + item.bytes, 0);
@@ -204,6 +206,12 @@ export function ImportModal({ onClose }: ImportModalProps) {
   /* ── previous conversation: in-app, no file at all ──────────────────── */
 
   function handleLoadSession(record: SessionRecord): void {
+    // ADHD-AUDIT P1: file the live session first — loadSessionRecord replaces
+    // conversation/context/variables outright, and the next 5s autosave would
+    // otherwise overwrite the only persisted copy of what was there. No
+    // confirm dialog needed since nothing is lost (same pattern as
+    // QuickActionsRow's newSession, ADHD-AUDIT P2).
+    addSessionRecord(buildSessionRecord(useSessionStore.getState(), { archived: false }));
     loadSessionRecord(record);
     report("ok", "Loaded that conversation into this session.");
   }

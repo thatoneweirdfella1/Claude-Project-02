@@ -19,27 +19,39 @@ BUILD-LOG entries.
 
 ### Category: Sensory — "No conflicting color meanings"
 
-**S1. The over-target character counter borrows the Cognitive Mode state color.**
+**[FIXED — Step 11.5]** **S1. The over-target character counter borrows the Cognitive Mode state color.**
 View: composer input box. `composer.css:63-65` — `.input-box__counter--over { color: var(--state-cognitive) }`.
 `--state-cognitive` (#3b9eff) is the Cognitive Mode pill's semantic color (pillOptions.ts), and the
 counter sits directly above the panel where that pill renders — one blue, two unrelated meanings in
 one surface. **Fix:** use a non-state token for the over-target counter (`--text-secondary` at full
 opacity, or a new `--counter-over` token). One-line change.
+**Applied: `--text-secondary` at full opacity** (composer.css `.input-box__counter--over`) — the
+audit's first-listed option, no new token needed.
 
-**S2. The moderate-confidence badge and clarify-note border borrow the same Cognitive Mode color.**
+**[FIXED — Step 11.5]** **S2. The moderate-confidence badge and clarify-note border borrow the same Cognitive Mode color.**
 View: conversation area (translation card / confidence badge). `translation.css:86` (badge) and
 `translation.css:43` (note border) both use `var(--state-cognitive)`. A Cognitive Mode pill and a
 moderate-confidence badge can render on the same message. **Fix:** add `--confidence-moderate`
 (distinct hue or `--accent-cyan`) and point both rules at it.
+**Applied: `--confidence-moderate: var(--accent-cyan)`** (tokens.css) — matches the pre-existing
+code comment's own stated intent ("cyan at moderate," translation.css), and `--accent-cyan` is
+a general secondary-interactive color, not a single-meaning state token, so reusing it doesn't
+reintroduce the collision the audit is fixing. Points `.translation-card__note` (border) and
+`.confidence-badge--moderate` (color) at it.
 
-**S3. The high-confidence badge borrows the System Status green.**
+**[FIXED — Step 11.5]** **S3. The high-confidence badge borrows the System Status green.**
 View: conversation area. `translation.css:82` — `.confidence-badge--proceed { color: var(--status-online) }`.
 tokens.css's own comment reserves `--status-online` for the System Status dot as a deliberately
 separate concept. **Fix:** point the proceed badge at `--state-interest` (if "positive green" is the
 intent) or a new `--confidence-high` token. Low severity (both greens read "positive") but it's the
 exact cross-semantic reuse the token comments warn against.
+**Applied: new `--confidence-high` token** (tokens.css, same #22c55e green), NOT `--state-interest`
+— reusing `--state-interest` (a single-purpose Interest-pill token today) would recreate the exact
+cross-semantic-reuse pattern this whole audit category exists to eliminate; a dedicated token
+resolves it completely and stays consistent with S2's own resolution. Points
+`.confidence-badge--proceed` at it.
 
-**S4. Red #ef4444 is double-booked: RSD state pill AND destructive actions.**
+**[ESCALATED — Step 11.5, needs a product call]** **S4. Red #ef4444 is double-booked: RSD state pill AND destructive actions.**
 View: the main translate screen — both can be visible simultaneously (RSD pill in the detection
 panel, destructive rows in Quick Actions' More popover / remove-hovers). `tokens.css:59`
 (`--state-rsd: #ef4444`) and `tokens.css:67` (`--action-destructive: #ef4444`). The RSD pill is red
@@ -53,7 +65,7 @@ uses red for the RSD pill, so pure screenshot-fidelity and this rule are in dire
 
 ### Category: Persistence — "Never lose work on refresh" (read broadly: never lose work, period)
 
-**P1. Import → previous conversation replaces the live session with no saved copy and no confirm.**
+**[FIXED — Step 11.5]** **P1. Import → previous conversation replaces the live session with no saved copy and no confirm.**
 View: Import modal, "Previous conversation" list. `ImportModal.tsx` handleLoadSession →
 `sessionStore.loadSessionRecord(record)` replaces conversation/context/variables outright on a
 single row click; the next 5s autosave then overwrites the persisted copy of what was there. Unless
@@ -62,8 +74,11 @@ the user separately duplicated/archived first, the in-progress conversation is u
 `addSessionRecord(buildSessionRecord(current, { archived: false }))` — before calling
 loadSessionRecord (auto-save-a-copy; no confirm dialog needed since nothing is lost). One-call fix
 using existing, tested machinery.
+**Applied exactly as specified** (ImportModal.tsx `handleLoadSession`) — imports `buildSessionRecord`,
+archives the live session via `addSessionRecord(buildSessionRecord(useSessionStore.getState(),
+{ archived: false }))` before calling `loadSessionRecord(record)`.
 
-**P2. New Session destroys the conversation uncomfirmed while Discard — an identical loss — is confirmed.**
+**[FIXED — Step 11.5]** **P2. New Session destroys the conversation uncomfirmed while Discard — an identical loss — is confirmed.**
 View: Quick Actions row. `QuickActionsRow.tsx` fires `newSession()` directly; the store action
 clears conversation/context/variables with no archive. The component's own comment claims
 "New/Duplicate/Save-and-Archive/Archive-Tagged all keep or file the conversation somewhere" —
@@ -73,10 +88,14 @@ CANON Feature 11 does define New Session as "clears history and context," so the
 spec. **Fix:** archive-a-copy inside the New Session handler before clearing (same one-call pattern
 as P1) — preserves CANON's defined behavior, removes the data loss, keeps the no-confirm UX; also
 correct the stale comment.
+**Applied exactly as specified** (QuickActionsRow.tsx) — new `handleNewSession()` archives via the
+same one-call pattern as `handleDuplicateSession`, then calls `newSession()`; the button's `onClick`
+now points at the new handler; both stale comment passages (claiming New Session "keeps or files
+the conversation somewhere") corrected in place.
 
 ### Category: Cognitive load — "Never more than 5 to 7 simultaneous choices per view"
 
-**C1. State Detection panel: 10-11 interactive elements when four pills are shown.**
+**[ESCALATED — Step 11.5, audit's own instruction]** **C1. State Detection panel: 10-11 interactive elements when four pills are shown.**
 View: detection panel open, correctors closed. Panel × + 4 pill bodies + 4 per-pill × + Adjust
 (+ conditional Apply). `StateDetectionPanel.tsx` / `StatePill.tsx`. Defensible as informational
 readouts, but a strict interactive count runs past 7. **Fix (smallest honest reduction):** drop the
@@ -87,43 +106,49 @@ with that line rather than silently deleting the affordance — flag to the oper
 
 ### Category: Decisions — "Only confirm destructive actions" (borderline, single item)
 
-**D1. Built-in preset templates are deletable, unconfirmed, and unrecoverable.**
+**[FIXED — Step 11.5]** **D1. Built-in preset templates are deletable, unconfirmed, and unrecoverable.**
 View: Load Template menu. `LoadTemplateMenu.tsx` remove-× calls `removeTemplate(id)` — works on the
 three shipped DEFAULT_TEMPLATES too; nothing restores them (Reset to defaults covers visibility
 only). Deleting a preset the user cannot recreate is more destructive than deleting user data.
 **Fix:** either exclude built-in ids from showing the remove control, or make template deletion
 recoverable (a "Restore default templates" row in the same menu). No confirm dialog needed if
 either fix lands.
+**Applied: excluded built-in ids from the remove control** (LoadTemplateMenu.tsx), not the restore-row
+option — the restore option would require inventing new UI (placement, wording, its own behavior)
+beyond what the audit specified, where hiding the control for exactly `DEFAULT_TEMPLATES`' own ids
+(imported from accountStore.ts, not a fragile naming-convention guess) is the mechanical, fully-specified
+resolution. Both DEFAULT_TEMPLATES-listed rows now render without a remove button; user-created
+templates are unaffected.
 
 ---
 
 ## FLAGS — rule-vs-spec tensions, reported not "fixed" (11.5 should record a decision, not code)
 
-**F1. Left nav = 12 always-visible choices.** CANON's LAYOUT mandates all ten items + Trash +
+**[RECORDED — Step 11.5, see BUILD-LOG DECISIONS]** **F1. Left nav = 12 always-visible choices.** CANON's LAYOUT mandates all ten items + Trash +
 Logout; CANON's cognitive-load rule caps a view at 5-7. The two cannot both hold under a strict
 per-region count. A persistent nav list is scan-not-choose interaction, so the audit reads the 5-7
 rule as applying to task-flow decision points, not stable wayfinding — but that interpretation
 should be RECORDED at 11.5 so Phase 12's audits don't re-litigate it.
 
-**F2. VisibilityMenu = 8 controls (7 CANON-mandated checkboxes + Reset).** Same tension in
+**[RECORDED — Step 11.5, see BUILD-LOG DECISIONS]** **F2. VisibilityMenu = 8 controls (7 CANON-mandated checkboxes + Reset).** Same tension in
 miniature; homogeneous toggles under one heading. Same recommendation: record the interpretation.
 
-**F3. DownloadModal = 12 controls (5 content + 4 format + 3 actions).** Mitigated by two labeled
+**[NOT APPLIED — Step 11.5, explicitly optional, no mandate to act on]** **F3. DownloadModal = 12 controls (5 content + 4 format + 3 actions).** Mitigated by two labeled
 fieldsets and complete defaults (user can export without touching anything). If 11.5 wants it
 under 7: format radios → one dropdown. Optional.
 
-**F4. MultiAiActions manual mode = 9 controls** (4 partner checkboxes + auto/manual toggle +
+**[NOT APPLIED — Step 11.5, explicitly optional, no mandate to act on]** **F4. MultiAiActions manual mode = 9 controls** (4 partner checkboxes + auto/manual toggle +
 Start/Consensus/Synthesis). Auto mode (the default) = 5, inside the rule. Option: hide (not just
 disable) Consensus/Synthesis until a transcript exists. Optional.
 
-**F5. Template/prompt load overwrites an unsent draft.** LoadTemplateMenu/SavedPromptsMenu replace
+**[NOT APPLIED — Step 11.5, note-level only, no fix requested]** **F5. Template/prompt load overwrites an unsent draft.** LoadTemplateMenu/SavedPromptsMenu replace
 `draftInput` uncomfirmed. A single unsent line, expected "load into input" semantics — note-level.
 
-**F6. Future wiring note: SynthesisView "Replace answer".** tokens.css names Replace Answer a
+**[NOT APPLIED — Step 11.5, nothing to fix yet]** **F6. Future wiring note: SynthesisView "Replace answer".** tokens.css names Replace Answer a
 destructive action; the button is currently events-only/unwired. Whoever wires it must gate it
 with useConfirmable — recording now so it doesn't ship unconfirmed later.
 
-**F7. Shared green (`--state-interest` = `--status-online` = #22c55e).** Both read "positive";
+**[NO ACTION REQUIRED, per the audit itself]** **F7. Shared green (`--state-interest` = `--status-online` = #22c55e).** Both read "positive";
 separate tokens already exist so they can diverge. Lowest severity; no action required.
 
 ---

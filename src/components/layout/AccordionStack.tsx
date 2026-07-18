@@ -44,9 +44,11 @@ function PlaceholderNote({ text }: { text: string }) {
 
 export function AccordionStack() {
   const visibility = useAccountStore((s) => s.visibility);
-  // Context Snapshot starts expanded — the one panel with real content,
-  // and the closest match to its pre-9.5 "always expanded" behavior.
-  const [expandedKey, setExpandedKey] = useState<AccordionPanelKey | null>("contextSnapshot");
+  // VISUAL-AUDIT V7 (Step 11.5): V3 shows all six accordions collapsed.
+  // Previously defaulted to "contextSnapshot" expanded (Step 9.5's own
+  // judgment call, logged as free to revisit — see BUILD-LOG DECISIONS);
+  // this capture-backed screenshot comparison settles it toward V3.
+  const [expandedKey, setExpandedKey] = useState<AccordionPanelKey | null>(null);
 
   const panels: AccordionPanelDef[] = [
     {

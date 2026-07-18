@@ -63,5 +63,5 @@
 }
 
 .visibility-menu__reset:hover {
-  background: rgb(255 255 255 / 0.04);
+  background: var(--hover-tint);
 }

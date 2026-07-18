@@ -1,8 +1,43 @@
 /* quicktools.css — QUICK TOOLS grid (Step 9.6). Tokens only. */
 
+.quick-tools {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-list-item-margin);
+}
+
+/* Step 11.5 (VISUAL-AUDIT V3): header row above the grid, matching V3's
+   cyan "QUICK TOOLS" label + gear. Same header tokens as .quick-actions__header
+   (session.css) and .quick-tools-tile__title, for one consistent section-label
+   look across the sidebar. */
+.quick-tools__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.quick-tools__header-label {
+  margin: 0;
+  color: var(--accent-cyan);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-section-header);
+  font-weight: var(--font-weight-section-header);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.quick-tools__header-gear {
+  color: var(--accent-cyan);
+  font-size: 14px;
+}
+
+/* Step 11.5 (VISUAL-AUDIT V1): 3 columns, matching V3's 3x2 layout
+   (was repeat(2, 1fr) — CANON's "2x3 grid" wording was ambiguous; the
+   screenshot resolves it). Tile DOM order (Router/Techniques/Prompt Library,
+   then Variables/Checkpoints/Dashboard) already matches V3's row order. */
 .quick-tools-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: var(--space-list-item-margin);
 }
 
@@ -38,6 +73,32 @@
   color: var(--accent-cyan);
   font-size: 20px;
   line-height: 1;
+}
+
+/* Step 11.5 (VISUAL-AUDIT V2): per-tile icon colors, matching V3 (Router
+   green, Techniques purple, Prompt Library orange, Checkpoints red,
+   Dashboard blue). Variables stays the base --accent-cyan above — V3's own
+   color for it. Existing state/action tokens reused where the meaning
+   aligns; Prompt Library's orange has no existing token (--tile-prompt-library,
+   tokens.css). */
+.quick-tools-tile__icon--router {
+  color: var(--state-interest);
+}
+
+.quick-tools-tile__icon--techniques {
+  color: var(--accent-purple);
+}
+
+.quick-tools-tile__icon--library {
+  color: var(--tile-prompt-library);
+}
+
+.quick-tools-tile__icon--checkpoints {
+  color: var(--action-destructive);
+}
+
+.quick-tools-tile__icon--dashboard {
+  color: var(--state-cognitive);
 }
 
 .quick-tools-tile__label {
