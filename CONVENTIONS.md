@@ -66,7 +66,22 @@ divergence-ai/
 
 ```
 npm install       # once per fresh environment
-npm run dev       # dev server (vite), default port 5173
+npm run dev       # dev server (vite), default port 5173 — SEE CAVEAT BELOW
 npm run build     # tsc -b && vite build → dist/
 npm run lint      # oxlint
+npm test          # vitest run — unit/service-level suite
+npm run test:e2e  # playwright test — E2E suite (Step 12.2), see e2e/
 ```
+
+**`npm run dev` currently fails to load the app** — src/services/routing.js is a UMD
+module (`module.exports = factory()` inside a `typeof module === "object"` guard);
+Vite's dev server serves src/ files as native ESM with no CommonJS interop (that
+only happens during `vite build`, via Rollup, and only for files Vite treats as a
+dependency — routing.js is app source, not a pre-bundled dependency). The browser
+console shows `SyntaxError: ... does not provide an export named 'default'`. Found
+by Step 12.2's E2E suite — the first work in this build to actually drive `vite dev`
+in a real browser; every prior browser-driven session used `vite preview` (a
+production build) instead, which does not hit this path. Logged in BUILD-LOG.md
+PARKED; not yet fixed — it's a src/ change, outside Step 12.2's "build tests, don't
+refactor" boundary. Until fixed, use `npm run build && npm run preview` for any
+manual browser check.
