@@ -343,7 +343,13 @@ export function ImportModal({ onClose }: ImportModalProps) {
           )}
 
           {view === "url" && (
-            <div className="import-modal__rows">
+            <form
+              className="import-modal__rows"
+              onSubmit={(event) => {
+                event.preventDefault();
+                void handleUrlFetch();
+              }}
+            >
               {renderBack("outside", "Outside content")}
               <input
                 type="url"
@@ -355,14 +361,13 @@ export function ImportModal({ onClose }: ImportModalProps) {
                 autoFocus
               />
               <button
-                type="button"
+                type="submit"
                 className="import-modal__primary"
                 disabled={busy || urlValue.trim().length === 0}
-                onClick={handleUrlFetch}
               >
                 Fetch
               </button>
-            </div>
+            </form>
           )}
 
           {view === "previous-conversation" && (
