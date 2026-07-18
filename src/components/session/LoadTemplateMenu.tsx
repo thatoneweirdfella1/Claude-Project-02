@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { GlassButton } from "../primitives";
 import { useDismissableLayer } from "../../keyboard";
 import { useAccountStore } from "../../stores/accountStore";
@@ -26,7 +26,18 @@ function newTemplateId(): string {
 
 type View = "list" | "save";
 
-export function LoadTemplateMenu() {
+export interface LoadTemplateMenuProps {
+  /** Step 9.6 — Quick Tools' Prompt Library tile ("save/load prompt
+      templates," the exact same feature Feature 12 names) reuses this
+      component wholesale rather than rebuilding a second destination for
+      the same data, same "one screen not two" precedent CANON states
+      explicitly for Dashboard. Supplying this swaps only the trigger's
+      look (a grid tile instead of a composer-row button); the popover
+      content, state, and every store call are 100% shared, unchanged. */
+  renderTrigger?: (props: { open: boolean; onClick: () => void }) => ReactNode;
+}
+
+export function LoadTemplateMenu({ renderTrigger }: LoadTemplateMenuProps = {}) {
   const templates = useAccountStore((s) => s.templates);
   const addTemplate = useAccountStore((s) => s.addTemplate);
   const removeTemplate = useAccountStore((s) => s.removeTemplate);
@@ -94,9 +105,13 @@ export function LoadTemplateMenu() {
 
   return (
     <div ref={rootRef} className="quick-actions-row__more">
-      <GlassButton aria-expanded={open} aria-haspopup="menu" onClick={toggle}>
-        <span aria-hidden="true">▤</span> Load Template
-      </GlassButton>
+      {renderTrigger ? (
+        renderTrigger({ open, onClick: toggle })
+      ) : (
+        <GlassButton aria-expanded={open} aria-haspopup="menu" onClick={toggle}>
+          <span aria-hidden="true">▤</span> Load Template
+        </GlassButton>
+      )}
 
       {open && (
         <div className="quick-actions-row__popover" role="menu">

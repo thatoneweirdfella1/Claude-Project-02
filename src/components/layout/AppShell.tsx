@@ -1,6 +1,7 @@
 import { ContextSnapshotPanel } from "../context";
 import { CenterColumn } from "../pipeline";
 import { GlassPanel } from "../primitives";
+import { QuickToolsGrid } from "../quicktools";
 import { useAccountStore } from "../../stores/accountStore";
 import { LeftNav } from "./LeftNav";
 import { TopBar } from "./TopBar";
@@ -41,7 +42,10 @@ import { TopBar } from "./TopBar";
    the still-combined "remaining five" placeholder can't be gated per-item
    until Step 9.5 splits it into five real panels, so it renders whenever
    ANY of the five is ON (an honest interim gate, not exact per-item
-   control — flagged in BUILD-LOG PARKED). */
+   control — flagged in BUILD-LOG PARKED).
+
+   Step 9.6: QuickToolsGrid replaces the Quick Tools placeholder text with
+   the real 2x3 tile grid. */
 
 export function AppShell() {
   const visibility = useAccountStore((s) => s.visibility);
@@ -64,11 +68,7 @@ export function AppShell() {
         <CenterColumn />
       </main>
       <aside className="col-right" aria-label="Sidebar panels" data-testid="col-right">
-        {visibility.quickTools && (
-          <GlassPanel className="sidebar-placeholder">
-            Quick Tools placeholder — built in Step 9.6.
-          </GlassPanel>
-        )}
+        {visibility.quickTools && <QuickToolsGrid />}
         {visibility.contextSnapshot && <ContextSnapshotPanel />}
         {showRemainingAccordion && (
           <GlassPanel className="sidebar-placeholder">
