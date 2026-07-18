@@ -1,6 +1,7 @@
 import { ContextSnapshotPanel } from "../context";
 import { CenterColumn } from "../pipeline";
 import { GlassPanel } from "../primitives";
+import { useAccountStore } from "../../stores/accountStore";
 import { LeftNav } from "./LeftNav";
 import { TopBar } from "./TopBar";
 
@@ -32,9 +33,25 @@ import { TopBar } from "./TopBar";
    GlassPanel's Context Snapshot portion with real content reading
    session.context/session.variables; the other five accordion names
    (Recent Sessions, Recent Activity, Token Usage, Model Status, Active
-   Session) stay as placeholder text, still Steps 9.4-9.6's job. */
+   Session) stay as placeholder text, still Steps 9.5/9.6's job.
+
+   Step 9.4: every right-column region is now gated on
+   accountStore.visibility (CANON Feature 12's 7 checkboxes) — Quick Tools
+   and Context Snapshot are real, individually-visibility-gated regions;
+   the still-combined "remaining five" placeholder can't be gated per-item
+   until Step 9.5 splits it into five real panels, so it renders whenever
+   ANY of the five is ON (an honest interim gate, not exact per-item
+   control — flagged in BUILD-LOG PARKED). */
 
 export function AppShell() {
+  const visibility = useAccountStore((s) => s.visibility);
+  const showRemainingAccordion =
+    visibility.recentSessions ||
+    visibility.recentActivity ||
+    visibility.tokenUsage ||
+    visibility.modelStatus ||
+    visibility.activeSession;
+
   return (
     <div className="app-shell app-layer">
       <header className="topbar" aria-label="Top bar" data-testid="topbar">
@@ -47,14 +64,18 @@ export function AppShell() {
         <CenterColumn />
       </main>
       <aside className="col-right" aria-label="Sidebar panels" data-testid="col-right">
-        <GlassPanel className="sidebar-placeholder">
-          Quick Tools placeholder — hidden by default per CANON.md, built in Steps 9.4/9.6.
-        </GlassPanel>
-        <ContextSnapshotPanel />
-        <GlassPanel className="sidebar-placeholder">
-          Remaining accordion placeholders (Recent Sessions, Recent Activity, Token Usage, Model
-          Status, Active Session) — built in Step 9.5.
-        </GlassPanel>
+        {visibility.quickTools && (
+          <GlassPanel className="sidebar-placeholder">
+            Quick Tools placeholder — built in Step 9.6.
+          </GlassPanel>
+        )}
+        {visibility.contextSnapshot && <ContextSnapshotPanel />}
+        {showRemainingAccordion && (
+          <GlassPanel className="sidebar-placeholder">
+            Remaining accordion placeholders (Recent Sessions, Recent Activity, Token Usage, Model
+            Status, Active Session) — built in Step 9.5.
+          </GlassPanel>
+        )}
       </aside>
     </div>
   );

@@ -21,6 +21,7 @@ import "./styles/transparency.css";
 import "./styles/multi-ai.css";
 import "./styles/export.css";
 import "./styles/session.css";
+import "./styles/visibility.css";
 
 /* Restore persisted state before first paint so the user returns exactly
    where they were (no default-then-restored flicker), then mount and
