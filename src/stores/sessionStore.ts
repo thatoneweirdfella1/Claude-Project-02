@@ -5,6 +5,7 @@ import type {
   DirectnessLevel,
   ModelSelection,
   ScreenId,
+  SessionRecord,
   SessionState,
   StatePills,
   TechniqueId,
@@ -89,6 +90,21 @@ interface SessionActions {
   newSession: () => void;
   /** Step 9.7 — navigate to a different screen (Home, Dashboard, Messages, etc). */
   setCurrentScreen: (screen: ScreenId) => void;
+  /** Step 9.3 — CANON Feature 11's "Import ... previous conversation": loads a
+      stored SessionRecord (accountStore.sessions, written by Step 9.1's
+      Duplicate/Close Session) back into the live session. This is the action
+      Step 9.1's own PARKED note predicted would be needed and deliberately
+      did not build ("if resuming turns out to be needed, it's a new
+      sessionStore action ... calling hydrate() with the record's fields").
+
+      Sets exactly the six fields a SessionRecord carries. draftInput and
+      statePills are CLEARED, not preserved: a record stores neither (an
+      unsent draft and a per-turn pill reading both belong to the moment, not
+      the archived session), so carrying the CURRENT session's values forward
+      would leave the user's half-typed thought and stale pills sitting above
+      a conversation they no longer belong to. currentScreen is deliberately
+      untouched — navigation is orthogonal to which session is loaded. */
+  loadSessionRecord: (record: SessionRecord) => void;
   /** Replace persisted fields wholesale — used by autosave rehydrate (Step 1.8). */
   hydrate: (state: Partial<SessionState>) => void;
 }
@@ -132,5 +148,16 @@ export const useSessionStore = create<SessionStore>((set) => ({
       statePills: { emotion: null, rsd: null, interest: null, cognitive: null },
     }),
   setCurrentScreen: (currentScreen) => set({ currentScreen }),
+  loadSessionRecord: (record) =>
+    set({
+      model: record.model,
+      directness: record.directness,
+      techniques: record.techniques,
+      context: record.context,
+      variables: record.variables,
+      conversation: record.conversation,
+      draftInput: "",
+      statePills: { emotion: null, rsd: null, interest: null, cognitive: null },
+    }),
   hydrate: (state) => set(state),
 }));

@@ -5,11 +5,10 @@ import { useAccountStore } from "../../stores/accountStore";
 import { useSessionStore } from "../../stores/sessionStore";
 import {
   FILE_INPUT_ACCEPT,
-  createTesseractOcrClient,
   fetchUrlContext,
+  getSharedOcrClient,
   isValidVariableName,
   uploadFiles,
-  type OcrClient,
   type RejectedFile,
 } from "../../services/context";
 
@@ -42,15 +41,6 @@ import {
 export interface AttachContextControlsProps {
   onAttach?: () => void;
   onContext?: () => void;
-}
-
-/** One tesseract worker for the whole app session, created on first use —
-    not per component instance, so remounting AttachContextControls (or
-    rendering it twice) never spins up a second worker. */
-let sharedOcrClient: OcrClient | null = null;
-function getOcrClient(): OcrClient {
-  sharedOcrClient ??= createTesseractOcrClient();
-  return sharedOcrClient;
 }
 
 type PopoverView = "menu" | "url" | "variable";
@@ -129,7 +119,7 @@ export function AttachContextControls({
     setUploading(true);
     try {
       const { accepted, rejected } = await uploadFiles(fileList, currentSessionBytes(), {
-        ocrClient: getOcrClient(),
+        ocrClient: getSharedOcrClient(),
       });
       for (const item of accepted) addContextItem(item);
       setRejections(rejected);

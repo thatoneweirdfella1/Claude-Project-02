@@ -1,0 +1,166 @@
+/* import.css — the Import modal (Step 9.3, CANON Feature 11's eight import
+   paths). Tokens only. Mirrors export.css's modal shell (Step 8.5) rather
+   than inventing a second modal look. */
+
+.import-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(0 0 0 / 0.5);
+}
+
+.import-modal {
+  width: min(460px, 90vw);
+  max-height: 85vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-row-margin);
+  box-shadow: var(--shadow-modal);
+}
+
+.import-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.import-modal__title {
+  margin: 0;
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-section-header);
+  font-weight: var(--font-weight-section-header);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.import-modal__close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 20px;
+  line-height: 1;
+  padding: 4px 8px;
+  border-radius: var(--radius-button);
+}
+
+.import-modal__close:hover {
+  color: var(--text-primary);
+}
+
+.import-modal__rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-list-item-margin);
+}
+
+.import-modal__row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-start;
+  text-align: left;
+  width: 100%;
+  /* 44px floor, same accessibility rule every other control in this build
+     follows (Step 1.4's DECISIONS extended MATERIALS.md's Blue-Marble-only
+     minimum to every clickable target). */
+  min-height: 44px;
+  padding: var(--space-list-item-margin);
+  background: var(--surface-smoked-glass);
+  border: 1px solid var(--surface-smoked-glass-border);
+  border-radius: var(--radius-button);
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  cursor: pointer;
+}
+
+.import-modal__row:hover:not(:disabled) {
+  border-color: var(--accent-cyan);
+}
+
+.import-modal__row:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.import-modal__row-label {
+  font-size: var(--font-size-body);
+  color: var(--text-primary);
+}
+
+.import-modal__row-hint {
+  font-size: var(--font-size-meta);
+  color: var(--text-secondary);
+}
+
+.import-modal__back {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 0;
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-meta);
+}
+
+.import-modal__back:hover {
+  color: var(--text-primary);
+}
+
+.import-modal__input {
+  width: 100%;
+  min-height: 44px;
+  padding: var(--space-list-item-margin);
+  background: var(--surface-smoked-glass);
+  border: 1px solid var(--surface-smoked-glass-border);
+  border-radius: var(--radius-button);
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-body);
+}
+
+.import-modal__primary {
+  min-height: 44px;
+  padding: 0 var(--space-row-margin);
+  background: var(--surface-smoked-glass);
+  border: 1px solid var(--accent-cyan);
+  border-radius: var(--radius-button);
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  cursor: pointer;
+}
+
+.import-modal__primary:disabled {
+  opacity: 0.5;
+  cursor: default;
+  border-color: var(--surface-smoked-glass-border);
+}
+
+.import-modal__empty,
+.import-modal__status {
+  margin: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-meta);
+}
+
+.import-modal__status--ok {
+  color: var(--status-online);
+}
+
+/* Deliberately NOT red/destructive: a file that couldn't be read is a
+   neutral outcome, not the user's error (CANON ADHD Feedback: "Never
+   judgmental, always neutral and learning-toned"). */
+.import-modal__status--problem {
+  color: var(--text-primary);
+}
+
+.import-modal__file-input {
+  display: none;
+}

@@ -39,7 +39,17 @@ Cleared on session close. Default produced by `createInitialSessionState()`.
 
 Actions: `setDraftInput`, `setModel`, `setDirectness`, `setTechniques`, `addContextItem`,
 `removeContextItem`, `addMessage`, `setStatePills`, `setSessionVariable`, `removeSessionVariable`,
-`setMessageRating`, `resetSession`, `newSession`, `hydrate`.
+`setMessageRating`, `resetSession`, `newSession`, `setCurrentScreen`, `loadSessionRecord`,
+`hydrate`.
+
+**`loadSessionRecord` (Step 9.3):** loads a stored `SessionRecord` (`accountStore.sessions`) back
+into the live session — CANON Feature 11's "Import ... previous conversation". Sets exactly the six
+fields a record carries (`model`/`directness`/`techniques`/`context`/`variables`/`conversation`),
+**clears** `draftInput` and `statePills` (a record stores neither, so keeping the current session's
+values would strand an unsent draft and stale pills above a conversation they don't belong to), and
+leaves `currentScreen` **untouched** (navigation is orthogonal to which session is loaded). This is
+the action Step 9.1's PARKED note predicted would eventually be needed; Recent Sessions (Step 9.5)
+and the Archive screen can call it to make a row clickable.
 
 **`resetSession` vs `newSession` (Step 9.1):** `resetSession()` (Step 1.7, unused until now) resets
 EVERY field to `createInitialSessionState()`, including `model`/`directness`/`techniques` — Close

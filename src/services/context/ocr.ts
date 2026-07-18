@@ -52,11 +52,25 @@ export function createTesseractOcrClient(): OcrClient {
   };
 }
 
+/** The one OCR client the app's UI should use (Step 9.3). The underlying
+    WORKER was already shared app-wide (getWorker's own memo above), so this
+    isn't fixing a duplicate-worker bug — it's giving the two components that
+    now need OCR (AttachContextControls, Step 7.2; ImportModal, Step 9.3) a
+    single accessor instead of each keeping its own module-level lazy-init of
+    the same thing, which is the kind of drift a later step reads as two
+    different conventions. */
+let sharedClient: OcrClient | null = null;
+export function getSharedOcrClient(): OcrClient {
+  sharedClient ??= createTesseractOcrClient();
+  return sharedClient;
+}
+
 /** Releases the underlying tesseract worker (and its WASM engine). Not
     required for correctness — the browser tab closing cleans it up either
     way — but available for a future session-lifecycle step (e.g. Close
     Session) that wants to free the memory deliberately. */
 export async function terminateOcrWorker(): Promise<void> {
+  sharedClient = null;
   if (!workerPromise) return;
   const worker = await workerPromise;
   workerPromise = null;

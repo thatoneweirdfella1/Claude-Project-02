@@ -4,6 +4,7 @@ import { useConfirmable, useDismissableLayer } from "../../keyboard";
 import { buildSessionRecord } from "../../services/sessionLifecycle";
 import { useAccountStore } from "../../stores/accountStore";
 import { useSessionStore } from "../../stores/sessionStore";
+import { ImportModal } from "./ImportModal";
 import { LoadTemplateMenu } from "./LoadTemplateMenu";
 import { SavedPromptsMenu } from "./SavedPromptsMenu";
 
@@ -23,6 +24,14 @@ import { SavedPromptsMenu } from "./SavedPromptsMenu";
    one-time read at click time, not a subscription) and files a
    `SessionRecord` (archived: false) via accountStore.addSessionRecord — the
    live session is untouched, it keeps running.
+
+   Import (Step 9.3) is the second entry under "More ▾", opening ImportModal.
+   Step 9.1's own DECISIONS entry deliberately left Import unplaced ("not a
+   Quick Actions button at all ... Step 9.3's own separate step"), so this is
+   that step making the call: the row shows four named buttons plus one
+   overflow in the screenshot, and Import is the sixth of CANON Feature 11's
+   six actions — the overflow is the only slot it can occupy without adding a
+   button the screenshot doesn't have.
 
    Close Session lives under "More ▾" (the screenshot's fifth, unlabeled
    overflow slot) rather than its own top-level button — the screenshot only
@@ -51,6 +60,7 @@ export function QuickActionsRow() {
   const [moreOpen, setMoreOpen] = useState(false);
   const [closeView, setCloseView] = useState<CloseView>("menu");
   const [tagValue, setTagValue] = useState("");
+  const [importOpen, setImportOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
   const discardConfirm = useConfirmable(() => {
@@ -117,6 +127,20 @@ export function QuickActionsRow() {
 
         {moreOpen && (
           <div className="quick-actions-row__popover" role="menu">
+            {closeView === "menu" && (
+              <button
+                type="button"
+                role="menuitem"
+                className="quick-actions-row__popover-row"
+                onClick={() => {
+                  closeMore();
+                  setImportOpen(true);
+                }}
+              >
+                Import…
+              </button>
+            )}
+
             <p className="quick-actions-row__popover-title">Close Session</p>
 
             {closeView === "menu" && (
@@ -181,6 +205,8 @@ export function QuickActionsRow() {
           </div>
         )}
       </div>
+
+      {importOpen && <ImportModal onClose={() => setImportOpen(false)} />}
     </div>
   );
 }
