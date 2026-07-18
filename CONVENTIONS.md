@@ -85,3 +85,10 @@ production build) instead, which does not hit this path. Logged in BUILD-LOG.md
 PARKED; not yet fixed — it's a src/ change, outside Step 12.2's "build tests, don't
 refactor" boundary. Until fixed, use `npm run build && npm run preview` for any
 manual browser check.
+
+**CI** (`.github/workflows/ci.yml`, Step 12.1) runs on every push and every PR, two
+jobs: `unit` (`npm run build` + `npm run lint` + `npm test`) and `e2e`
+(`npx playwright install --with-deps chromium` + `npm run test:e2e`, HTML report
+uploaded as an artifact on failure). `playwright.config.ts`'s `executablePath` only
+uses this sandbox's pre-installed Chromium if that exact path exists; otherwise it's
+left undefined so a real CI runner's own `playwright install` step resolves normally.
