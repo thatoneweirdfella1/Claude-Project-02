@@ -202,5 +202,3 @@ function generateTelemetryEntries(count: number, _ratings: number[]): TelemetryE
   }
   return entries;
 }
-
-const CONFIDENCE_THRESHOLD = 50;

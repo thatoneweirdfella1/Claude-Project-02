@@ -1,31 +1,38 @@
+import { useSessionStore } from "../../stores/sessionStore";
 import { GlassButton } from "../primitives";
+import type { ScreenId } from "../../stores/types";
 
 /* Left nav, 200px, per CANON.md "LAYOUT" and the LOCKED DECISIONS
    logout placement ("logout button bottom-left under System Status").
-   Structure and spacing only (Step 1.5) — real navigation/active-state
-   behavior is Step 9.7's job ("Left nav content"); these are inert
-   placeholders in the right positions, not wired to anything yet. */
+   Step 9.7 — wired for navigation: clicking items sets currentScreen. */
 
-const NAV_ITEMS = [
-  "Home",
-  "Dashboard",
-  "Messages",
-  "Archive",
-  "Resources",
-  "Projects",
-  "Integrations",
-  "Tasks",
-  "Customize",
-  "Translate",
+const NAV_ITEMS: Array<{ label: string; screen: ScreenId }> = [
+  { label: "Home", screen: "home" },
+  { label: "Dashboard", screen: "dashboard" },
+  { label: "Messages", screen: "messages" },
+  { label: "Archive", screen: "archive" },
+  { label: "Resources", screen: "resources" },
+  { label: "Projects", screen: "projects" },
+  { label: "Integrations", screen: "integrations" },
+  { label: "Tasks", screen: "tasks" },
+  { label: "Customize", screen: "customize" },
+  { label: "Translate", screen: "translate" },
 ];
 
 export function LeftNav() {
+  const currentScreen = useSessionStore((s) => s.currentScreen);
+  const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
+
   return (
     <div className="leftnav-content">
       <div className="leftnav-items">
-        {NAV_ITEMS.map((item) => (
-          <GlassButton key={item} className="leftnav-item">
-            {item}
+        {NAV_ITEMS.map(({ label, screen }) => (
+          <GlassButton
+            key={screen}
+            className={`leftnav-item ${currentScreen === screen ? "leftnav-item--active" : ""}`}
+            onClick={() => setCurrentScreen(screen)}
+          >
+            {label}
           </GlassButton>
         ))}
       </div>

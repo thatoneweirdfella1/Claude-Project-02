@@ -4,6 +4,7 @@ import type {
   ConversationMessage,
   DirectnessLevel,
   ModelSelection,
+  ScreenId,
   SessionState,
   StatePills,
   TechniqueId,
@@ -30,6 +31,7 @@ export function createInitialSessionState(): SessionState {
     conversation: [],
     statePills: { emotion: null, rsd: null, interest: null, cognitive: null },
     variables: {}, // Step 7.4: session-local variables, default empty
+    currentScreen: "translate", // Step 9.7: default to the main composer view
   };
 }
 
@@ -44,6 +46,7 @@ export const SESSION_PERSISTED_KEYS: (keyof SessionState)[] = [
   "conversation",
   "statePills",
   "variables",
+  "currentScreen",
 ];
 
 interface SessionActions {
@@ -84,6 +87,8 @@ interface SessionActions {
       being cleared, not to "settings" — a documented reading, not stated
       verbatim in CANON (see BUILD-LOG DECISIONS). */
   newSession: () => void;
+  /** Step 9.7 — navigate to a different screen (Home, Dashboard, Messages, etc). */
+  setCurrentScreen: (screen: ScreenId) => void;
   /** Replace persisted fields wholesale — used by autosave rehydrate (Step 1.8). */
   hydrate: (state: Partial<SessionState>) => void;
 }
@@ -126,5 +131,6 @@ export const useSessionStore = create<SessionStore>((set) => ({
       variables: {},
       statePills: { emotion: null, rsd: null, interest: null, cognitive: null },
     }),
+  setCurrentScreen: (currentScreen) => set({ currentScreen }),
   hydrate: (state) => set(state),
 }));

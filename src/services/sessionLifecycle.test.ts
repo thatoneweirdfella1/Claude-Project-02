@@ -12,6 +12,7 @@ function session(overrides: Partial<SessionState> = {}): SessionState {
     conversation: [{ id: "m1", role: "user", content: "hi", timestamp: 0 }],
     statePills: { emotion: "calm", rsd: "low", interest: "medium", cognitive: "analytical" },
     variables: { name: "value" },
+    currentScreen: "translate",
     ...overrides,
   };
 }

@@ -248,6 +248,18 @@ export interface StateCorrection {
 /* ── The two store state shapes (top-level: authoritative at Step 1.7) ── */
 
 /** Session store — cleared when a session closes (CANON). */
+export type ScreenId =
+  | "translate"
+  | "home"
+  | "dashboard"
+  | "messages"
+  | "archive"
+  | "resources"
+  | "projects"
+  | "integrations"
+  | "tasks"
+  | "customize";
+
 export interface SessionState {
   /** The composer's in-progress, not-yet-submitted text (Step 5.0). Lives here
       (not local component state) so autosave (Step 1.8) covers it — CANON's
@@ -272,6 +284,10 @@ export interface SessionState {
       sessions — same `SavedVariables` shape (Record<string,string>, keys are
       the bare name without the "$"), reused rather than redeclared. */
   variables: SavedVariables;
+  /** Step 9.7 ADD — Current screen for left-nav routing. Determines which
+      screen's content is shown in the center column. Defaults to "translate"
+      (the composer view). */
+  currentScreen: ScreenId;
 }
 
 /** Account store — persists across browser closes (CANON). */

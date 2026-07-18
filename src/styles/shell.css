@@ -48,6 +48,11 @@
   width: 100%;
 }
 
+.leftnav-item--active {
+  background-color: var(--surface-smoked-glass);
+  box-shadow: inset 0 0 0 1px var(--accent-cyan);
+}
+
 .leftnav-bottom {
   margin-top: auto;
   display: flex;
