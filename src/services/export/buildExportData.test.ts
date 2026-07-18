@@ -65,7 +65,7 @@ describe("buildExportData", () => {
     expect(data.confidence?.value).toBe(92);
     expect(data.rating?.stars).toBe(4);
     expect(data.transparency?.model).toBe("claude-sonnet-5");
-    expect(data.transparency?.techniques).toEqual(["Chain of Thought"]);
+    expect(data.transparency?.techniques).toEqual(["Chain-of-Thought"]);
     expect(data.statePills?.emotion).toBe("calm");
   });
 

@@ -91,7 +91,7 @@ interface PdfObject {
     exactly against the string actually emitted — no approximated or
     hand-guessed numbers — since a wrong xref offset or /Length produces a
     corrupt file most readers reject outright. */
-export function buildPdfBytes(text: string): Uint8Array {
+export function buildPdfBytes(text: string): Uint8Array<ArrayBuffer> {
   const pages = paginate(wrapText(text), LINES_PER_PAGE);
   const numPages = pages.length;
 
