@@ -7,8 +7,8 @@ Instructions for any Claude Code session (local or cloud) working in this repo.
 Always work on the `build` branch:
 - Check it out at the start of every session (`git checkout build`).
 - Push to it at the end of every session.
-- **Never commit to `main`/`master` during the build.** `main`/`master` stays untouched until
-  the deploy step (Step 12.3 in the build plan).
+- **Never commit to `main` during the build.** `main` stays untouched until the deploy step
+  (Step 12.3 in the build plan).
 
 ## Every build step
 
