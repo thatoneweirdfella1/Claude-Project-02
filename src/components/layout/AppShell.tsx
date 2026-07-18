@@ -1,8 +1,7 @@
-import { ContextSnapshotPanel } from "../context";
 import { CenterColumn } from "../pipeline";
-import { GlassPanel } from "../primitives";
 import { QuickToolsGrid } from "../quicktools";
 import { useAccountStore } from "../../stores/accountStore";
+import { AccordionStack } from "./AccordionStack";
 import { LeftNav } from "./LeftNav";
 import { TopBar } from "./TopBar";
 
@@ -36,25 +35,26 @@ import { TopBar } from "./TopBar";
    (Recent Sessions, Recent Activity, Token Usage, Model Status, Active
    Session) stay as placeholder text, still Steps 9.5/9.6's job.
 
-   Step 9.4: every right-column region is now gated on
-   accountStore.visibility (CANON Feature 12's 7 checkboxes) — Quick Tools
-   and Context Snapshot are real, individually-visibility-gated regions;
-   the still-combined "remaining five" placeholder can't be gated per-item
-   until Step 9.5 splits it into five real panels, so it renders whenever
-   ANY of the five is ON (an honest interim gate, not exact per-item
-   control — flagged in BUILD-LOG PARKED).
+   Step 9.4: every right-column region was gated on accountStore.visibility
+   (CANON Feature 12's 7 checkboxes) — Quick Tools and Context Snapshot as
+   real, individually-visibility-gated regions; the still-combined
+   "remaining five" placeholder couldn't be gated per-item yet, so it
+   rendered whenever ANY of the five was ON (an honest interim gate, not
+   exact per-item control).
 
    Step 9.6: QuickToolsGrid replaces the Quick Tools placeholder text with
-   the real 2x3 tile grid. */
+   the real 2x3 tile grid.
+
+   Step 9.5: AccordionStack replaces BOTH ContextSnapshotPanel and the
+   "remaining five" interim block with one revolving-door accordion
+   covering all six panels, each now individually visibility-gated for
+   real (Step 9.4's interim aggregate gate is gone, per that step's own
+   PARKED note). Quick Tools stays a separate sibling here, not part of
+   the accordion — CANON's LAYOUT lists it separately from "the accordion
+   stack." */
 
 export function AppShell() {
   const visibility = useAccountStore((s) => s.visibility);
-  const showRemainingAccordion =
-    visibility.recentSessions ||
-    visibility.recentActivity ||
-    visibility.tokenUsage ||
-    visibility.modelStatus ||
-    visibility.activeSession;
 
   return (
     <div className="app-shell app-layer">
@@ -69,13 +69,7 @@ export function AppShell() {
       </main>
       <aside className="col-right" aria-label="Sidebar panels" data-testid="col-right">
         {visibility.quickTools && <QuickToolsGrid />}
-        {visibility.contextSnapshot && <ContextSnapshotPanel />}
-        {showRemainingAccordion && (
-          <GlassPanel className="sidebar-placeholder">
-            Remaining accordion placeholders (Recent Sessions, Recent Activity, Token Usage, Model
-            Status, Active Session) — built in Step 9.5.
-          </GlassPanel>
-        )}
+        <AccordionStack />
       </aside>
     </div>
   );

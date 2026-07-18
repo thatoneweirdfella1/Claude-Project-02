@@ -1,7 +1,8 @@
 /* Context Snapshot data (Step 7.5) — CANON Feature 6: "A Context Snapshot
    panel shows loaded items with remove buttons." Pure function, no store, no
-   React — the component (ContextSnapshotPanel.tsx) wires it to the real
-   stores and to removeContextItem/removeSessionVariable.
+   React — the component (ContextSnapshotContent.tsx, wrapped by
+   layout/AccordionStack.tsx since Step 9.5) wires it to the real stores and
+   to removeContextItem/removeSessionVariable.
 
    "Loaded items" is read as everything Feature 6 lists as a way to load
    context: uploaded files, pasted URLs (both already ContextItem entries in

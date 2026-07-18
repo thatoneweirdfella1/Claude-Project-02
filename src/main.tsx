@@ -23,6 +23,7 @@ import "./styles/export.css";
 import "./styles/session.css";
 import "./styles/visibility.css";
 import "./styles/quicktools.css";
+import "./styles/accordion.css";
 
 /* Restore persisted state before first paint so the user returns exactly
    where they were (no default-then-restored flicker), then mount and

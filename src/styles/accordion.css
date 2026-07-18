@@ -1,0 +1,56 @@
+/* accordion.css — the right-column revolving-door accordion stack
+   (Step 9.5, CANON Feature 12). Tokens only. */
+
+.accordion-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-list-item-margin);
+}
+
+.accordion-panel {
+  /* Overrides .primitive-glass-panel's height:100%/padding — this stack is
+     a list of independently-sized rows, not one full-height panel. */
+  height: auto;
+  padding: 0;
+  overflow: hidden;
+}
+
+.accordion-panel__header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: var(--space-card-padding);
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-section-header);
+  font-weight: var(--font-weight-section-header);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.accordion-panel__header:hover {
+  color: var(--text-primary);
+}
+
+.accordion-panel__chevron {
+  color: var(--accent-cyan);
+  flex-shrink: 0;
+}
+
+.accordion-panel__body {
+  padding: 0 var(--space-card-padding) var(--space-card-padding);
+}
+
+.accordion-panel__placeholder {
+  margin: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-secondary);
+  font-weight: var(--font-weight-label-secondary);
+  opacity: var(--text-metadata-opacity);
+}
