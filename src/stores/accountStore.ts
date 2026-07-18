@@ -70,6 +70,11 @@ interface AccountActions {
   setPlan: (plan: PlanFlag) => void;
   archivePair: (pair: ArchivedPair) => void;
   addRating: (rating: Rating) => void;
+  /** Step 8.1 — upsert: replaces the existing Rating for this messageId (a
+      user re-rating or editing their comment), or appends if none exists yet.
+      Written together with sessionStore.setMessageRating, never alone — see
+      ConversationMessage.ratingStars/ratingComment in types.ts. */
+  setRating: (rating: Rating) => void;
   addSavedPrompt: (prompt: SavedPrompt) => void;
   removeSavedPrompt: (id: string) => void;
   setVariable: (name: string, value: string) => void;
@@ -92,6 +97,14 @@ export const useAccountStore = create<AccountStore>((set) => ({
   setPlan: (plan) => set({ plan }),
   archivePair: (pair) => set((s) => ({ archivedPairs: [...s.archivedPairs, pair] })),
   addRating: (rating) => set((s) => ({ ratings: [...s.ratings, rating] })),
+  setRating: (rating) =>
+    set((s) => {
+      const idx = s.ratings.findIndex((r) => r.messageId === rating.messageId);
+      if (idx === -1) return { ratings: [...s.ratings, rating] };
+      const next = [...s.ratings];
+      next[idx] = rating;
+      return { ratings: next };
+    }),
   addSavedPrompt: (prompt) => set((s) => ({ savedPrompts: [...s.savedPrompts, prompt] })),
   removeSavedPrompt: (id) =>
     set((s) => ({ savedPrompts: s.savedPrompts.filter((p) => p.id !== id) })),

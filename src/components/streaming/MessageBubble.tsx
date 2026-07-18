@@ -15,6 +15,7 @@ export interface MessageBubbleProps {
       read from anywhere real. */
   userInitial?: string;
   onRate?: (rating: number) => void;
+  onRatingComment?: (comment: string) => void;
   onDownload?: () => void;
 }
 
@@ -27,7 +28,13 @@ function formatRelativeTime(timestamp: number): string {
   return `${hours}h ago`;
 }
 
-export function MessageBubble({ message, userInitial = "U", onRate, onDownload }: MessageBubbleProps) {
+export function MessageBubble({
+  message,
+  userInitial = "U",
+  onRate,
+  onRatingComment,
+  onDownload,
+}: MessageBubbleProps) {
   const isAssistant = message.role === "assistant";
 
   return (
@@ -47,7 +54,13 @@ export function MessageBubble({ message, userInitial = "U", onRate, onDownload }
       <p className="message-bubble__content">{message.content}</p>
 
       {isAssistant && typeof message.confidence === "number" && (
-        <RatingRow onRate={onRate} onDownload={onDownload} />
+        <RatingRow
+          stars={message.ratingStars}
+          comment={message.ratingComment}
+          onRate={onRate}
+          onCommentChange={onRatingComment}
+          onDownload={onDownload}
+        />
       )}
     </div>
   );

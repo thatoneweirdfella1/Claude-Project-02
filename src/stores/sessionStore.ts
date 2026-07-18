@@ -64,6 +64,12 @@ interface SessionActions {
       different shape. */
   setSessionVariable: (name: string, value: string) => void;
   removeSessionVariable: (name: string) => void;
+  /** Step 8.1 — sets/updates the given message's denormalized rating fields
+      (ratingStars always; ratingComment only if provided, so re-rating with
+      just a star doesn't erase a previously-saved comment). A no-op if no
+      message with that id exists (defensive — a stale id should never
+      throw, same posture as every other store action taking an id). */
+  setMessageRating: (messageId: string, stars: number, comment?: string) => void;
   /** Clear to defaults — CANON "cleared when a session closes". */
   resetSession: () => void;
   /** Replace persisted fields wholesale — used by autosave rehydrate (Step 1.8). */
@@ -91,6 +97,14 @@ export const useSessionStore = create<SessionStore>((set) => ({
       const { [name]: _removed, ...rest } = s.variables;
       return { variables: rest };
     }),
+  setMessageRating: (messageId, stars, comment) =>
+    set((s) => ({
+      conversation: s.conversation.map((m) =>
+        m.id === messageId
+          ? { ...m, ratingStars: stars, ...(comment !== undefined ? { ratingComment: comment } : {}) }
+          : m,
+      ),
+    })),
   resetSession: () => set(createInitialSessionState()),
   hydrate: (state) => set(state),
 }));

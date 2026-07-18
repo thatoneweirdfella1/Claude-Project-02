@@ -84,6 +84,16 @@ export interface ConversationMessage {
   /** routing.js's own notes (escalation, downgrade, override, health floor),
       shown verbatim alongside the confidence line, quiet monochrome. */
   notes?: string[];
+  /** Step 8.1 ADD — CANON Feature 7: the 5-star rating + optional "What
+      could be better?" comment for THIS answer. Denormalized here (mirroring
+      confidence/downgraded/notes above) so the UI can render "you already
+      rated this N stars" straight from the message being displayed, with no
+      cross-store lookup; the durable, learning-loop-consumable record is
+      accountStore.ratings (a Rating per messageId, upserted — see
+      accountStore.setRating). Both are written together, never one without
+      the other. */
+  ratingStars?: number;
+  ratingComment?: string;
 }
 
 /* Loaded context. Provisional — upload limits, OCR, URL fetch, and

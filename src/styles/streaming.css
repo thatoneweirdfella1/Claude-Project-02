@@ -96,6 +96,12 @@
 
 .rating-row {
   display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rating-row__top {
+  display: flex;
   align-items: center;
   justify-content: space-between;
 }
@@ -130,6 +136,24 @@
   color: var(--text-secondary);
   font-size: 16px;
   cursor: pointer;
+}
+
+.rating-row__comment {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 48px;
+  resize: vertical;
+  padding: 8px 10px;
+  border: 1px solid var(--surface-smoked-glass-border);
+  border-radius: var(--radius-button);
+  background: var(--surface-smoked-glass);
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-secondary);
+}
+
+.rating-row__comment::placeholder {
+  color: var(--text-secondary);
 }
 
 .stage-indicator {

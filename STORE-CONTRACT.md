@@ -33,13 +33,13 @@ Cleared on session close. Default produced by `createInitialSessionState()`.
 | `directness` | `DirectnessLevel` = `1 \| 2 \| 3` | `2` | Directness control: **Step 4.4**. Default L2 per CANON Feature 3. |
 | `techniques` | `TechniqueId[]` (widened from a single `TechniqueId` at **Step 4.5** — see note below) | `["auto-detect"]` | Technique registry: **Step 4.1**; manual multi-select: **Step 4.5**. |
 | `context` | `ContextItem[]` | `[]` | Context management: **Steps 7.1–7.5**. Shape provisional. |
-| `conversation` | `ConversationMessage[]` — Step 5.1 added optional `confidence`/`downgraded`/`notes` (assistant-only) | `[]` | Streaming/pipeline: **Steps 5.1–5.2**; a `rating` field is deliberately NOT added yet — Step 8.1 owns the feedback/rating shape and save behavior. |
+| `conversation` | `ConversationMessage[]` — Step 5.1 added optional `confidence`/`downgraded`/`notes` (assistant-only); Step 8.1 added optional `ratingStars`/`ratingComment` (assistant-only) | `[]` | Streaming/pipeline: **Steps 5.1–5.2**; feedback rating: **Step 8.1** — denormalized copy of the message's rating for display, written together with the durable `accountStore.ratings` entry, never alone. |
 | `statePills` | `StatePills` (emotion/rsd/interest/cognitive, each nullable) | all `null` | State detection: **Steps 6.1–6.3**. Values mirror CANON Feature 5. |
 | `variables` | `SavedVariables` = `Record<string,string>` (same type as the account store's own `variables` field) | `{}` | Variables: **Step 7.4**. CANON Feature 6 "create variables ($name)" — session store by DEFAULT; explicitly savable to the account store's pre-existing `variables` field (Step 1.7) via a second `accountStore.setVariable` call, not a different save path. |
 
 Actions: `setDraftInput`, `setModel`, `setDirectness`, `setTechniques`, `addContextItem`,
 `removeContextItem`, `addMessage`, `setStatePills`, `setSessionVariable`, `removeSessionVariable`,
-`resetSession`, `hydrate`.
+`setMessageRating`, `resetSession`, `hydrate`.
 
 **`techniques` field-type change (Step 4.5):** Step 1.7 originally typed this field as a single
 `TechniqueId` (`"socratic"` default). Step 4.5's own spec explicitly requires manual selection to
@@ -63,14 +63,14 @@ Persists across browser closes. Default produced by `createInitialAccountState()
 |---|---|---|---|
 | `plan` | `PlanFlag` = `"free" \| "paid"` | `"free"` | Routing gate: routing.js (wired in a later Phase-3 step). See note below. |
 | `archivedPairs` | `ArchivedPair[]` | `[]` | Session lifecycle/archive: **Steps 9.1–9.2**. Shape provisional. |
-| `ratings` | `Rating[]` | `[]` | Feedback + learning loop: **Steps 8.1 / 7.2 / 10.x**. Stored shape settled. |
+| `ratings` | `Rating[]` | `[]` | Feedback + learning loop: **Steps 8.1 / 7.2 / 10.x**. Stored shape settled; Step 8.1 wires the real save path via `setRating` (upsert by `messageId`), leaving `addRating` (Step 1.7, pure-append) unused/untouched. |
 | `savedPrompts` | `SavedPrompt[]` | `[]` | Saved prompts: **Step 9.2**. |
 | `variables` | `SavedVariables` = `Record<string,string>` | `{}` | Variables: **Step 7.4**. |
 | `visibility` | `VisibilitySettings` (7 booleans) | `DEFAULT_VISIBILITY` | Visibility toggle: **Step 9.4**. Defaults fully specified by CANON Feature 12. |
 | `learnedPreferences` | `LearnedPreferences` (`routing` + `technique` records) | `{ routing:{}, technique:{} }` | Pattern analysis / rule refinement: **Steps 10.1–10.2**. Shape provisional. |
 | `stateCorrections` | `StateCorrection[]` (`dimension`, `from`, `to`, `timestamp`) | `[]` | State-detection correction learning: **Step 6.4**. See note below — deliberately NOT `learnedPreferences`. |
 
-Actions: `setPlan`, `archivePair`, `addRating`, `addSavedPrompt`, `removeSavedPrompt`,
+Actions: `setPlan`, `archivePair`, `addRating`, `setRating`, `addSavedPrompt`, `removeSavedPrompt`,
 `setVariable`, `removeVariable`, `setVisibility`, `setLearnedPreferences`,
 `recordStateCorrection`, `hydrate`.
 
