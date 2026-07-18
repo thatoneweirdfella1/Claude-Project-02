@@ -10,3 +10,5 @@ export {
   MAX_TELEMETRY_ENTRIES,
 } from "./log";
 export type { TelemetryEntry, TelemetryOutcome } from "./types";
+export { deriveConfidenceBreakdown } from "./confidence";
+export type { ConfidenceBreakdown } from "./confidence";

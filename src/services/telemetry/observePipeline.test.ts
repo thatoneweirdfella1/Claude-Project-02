@@ -101,6 +101,11 @@ describe("observePipeline — a successful run", () => {
     expect(Array.isArray(entry.techniques)).toBe(true);
     expect(entry.techniques!.length).toBeGreaterThan(0);
     expect(Array.isArray(entry.notes)).toBe(true);
+    expect(["broad", "medium", "narrow"]).toContain(entry.scope);
+    expect(typeof entry.thinkingApplied).toBe("boolean");
+    expect(entry.techniqueMode).toBe("auto-detect"); // DEFAULT_SETTINGS uses ["auto-detect"]
+    expect(typeof entry.techniqueReasoning).toBe("string");
+    expect(typeof entry.techniqueSignalMatched).toBe("boolean");
 
     expect(entry.translationTokens).toEqual({ inputTokens: 120, outputTokens: 30 });
     expect(entry.executionTokens).toEqual({ inputTokens: 400, outputTokens: 55 });
@@ -115,6 +120,20 @@ describe("observePipeline — a successful run", () => {
     expect(entry.totalDurationMs).toBeGreaterThanOrEqual(0);
     expect(entry.finishedAt).toBeGreaterThanOrEqual(entry.startedAt);
     expect(entry.errorMessage).toBeNull();
+  });
+
+  it("records techniqueMode 'manual' and no signal-matched reading for an explicit stack", async () => {
+    await collect(
+      observePipeline(request("how does quantum entanglement work?", { techniques: ["socratic"] }), {
+        client: stubClient(),
+        plan: "free",
+      }),
+    );
+
+    const [entry] = getTelemetryEntries();
+    expect(entry.techniqueMode).toBe("manual");
+    expect(entry.techniqueSignalMatched).toBeNull();
+    expect(entry.techniqueReasoning).toContain("Manually selected");
   });
 
   it("gives each request its own id and does not mix up two sequential runs", async () => {
@@ -147,6 +166,11 @@ describe("observePipeline — the clarify path", () => {
     expect(entry.complexity).toBeNull();
     expect(entry.model).toBeNull();
     expect(entry.techniques).toBeNull();
+    expect(entry.scope).toBeNull();
+    expect(entry.thinkingApplied).toBeNull();
+    expect(entry.techniqueMode).toBeNull();
+    expect(entry.techniqueReasoning).toBeNull();
+    expect(entry.techniqueSignalMatched).toBeNull();
     expect(entry.executionTokens).toBeNull();
     expect(entry.translationTokens).toEqual({ inputTokens: 90, outputTokens: 20 });
     expect(Object.keys(entry.stageDurationsMs)).toEqual(["translating"]);

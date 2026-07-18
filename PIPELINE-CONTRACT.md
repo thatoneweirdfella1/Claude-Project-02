@@ -168,9 +168,24 @@ iterating early — a resubmit, an unmount) is finalized as `outcome:
 |---|---|---|
 | `confidence` | `translation` (`gated.result.confidence`) — `proceed`/`moderate`/`clarify` all carry a `TranslationResult` | `empty`/`too-large`/`error` (no result exists) |
 | `complexity`, `effectiveComplexity`, `domain`, `model`, `modelTier`, `downgraded`, `notes` | `route` | routing never reached (gate stopped at translation) |
+| `scope`, `thinkingApplied` | `route` (`result.dimensions.scope` / `result.thinkingApplied`) — Step 8.2's Routing sub-card | routing never reached |
 | `techniques` | `techniques` | Stage 3 never reached |
+| `techniqueReasoning`, `techniqueMode` | `techniques` (`selection.reasoning` / `selection.mode`) — Step 8.2's Techniques sub-card | Stage 3 never reached |
+| `techniqueSignalMatched` | `techniques`, derived from `selection.scores` for the selected ids — true if a real signal beat the Socratic default baseline | `techniqueMode` is `"manual"` (not applicable — an explicit pick is never a "default fallback") or Stage 3 never reached |
 | `translationTokens` | `onUsage` on the Stage-1 `complete()` call | the proxy response carried no `usage` field |
 | `executionTokens` | `onUsage` on the Stage-5 `stream()` call | Stage 5 never reached, or its response carried no usage events |
+
+**Confidence breakdown (Step 8.2):** `deriveConfidenceBreakdown(entry)`
+(`services/telemetry/confidence.ts`) derives the Transparency card's four
+Confidence sub-card values — `translation`, `routing`, `technique`,
+`overall` — from the fields above; it does not add anything to
+`TelemetryEntry` itself. Routing confidence restates CONFIDENCE_COUPLING.md's
+own translation-confidence bands (80+ → 95, 60–79 → 75, <60 → 50) as a
+number. Technique confidence is 100 for a manual pick, 90 for auto-detect
+with a matched signal, 65 for auto-detect's bare default fallback. Overall
+is the minimum of whichever of the three are present (never averaged —
+CONFIDENCE_COUPLING.md's cost-asymmetry stance: a shaky layer anywhere
+should show, not get smoothed away).
 | `stageDurationsMs[stage]` | wall-clock between consecutive `stage` events (or a stage event and the terminal event) | a stage the run never reached is simply absent from the map, not zero |
 | `outcome`, `errorMessage`, `finishedAt`, `totalDurationMs` | set once, by whichever `finalize()` call ends the entry | never absent on a recorded entry |
 
@@ -295,7 +310,9 @@ domain/complexity signal (not a forced pick).
 
 **Returns** (`TechniqueSelection`): `selected: TechniqueId[]` (1–4, never
 empty), `scores` (all-technique audit in auto mode; minimal in manual),
-`reasoning: string` (user-facing).
+`reasoning: string` (user-facing), `mode: "manual" | "auto-detect"` (Step
+8.2 — which dispatch path produced this selection, feeds the Transparency
+card's Confidence sub-card).
 
 ---
 

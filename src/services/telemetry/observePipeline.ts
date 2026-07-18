@@ -42,7 +42,12 @@ function createEntry(): TelemetryEntry {
     modelTier: null,
     downgraded: null,
     notes: [],
+    scope: null,
+    thinkingApplied: null,
     techniques: null,
+    techniqueReasoning: null,
+    techniqueMode: null,
+    techniqueSignalMatched: null,
     confidence: null,
     translationTokens: null,
     executionTokens: null,
@@ -132,10 +137,23 @@ export async function* observePipeline(
           entry.modelTier = event.result.tier;
           entry.downgraded = event.result.downgraded;
           entry.notes = event.result.notes;
+          entry.scope = event.result.dimensions.scope;
+          entry.thinkingApplied = event.result.thinkingApplied;
           break;
-        case "techniques":
-          entry.techniques = event.selection.selected;
+        case "techniques": {
+          const { selection } = event;
+          entry.techniques = selection.selected;
+          entry.techniqueReasoning = selection.reasoning;
+          entry.techniqueMode = selection.mode;
+          entry.techniqueSignalMatched =
+            selection.mode === "auto-detect"
+              ? selection.selected.some((id) => {
+                  const s = selection.scores.find((sc) => sc.id === id);
+                  return s ? s.reasons.some((r) => r !== "default") : false;
+                })
+              : null;
           break;
+        }
         case "done":
           finalize("done");
           break;

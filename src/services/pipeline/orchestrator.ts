@@ -146,6 +146,7 @@ export function resolveTechniqueSelection(
     selected: manual,
     scores: manual.map((id) => ({ id, score: 1, reasons: ["manually selected"] })),
     reasoning: `Manually selected: ${manual.map((id) => getTechnique(id).label).join(", ")}.`,
+    mode: "manual",
   };
 }
 

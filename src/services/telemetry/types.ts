@@ -10,6 +10,7 @@
 import type { PipelineStageName } from "../answerDisplay";
 import type { TechniqueId } from "../../stores/types";
 import type { TokenUsage } from "../proxyClient";
+import type { Dimensions } from "../routing.js";
 
 export type TelemetryOutcome =
   | "done"
@@ -43,9 +44,26 @@ export interface TelemetryEntry {
   downgraded: boolean | null;
   /** routing.js's own notes (escalation/downgrade/override/floor), verbatim. */
   notes: string[];
+  /** RouteResult.dimensions.scope — feeds the Transparency card's Routing
+      sub-card (Step 8.2, CANON Feature 8 names scope explicitly). */
+  scope: Dimensions["scope"] | null;
+  /** RouteResult.thinkingApplied — whether extended thinking actually ran on
+      this request (Step 8.2's Routing sub-card names this explicitly). */
+  thinkingApplied: boolean | null;
 
   /** Stage 3 output — null if the run never reached technique selection. */
   techniques: TechniqueId[] | null;
+  /** TechniqueSelection.reasoning verbatim — the Transparency card's
+      Techniques sub-card "why" (Step 8.2). */
+  techniqueReasoning: string | null;
+  /** How the techniques above were arrived at — the user's explicit stack
+      ("manual") or the auto-detect scorer ("auto-detect"). */
+  techniqueMode: "manual" | "auto-detect" | null;
+  /** Auto-detect mode only: true if at least one SELECTED technique scored
+      from a real matched signal rather than only the Socratic default
+      baseline. null in manual mode (irrelevant — a manual pick is never a
+      "default fallback") and when Stage 3 was never reached. */
+  techniqueSignalMatched: boolean | null;
 
   /** Stage 1 output — translation confidence (0-100), present once the
       translation event arrives, regardless of how the run ends after that. */

@@ -85,6 +85,16 @@
   flex-wrap: wrap;
 }
 
+/* Step 8.2 — the composer-footer row below ControlRow. Holds TRANSPARENCY
+   DETAILS today; MULTI-AI ACTIONS (Step 8.3, matching the screenshot's other
+   half of this row) slots in beside it without restructuring. */
+.composer__footer-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-row-margin);
+  flex-wrap: wrap;
+}
+
 .attach-context-controls {
   position: relative;
   display: flex;

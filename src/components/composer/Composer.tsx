@@ -5,6 +5,7 @@ import { useSessionStore } from "../../stores/sessionStore";
 import type { StateDetectionResult } from "../../services/detection";
 import type { DirectnessLevel } from "../../stores/types";
 import { StateDetectionPanel, type PillDimension } from "../detection";
+import { TransparencyCard } from "../transparency";
 import { ControlRow } from "./ControlRow";
 import { InputBox } from "./InputBox";
 
@@ -27,7 +28,12 @@ import { InputBox } from "./InputBox";
    asked" (CANON "no black box": the user sees what was actually sent, not a
    raw $token they never resolved). Session variables win over account
    (persisted) ones when both define the same name — mergeVariables'
-   documented precedence. */
+   documented precedence.
+
+   Step 8.2: TRANSPARENCY DETAILS sits below ControlRow, matching the
+   screenshot's composer-footer row (its sibling MULTI-AI ACTIONS control is
+   Step 8.3's own job — an OPUS step, not built here — so the row holds only
+   this one control for now; the wrapping div is the seam 8.3 slots into). */
 
 export interface ComposerProps {
   onSubmit: (request: TranslateAskRequest) => void;
@@ -86,6 +92,9 @@ export function Composer({
         />
       )}
       <ControlRow onAttach={onAttach} onContext={onContext} onTranslateAsk={handleTranslateAsk} />
+      <div className="composer__footer-row">
+        <TransparencyCard />
+      </div>
     </div>
   );
 }
