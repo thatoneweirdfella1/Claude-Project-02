@@ -64,6 +64,30 @@ Three columns over the marble slab. Left column 200px: nav (Home, Dashboard, Mes
 
 ---
 
+## LEFT NAVIGATION (the ten items named in LAYOUT)
+
+**Home.** Landing/overview screen: a recent activity feed plus quick stats. Distinct from Translate — Translate is the active composer view; Home is the "what's been happening" view.
+
+**Dashboard.** Session statistics. Same destination as the Quick Tools "Dashboard" tile (Feature 12) — one screen, not two. Both the left-nav item and the Quick Tools tile link here.
+
+**Messages.** List of ongoing and past conversation threads, inbox-style. Distinct from Archive — Messages is live/browsable sessions, Archive is closed ones.
+
+**Archive.** View of closed sessions. This is the screen Feature 11's "Close Session... save and archive" writes to — Archive shows what landed there.
+
+**Resources.** Saved links, files, and notes for reuse across conversations. A "+ Add Resource" button creates a new entry.
+
+**Projects.** Organizes conversations by project. A "+ New Project" button creates a new one.
+
+**Integrations.** NOT YET DEFINED. No real spec exists for this build — decorative placeholder until a future decision names what it actually does. Do not invent behavior for it.
+
+**Tasks.** Action items extracted from conversations. A "+ New Task" button creates a new one.
+
+**Customize.** A layout control panel: lets the user choose which panels/widgets exist and where they're positioned — e.g. which right-sidebar accordion sections show, the Quick Actions row's order/contents, possibly left-nav item visibility itself. A real feature-and-layout picker, not a generic settings/theme panel — theme itself already lives under the gear-icon Settings (Feature 12 / the screenshot's gear dropdown).
+
+**Translate.** The default/main view — the composer, conversation area, and everything Features 1–10 render into. No further definition needed; it's already the app's primary screen.
+
+---
+
 ## STORES AND PERSISTENCE
 
 Two stores. **Session store**, cleared when a session closes: model selection, directness level, technique selection, loaded context, conversation history, current state pills. **Account store**, persists across browser closes: archived question/answer pairs, feedback ratings, saved prompts, explicitly-saved variables, visibility settings, learned routing and technique preferences. Autosave writes both to IndexedDB every 5 seconds. On load, both rehydrate so the user returns exactly where they were.
