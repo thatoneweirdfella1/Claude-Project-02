@@ -3,9 +3,11 @@ import { buildTranslateAskRequest, type TranslateAskRequest } from "../../servic
 import { createProxyClient } from "../../services/proxyClient";
 import type { PipelineDone } from "../../services/pipeline";
 import { observePipeline } from "../../services/telemetry";
+import { detectState, toStatePills, type StateDetectionResult } from "../../services/detection";
 import { useAccountStore } from "../../stores/accountStore";
 import { useSessionStore } from "../../stores/sessionStore";
 import { Composer } from "../composer";
+import type { PillDimension } from "../detection";
 import { ConversationArea, TranslationCard } from "../translation";
 import { StreamingAnswer } from "../streaming";
 import { usePipelineRun, type ActivePipelineRun } from "./usePipelineRun";
@@ -26,7 +28,19 @@ import { usePipelineRun, type ActivePipelineRun } from "./usePipelineRun";
    The <60 clarify path finally closes the Step 2.3 loop: TranslationCard
    renders the ClarifyPrompt, and onRefine re-runs the WHOLE pipeline with the
    user's added detail appended to their original message (translation needs
-   both — the addition alone usually isn't self-contained). */
+   both — the addition alone usually isn't self-contained).
+
+   Step 6.3: State Detection fires ALONGSIDE the pipeline, not inside it —
+   PIPELINE.md's RESOLVED note describes detection as its own single on-demand
+   classification on the same input, not one of the five orchestrator stages,
+   so it's a parallel side effect here rather than a change to orchestrator.ts
+   (already fresh-context-audited at 5.2, error-boundary-hardened at 5.3).
+   detectState()'s outcome feeds two places: the panel's local `detection`
+   state (rich — confidence, summary, for display/correction) and the session
+   store's `statePills` (Step 1.7's existing field — the durable, four-value
+   "current state" a later step, 6.5, delivers to its consumers). A failed or
+   absent detection just means no pills this turn; it never blocks or affects
+   the answer running beside it. */
 
 const client = createProxyClient();
 
@@ -41,6 +55,7 @@ export function CenterColumn() {
   const plan = useAccountStore((s) => s.plan);
 
   const [run, setRun] = useState<ActivePipelineRun | null>(null);
+  const [detection, setDetection] = useState<StateDetectionResult | null>(null);
   const runIdRef = useRef(0);
   const controllerRef = useRef<AbortController | null>(null);
   /** The raw text behind the current run — the base a refinement extends. */
@@ -56,6 +71,20 @@ export function CenterColumn() {
       setRun({
         id: runIdRef.current,
         start: () => observePipeline(request, { client, plan, signal: controller.signal }),
+      });
+
+      // State Detection — fires alongside translation, on the SAME raw input,
+      // sharing this submission's AbortController so a resubmit cancels both.
+      setDetection(null); // clear the panel immediately; this turn's read isn't in yet
+      void detectState(request.rawInput, {
+        client: (req) => client.complete(req),
+        signal: controller.signal,
+      }).then((outcome) => {
+        if (controller.signal.aborted) return; // superseded by a resubmit
+        if (outcome.status === "ok") {
+          setDetection(outcome.result);
+          useSessionStore.getState().setStatePills(toStatePills(outcome.result));
+        }
       });
     },
     [plan],
@@ -84,6 +113,7 @@ export function CenterColumn() {
     });
     // Original + addition, so translation sees the whole thought; settings are
     // read fresh from the store (the user may have changed a dropdown since).
+    // startRun also re-fires detection on this same combined text.
     const s = useSessionStore.getState();
     startRun(
       buildTranslateAskRequest(
@@ -110,6 +140,23 @@ export function CenterColumn() {
     [addMessage],
   );
 
+  // Step 6.3: makes a correction visible immediately (updates the displayed
+  // pill + the committed session.statePills). Step 6.4 owns RECORDING the
+  // correction for the 15+ threshold learning loop — this does not persist
+  // to the account store.
+  function handleCorrectState(dimension: PillDimension, value: string) {
+    setDetection((prev) => {
+      if (!prev) return prev;
+      // `value` is always one of this exact dimension's own valid values
+      // (PillCorrector only ever offers config.values for its own config) —
+      // safe by construction, though TS can't prove it through the generic
+      // PillDimension key here.
+      const corrected = { ...prev, [dimension]: { value, confidence: 100 } } as StateDetectionResult;
+      useSessionStore.getState().setStatePills(toStatePills(corrected));
+      return corrected;
+    });
+  }
+
   const { gated, display } = usePipelineRun(run, handleDone);
 
   return (
@@ -118,7 +165,7 @@ export function CenterColumn() {
         {gated && <TranslationCard gated={gated} onRefine={handleRefine} />}
         {display && <StreamingAnswer state={display} />}
       </ConversationArea>
-      <Composer onSubmit={handleSubmit} />
+      <Composer onSubmit={handleSubmit} detection={detection} onCorrectState={handleCorrectState} />
     </>
   );
 }

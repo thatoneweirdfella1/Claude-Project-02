@@ -1,5 +1,7 @@
 import { buildTranslateAskRequest, type TranslateAskRequest } from "../../services/composer";
 import { useSessionStore } from "../../stores/sessionStore";
+import type { StateDetectionResult } from "../../services/detection";
+import { StateDetectionPanel, type PillDimension } from "../detection";
 import { ControlRow } from "./ControlRow";
 import { InputBox } from "./InputBox";
 
@@ -7,15 +9,25 @@ import { InputBox } from "./InputBox";
    row + TRANSLATE & ASK. This is the real, reusable deliverable Step 5.2's
    orchestrator mounts in production; it does not call an API, translate, or
    route (that boundary is the whole point of this step) — it only builds and
-   emits one typed TranslateAskRequest via onSubmit. */
+   emits one typed TranslateAskRequest via onSubmit.
+
+   Step 6.3: the STATE DETECTION panel sits here, between InputBox and
+   ControlRow (the exact position the Step 5.0 PARKED note named). `detection`
+   is owned by whoever actually fires detectState() alongside the pipeline
+   (CenterColumn, Step 6.3) — Composer stays a thin, prop-driven shell for it,
+   same as onSubmit/onAttach/onContext. */
 
 export interface ComposerProps {
   onSubmit: (request: TranslateAskRequest) => void;
   onAttach?: () => void;
   onContext?: () => void;
+  /** The most recent detection result, or null before any has arrived / after
+      the user dismissed it. Panel renders nothing when null. */
+  detection?: StateDetectionResult | null;
+  onCorrectState?: (dimension: PillDimension, value: string) => void;
 }
 
-export function Composer({ onSubmit, onAttach, onContext }: ComposerProps) {
+export function Composer({ onSubmit, onAttach, onContext, detection, onCorrectState }: ComposerProps) {
   const draftInput = useSessionStore((s) => s.draftInput);
   const setDraftInput = useSessionStore((s) => s.setDraftInput);
   const model = useSessionStore((s) => s.model);
@@ -34,6 +46,7 @@ export function Composer({ onSubmit, onAttach, onContext }: ComposerProps) {
   return (
     <div className="composer" data-testid="composer">
       <InputBox />
+      {detection && <StateDetectionPanel result={detection} onCorrect={onCorrectState} />}
       <ControlRow onAttach={onAttach} onContext={onContext} onTranslateAsk={handleTranslateAsk} />
     </div>
   );
