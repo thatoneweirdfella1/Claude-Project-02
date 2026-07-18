@@ -106,6 +106,115 @@
   border: 0;
 }
 
+/* Step 7.3 — the "Attach ▾" popover: a menu (Upload a file / Paste a URL)
+   that swaps to an inline URL form, matching the technique-popover's own
+   positioning/material conventions. */
+.attach-context-controls__popover {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 10;
+  margin-top: 6px;
+  width: min(300px, 90vw);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-card-padding);
+  background: var(--surface-smoked-glass);
+  backdrop-filter: blur(var(--blur-smoked-glass));
+  -webkit-backdrop-filter: blur(var(--blur-smoked-glass));
+  border: 1px solid var(--surface-smoked-glass-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-modal);
+}
+
+.attach-context-controls__popover-row {
+  min-height: 44px;
+  padding: var(--space-button-vertical) var(--space-button-horizontal);
+  border: none;
+  border-radius: var(--radius-button);
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label);
+  font-weight: var(--font-weight-label);
+  text-align: left;
+  cursor: pointer;
+}
+
+.attach-context-controls__popover-row:hover {
+  background: rgb(255 255 255 / 0.04);
+}
+
+.attach-context-controls__url-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.attach-context-controls__url-label {
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-metadata);
+  font-weight: var(--font-weight-metadata);
+}
+
+.attach-context-controls__url-input {
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 1px solid var(--surface-smoked-glass-border);
+  border-radius: var(--radius-button);
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-secondary);
+}
+
+.attach-context-controls__url-input:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
+
+.attach-context-controls__url-error {
+  margin: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-metadata);
+  font-weight: var(--font-weight-metadata);
+  line-height: var(--line-height-body);
+}
+
+.attach-context-controls__url-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.attach-context-controls__url-back,
+.attach-context-controls__url-fetch {
+  min-height: 36px;
+  padding: 6px 14px;
+  border: 1px solid var(--surface-smoked-glass-border);
+  border-radius: var(--radius-button);
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-secondary);
+  font-weight: var(--font-weight-label-secondary);
+  cursor: pointer;
+}
+
+.attach-context-controls__url-fetch {
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+
+.attach-context-controls__url-fetch:disabled,
+.attach-context-controls__url-back:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .attach-context-controls__rejections {
   position: absolute;
   top: 100%;

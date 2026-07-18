@@ -1,6 +1,6 @@
 /* Context Management (Feature 6) — public surface.
    Step 7.1: file upload + validation. Step 7.2 extends readFileAsContextItem
-   for images (real OCR). Steps 7.3/7.4 add URL fetch and variables here. */
+   for images (real OCR). Step 7.3 adds URL fetch. Step 7.4 adds variables. */
 
 export {
   MAX_FILE_BYTES,
@@ -17,3 +17,15 @@ export {
 export { readFileAsContextItem, type ReadFileOptions } from "./fileToContextItem";
 export { uploadFiles, type UploadFilesResult, type RejectedFile } from "./uploadFiles";
 export { createTesseractOcrClient, terminateOcrWorker, type OcrClient } from "./ocr";
+export {
+  handleUrlFetchRequest,
+  isBlockedUrl,
+  type UrlFetchRequestBody,
+  type UrlFetchResponseBody,
+} from "./urlFetchHandler";
+export {
+  fetchUrlContext,
+  extractReadableText,
+  type UrlFetchOutcome,
+  type FetchUrlOptions,
+} from "./urlContext";
