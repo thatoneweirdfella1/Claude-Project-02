@@ -1,0 +1,41 @@
+/* multi-ai.css — Consensus and Synthesis views (Step 8.4). Tokens only.
+   Debate mode's two-column view (Step 8.3) is not built here. */
+
+.consensus-view,
+.synthesis-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-row-margin);
+}
+
+.consensus-view__section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.consensus-view__title {
+  margin: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-section-header);
+  font-weight: var(--font-weight-section-header);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.consensus-view__text,
+.synthesis-view__text {
+  margin: 0;
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-body);
+  line-height: var(--line-height-body);
+}
+
+.synthesis-view__actions {
+  display: flex;
+  gap: var(--space-list-item-margin);
+  flex-wrap: wrap;
+}
