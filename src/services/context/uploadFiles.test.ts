@@ -1,11 +1,13 @@
 /* Step 7.1 verification — batch upload: accumulates the running session
    total ACROSS a multi-file batch (so the 50MB cap is enforced correctly
    even when no single file exceeds 10MB), never throws on a bad file, and
-   keeps processing the rest of the batch. */
+   keeps processing the rest of the batch. Step 7.2 adds an ocrClient option,
+   threaded straight through to readFileAsContextItem. */
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { MAX_SESSION_BYTES } from "./fileValidation";
 import { uploadFiles } from "./uploadFiles";
+import type { OcrClient } from "./ocr";
 
 function textFile(name: string, sizeBytes: number): File {
   return new File([new Uint8Array(sizeBytes)], name, { type: "text/plain" });
@@ -67,5 +69,24 @@ describe("uploadFiles — empty batch", () => {
     const { accepted, rejected } = await uploadFiles([], 0);
     expect(accepted).toEqual([]);
     expect(rejected).toEqual([]);
+  });
+});
+
+describe("uploadFiles — Step 7.2 ocrClient threading", () => {
+  it("passes ocrClient through to image files in the batch, extracting real text", async () => {
+    const ocrClient: OcrClient = vi.fn(async () => "extracted from image");
+    const files = [
+      new File(["text content"], "notes.txt", { type: "text/plain" }),
+      new File(["fake-bytes"], "photo.png", { type: "image/png" }),
+    ];
+    const { accepted } = await uploadFiles(files, 0, { ocrClient });
+    expect(accepted.find((i) => i.label === "notes.txt")?.content).toBe("text content");
+    expect(accepted.find((i) => i.label === "photo.png")?.content).toBe("extracted from image");
+    expect(ocrClient).toHaveBeenCalledTimes(1); // only called for the image, not the text file
+  });
+
+  it("still works with no ocrClient at all (images fall back to the placeholder)", async () => {
+    const { accepted } = await uploadFiles([new File(["x"], "photo.png", { type: "image/png" })], 0);
+    expect(accepted[0].content).toMatch(/awaiting OCR/i);
   });
 });

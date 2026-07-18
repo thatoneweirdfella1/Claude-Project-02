@@ -14,5 +14,6 @@ export {
   formatBytes,
   type FileValidationResult,
 } from "./fileValidation";
-export { readFileAsContextItem } from "./fileToContextItem";
+export { readFileAsContextItem, type ReadFileOptions } from "./fileToContextItem";
 export { uploadFiles, type UploadFilesResult, type RejectedFile } from "./uploadFiles";
+export { createTesseractOcrClient, terminateOcrWorker, type OcrClient } from "./ocr";
