@@ -5,5 +5,3 @@ export { RatingRow, type RatingRowProps } from "./RatingRow";
 export { StageIndicator } from "./StageIndicator";
 export { StreamingAnswer, type StreamingAnswerProps } from "./StreamingAnswer";
 export { useAnswerDisplay } from "./useAnswerDisplay";
-export { StreamingAnswerDemo } from "./StreamingAnswerDemo";
-export { demoAnswerSource } from "./streamingDemo";

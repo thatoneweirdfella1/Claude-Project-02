@@ -1,6 +1,5 @@
-import { ComposerSection } from "../composer";
+import { CenterColumn } from "../pipeline";
 import { GlassPanel } from "../primitives";
-import { ConversationArea } from "../translation";
 import { LeftNav } from "./LeftNav";
 import { TopBar } from "./TopBar";
 
@@ -20,14 +19,11 @@ import { TopBar } from "./TopBar";
    steps mount real content into center/right; they do not need to
    touch the app-layer wrapper or the grid itself.
 
-   Step 5.0: ComposerSection (the real input box + control row + TRANSLATE &
-   ASK) replaces the Steps 3.2/4.4/4.5 ModelRoutingDemo/DirectnessDemo/
-   TechniqueSelectionDemo — those demo cards existed only to prove each
-   dropdown's wiring before a real control row existed; the control row now
-   hosts the same (real, unchanged) dropdown components, so the standalone
-   demos would just be confusing duplicates. ConversationArea (Step 2.3) is
-   untouched — the conversation/history area is Step 5.1's job, not this
-   one's. */
+   Step 5.2: the center region is now the live product — CenterColumn joins
+   the real ConversationArea and the real Composer through the pipeline
+   orchestrator (services/pipeline). The Step 5.0 ComposerSection (JSON
+   readout) and Step 5.1 StreamingAnswerDemo existed only because no
+   orchestrator did yet; both are superseded and removed. */
 
 export function AppShell() {
   return (
@@ -39,8 +35,7 @@ export function AppShell() {
         <LeftNav />
       </nav>
       <main className="col-center" data-testid="col-center">
-        <ConversationArea />
-        <ComposerSection />
+        <CenterColumn />
       </main>
       <aside className="col-right" aria-label="Sidebar panels" data-testid="col-right">
         <GlassPanel className="sidebar-placeholder">
