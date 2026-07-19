@@ -10,9 +10,17 @@
      SURFACES — the three-material system (MATERIALS.md "THE THREE SURFACES")
      --------------------------------------------------------------------- */
 
-  /* 1. Black Marble — full-viewport background slab. */
-  --surface-black-marble-start: #0b0c0e;
-  --surface-black-marble-end: #151618;
+  /* 1. Black Marble — full-viewport background slab. Corrected against a real
+     per-pixel sample of public/textures/black-marble-slab.jpg (the actual
+     locked asset, not eyeballed) — the old #0B0C0E/#151618 pair was labeled
+     "sampled from the texture file" in MATERIALS.md but didn't match it; the
+     real trimmed mean excluding vein highlights is #050505, with a
+     #020202-#060702 20th/60th percentile spread. Used only as the flat
+     background-color fallback if the image fails to load (marble.css
+     .marble-slab) — the rendered slab itself is the actual texture image,
+     unaffected by this token. */
+  --surface-black-marble-start: #020202;
+  --surface-black-marble-end: #060702;
   /* Step 11.5 (VISUAL-AUDIT V14, applied): the raw texture asset
      (public/textures/black-marble-slab.jpg) reads visibly brighter/busier
      than V3's near-flat-black slab with barely-visible veining — a flat

@@ -7,7 +7,7 @@
 
 There are three surfaces. Not seven. The old seven-name system (Graphite, Slate, Mist, Pearl, Obsidian, Onyx, Luminescence) is dead. Do not build it. "Light" is not a material, it is the lighting and reflection rules below.
 
-**1. Black Marble (background).** The entire viewport. Deep charcoal stone, #0B0C0E to #151618. Polished, subtle veining, barely noticeable, matte lustre not mirror. Sampled from the provided black marble texture file.
+**1. Black Marble (background).** The entire viewport. Deep charcoal stone, #020202 to #060702 (corrected Step 11.5 — real per-pixel sample of the locked texture file's base stone, trimmed mean excluding vein highlights; the prior #0B0C0E to #151618 range didn't match the asset it claimed to be sampled from). Polished, subtle veining, barely noticeable, matte lustre not mirror. Sampled from the provided black marble texture file.
 
 **2. Smoked Glass (cards and panels).** Dark translucent glass, 88 to 92 percent opaque so the marble slab blurs through it. Heavy background blur (glassmorphism). Hairline darker-charcoal edge. Corners 12 to 16px on cards, 8 to 12px on buttons. Never opaque. Never carries its own marble.
 
