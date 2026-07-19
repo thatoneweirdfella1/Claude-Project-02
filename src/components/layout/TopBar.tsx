@@ -1,14 +1,19 @@
+import { Bell, BookOpen, ChevronDown, HelpCircle, Search } from "lucide-react";
 import { GlassButton } from "../primitives";
 import { VisibilityMenu } from "../visibility";
 import { Logo } from "./Logo";
 
 /* Top bar, 60px, per CANON.md "LAYOUT": logo slot, Search/Templates/
    Quick Reference, gear/bell/help, user chip. The logo is the real
-   animated SVG mark (Step 1.6); most icon buttons are still text-label
-   placeholders, since no icon library exists in this build (adding
-   one is a stack decision this step doesn't make — see BUILD-LOG.md
-   DECISIONS). Click behavior belongs to whichever later step owns
-   each control.
+   animated SVG mark (Step 1.6).
+
+   VISUAL-AUDIT V5 (fixed this session): icon buttons were text-label
+   placeholders pending the icon-library decision (LeftNav.tsx makes and
+   explains that call — lucide-react — this file just consumes it) plus an
+   avatar circle + chevron on the user chip, both matching
+   Divergence_AI_App_Screenshot_V3.png. Templates and Quick Reference share
+   BookOpen — V3 draws the identical glyph for both, not two different
+   icons.
 
    Step 9.4: the gear ("Settings") is CANON Feature 12's gear dropdown —
    VisibilityMenu replaces the inert placeholder button with a real
@@ -21,15 +26,34 @@ export function TopBar() {
         <Logo />
       </div>
       <div className="topbar-center">
-        <GlassButton>Search</GlassButton>
-        <GlassButton>Templates</GlassButton>
-        <GlassButton>Quick Reference</GlassButton>
+        <GlassButton>
+          <Search size={16} aria-hidden="true" />
+          Search
+        </GlassButton>
+        <GlassButton>
+          <BookOpen size={16} aria-hidden="true" />
+          Templates
+        </GlassButton>
+        <GlassButton>
+          <BookOpen size={16} aria-hidden="true" />
+          Quick Reference
+        </GlassButton>
       </div>
       <div className="topbar-right">
         <VisibilityMenu />
-        <GlassButton aria-label="Notifications">Notifications</GlassButton>
-        <GlassButton aria-label="Help">Help</GlassButton>
-        <GlassButton data-testid="user-chip">Devan</GlassButton>
+        <GlassButton aria-label="Notifications">
+          <Bell size={16} aria-hidden="true" />
+        </GlassButton>
+        <GlassButton aria-label="Help">
+          <HelpCircle size={16} aria-hidden="true" />
+        </GlassButton>
+        <GlassButton className="user-chip" data-testid="user-chip">
+          <span className="user-chip__avatar" aria-hidden="true">
+            D
+          </span>
+          Devan
+          <ChevronDown size={14} aria-hidden="true" />
+        </GlassButton>
       </div>
     </div>
   );

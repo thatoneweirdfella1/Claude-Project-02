@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Settings } from "lucide-react";
 import { GlassButton } from "../primitives";
 import { useDismissableLayer } from "../../keyboard";
 import { DEFAULT_VISIBILITY, useAccountStore } from "../../stores/accountStore";
@@ -16,7 +17,13 @@ import type { VisibilitySettings } from "../../stores/types";
    this component replaces it with a real trigger + popover, same
    open/outside-click/Escape-dismiss mechanics every other popover in this
    build already duplicates independently (AttachContextControls,
-   TechniqueDropdown, QuickActionsRow's More menu). */
+   TechniqueDropdown, QuickActionsRow's More menu).
+
+   VISUAL-AUDIT V5 (fixed this session): icon-only now (lucide Settings, no
+   visible "Settings" text) — matching V3, where the gear/bell/help trio in
+   the top-bar right are all icon-only square buttons, unlike Search/
+   Templates/Quick Reference which keep their text labels. aria-label
+   already carries the accessible name either way. */
 
 const VISIBILITY_ROWS: { key: keyof VisibilitySettings; label: string }[] = [
   { key: "recentSessions", label: "Recent Sessions" },
@@ -67,7 +74,7 @@ export function VisibilityMenu() {
         data-testid="visibility-gear"
         onClick={() => setOpen((wasOpen) => !wasOpen)}
       >
-        <span aria-hidden="true">⚙</span> Settings
+        <Settings size={16} aria-hidden="true" />
       </GlassButton>
 
       {open && (

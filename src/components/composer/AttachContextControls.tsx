@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Paperclip, Target } from "lucide-react";
 import { GlassButton } from "../primitives";
 import { useDismissableLayer } from "../../keyboard";
 import { useAccountStore } from "../../stores/accountStore";
@@ -178,9 +179,11 @@ export function AttachContextControls({
         aria-expanded={open}
         disabled={uploading}
       >
+        <Paperclip size={16} aria-hidden="true" />
         Attach ▾
       </GlassButton>
       <GlassButton onClick={onContext} aria-haspopup="dialog">
+        <Target size={16} aria-hidden="true" />
         Context ›
       </GlassButton>
 

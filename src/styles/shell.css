@@ -29,6 +29,25 @@
   gap: 12px;
 }
 
+/* VISUAL-AUDIT V5 (fixed this session): avatar circle + chevron on the user
+   chip, matching V3. Reuses --accent-purple — the same purple already used
+   for the logo's "AI" text and the Emotion state pill, not a new one-off
+   color. */
+.user-chip__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent-purple);
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-metadata);
+  font-weight: var(--font-weight-card-title); /* 500 — tokens.css: "never a weight of 600 or heavier anywhere" */
+  flex-shrink: 0;
+}
+
 .leftnav-content {
   display: flex;
   flex-direction: column;

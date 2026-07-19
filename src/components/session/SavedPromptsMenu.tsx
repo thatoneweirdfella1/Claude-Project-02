@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Bookmark } from "lucide-react";
 import { GlassButton } from "../primitives";
 import { useDismissableLayer } from "../../keyboard";
 import { useAccountStore } from "../../stores/accountStore";
@@ -79,7 +80,8 @@ export function SavedPromptsMenu() {
   return (
     <div ref={rootRef} className="quick-actions-row__more">
       <GlassButton aria-expanded={open} aria-haspopup="menu" onClick={toggle}>
-        <span aria-hidden="true">📑</span> Saved Prompts
+        <Bookmark size={16} aria-hidden="true" />
+        Saved Prompts
       </GlassButton>
 
       {open && (

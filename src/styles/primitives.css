@@ -25,6 +25,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 8px; /* VISUAL-AUDIT V4/V5/V13 (fixed this session): consistent icon-to-label spacing, every button that carries a leading lucide icon or BrainMark uses this same gap, no per-button margin hacks */
   min-height: 44px;
   padding: var(--space-button-vertical) var(--space-button-horizontal);
   color: var(--text-primary);
@@ -32,6 +33,10 @@
   font-size: var(--font-size-label);
   font-weight: var(--font-weight-label);
   cursor: pointer;
+}
+
+.primitive-glass-button svg {
+  flex-shrink: 0; /* icons never compress before button text wraps/truncates */
 }
 
 .primitive-dropdown {

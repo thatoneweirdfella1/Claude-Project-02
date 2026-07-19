@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from "react";
+import { ChevronDown, ChevronUp, Info } from "lucide-react";
 import { GlassButton, GlassCard } from "../primitives";
 import { createProxyClient } from "../../services/proxyClient";
 import { useSessionStore } from "../../stores/sessionStore";
@@ -180,10 +181,11 @@ export function MultiAiActions() {
         onClick={() => setExpanded((prev) => !prev)}
       >
         <span className="multi-ai-actions__toggle-label">
-          <span aria-hidden="true">⊙</span> MULTI-AI ACTIONS
+          <Info size={16} aria-hidden="true" />
+          MULTI-AI ACTIONS
         </span>
         <span aria-hidden="true" className="multi-ai-actions__chevron">
-          {expanded ? "︿" : "⌄"}
+          {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
         </span>
       </GlassButton>
 

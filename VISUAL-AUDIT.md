@@ -73,18 +73,39 @@ the section-header type tokens, matching V3.
 no behavior invented — no step in the plan gives this gear an action, same posture as the
 Checkpoints/Dashboard/Integrations placeholders). Verified with a real Playwright capture.
 
-**[ESCALATED — Step 11.5, blocked on an icon-library decision]** **V4 — Left nav items have no icons; V3 shows an icon on every item.**
+**[FIXED — operator-directed follow-up session, verified with real headless-Chrome captures at two viewport widths]** **V4 — Left nav items have no icons; V3 shows an icon on every item.**
 All captures; Step 9.7's own step text says "with icons" and the screenshot confirms. Icons were
 deferred at Step 1.5 (no icon library — logged) and 9.7 built routing without revisiting.
 **Fix (11.5):** add icons — requires the deferred icon decision (hand-rolled SVGs like Logo.tsx,
 or a logged dependency per CONVENTIONS rule 3). Same decision unblocks V5/V6/V13.
+**Applied**: the icon-library decision this note deferred is made — `lucide-react` (ISC license,
+tree-shakeable, simple-outline style matching V3's monochrome nav icons; +~3KB gzip in the real
+build output, confirmed, not assumed — tree-shaking works since only the specific icons used are
+imported). Each of the ten nav items gets a real icon (LeftNav.tsx): Home, LayoutGrid (Dashboard),
+MessageSquare, Archive, Lightbulb (Resources), Folder (Projects — V3's own glyph there looks like a
+padlock, but CANON's actual written description of Projects is "organizes conversations by project,"
+which a lock doesn't fit; prioritized CANON's semantics over pixel-matching an ambiguous glyph),
+Code2 (Integrations), ListChecks (Tasks), SlidersHorizontal (Customize — deliberately NOT the same
+gear V3 draws there, since CANON's own LEFT NAVIGATION text calls Customize out as distinct from the
+gear-icon Settings; reusing one glyph for two different features risked exactly the confusion that
+sentence warns against), and BrainMark (Translate — the same reusable brand-mark component below,
+not a lucide icon, matching V3's own reuse of the brain glyph for the primary/composer view).
+Verified with a real Playwright capture at 1525px and 900px: icons render correctly, consistent
+size/spacing (new `gap: 8px` on `.primitive-glass-button`), no layout regression at either width.
 
-**[ESCALATED — Step 11.5, blocked on the same icon-library decision as V4]** **V5 — Top bar buttons are text-only; V3 shows icons in Search/Templates/Quick Reference and
+**[FIXED — operator-directed follow-up session, verified with real headless-Chrome captures at two viewport widths]** **V5 — Top bar buttons are text-only; V3 shows icons in Search/Templates/Quick Reference and
 icon-only gear/bell/help plus an avatar chip.**
 App renders "⚙Settings / Notifications / Help / Devan" as labeled buttons (app-default.png);
 V3 shows icon buttons and a "D Devan ▾" chip with a blue avatar circle and chevron.
 **Fix:** iconify the three right-side controls, add avatar circle + chevron to the user chip,
 add leading icons to the three center buttons. Blocked on the same icon decision as V4.
+**Applied**: Search/BookOpen×2 (Templates and Quick Reference share the identical book glyph in V3,
+not two different icons) keep their text labels; gear/bell/help are icon-only (Settings/Bell/
+HelpCircle), matching V3's icon-only treatment for that trio specifically, confirmed by close
+inspection of the reference image, not assumed uniform with the labeled buttons beside them. User
+chip gets a real avatar circle (`--accent-purple`, the same purple already used for the logo's "AI"
+text and the Emotion pill — not a new one-off color) plus a ChevronDown. Verified with a real capture
+at both viewport widths.
 
 **[ESCALATED — Step 11.5, audit's own instruction ("flag to the operator... rather than silently picking")]** **V6 — Logo mark is small and dim; wordmark case differs from V3.**
 App: compact outline brain + "DIVERGENCE AI" (uppercase, thin). V3: larger aurora-gradient brain
@@ -149,8 +170,14 @@ detection.css; `rgb(255 255 255 / 0.04)` → `var(--hover-tint)` across all 6 fi
 session.css, techniques.css, translation.css, visibility.css, composer.css ×2 occurrences);
 `rgb(0 0 0 / 0.5)` → `var(--modal-backdrop)` in import.css + export.css.
 
-**[ESCALATED — Step 11.5, blocked on the same icon-library decision as V4]** **V11 — "What's on your mind?" lacks the brain icon V3 shows before it.**
+**[FIXED — operator-directed follow-up session, verified with a real headless-Chrome capture]** **V11 — "What's on your mind?" lacks the brain icon V3 shows before it.**
 InputBox.tsx:34 renders the text alone. Minor; blocked on the V4 icon decision.
+**Applied**: a new `BrainMark` component (src/components/layout/BrainMark.tsx) — the exact same
+aurora-gradient brain glyph as the top-bar Logo, extracted so it can render many times per page (own
+`useId()`-scoped gradient id per instance, not Logo.tsx's hardcoded id, which would only work once).
+Used here, in the assistant message avatar, and in the TRANSLATE & ASK button — the three other
+places V3 reuses this exact icon, confirmed by close inspection of the reference image at each spot,
+not assumed.
 
 **[FIXED — Step 11.5, verified with a real headless-Chrome capture]** **V12 — No "QUICK ACTIONS" section label; V3 shows a small cyan header above the row.**
 QuickActionsRow renders bare buttons (grep: no rendered label, only the CSS class name).
@@ -160,9 +187,16 @@ QuickActionsRow renders bare buttons (grep: no rendered label, only the CSS clas
 Verified with a real Playwright capture, rendered above the button row exactly like TRANSPARENCY
 DETAILS / MULTI-AI ACTIONS's own headers.
 
-**[ESCALATED — Step 11.5, blocked on the same icon-library decision as V4]** **V13 — Buttons/rows generally lack leading icons vs V3** (New Session ↻ exists, Load Template/
+**[FIXED — operator-directed follow-up session, verified with real headless-Chrome captures]** **V13 — Buttons/rows generally lack leading icons vs V3** (New Session ↻ exists, Load Template/
 Saved Prompts/Duplicate Session have text-adjacent glyph characters; V3 uses consistent drawn
 icons). Cosmetic tier of the same V4 icon decision.
+**Applied**: every unicode/emoji glyph replaced with a real lucide icon — New Session (RotateCw),
+Load Template (BookOpen), Saved Prompts (Bookmark), Duplicate Session (Copy), More (MoreHorizontal +
+ChevronUp/ChevronDown), Attach (Paperclip), Context (Target), TRANSPARENCY DETAILS/MULTI-AI ACTIONS
+(Info + real chevrons, replacing "ⓘ"/"⊙" and "︿"/"⌄" text characters), Settings gear (replacing "⚙").
+Also fixed, found while doing this pass rather than a separate finding: the assistant message avatar
+showed literal "AI" text instead of V3's brain-icon avatar (MessageBubble.tsx) — now BrainMark, same
+component as V11.
 
 **[FIXED — operator-directed follow-up session, verified with a real headless-Chrome capture]** **V14 — Marble reads brighter/busier than V3's near-black slab.**
 All captures show prominent white-gold veining; V3's background is near-black with faint veins.

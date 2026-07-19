@@ -18,6 +18,9 @@
 }
 
 .multi-ai-actions__toggle-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   color: var(--accent-cyan);
   font-size: var(--font-size-section-header);
   font-weight: var(--font-weight-section-header);

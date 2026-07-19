@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { BookOpen } from "lucide-react";
 import { GlassButton } from "../primitives";
 import { useDismissableLayer } from "../../keyboard";
 import { DEFAULT_TEMPLATES, useAccountStore } from "../../stores/accountStore";
@@ -116,7 +117,8 @@ export function LoadTemplateMenu({ renderTrigger }: LoadTemplateMenuProps = {}) 
         renderTrigger({ open, onClick: toggle })
       ) : (
         <GlassButton aria-expanded={open} aria-haspopup="menu" onClick={toggle}>
-          <span aria-hidden="true">▤</span> Load Template
+          <BookOpen size={16} aria-hidden="true" />
+          Load Template
         </GlassButton>
       )}
 

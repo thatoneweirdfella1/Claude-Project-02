@@ -58,6 +58,21 @@
   color: transparent;
 }
 
+/* BrainMark (BrainMark.tsx) — the same brain glyph, reused at small size.
+   Own gradient id per instance (component-level useId()), so only the
+   stroke color/weight rules are shared here. */
+.brain-mark {
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.brain-mark__path {
+  fill: none;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 /* Subtle synapse firing — only when the user hasn't asked for reduced
    motion. Small opacity range, slow, staggered (per-node delay set
    inline in Logo.tsx). Static otherwise (CANON sensory hard rule). */

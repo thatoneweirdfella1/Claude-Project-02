@@ -181,4 +181,17 @@
   font-family: var(--font-family-base);
   font-size: var(--font-size-label);
   font-weight: var(--font-weight-label);
+  /* VISUAL-AUDIT V11 (fixed this session): TRANSLATE & ASK carries a leading
+     BrainMark in V3 — this button doesn't share primitive-glass-button's
+     flex/gap (BlueMarbleButton applies only this class), so it needs its
+     own, same values for visual consistency with every other icon+label
+     button. */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.surface-blue-marble svg {
+  flex-shrink: 0;
 }

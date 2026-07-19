@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { ChevronDown, ChevronUp, Copy, MoreHorizontal, RotateCw } from "lucide-react";
 import { GlassButton } from "../primitives";
 import { useConfirmable, useDismissableLayer } from "../../keyboard";
 import { buildSessionRecord } from "../../services/sessionLifecycle";
@@ -134,17 +135,20 @@ export function QuickActionsRow() {
       <p className="quick-actions__header">QUICK ACTIONS</p>
       <div ref={rootRef} className="quick-actions-row" data-testid="quick-actions-row">
         <GlassButton onClick={handleNewSession}>
-          <span aria-hidden="true">↻</span> New Session
+          <RotateCw size={16} aria-hidden="true" />
+          New Session
         </GlassButton>
         <LoadTemplateMenu />
         <SavedPromptsMenu />
         <GlassButton onClick={handleDuplicateSession}>
-          <span aria-hidden="true">⧉</span> Duplicate Session
+          <Copy size={16} aria-hidden="true" />
+          Duplicate Session
         </GlassButton>
         <div className="quick-actions-row__more">
           <GlassButton aria-expanded={moreOpen} aria-haspopup="menu" onClick={toggleMore}>
-            <span aria-hidden="true">•••</span> More{" "}
-            <span aria-hidden="true">{moreOpen ? "⌃" : "⌄"}</span>
+            <MoreHorizontal size={16} aria-hidden="true" />
+            More
+            {moreOpen ? <ChevronUp size={14} aria-hidden="true" /> : <ChevronDown size={14} aria-hidden="true" />}
           </GlassButton>
 
           {moreOpen && (
