@@ -80,7 +80,21 @@
 .surface-smoked-glass {
   background-color: var(--surface-smoked-glass);
   background-image: url("/textures/dark-grey-marble-slab.jpg");
-  background-blend-mode: soft-light;
+  /* REVISED TWICE, operator-directed override, this session. First attempt:
+     soft-light -> overlay, matching the button's fix. That was WRONG for
+     this surface specifically and caught with a real capture, not assumed
+     correct: overlay's blend formula behaves like multiply on a base this
+     dark (--surface-smoked-glass is a near-black rgba) — it darkens the
+     non-vein majority of the surface even further instead of brightening
+     it, so the whole panel nearly disappeared against the black background
+     (measured: rendered pixel (8,7,6) inside the panel vs (1,1,1) on the
+     bare slab beside it — barely distinguishable, the opposite of "clearly
+     visible"). screen never darkens (result >= base always), so the base
+     color stays exactly as visible as before and the bright vein pixels
+     genuinely brighten against it — the correct choice specifically because
+     this base is dark; the button's lighter base is why overlay worked
+     there instead (overlay behaves closer to screen on a light base). */
+  background-blend-mode: screen;
   background-repeat: repeat;
   background-position: 0 0;
   background-size: var(--slab-tile-size) var(--slab-tile-size); /* fixed world scale, never stretched to the element */
@@ -141,7 +155,13 @@
     ),
     url("/textures/medium-gray-marble-slab.jpg"),
     linear-gradient(160deg, var(--surface-blue-marble-start), var(--surface-blue-marble-end));
-  background-blend-mode: normal, normal, soft-light, normal;
+  /* REVISED, operator-directed override, this session: soft-light (V8's
+     original choice, for stable luminance) now reads too faint against the
+     explicit ask for "clearly visible, not faint" veins — switched to
+     overlay for more contrast, paired with a lower --button-darken-opacity
+     (tokens.css) so the extra contrast doesn't just get crushed back down
+     by the scrim. */
+  background-blend-mode: normal, normal, overlay, normal;
   background-repeat: no-repeat, no-repeat, repeat, no-repeat;
   background-position: 0 0, 0 0, 0 0, 0 0;
   background-attachment: scroll, scroll, fixed, scroll;

@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { Children, useState, type ReactNode } from "react";
 import { MessageBubble } from "../streaming";
 import { DownloadModal } from "../export";
 import { getTelemetryEntries } from "../../services/telemetry";
@@ -44,8 +44,16 @@ export function ConversationArea({ children }: ConversationAreaProps) {
     ? (getTelemetryEntries().find((e) => e.id === downloadMessage.telemetryId) ?? null)
     : null;
 
+  // Children.toArray drops falsy JSX expressions ({gated && <X/>} renders
+  // `false`, not nothing, when gated is falsy) — a plain `children == null`
+  // check is always false here since CenterColumn always passes an array of
+  // two expressions, so it never detected the truly-empty case. toArray is
+  // the actual "is there real, visible content" test.
+  const isEmpty = conversation.length === 0 && Children.toArray(children).length === 0;
+
   return (
-    <div className="conversation-area" data-testid="conversation-area">
+    <div className="conversation-area surface-smoked-glass" data-testid="conversation-area">
+      {isEmpty && <p className="conversation-area__empty">Nothing here yet — ask a question to get started.</p>}
       {conversation.map((message) => (
         <MessageBubble
           key={message.id}

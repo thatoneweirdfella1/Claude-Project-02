@@ -45,7 +45,14 @@
      spec value — MATERIALS.md names the base hex range and "barely
      noticeable" veining but no overlay/opacity number). Locked texture
      asset itself is untouched; see MARBLE-CONTRACT.md "THE ASSETS". */
-  --slab-darken-opacity: 0.75;
+  /* REVISED, operator-directed override, this session: 0.75 was calibrated
+     to match V3's "barely noticeable" veining — the operator has since
+     explicitly asked for the opposite, "clearly visible, not faint" veins
+     across all three surfaces, a deliberate departure from the V3-screenshot
+     target for this specific property. Lowered so more of the raw texture's
+     real contrast survives the scrim; recalibrated by real rendered capture,
+     same iterative method as the original V14 fix, not guessed. */
+  --slab-darken-opacity: 0.35;
   /* Step 11.5 (VISUAL-AUDIT V8, applied): once the button's blend mode
      stopped letting the texture crush its luminance (marble.css
      .surface-blue-marble), the gradient's own true brightness read
@@ -53,8 +60,11 @@
      MATERIALS.md: "not neon." This scrim brings it back down; calibrated
      the same way as --slab-darken-opacity, by comparing a real rendered
      capture against Divergence_AI_App_Screenshot_V3.png's own button crop,
-     not a spec value (none exists for this). */
-  --button-darken-opacity: 0.35;
+     not a spec value (none exists for this).
+     REVISED, operator-directed override, this session, same reasoning as
+     --slab-darken-opacity above: lowered to let more vein contrast through
+     now that "clearly visible" is the target, not "not neon" restraint. */
+  --button-darken-opacity: 0.15;
 
   /* 2. Dark Grey Marble (operator-directed override, this session) — content
      areas: cards, panels, dialogs, messages. Replaces Smoked Glass's blue-
