@@ -1,6 +1,37 @@
 # DIVERGENCE.AI BUILD LOG
 
 ## WHERE YOU ARE
+A follow-up session closed VISUAL-AUDIT V16 — the theme toggle, explicitly flagged (both here and
+in VISUAL-AUDIT.md) as the one Phase 11 finding that actually blocks Step 12.3, unlike the other
+escalated/deferred items. The prior light-theme follow-up (below) had built the store field,
+resolver hook, and CSS but never wired a UI control to it. This session added the control:
+VisibilityMenu.tsx's gear popover now has a Light/Dark/Auto radiogroup (role="radiogroup"/
+role="radio", same pattern as RatingRow's star picker) above the existing 7 visibility checkboxes
+— CANON Feature 12's own text already specifies one dropdown holding both, so no new placement
+question needed resolving, just reading the spec that was already there. Verifying with a real
+capture also caught a second real bug: .visibility-menu__popover sits on always-dark
+--surface-smoked-glass but wasn't in tokens.css's light-theme "stays dark/white-text" override
+list, so its text (including the new toggle) inherited the root's flipped-dark --text-primary —
+legible-in-theory, actually dark-grey-on-near-black in a real render. Fixed by adding it to that
+list alongside .state-detection-panel__adjust. New permanent test: e2e/theme-toggle.spec.ts
+(click each option, confirm documentElement's data-theme flips, confirm the choice survives a
+reload past the 5s autosave interval — mirrors core-flow.spec.ts's own autosave-wait pattern, a
+first attempt without the wait raced the flush and failed, corrected). Full suite re-run clean:
+tsc -b, vite build, oxlint (same one pre-existing unrelated QuickActionsRow warning, untouched),
+vitest 583/583, E2E now 5/5 (4 prior unchanged + the new one). VISUAL-AUDIT.md's V16 entry flipped
+to [FIXED] in place with the full account. Source committed and pushed to `build`.
+
+STEP 12.3 READINESS, re-checked after this fix: required files present (CONVENTIONS.md, tokens.css,
+CANON.md, ROUTING.md, BUILD-LOG.md); proxy spot-check confirms all five provider keys
+(ANTHROPIC/OPENAI/XAI/DEEPSEEK/GOOGLE_API_KEY) are read server-side only via process.env in api/*.ts,
+confirmed absent from the built client bundle; unit 583/583, E2E 5/5, lint clean (one pre-existing
+unrelated warning), production build (`npm run build`) clean; working tree clean, everything
+committed. Every Phase 11 finding carries an explicit FIXED/ESCALATED/RECORDED/NOT APPLIED tag with
+a reason — V16 was the only one actually gating 12.3 and is now closed; S4/C1/V9/V15 remain
+deliberately deferred (Step 11.5's own call: cosmetic/product-decision debt, not deploy blockers).
+Ready for Step 12.3 pending only the operator's own Vercel setup (project import, five secrets,
+DEPLOY.md's post-deploy checklist) — nothing left in the codebase blocks it.
+
 A follow-up session (light theme, CANON Feature 12/V16 — still in progress, not a numbered STEP)
 fixed two real light-theme gaps found by comparing rendered output directly against both reference
 screenshots, not by inspection alone. First: StateDetectionPanel's "Adjust" button (detection.css)
@@ -26,15 +57,12 @@ updated to twelve fields, verified passing. Full suite re-run clean after all of
 vite build, oxlint (same one pre-existing unrelated QuickActionsRow warning, untouched), vitest
 583/583, full E2E suite 4/4.
 
-STILL OPEN in this same light-theme follow-up, not addressed this session: no user-facing control
-exists anywhere to actually call accountStore.setTheme. useThemeEffect (resolves the raw preference
-against OS/prefers-color-scheme and writes documentElement's data-theme) is built and wired into
-AppShell, and the CSS side now renders correctly for whichever theme data-theme is set to — but
-nothing in the UI ever sets it, so the store sits at its "dark" default in practice. CANON Feature 12
-names a gear-dropdown Light/Dark/Auto toggle, but TopBar's gear icon is already occupied by
-VisibilityMenu (Step 9.4's 7-checkbox popover) — where the theme control actually belongs is an
-unresolved design question, not just an unwired button, the same class of gap V16's original
-escalation named. Also unverified: roughly a dozen other files consume `--surface-smoked-glass`
+~~STILL OPEN in this same light-theme follow-up, not addressed this session: no user-facing control
+exists anywhere to actually call accountStore.setTheme.~~ RESOLVED by the follow-up session logged
+at the top of this file: VisibilityMenu.tsx's gear popover now has the Light/Dark/Auto radiogroup;
+CANON Feature 12's own text already says one dropdown holds both the theme toggle and the 7
+checkboxes, so "where the theme control belongs" was never actually an open design question, just
+an unread spec line. Still genuinely unverified: roughly a dozen other files consume `--surface-smoked-glass`
 directly or via the `.surface-smoked-glass` class (dropdown popovers, session strip, import modal,
 multi-ai body, techniques/translation popovers, etc.) — each needs the same button-tier-vs-content-
 tier judgment call the two fixes above required, checked against the reference screenshot one at a

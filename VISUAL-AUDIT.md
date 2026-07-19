@@ -234,13 +234,26 @@ V3 shows a footer strip below Quick Actions in the center column. No build step 
 plan-gap class as Checkpoints/Dashboard screens, already logged). Noted for completeness; needs a
 product call on whether it's wanted, since CANON's LAYOUT text doesn't name it.
 
-**[NOT APPLIED — Step 11.5, unbuilt feature, needs an owning step before 12.3]** **V16 — (spec gap found during capture, not a V3 mismatch) Theme toggle missing from Settings.**
+**[FIXED — operator-directed follow-up session, before Step 12.3]** **V16 — (spec gap found during capture, not a V3 mismatch) Theme toggle missing from Settings.**
 CANON Feature 12 (as amended this build): "gear dropdown (top right) with theme toggle
-(Light / Dark / Auto) and 7 visibility checkboxes." The rendered menu has the 7 checkboxes +
-Reset only (app-settings-menu.png). No step in the plan builds the toggle — same unowned-feature
-class as Checkpoints. Needs an owner before 12.3; the Light-theme surface set it implies is
-designed (Divergence_AI_Light_App_Screenshot V1-V3 exist) but nothing in the codebase reads a
-theme value yet.
+(Light / Dark / Auto) and 7 visibility checkboxes." The rendered menu had the 7 checkboxes +
+Reset only (app-settings-menu.png) — no step in the plan built the toggle, same unowned-feature
+class as Checkpoints. A prior follow-up session built the underlying plumbing (ThemePreference
+type, persisted accountStore.theme, useThemeEffect resolving Auto against prefers-color-scheme
+and writing documentElement's data-theme, the light-theme CSS token overrides) but never wired a
+UI control to it. This session closed the gap: VisibilityMenu.tsx's gear popover gained a
+Light/Dark/Auto radiogroup (same role="radiogroup"/role="radio" pattern as RatingRow's star
+picker) above the existing 7 checkboxes — CANON's own text already says ONE dropdown holds both,
+so no new location needed inventing. Also caught and fixed while verifying with a real capture:
+the popover itself (.visibility-menu__popover) sits on --surface-smoked-glass (always-dark,
+correct) but wasn't in tokens.css's light-theme "stays dark, white text" override list, so its
+rows/title/new toggle text inherited the root's flipped-dark --text-primary — dark-grey-on-near-
+black, real but barely legible. Added it to that list alongside .state-detection-panel__adjust.
+Verified with real Playwright captures in both themes (toggle visibly switches, active option
+highlighted, text legible) and a new permanent regression test, e2e/theme-toggle.spec.ts (click
+each option, confirm documentElement's data-theme flips, confirm the choice survives a reload
+past the 5s autosave interval). Full suite re-run clean: tsc -b, vite build, oxlint (same one
+pre-existing unrelated QuickActionsRow warning), vitest 583/583, E2E 5/5 (4 prior + the new one).
 
 **Observation, out of scope for both audits:** below ~1000px viewport width the fixed 200/300px
 rails overlap the center column (app-narrow.png) — no step spec'd responsive behavior and CANON

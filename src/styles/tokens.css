@@ -307,12 +307,21 @@
    dark --text-primary, unreadable against the button's own still-dark
    fill. Both reference screenshots confirm this button stays dark/white-
    text in light theme too (Divergence_AI_Light_App_Screenshot_V2.png), same
-   as every other button-ish surface here. */
+   as every other button-ish surface here.
+   .visibility-menu__popover joined this list this session too, caught by a
+   real capture, not assumed: it sits directly on --surface-smoked-glass
+   (always-dark, correct — this is a floating popover, not content) but
+   wasn't in this override list, so its rows/title/new theme-toggle text
+   inherited the root's flipped-dark --text-primary/--text-secondary —
+   dark-grey text on a near-black popover, real but barely legible. Same
+   root cause and same fix as the two entries above, just a popover this
+   time instead of a nested button. */
 :root[data-theme="light"] .primitive-glass-button,
 :root[data-theme="light"] .surface-blue-marble,
 :root[data-theme="light"] .quick-tools-tile__button,
 :root[data-theme="light"] .primitive-glass-panel,
-:root[data-theme="light"] .state-detection-panel__adjust {
+:root[data-theme="light"] .state-detection-panel__adjust,
+:root[data-theme="light"] .visibility-menu__popover {
   --text-primary: #ffffff;
   --text-secondary: #a6abb5; /* dark theme's own --text-secondary value, unchanged */
 }
