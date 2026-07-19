@@ -53,11 +53,37 @@
   z-index: 1;
 }
 
-/* Dark Grey Marble (was Smoked Glass) — cards and panels. Never carries its
-   own texture; shows stone only by letting the one fixed slab blur through
-   behind it. Mechanics unchanged by the grey override, only the tint. */
+/* Dark Grey Marble (was Smoked Glass) — cards, panels, dialogs, messages.
+   OPERATOR-DIRECTED OVERRIDE, this session: MARBLE-CONTRACT.md's "no
+   component carries its own marble texture, one sole exception" rule no
+   longer holds — this tier now carries dark-grey-marble-slab.jpg directly,
+   a second, deliberate exception alongside Medium Gray Marble buttons. See
+   MARBLE-CONTRACT.md THE RULE and BUILD-LOG.md DECISIONS for the full
+   reasoning and why this is not the "per-component marble" failure mode
+   fourteen prior branches hit (same fixed-world-scale tiling technique as
+   the slab and the button, never stretched to fit the element, so the
+   specific failure that rule existed to prevent — texture scaling/
+   distorting per component — still can't happen; what changed is WHETHER
+   a card shows texture, not HOW it's rendered when it does).
+
+   Base color stays the bottom layer (translucency + backdrop-blur still
+   apply exactly as before — this tier is still glass, just glass with its
+   own visible stone now); the texture blends on top with soft-light, same
+   "visible detail on a reliable base" technique already used for Medium
+   Gray Marble (marble.css .surface-blue-marble) and the slab's own
+   darkening scrim — soft-light was chosen specifically because it can't
+   crush message-bubble text contrast the way a stronger blend or a raw
+   texture-as-background would; kept deliberately more muted than the
+   button's own texture (no darkening scrim added here) since this surface
+   holds body text at 14px across the whole app, not a short button label —
+   legibility was checked with a real rendered capture, not assumed. */
 .surface-smoked-glass {
-  background: var(--surface-smoked-glass);
+  background-color: var(--surface-smoked-glass);
+  background-image: url("/textures/dark-grey-marble-slab.jpg");
+  background-blend-mode: soft-light;
+  background-repeat: repeat;
+  background-position: 0 0;
+  background-size: var(--slab-tile-size) var(--slab-tile-size); /* fixed world scale, never stretched to the element */
   backdrop-filter: blur(var(--blur-smoked-glass));
   -webkit-backdrop-filter: blur(var(--blur-smoked-glass));
   border: 1px solid var(--surface-smoked-glass-border);
@@ -65,14 +91,24 @@
   box-shadow: var(--shadow-card);
 }
 
-/* Medium Gray Marble (was Blue Marble) — primary buttons only, the one
-   deliberate exception to "components never carry texture." Samples the
-   identical image, size, and origin as .marble-slab, anchored to the
-   viewport via background-attachment: fixed so background-position
-   resolves against the viewport exactly as it does on the slab itself —
-   the same construction every surface of this tier shares, not a
-   per-button position hand-tuned to fake alignment. That is what makes the
-   stone read as one continuous slab showing through a cutout.
+/* Medium Gray Marble (was Blue Marble) — primary buttons and nav, previously
+   the one deliberate exception to "components never carry texture," now one
+   of two (see .surface-smoked-glass above). Anchored to the viewport via
+   background-attachment: fixed at the slab's own world scale, same
+   technique as .marble-slab, so texture never stretches or scales per
+   button — not a per-button position hand-tuned to fake alignment, the
+   general mechanism every surface of this tier shares.
+
+   OPERATOR-DIRECTED OVERRIDE, this session: now samples
+   medium-gray-marble-slab.jpg, not black-marble-slab.jpg — a different
+   texture than .marble-slab's background, so this no longer reads as "the
+   same continuous slab showing through a cutout" (MARBLE-CONTRACT.md's
+   original framing for this exception); it reads as its own grey stone
+   surface instead, consistent with the three-tone override elsewhere. Kept
+   background-attachment: fixed anyway (viewport-locked, not per-button) so
+   multiple buttons on screen still sample a consistent, non-repeating-motif
+   patch of the SAME texture as each other, even though it's no longer the
+   SAME texture as the background.
 
    Step 11.5 (VISUAL-AUDIT V8, applied — base color later overridden grey,
    this session, but the layering fix itself still stands): the gradient
@@ -90,9 +126,9 @@
    technique for "visible texture, stable base color"), which is what
    MATERIALS.md actually asks for — "marble texture visible at close
    inspection," i.e. texture as a detail on top of a reliable base color,
-   not the other way round. Same slab coordinates, same
-   background-attachment: fixed continuity MARBLE-CONTRACT.md requires —
-   only the blend relationship changed, not the sampling. Border + darker
+   not the other way round. Same fixed-attachment continuity technique as
+   before — only the blend relationship (and, this session, which texture
+   file is sampled) changed, not the mechanism. Border + darker
    glow are new: V3's own button shows a visible hairline edge, which the
    previous borderless version didn't have — added at a low enough opacity
    to read as "depth," not the visible-border MATERIALS.md's general
@@ -103,7 +139,7 @@
       rgb(0 0 0 / var(--button-darken-opacity)),
       rgb(0 0 0 / var(--button-darken-opacity))
     ),
-    url("/textures/black-marble-slab.jpg"),
+    url("/textures/medium-gray-marble-slab.jpg"),
     linear-gradient(160deg, var(--surface-blue-marble-start), var(--surface-blue-marble-end));
   background-blend-mode: normal, normal, soft-light, normal;
   background-repeat: no-repeat, no-repeat, repeat, no-repeat;
