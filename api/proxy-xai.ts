@@ -10,7 +10,8 @@
    the browser (ROUTING.md DEBATE PARTNERS: "Each provider's API key is a
    separate secret... Not committed to the repo, ever."). */
 
-import { handleXaiRequest } from "../src/services/debate/xaiHandler";
+/// <reference types="node" />
+import { handleXaiRequest } from "../src/services/debate/xaiHandler.js";
 
 export const config = { runtime: "edge" };
 

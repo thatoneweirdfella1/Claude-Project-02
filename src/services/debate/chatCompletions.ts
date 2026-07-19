@@ -9,7 +9,7 @@
    deliberately), so it lives here once. Google's Gemini does NOT share this
    shape and has its own adapter in googleHandler.ts. */
 
-import type { PartnerAdapter, PartnerProxyRequestBody } from "./partnerProxy";
+import type { PartnerAdapter, PartnerProxyRequestBody } from "./partnerProxy.js";
 
 interface ChatCompletionsConfig {
   modelId: string;

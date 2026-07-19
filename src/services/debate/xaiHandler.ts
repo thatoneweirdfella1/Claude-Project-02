@@ -4,8 +4,8 @@
    xAI ships an OpenAI-compatible /chat/completions endpoint — see
    chatCompletions.ts for why that builder is shared rather than copied. */
 
-import { chatCompletionsAdapter } from "./chatCompletions";
-import { handlePartnerRequest, type PartnerAdapter } from "./partnerProxy";
+import { chatCompletionsAdapter } from "./chatCompletions.js";
+import { handlePartnerRequest, type PartnerAdapter } from "./partnerProxy.js";
 
 export const XAI_ADAPTER: PartnerAdapter = chatCompletionsAdapter({
   modelId: "grok-4.3",

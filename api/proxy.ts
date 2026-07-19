@@ -9,7 +9,8 @@
    Written for a Web-Fetch edge runtime (Vercel Edge / Cloudflare / Netlify
    Edge). Adjust the export shape to your host at deploy (Step 12.3). */
 
-import { handleProxyRequest } from "../src/services/proxyHandler";
+/// <reference types="node" />
+import { handleProxyRequest } from "../src/services/proxyHandler.js";
 
 export const config = { runtime: "edge" };
 

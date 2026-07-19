@@ -12,7 +12,7 @@
    since Step 1.10). No API key here — this endpoint never touches
    Anthropic, it only forwards a GET to a URL the user supplied. */
 
-import { MAX_FILE_BYTES } from "./fileValidation";
+import { MAX_FILE_BYTES } from "./fileValidation.js";
 
 const FETCH_TIMEOUT_MS = 15_000;
 

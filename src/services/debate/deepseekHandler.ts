@@ -4,8 +4,8 @@
    api/proxy-deepseek.ts. DeepSeek ships an OpenAI-compatible
    /chat/completions endpoint — see chatCompletions.ts. */
 
-import { chatCompletionsAdapter } from "./chatCompletions";
-import { handlePartnerRequest, type PartnerAdapter } from "./partnerProxy";
+import { chatCompletionsAdapter } from "./chatCompletions.js";
+import { handlePartnerRequest, type PartnerAdapter } from "./partnerProxy.js";
 
 export const DEEPSEEK_ADAPTER: PartnerAdapter = chatCompletionsAdapter({
   modelId: "deepseek-v4-pro",

@@ -9,8 +9,8 @@
    its own key, which is what actually has to be separate. Google's Gemini
    shape genuinely differs and has its own adapter. */
 
-import { chatCompletionsAdapter } from "./chatCompletions";
-import { handlePartnerRequest, type PartnerAdapter } from "./partnerProxy";
+import { chatCompletionsAdapter } from "./chatCompletions.js";
+import { handlePartnerRequest, type PartnerAdapter } from "./partnerProxy.js";
 
 export const OPENAI_ADAPTER: PartnerAdapter = chatCompletionsAdapter({
   modelId: "gpt-5.5",

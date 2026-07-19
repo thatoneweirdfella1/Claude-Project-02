@@ -11,7 +11,7 @@
    Written for a Web-Fetch edge runtime (Vercel Edge / Cloudflare / Netlify
    Edge). Adjust the export shape to your host at deploy (Step 12.3). */
 
-import { handleUrlFetchRequest } from "../src/services/context/urlFetchHandler";
+import { handleUrlFetchRequest } from "../src/services/context/urlFetchHandler.js";
 
 export const config = { runtime: "edge" };
 

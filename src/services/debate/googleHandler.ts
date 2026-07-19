@@ -8,7 +8,7 @@
    as a header rather than a bearer token), so this adapter is written out
    rather than sharing chatCompletions.ts. */
 
-import { handlePartnerRequest, type PartnerAdapter, type PartnerProxyRequestBody } from "./partnerProxy";
+import { handlePartnerRequest, type PartnerAdapter, type PartnerProxyRequestBody } from "./partnerProxy.js";
 
 const MODEL_ID = "gemini-3.1-pro";
 

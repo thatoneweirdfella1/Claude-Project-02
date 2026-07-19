@@ -10,7 +10,8 @@
    the browser (ROUTING.md DEBATE PARTNERS: "Each provider's API key is a
    separate secret... Not committed to the repo, ever."). */
 
-import { handleGoogleRequest } from "../src/services/debate/googleHandler";
+/// <reference types="node" />
+import { handleGoogleRequest } from "../src/services/debate/googleHandler.js";
 
 export const config = { runtime: "edge" };
 

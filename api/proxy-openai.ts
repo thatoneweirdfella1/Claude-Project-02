@@ -10,7 +10,8 @@
    the browser (ROUTING.md DEBATE PARTNERS: "Each provider's API key is a
    separate secret... Not committed to the repo, ever."). */
 
-import { handleOpenAiRequest } from "../src/services/debate/openaiHandler";
+/// <reference types="node" />
+import { handleOpenAiRequest } from "../src/services/debate/openaiHandler.js";
 
 export const config = { runtime: "edge" };
 

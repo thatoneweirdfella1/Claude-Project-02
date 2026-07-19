@@ -10,7 +10,8 @@
    the browser (ROUTING.md DEBATE PARTNERS: "Each provider's API key is a
    separate secret... Not committed to the repo, ever."). */
 
-import { handleDeepseekRequest } from "../src/services/debate/deepseekHandler";
+/// <reference types="node" />
+import { handleDeepseekRequest } from "../src/services/debate/deepseekHandler.js";
 
 export const config = { runtime: "edge" };
 
