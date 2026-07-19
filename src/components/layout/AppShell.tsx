@@ -4,6 +4,7 @@ import { useAccountStore } from "../../stores/accountStore";
 import { AccordionStack } from "./AccordionStack";
 import { LeftNav } from "./LeftNav";
 import { TopBar } from "./TopBar";
+import { useThemeEffect } from "./useThemeEffect";
 
 /* AppShell — the structural frame from CANON.md "LAYOUT".
    Regions were empty by design at Step 1.1 (skeleton only), then held
@@ -55,6 +56,7 @@ import { TopBar } from "./TopBar";
 
 export function AppShell() {
   const visibility = useAccountStore((s) => s.visibility);
+  useThemeEffect(); // CANON Feature 12 — resolves theme + Auto, writes documentElement's data-theme
 
   return (
     <div className="app-shell app-layer">

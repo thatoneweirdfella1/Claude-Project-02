@@ -125,7 +125,7 @@ describe("DEFAULT_VISIBILITY", () => {
 });
 
 describe("ACCOUNT_PERSISTED_KEYS", () => {
-  it("is exactly the eleven documented fields", () => {
+  it("is exactly the twelve documented fields", () => {
     expect([...ACCOUNT_PERSISTED_KEYS].sort()).toEqual(
       [
         "plan",
@@ -134,6 +134,7 @@ describe("ACCOUNT_PERSISTED_KEYS", () => {
         "savedPrompts",
         "variables",
         "visibility",
+        "theme",
         "learnedPreferences",
         "stateCorrections",
         "sessions",

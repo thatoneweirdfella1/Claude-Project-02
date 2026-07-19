@@ -204,6 +204,14 @@ export interface PromptTemplate {
    Record, not Map, so it serializes straight to IndexedDB. */
 export type SavedVariables = Record<string, string>;
 
+/* Theme preference (CANON Feature 12: "gear dropdown... with theme toggle
+   (Light / Dark / Auto)"). Built this session, alongside the actual light
+   token set (MATERIALS.md/tokens.css) — CANON named this feature back at
+   Step 10.1-adjacent but nothing implemented it until now (VISUAL-AUDIT
+   V16). "auto" resolves against prefers-color-scheme at render time, not
+   stored as a resolved value — see useThemeEffect.ts. */
+export type ThemePreference = "light" | "dark" | "auto";
+
 /* Visibility settings (CANON Feature 12) — the seven sidebar checkboxes.
    Fully specified by CANON now, including exact defaults below. */
 export interface VisibilitySettings {
@@ -343,6 +351,10 @@ export interface AccountState {
   savedPrompts: SavedPrompt[];
   variables: SavedVariables;
   visibility: VisibilitySettings;
+  /** CANON Feature 12's theme toggle. Default "dark" — matches every prior
+      session's only rendered theme; this field didn't exist before, so a
+      default that changes nothing for existing users is correct. */
+  theme: ThemePreference;
   learnedPreferences: LearnedPreferences;
   /** Step 6.4 ADD: every state-pill correction the user has made, across all
       sessions (this store persists across browser closes — corrections must

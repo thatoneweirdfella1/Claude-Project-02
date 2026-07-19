@@ -1,6 +1,46 @@
 # DIVERGENCE.AI BUILD LOG
 
 ## WHERE YOU ARE
+A follow-up session (light theme, CANON Feature 12/V16 — still in progress, not a numbered STEP)
+fixed two real light-theme gaps found by comparing rendered output directly against both reference
+screenshots, not by inspection alone. First: StateDetectionPanel's "Adjust" button (detection.css)
+rendered transparent-background/cyan-text with no fill — it never matched either reference
+screenshot's own dark-fill/white-text button chrome, in EITHER theme, not just a light-theme
+regression. Fixed by applying the `surface-smoked-glass` class to the button (same always-dark
+fill/texture/border as Attach/Context and every other button-ish surface) and adding
+`.state-detection-panel__adjust` to tokens.css's light-theme "button-ish surfaces stay dark"
+counter-override list (it's nested inside GlassCard, which itself goes light — without the
+counter-override its text would've inherited the card's flipped-dark --text-primary, unreadable
+against the button's own still-dark fill). Verified with real Playwright captures (mocked network,
+real render) cropped and compared against both Divergence_AI_App_Screenshot_V3.png (dark) and
+Divergence_AI_Light_App_Screenshot_V2.png (light) — matches now in both. Second:
+`.input-box__textarea` (composer.css, the main composer textarea) was still rendering on the
+always-dark `--surface-smoked-glass` fill in light theme, even though tokens.css's own content-tier
+comment already named "composer textarea" as one of the three points that fill's light-theme color
+was sampled from — the selector itself was just never added to the light-theme override list
+alongside `.primitive-glass-card`/`.conversation-area`. Added it; verified with a real capture,
+matches the reference now. Also fixed a real, unrelated-cause test break this session found while
+re-running the suite: ACCOUNT_PERSISTED_KEYS (accountStore.ts) already includes "theme" from earlier
+light-theme work, but accountStore.test.ts still asserted the old eleven-field list without it —
+updated to twelve fields, verified passing. Full suite re-run clean after all of the above: tsc -b,
+vite build, oxlint (same one pre-existing unrelated QuickActionsRow warning, untouched), vitest
+583/583, full E2E suite 4/4.
+
+STILL OPEN in this same light-theme follow-up, not addressed this session: no user-facing control
+exists anywhere to actually call accountStore.setTheme. useThemeEffect (resolves the raw preference
+against OS/prefers-color-scheme and writes documentElement's data-theme) is built and wired into
+AppShell, and the CSS side now renders correctly for whichever theme data-theme is set to — but
+nothing in the UI ever sets it, so the store sits at its "dark" default in practice. CANON Feature 12
+names a gear-dropdown Light/Dark/Auto toggle, but TopBar's gear icon is already occupied by
+VisibilityMenu (Step 9.4's 7-checkbox popover) — where the theme control actually belongs is an
+unresolved design question, not just an unwired button, the same class of gap V16's original
+escalation named. Also unverified: roughly a dozen other files consume `--surface-smoked-glass`
+directly or via the `.surface-smoked-glass` class (dropdown popovers, session strip, import modal,
+multi-ai body, techniques/translation popovers, etc.) — each needs the same button-tier-vs-content-
+tier judgment call the two fixes above required, checked against the reference screenshot one at a
+time. Only the two gaps actually found by direct comparison were fixed here; the rest were not
+individually audited and may or may not already be correct.
+
 Everything through STEP 12.2 is done (see STEPS checklist; commit sequence verified against
 `git log --oneline -- BUILD-LOG.md`), plus three operator-directed follow-up sessions after 12.2: one
 fixed 11.5's own V8/V14 escalations with real calibration against Divergence_AI_App_Screenshot_V3.png

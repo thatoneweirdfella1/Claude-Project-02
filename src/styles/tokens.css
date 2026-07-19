@@ -248,3 +248,93 @@
 
   --slab-tile-size: 2508px; /* native resolution of the seamless mirrored supertile texture; never cover/contain/percent/vw/vh */
 }
+
+/* -----------------------------------------------------------------------
+   LIGHT THEME (CANON Feature 12, VISUAL-AUDIT V16) — built this session
+   against Divergence_AI_Light_App_Screenshot_V2.png, the first time this
+   repo has had a real light-mode reference. Real per-pixel sampling of
+   that file, not eyeballed, is documented in BUILD-LOG.md DECISIONS.
+
+   THE RULE, derived from the reference image itself, not invented: every
+   BUTTON-ish surface (nav items, top-bar controls, Quick Actions,
+   Attach/Context, TRANSLATE & ASK, Quick Tools tiles, accordion rows —
+   `.primitive-glass-button`, `.surface-blue-marble`, `.primitive-glass-panel`,
+   `.quick-tools-tile__button`) stays the EXACT SAME dark, marble-textured
+   surface in BOTH themes — confirmed by sampling their fill colors in the
+   light screenshot and finding them near-identical to dark theme's own
+   values. Only the background slab and genuinely passive CONTENT surfaces
+   (`.primitive-glass-card`, `.conversation-area` — message bubbles, form
+   cards, modals, popovers) actually invert to light.
+
+   FIRST ATTEMPT AT THIS WAS WRONG, caught with a real rendered capture, not
+   assumed correct: redefining --surface-smoked-glass itself to a light
+   value broke every nav/top-bar/quick-actions button, because GlassButton
+   applies BOTH `surface-smoked-glass` (fill) AND `primitive-glass-button`
+   (layout) together — most consumers of that token are actually buttons,
+   not content. --surface-smoked-glass/-border are left COMPLETELY
+   UNCHANGED here as a result (still always-dark) — correct for the
+   majority of what reads them; the minority that needs to go light
+   (GlassCard, ConversationArea) gets its own explicit override below
+   instead, scoped to the actual content classes. */
+:root[data-theme="light"] {
+  /* Text default: flips for anything sitting on the background directly or
+     inside a content card (both go light). Button-ish surfaces counter-
+     override this back to white further down, same reasoning as above —
+     they didn't change, so their white text shouldn't either. */
+  --text-primary: #16151a;
+  --text-secondary: #55565f;
+
+  /* Black Marble (background) — real sampled base from the reference
+     (multiple non-veined sample points, #f3f3f3-#fcfcfc): used only as the
+     flat-color fallback if the texture image fails, same convention as
+     dark theme's own --surface-black-marble-*. The actual rendered slab
+     uses marble.css's filter: invert() on the same locked texture asset —
+     see MARBLE-CONTRACT.md for why that's safe here (the slab has no
+     children, so nothing but the slab itself is affected). */
+  --surface-black-marble-start: #f5f5f5;
+  --surface-black-marble-end: #fcfcfc;
+}
+
+/* Button-ish surfaces stay dark/white-text in light theme too — explicit
+   counter-override so the root text flip above doesn't cascade into them.
+   .primitive-glass-panel here is AccordionStack's wrapper (its only real
+   consumer) — its header's own background is transparent, so overriding
+   the panel covers the header too via normal inheritance.
+   .state-detection-panel__adjust joined this list this session: it's a
+   `surface-smoked-glass` button nested INSIDE .primitive-glass-card
+   (StateDetectionPanel's GlassCard), which itself goes light in this same
+   block above — without this override its text inherited the card's now-
+   dark --text-primary, unreadable against the button's own still-dark
+   fill. Both reference screenshots confirm this button stays dark/white-
+   text in light theme too (Divergence_AI_Light_App_Screenshot_V2.png), same
+   as every other button-ish surface here. */
+:root[data-theme="light"] .primitive-glass-button,
+:root[data-theme="light"] .surface-blue-marble,
+:root[data-theme="light"] .quick-tools-tile__button,
+:root[data-theme="light"] .primitive-glass-panel,
+:root[data-theme="light"] .state-detection-panel__adjust {
+  --text-primary: #ffffff;
+  --text-secondary: #a6abb5; /* dark theme's own --text-secondary value, unchanged */
+}
+
+/* Content tier — the actual "goes light" surfaces: GlassCard (form/info
+   cards, modals, popovers — TranslationCard, ClarifyPrompt, DownloadModal,
+   TransparencyCard body, ImportModal, StateDetectionPanel, MultiAiActions
+   body) and ConversationArea (message bubbles). Real sampled fill from the
+   reference (composer textarea, state-detection card, message content area
+   all landed in the same narrow band, #f9f9fd-#fdfefe): near-white, same
+   88-92%-opaque translucent-glass convention as dark theme, not opaque.
+   .input-box__textarea joined this selector list this session — the sample
+   list above already named "composer textarea" as one of the three points
+   this fill was measured from, but the selector itself was never added, so
+   it was still rendering on --surface-smoked-glass (always-dark) same as
+   every button-ish surface. A real gap, not a new call: the reference
+   screenshot (Divergence_AI_Light_App_Screenshot_V2.png) shows it light. */
+:root[data-theme="light"] .primitive-glass-card,
+:root[data-theme="light"] .conversation-area,
+:root[data-theme="light"] .input-box__textarea {
+  background-color: rgba(250, 250, 252, 0.9);
+  border-color: rgba(0, 0, 0, 0.12); /* was rgba(0,0,0,0.5) on dark fills — a much darker
+    line was needed there to show up against near-black; this reads fine as a hairline
+    against a near-white fill */
+}

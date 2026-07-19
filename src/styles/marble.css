@@ -47,6 +47,23 @@
     var(--slab-tile-size) var(--slab-tile-size); /* fixed world scale, never rescaled */
 }
 
+/* LIGHT THEME (this session): no separate light marble texture asset
+   exists (the operator has only ever provided black + two greys — see
+   MARBLE-CONTRACT.md THE ASSETS), so the same locked black-marble-slab.jpg
+   is inverted at the pixel level. Safe specifically here because
+   .marble-slab has no children — inverting a leaf element with no nested
+   interactive content can't accidentally flip a button/nav item that's
+   supposed to stay dark (see tokens.css's light-theme block for why that
+   distinction matters). hue-rotate(180deg) after invert corrects the
+   texture's warm off-white veins from inverting into an odd cool blue —
+   the two together bring a raw invert closer to a neutral warm-gray vein
+   on white stone, calibrated by real rendered capture against
+   Divergence_AI_Light_App_Screenshot_V2.png, same iterative method as
+   every other calibrated value in this file (V8/V14), not guessed. */
+:root[data-theme="light"] .marble-slab {
+  filter: invert(1) hue-rotate(180deg);
+}
+
 /* Everything else renders in one sibling layer above the slab. */
 .app-layer {
   position: relative;
@@ -103,6 +120,31 @@
   border: 1px solid var(--surface-smoked-glass-border);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
+}
+
+/* LIGHT THEME (this session): dark-grey-marble-slab.jpg's own texture layer
+   (screen-blended above) is DROPPED for the CONTENT tier specifically
+   (.primitive-glass-card, .conversation-area — tokens.css's light-theme
+   block gives these their own light background-color/border-color), not
+   inverted like .marble-slab. FIRST ATTEMPT targeted the shared
+   `.surface-smoked-glass` class itself and was WRONG, caught with a real
+   rendered capture: most consumers of that class are actually buttons
+   (GlassButton applies `surface-smoked-glass primitive-glass-button`
+   together), and dropping their texture/fill broke nav, top-bar, and
+   Quick Actions entirely — text became invisible white-on-white. Scoped
+   here to only the two content classes instead. Also why this uses a
+   background-image cancel rather than filter: invert() the way
+   .marble-slab does — StateDetectionPanel's "Adjust" button and similar
+   controls live nested INSIDE GlassCard in places, and filter: invert()
+   on the ancestor would invert those nested buttons too. Falling back to
+   plain translucent glass (background-color + backdrop-filter blur, no
+   direct texture) is the same mechanic this surface used for its entire
+   history before this session's texture change — the now-inverted, now-
+   light .marble-slab shows through the blur, carrying real vein
+   continuity without this element needing its own texture layer. */
+:root[data-theme="light"] .primitive-glass-card,
+:root[data-theme="light"] .conversation-area {
+  background-image: none;
 }
 
 /* Medium Gray Marble (was Blue Marble) — primary buttons and nav, previously

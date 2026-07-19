@@ -141,14 +141,20 @@
   background: var(--accent-cyan-tint-12);
 }
 
+/* Adjust — a `surface-smoked-glass` button (TSX applies both classes), same
+   always-dark fill/texture/border as Attach/Context and every other button-
+   ish surface, not the transparent+cyan-text treatment this used to have.
+   Real captures of both reference screenshots confirm it stays dark with
+   white text in light theme too, even though its parent GlassCard goes
+   light around it (tokens.css's light-theme counter-override list handles
+   the text-color side; this rule only overrides sizing/radius down from
+   surface-smoked-glass's card-scaled defaults to button scale). */
 .state-detection-panel__adjust {
   flex-shrink: 0;
   min-height: 36px;
   padding: 6px 14px;
-  border: 1px solid var(--surface-smoked-glass-border);
   border-radius: var(--radius-button);
-  background: transparent;
-  color: var(--accent-cyan);
+  color: var(--text-primary);
   font-family: var(--font-family-base);
   font-size: var(--font-size-label-secondary);
   font-weight: var(--font-weight-label-secondary);

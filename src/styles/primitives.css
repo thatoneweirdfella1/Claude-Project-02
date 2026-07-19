@@ -89,6 +89,20 @@
   font-weight: var(--font-weight-label-secondary);
 }
 
+/* LIGHT THEME (this session): --hover-tint (a 4% WHITE overlay) is correct
+   on dark theme's near-black pill background but reads as nearly invisible
+   white-on-white here — real sampled reference
+   (Divergence_AI_Light_App_Screenshot_V2.png): each state pill gets a
+   visible pastel tint of its OWN color (light purple for Emotion, light
+   red for RSD, etc.), not a generic tint. color-mix keeps this to one rule
+   for all four pills — each already carries its own --pill-color custom
+   property (StatePill.tsx), so this derives the right pastel automatically
+   instead of naming four hardcoded light colors that would drift from
+   --pill-color if that token ever changed. */
+:root[data-theme="light"] .primitive-pill {
+  background: color-mix(in srgb, var(--pill-color) 14%, white);
+}
+
 /* Focus ring — every primitive, visible at every keyboard stop. */
 .primitive-glass-card:focus-visible,
 .primitive-glass-panel:focus-visible,

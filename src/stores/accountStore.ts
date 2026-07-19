@@ -10,6 +10,7 @@ import type {
   SavedPrompt,
   SessionRecord,
   StateCorrection,
+  ThemePreference,
   VisibilitySettings,
 } from "./types";
 
@@ -96,6 +97,7 @@ export function createInitialAccountState(): AccountState {
     savedPrompts: [],
     variables: {},
     visibility: { ...DEFAULT_VISIBILITY },
+    theme: "dark", // CANON Feature 12 — default unchanged from every prior session's only theme
     learnedPreferences: { routing: {}, technique: {} },
     stateCorrections: [], // Step 6.4
     sessions: [], // Step 9.1
@@ -112,6 +114,7 @@ export const ACCOUNT_PERSISTED_KEYS: (keyof AccountState)[] = [
   "savedPrompts",
   "variables",
   "visibility",
+  "theme",
   "learnedPreferences",
   "stateCorrections",
   "sessions",
@@ -134,6 +137,10 @@ interface AccountActions {
   removeVariable: (name: string) => void;
   /** Merge a partial visibility change (one or more of the seven checkboxes). */
   setVisibility: (patch: Partial<VisibilitySettings>) => void;
+  /** CANON Feature 12's theme toggle — the user's raw preference, not the
+      resolved light/dark value ("auto" is resolved at render time, see
+      useThemeEffect.ts, not here). */
+  setTheme: (theme: ThemePreference) => void;
   setLearnedPreferences: (prefs: LearnedPreferences) => void;
   /** Step 10.2 — atomic write for the learning-loop applier
       (services/learningLoop/applier.ts): sets the updated
@@ -190,6 +197,7 @@ export const useAccountStore = create<AccountStore>((set) => ({
       return { variables: rest };
     }),
   setVisibility: (patch) => set((s) => ({ visibility: { ...s.visibility, ...patch } })),
+  setTheme: (theme) => set({ theme }),
   setLearnedPreferences: (learnedPreferences) => set({ learnedPreferences }),
   applyLearningRefinements: (updated, newAuditEntries) =>
     set((s) => {
