@@ -107,13 +107,26 @@ chip gets a real avatar circle (`--accent-purple`, the same purple already used 
 text and the Emotion pill — not a new one-off color) plus a ChevronDown. Verified with a real capture
 at both viewport widths.
 
-**[ESCALATED — Step 11.5, audit's own instruction ("flag to the operator... rather than silently picking")]** **V6 — Logo mark is small and dim; wordmark case differs from V3.**
+**[FIXED — operator-directed follow-up session, verified with a real headless-Chrome capture]** **V6 — Logo mark is small and dim; wordmark case differs from V3.**
 App: compact outline brain + "DIVERGENCE AI" (uppercase, thin). V3: larger aurora-gradient brain
 + "Divergence.AI" (mixed case with dot). CANON's THE LOGO text says '"DIVERGENCE" in white' —
 but CANON's own precedence rule says the screenshot wins on visual disagreement.
 **Fix:** enlarge/brighten the mark toward V3's weight, and either adopt the mixed-case "Divergence.AI"
 wordmark or get an explicit product call to keep CANON's text version — flag to the operator at 11.5
 rather than silently picking.
+**Applied**: the operator provided the real source asset, `DivergenceAILogo.png`, resolving the
+question this note explicitly deferred — not a guess, the actual brand mark. It's a detailed
+geometric/faceted brain icon in a blue-violet-magenta gradient (not the old green-purple-pink
+placeholder) paired with mixed-case "Divergence.AI", exactly as V3 shows. Extracted the icon with
+real alpha transparency (screen-extraction against the source's near-pure-black background, verified
+against both a white and black background before committing to the asset — see BUILD-LOG.md
+DECISIONS for the method) as `public/logo-mark.png`, so it renders cleanly on both the dark theme now
+and the light theme once built, unlike a flat crop would have. `Logo.tsx`/`BrainMark.tsx` both
+switched from hand-rolled inline SVG to this real asset; wordmark text updated to "Divergence" +
+".AI" (was "DIVERGENCE"/"AI", both uppercase); new `--logo-gradient-*` tokens sampled from the real
+icon's actual pixels (start≈#039ef7, mid≈#4241f9, end≈#af0ef5), replacing the old placeholder hex
+values. The synapse-pulse animation was dropped, not ported — the real asset is a static mark, so
+there's nothing to animate.
 
 **[FIXED — Step 11.5, verified with a real headless-Chrome capture]** **V7 — Context Snapshot accordion defaults expanded; V3 shows all six collapsed.**
 Capture: app-default.png ("Nothing loaded yet." visible). Code: `useState<AccordionPanelKey |

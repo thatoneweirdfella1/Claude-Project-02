@@ -1,7 +1,11 @@
 /* Logo.css — co-located with Logo.tsx (CONVENTIONS.md allows
    ComponentName.css next to a component for component-specific styling
-   that tokens + global classes can't cleanly cover, like this SVG's
-   keyframes and gradient wiring). */
+   that tokens + global classes can't cleanly cover).
+
+   REPLACED, operator-directed override, this session: the brain mark is
+   now a real PNG asset (public/logo-mark.png), not hand-rolled SVG paths —
+   see Logo.tsx for why. Gone: .logo-brain, .logo-synapse, and the synapse
+   keyframes (no asset to draw those onto anymore). */
 
 .logo {
   display: inline-flex;
@@ -12,33 +16,14 @@
 }
 
 .logo-mark {
-  width: 32px;
   height: 32px;
+  width: auto; /* preserves the asset's own aspect ratio, doesn't force a square */
   flex-shrink: 0;
-  overflow: visible;
 }
 
-.logo-brain {
-  fill: none;
-  stroke: url(#logo-aurora);
-  stroke-width: 1.4;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.logo-synapse-links path {
-  fill: none;
-  stroke: url(#logo-aurora);
-  stroke-width: 0.6;
-  stroke-linecap: round;
-  opacity: 0.45;
-}
-
-.logo-synapse {
-  fill: url(#logo-aurora);
-}
-
-/* Wordmark: DIVERGENCE in white, AI in the aurora mix. */
+/* Wordmark: "Divergence" in white, ".AI" in the logo gradient — mixed
+   case, matching the real brand asset (was "DIVERGENCE"/"AI", both
+   uppercase, a Step 1.6 placeholder guess). */
 .logo-wordmark {
   font-family: var(--font-family-base);
   font-size: var(--font-size-card-title);
@@ -51,43 +36,16 @@
 }
 
 .logo-word-ai {
-  margin-left: 2px;
-  background: var(--logo-aurora-gradient);
+  background: var(--logo-gradient);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
-/* BrainMark (BrainMark.tsx) — the same brain glyph, reused at small size.
-   Own gradient id per instance (component-level useId()), so only the
-   stroke color/weight rules are shared here. */
+/* BrainMark (BrainMark.tsx) — the same logo-mark.png asset, reused at
+   whatever small size a caller needs (composer label, message avatar,
+   TRANSLATE & ASK, Translate nav item — see BrainMark.tsx). */
 .brain-mark {
   flex-shrink: 0;
-  overflow: visible;
-}
-
-.brain-mark__path {
-  fill: none;
-  stroke-width: 1.4;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-/* Subtle synapse firing — only when the user hasn't asked for reduced
-   motion. Small opacity range, slow, staggered (per-node delay set
-   inline in Logo.tsx). Static otherwise (CANON sensory hard rule). */
-@media (prefers-reduced-motion: no-preference) {
-  .logo-synapse {
-    animation: logo-synapse-fire 3.6s ease-in-out infinite;
-  }
-}
-
-@keyframes logo-synapse-fire {
-  0%,
-  100% {
-    opacity: 0.4;
-  }
-  50% {
-    opacity: 1;
-  }
+  width: auto;
 }

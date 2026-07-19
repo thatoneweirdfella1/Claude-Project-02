@@ -118,4 +118,6 @@ Two stores. **Session store**, cleared when a session closes: model selection, d
 
 ## THE LOGO
 
-A clean brain outline with synapses, colored in an aurora-borealis mix (neon green, purple, pink blended). "DIVERGENCE" in white, "AI" in the aurora mix. Nothing else inside the brain. Subtle synapse animation, not distracting. Top-left of the top bar.
+**REVISED, operator-directed override, this session:** the description below was a placeholder, written before any real brand asset existed (rule #1 already established the real asset wins on disagreement, same as the V3 screenshot). The real asset is `DivergenceAILogo.png` (repo root); the extracted icon lives at `public/logo-mark.png`.
+
+A detailed geometric/faceted brain mark, colored in a blue-violet-magenta gradient (not green/purple/pink). "Divergence" in white (mixed case, not all-caps), ".AI" in the same gradient. Nothing else inside the brain. No animation — the real asset is a static mark, not the placeholder's animated synapse dots. Top-left of the top bar; also reused at small size wherever the app shows "the AI is doing the thinking" (composer label, assistant message avatar, TRANSLATE & ASK, the Translate nav item — see BrainMark.tsx).
