@@ -43,6 +43,17 @@
 
 .quick-tools-tile {
   position: relative;
+  /* Fix, this session (found once Quick Tools became visible by default —
+     latent since Step 9.6/11.5, never actually rendered until now): grid
+     items default to min-width: auto, which lets a tile's own content
+     (e.g. "Prompt Library" or "Checkpoints") force it wider than its 1fr
+     track's fair-share width rather than wrap/shrink to fit — the third
+     column was overflowing col-right's 300px boundary by ~25px, confirmed
+     with real getBoundingClientRect() measurements (tile right edge at
+     ~1550px against a 1525px viewport). min-width: 0 is the standard fix:
+     it lets the tile actually respect the grid track instead of growing
+     past it. */
+  min-width: 0;
 }
 
 .quick-tools-tile__button {

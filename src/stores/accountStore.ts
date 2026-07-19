@@ -22,16 +22,24 @@ import type {
    only individual mutations remove individual items. Autosave (Step 1.8)
    persists ACCOUNT_PERSISTED_KEYS and rehydrates via hydrate(). */
 
-/** The seven sidebar-visibility defaults, verbatim from CANON Feature 12:
-    Recent Sessions ON, Context Snapshot ON, Recent Activity ON, Token
-    Usage ON, Model Status ON, Quick Tools OFF, Active Session OFF. */
+/** The seven sidebar-visibility defaults. Quick Tools REVISED, operator-
+    directed override, this session: CANON's own rule #1 ("Visual truth is
+    the V3 screenshot... if a file disagrees with the image, the image
+    wins") already outranked CANON rule #9's "Quick Tools defaults to
+    hidden (OFF)" — Divergence_AI_App_Screenshot_V3.png clearly shows the
+    six-tile grid always visible above the accordion stack, not hidden. The
+    operator's direct instruction ("stays up always") settles the
+    contradiction explicitly rather than leaving it silently resolved one
+    way. Still user-togglable via the Settings gear (Feature 12's 7
+    checkboxes, unchanged) — only the DEFAULT changed. See BUILD-LOG.md
+    DECISIONS and CANON.md (rule #9, Feature 12, LAYOUT all updated). */
 export const DEFAULT_VISIBILITY: VisibilitySettings = {
   recentSessions: true,
   contextSnapshot: true,
   recentActivity: true,
   tokenUsage: true,
   modelStatus: true,
-  quickTools: false,
+  quickTools: true,
   activeSession: false,
 };
 

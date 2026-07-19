@@ -52,7 +52,15 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: var(--space-row-margin);
+  /* Bottom padding removed, operator-directed fix this session: the group
+     below (Trash/System Status/Logout) is pushed to the bottom via
+     margin-top: auto (correct — confirmed with real measurements: 199px of
+     flex space collects above it, only 16px below, so it was NOT actually
+     centered), but that remaining 16px of matching padding below it still
+     read as a visible gap, undermining "pinned to the very bottom." Top/
+     left/right padding unchanged; only bottom is now 0, so the group's own
+     content — not container padding — defines the true bottom edge. */
+  padding: var(--space-row-margin) var(--space-row-margin) 0 var(--space-row-margin);
   box-sizing: border-box;
 }
 
@@ -78,6 +86,7 @@
   flex-direction: column;
   gap: var(--space-list-item-margin);
   padding-top: var(--space-row-margin);
+  padding-bottom: 8px; /* small breathing room at the true edge, deliberately less than padding-top so the group still reads as bottom-anchored, not centered */
   border-top: 1px solid var(--surface-smoked-glass-border);
 }
 

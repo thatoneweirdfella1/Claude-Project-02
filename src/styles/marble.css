@@ -107,22 +107,36 @@
 
 /* Medium Gray Marble (was Blue Marble) — primary buttons and nav, previously
    the one deliberate exception to "components never carry texture," now one
-   of two (see .surface-smoked-glass above). Anchored to the viewport via
-   background-attachment: fixed at the slab's own world scale, same
-   technique as .marble-slab, so texture never stretches or scales per
-   button — not a per-button position hand-tuned to fake alignment, the
-   general mechanism every surface of this tier shares.
+   of two (see .surface-smoked-glass above).
 
    OPERATOR-DIRECTED OVERRIDE, this session: now samples
    medium-gray-marble-slab.jpg, not black-marble-slab.jpg — a different
    texture than .marble-slab's background, so this no longer reads as "the
    same continuous slab showing through a cutout" (MARBLE-CONTRACT.md's
    original framing for this exception); it reads as its own grey stone
-   surface instead, consistent with the three-tone override elsewhere. Kept
-   background-attachment: fixed anyway (viewport-locked, not per-button) so
-   multiple buttons on screen still sample a consistent, non-repeating-motif
-   patch of the SAME texture as each other, even though it's no longer the
-   SAME texture as the background.
+   surface instead, consistent with the three-tone override elsewhere.
+
+   REVISED AGAIN, operator-directed, this session — background-attachment:
+   fixed REMOVED, not kept: it was producing a real, confirmed rendering
+   defect, not a cosmetic tradeoff. The operator reported the button's
+   border reading "inconsistent... not around it the same" on every side;
+   isolated with a real capture (getBoundingClientRect showed a fractional
+   x position, e.g. 1023.328125px) and a controlled test (forcing
+   background-attachment to scroll on all four layers via
+   page.evaluate() and re-screenshotting the same element) — the left
+   border edge was fully missing with fixed attachment and fully present,
+   uniform on all four sides, with scroll. Root cause: background-
+   attachment: fixed composites against the VIEWPORT's pixel grid, while
+   this element's border-radius clip and border stroke are aligned to the
+   element's own fractional-pixel box — the sub-pixel mismatch between the
+   two is what dropped the left edge in Chromium's rendering. The original
+   justification for fixed here was already weak after the texture-source
+   change above ("multiple buttons sample a consistent patch of the same
+   texture as each other," a minor visual nicety, not a functional
+   requirement) — not worth a real, user-visible border bug. Scroll
+   attachment still uses the identical non-stretching background-size (the
+   slab's native tile scale), so MARBLE-CONTRACT.md's no-stretch guarantee
+   is unaffected; only the coordinate anchor changed.
 
    Step 11.5 (VISUAL-AUDIT V8, applied — base color later overridden grey,
    this session, but the layering fix itself still stands): the gradient
@@ -140,9 +154,9 @@
    technique for "visible texture, stable base color"), which is what
    MATERIALS.md actually asks for — "marble texture visible at close
    inspection," i.e. texture as a detail on top of a reliable base color,
-   not the other way round. Same fixed-attachment continuity technique as
-   before — only the blend relationship (and, this session, which texture
-   file is sampled) changed, not the mechanism. Border + darker
+   not the other way round. Only the blend relationship (and, this session,
+   which texture file is sampled, and the attachment fix above) changed,
+   not this layering mechanism itself. Border + darker
    glow are new: V3's own button shows a visible hairline edge, which the
    previous borderless version didn't have — added at a low enough opacity
    to read as "depth," not the visible-border MATERIALS.md's general
@@ -164,7 +178,7 @@
   background-blend-mode: normal, normal, overlay, normal;
   background-repeat: no-repeat, no-repeat, repeat, no-repeat;
   background-position: 0 0, 0 0, 0 0, 0 0;
-  background-attachment: scroll, scroll, fixed, scroll;
+  background-attachment: scroll, scroll, scroll, scroll; /* was fixed on the texture layer — see comment above, real border-rendering bug */
   background-size:
     100% 100%,
     100% 100%,
