@@ -13,6 +13,25 @@
   /* 1. Black Marble — full-viewport background slab. */
   --surface-black-marble-start: #0b0c0e;
   --surface-black-marble-end: #151618;
+  /* Step 11.5 (VISUAL-AUDIT V14, applied): the raw texture asset
+     (public/textures/black-marble-slab.jpg) reads visibly brighter/busier
+     than V3's near-flat-black slab with barely-visible veining — a flat
+     black scrim over the texture, at this opacity, is what brought a real
+     rendered capture in line with V3 (calibrated by side-by-side comparison
+     against Divergence_AI_App_Screenshot_V3.png, not derived from a written
+     spec value — MATERIALS.md names the base hex range and "barely
+     noticeable" veining but no overlay/opacity number). Locked texture
+     asset itself is untouched; see MARBLE-CONTRACT.md "THE ASSETS". */
+  --slab-darken-opacity: 0.75;
+  /* Step 11.5 (VISUAL-AUDIT V8, applied): once the button's blend mode
+     stopped letting the texture crush its luminance (marble.css
+     .surface-blue-marble), the gradient's own true brightness read
+     noticeably more vivid/saturated than V3's darker, moodier button —
+     MATERIALS.md: "not neon." This scrim brings it back down; calibrated
+     the same way as --slab-darken-opacity, by comparing a real rendered
+     capture against Divergence_AI_App_Screenshot_V3.png's own button crop,
+     not a spec value (none exists for this). */
+  --button-darken-opacity: 0.35;
 
   /* 2. Smoked Glass — cards and panels. 88-92% opaque so the slab blurs
      through (picked 90%, the midpoint). Never opaque, never carries its
@@ -88,6 +107,7 @@
      what they look like, same convention as the rest of this file. */
   --accent-cyan-tint-06: rgb(0 217 255 / 0.06); /* re-encodes --accent-cyan at 6% */
   --accent-cyan-tint-12: rgb(0 217 255 / 0.12); /* re-encodes --accent-cyan at 12% */
+  --accent-cyan-tint-25: rgb(0 217 255 / 0.25); /* re-encodes --accent-cyan at 25% — Blue Marble's hairline border (Step 11.5 V8) */
   --hover-tint: rgb(255 255 255 / 0.04); /* generic subtle hover background, reused across 6 files */
   --modal-backdrop: rgb(0 0 0 / 0.5); /* modal/dialog backdrop scrim */
 

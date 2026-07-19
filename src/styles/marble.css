@@ -19,10 +19,23 @@
   z-index: 0;
   pointer-events: none;
   background-color: var(--surface-black-marble-start); /* fallback if the image fails to load */
-  background-image: url("/textures/black-marble-slab.jpg");
-  background-repeat: repeat;
-  background-position: 0 0; /* shared origin: viewport top-left */
-  background-size: var(--slab-tile-size) var(--slab-tile-size); /* fixed world scale, never rescaled */
+  /* Step 11.5 (VISUAL-AUDIT V14): a flat black scrim layered over the
+     texture, at --slab-darken-opacity, darkens and quiets the veining
+     toward V3's near-flat-black slab — the locked texture asset itself is
+     unchanged (MARBLE-CONTRACT.md "THE ASSETS"), only how it's presented.
+     Same shared origin/size/repeat as the texture layer beneath it, so the
+     darkening tiles identically and never creates a seam or a lighter/
+     darker rectangle (MARBLE-CONTRACT.md's enforceable checks). */
+  background-image: linear-gradient(
+      rgb(0 0 0 / var(--slab-darken-opacity)),
+      rgb(0 0 0 / var(--slab-darken-opacity))
+    ),
+    url("/textures/black-marble-slab.jpg");
+  background-repeat: repeat, repeat;
+  background-position: 0 0, 0 0; /* shared origin: viewport top-left */
+  background-size:
+    var(--slab-tile-size) var(--slab-tile-size),
+    var(--slab-tile-size) var(--slab-tile-size); /* fixed world scale, never rescaled */
 }
 
 /* Everything else renders in one sibling layer above the slab. */
@@ -49,20 +62,50 @@
    the viewport exactly as it does on the slab itself — the same
    construction every Blue Marble surface shares, not a per-button
    position hand-tuned to fake alignment. That is what makes the stone
-   read as one continuous slab showing through a cutout. */
+   read as one continuous slab showing through a cutout.
+
+   Step 11.5 (VISUAL-AUDIT V8, applied): the sapphire gradient used to sit
+   ABOVE the texture with background-blend-mode: color, which takes hue/
+   saturation from the gradient but LUMINANCE from whatever the texture
+   happens to be at that viewport-fixed sample point — so the button's
+   actual brightness was entirely at the mercy of which patch of a mostly-
+   dark texture it landed on (a real capture confirmed this: near-black at
+   one scroll/viewport position, sharp bright cyan patches at another —
+   uneven, not just dim). Reordered so the gradient is now the BASE layer
+   (its own consistent luminance always shows) and the texture sits above
+   it blended with soft-light instead — soft-light nudges the base up or
+   down by the texture's local value without ever fully overriding it
+   (Cs=0.5 leaves Cb unchanged; this is the standard CSS technique for
+   "visible texture, stable base color"), which is what MATERIALS.md
+   actually asks for — "marble texture visible at close inspection," i.e.
+   texture as a detail on top of a reliable sapphire, not the other way
+   round. Same slab coordinates, same background-attachment: fixed
+   continuity MARBLE-CONTRACT.md requires — only the blend relationship
+   changed, not the sampling. Border + darker glow are new: V3's own button
+   shows a visible hairline edge, which the previous borderless version
+   didn't have — added at a low enough opacity to read as "depth," not the
+   visible-border MATERIALS.md's general spacing section discourages. */
 .surface-blue-marble {
   background-image: linear-gradient(180deg, var(--surface-blue-marble-glow), transparent 45%),
-    linear-gradient(160deg, var(--surface-blue-marble-start), var(--surface-blue-marble-end)),
-    url("/textures/black-marble-slab.jpg");
-  background-blend-mode: normal, color, normal;
-  background-repeat: no-repeat, no-repeat, repeat;
-  background-position: 0 0, 0 0, 0 0;
-  background-attachment: scroll, scroll, fixed;
+    linear-gradient(
+      rgb(0 0 0 / var(--button-darken-opacity)),
+      rgb(0 0 0 / var(--button-darken-opacity))
+    ),
+    url("/textures/black-marble-slab.jpg"),
+    linear-gradient(160deg, var(--surface-blue-marble-start), var(--surface-blue-marble-end));
+  background-blend-mode: normal, normal, soft-light, normal;
+  background-repeat: no-repeat, no-repeat, repeat, no-repeat;
+  background-position: 0 0, 0 0, 0 0, 0 0;
+  background-attachment: scroll, scroll, fixed, scroll;
   background-size:
     100% 100%,
     100% 100%,
-    var(--slab-tile-size) var(--slab-tile-size);
-  border: none;
+    var(--slab-tile-size) var(--slab-tile-size),
+    100% 100%;
+  /* MATERIALS.md "SPACING, CORNERS, SHADOWS": hairline borders, if used,
+     are "subtle darker charcoal or cyan" — not white. Cyan, at low opacity,
+     gives V3's visible edge without contradicting that written rule. */
+  border: 1px solid var(--accent-cyan-tint-25);
   border-radius: var(--radius-button);
   min-height: 44px;
   padding: var(--space-button-vertical) var(--space-button-horizontal);

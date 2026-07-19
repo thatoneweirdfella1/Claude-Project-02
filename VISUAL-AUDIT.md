@@ -101,7 +101,7 @@ null>("contextSnapshot")` (AccordionStack.tsx:49). **Fix:** default `null` (all 
 Playwright capture: all six panels render collapsed (0 `aria-expanded="true"` headers, all chevrons
 `›`).
 
-**[ESCALATED — Step 11.5, no concrete implementation values in the audit]** **V8 — TRANSLATE & ASK reads near-black at some positions; V3 shows a consistent deep sapphire
+**[FIXED — operator-directed follow-up session, verified with real headless-Chrome captures at three viewport/scroll positions]** **V8 — TRANSLATE & ASK reads near-black at some positions; V3 shows a consistent deep sapphire
 with a soft top glow.**
 At 1525px the button is barely distinguishable from the background (app-default.png); at 900px it
 renders vivid blue (app-narrow.png) — appearance depends on which slab region the fixed-attachment
@@ -109,6 +109,24 @@ sampling lands on. MATERIALS wants "deep sapphire, soft top glow, not neon" cons
 **Fix (11.5):** strengthen the button's own blue layer (gradient/color blend) so the sapphire reads
 regardless of sampled slab region; keep the coordinate-sampling for texture continuity. Verify under
 a real GPU — the color-blend layer may interact with backdrop-filter differently than headless shows.
+**Root cause confirmed and fixed:** `.surface-blue-marble` (marble.css) blended the sapphire gradient
+OVER the texture with `background-blend-mode: color` — hue/saturation from the gradient, but
+LUMINANCE entirely from whatever the texture happened to be at that viewport-fixed sample point,
+so brightness was fully at the mercy of scroll/viewport position (confirmed with a real capture:
+near-black at one position, sharp bright cyan patches at another). Reordered the layers so the
+gradient is the BASE (its own consistent luminance always shows) and the texture blends on TOP of
+it with `soft-light` instead of `color` — soft-light nudges the base up/down by the texture's local
+value without ever fully overriding it, giving "texture visible at close inspection" (MATERIALS.md's
+own words) on a reliably-sapphire base rather than a texture-dominated one. Also added a calibrated
+darkening scrim (new `--button-darken-opacity: 0.35` token) since the un-crushed gradient read more
+vivid/saturated than V3's darker button — and a cyan hairline border (new `--accent-cyan-tint-25`
+token, not white — MATERIALS.md's spacing section specifies hairlines are "darker charcoal or cyan")
+matching V3's visible edge definition. Same slab coordinates, same `background-attachment: fixed`
+continuity MARBLE-CONTRACT.md requires — only the blend relationship changed. Verified with real
+Playwright/headless-Chrome captures at 1525px, 900px, and mid-scroll: all three now render a
+consistent, legible deep sapphire matching V3's crop, no more washing to near-black or over-bright
+patches. No concrete design decision was missing after all — the exact darkening/border values were
+derived by direct visual calibration against Divergence_AI_App_Screenshot_V3.png's own button crop.
 
 **[ESCALATED — Step 11.5, ambiguous scope across ~12 files]** **V9 — Popover occlusion depends entirely on backdrop-filter.**
 With blur unavailable (this session's captures), "TRANSPARENCY DETAILS" / "MULTI-AI ACTIONS" text
@@ -146,12 +164,23 @@ DETAILS / MULTI-AI ACTIONS's own headers.
 Saved Prompts/Duplicate Session have text-adjacent glyph characters; V3 uses consistent drawn
 icons). Cosmetic tier of the same V4 icon decision.
 
-**[ESCALATED — Step 11.5, audit's own instruction ("needs a product call... flagged not chosen")]** **V14 — Marble reads brighter/busier than V3's near-black slab.**
+**[FIXED — operator-directed follow-up session, verified with a real headless-Chrome capture]** **V14 — Marble reads brighter/busier than V3's near-black slab.**
 All captures show prominent white-gold veining; V3's background is near-black with faint veins.
 The texture files are the user-provided, Step 1.3-locked assets — this may be the asset itself,
 not a build error. **Fix option for 11.5:** a subtle darkening overlay on `.marble-slab` (e.g.
 `linear-gradient(rgb(0 0 0 / 0.35), rgb(0 0 0 / 0.35))` above the texture layer) would move the
 rendered slab toward V3 without touching the locked assets — needs a product call, flagged not chosen.
+**Applied**, using exactly this fix option (`.marble-slab`, marble.css) — the locked texture asset
+is untouched, only how it's presented; a flat black scrim layers over the texture at a new
+`--slab-darken-opacity` token, tiled with the same origin/size/repeat as the texture so it never
+creates a seam or a lighter/darker rectangle (MARBLE-CONTRACT.md's own enforceable checks). The
+audit's example value (0.35) was a starting guess, not a chosen final one — the actual value
+(0.55, then increased to 0.75) was reached by iterative visual comparison: capture the running app,
+crop the same region from Divergence_AI_App_Screenshot_V3.png, compare side by side, adjust, repeat
+until the two matched — 0.55 was still visibly busier than V3's near-flat-black look; 0.75 was a
+close match, still showing faint veining (not fully erased — MATERIALS.md wants "barely noticeable,"
+not invisible). Verified with a real Playwright/headless-Chrome capture of the full default view and
+a direct crop-for-crop comparison against V3's own screenshot at the same region.
 
 **[NOT APPLIED — Step 11.5, unbuilt feature, no owning step, needs a product call]** **V15 — V3's center-bottom "RECENT SESSIONS" strip doesn't exist in the app.**
 V3 shows a footer strip below Quick Actions in the center column. No build step owns it (same
