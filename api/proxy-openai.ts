@@ -10,10 +10,10 @@
    the browser (ROUTING.md DEBATE PARTNERS: "Each provider's API key is a
    separate secret... Not committed to the repo, ever."). */
 
-import { handleOpenaiRequest } from "../src/services/debate/openaiHandler";
+import { handleOpenAiRequest } from "../src/services/debate/openaiHandler";
 
 export const config = { runtime: "edge" };
 
 export default function handler(request: Request): Promise<Response> {
-  return handleOpenaiRequest(request, process.env.OPENAI_API_KEY);
+  return handleOpenAiRequest(request, process.env.OPENAI_API_KEY);
 }
