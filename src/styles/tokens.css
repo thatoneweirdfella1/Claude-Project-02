@@ -3,11 +3,24 @@
    (color, screenshot wins where they disagree — CANON.md).
    No component may hold a hardcoded hex, px, or shadow value. Every visual
    value a component needs is a var() reference to a token defined here.
-   Tokens are named for what they are FOR, not what they look like. */
+   Tokens are named for what they are FOR, not what they look like.
+
+   EXCEPTION (operator-directed, this session): the surfaces section below now
+   deliberately diverges from Divergence_AI_App_Screenshot_V3.png's blue
+   button/near-black-blue glass — the operator explicitly overrode
+   MATERIALS.md's Blue Marble/Smoked Glass color spec with a three-tone grey
+   system (Black/Medium Gray/Dark Grey), real hex values sampled from
+   public/textures/grey-marble-slab-*.jpg. This is a deliberate exception to
+   "screenshot wins," not a regression — do not silently revert these two
+   toward the screenshot's blue in a future audit; see BUILD-LOG.md
+   DECISIONS for the operator instruction. */
 
 :root {
   /* ---------------------------------------------------------------------
-     SURFACES — the three-material system (MATERIALS.md "THE THREE SURFACES")
+     SURFACES — the three-material system (MATERIALS.md "THE THREE SURFACES").
+     Class/token names below (surface-blue-marble, surface-smoked-glass) are
+     legacy from before this override — kept to avoid a large mechanical
+     rename across ~20 files under this same change; see BUILD-LOG.md PARKED.
      --------------------------------------------------------------------- */
 
   /* 1. Black Marble — full-viewport background slab. Corrected against a real
@@ -41,18 +54,39 @@
      not a spec value (none exists for this). */
   --button-darken-opacity: 0.35;
 
-  /* 2. Smoked Glass — cards and panels. 88-92% opaque so the slab blurs
-     through (picked 90%, the midpoint). Never opaque, never carries its
-     own marble. Base tone is a hair lighter/bluer than the black marble
-     so panels read as a distinct layer floating on the slab. */
-  --surface-smoked-glass: rgba(17, 19, 24, 0.9);
-  --surface-smoked-glass-border: rgba(0, 0, 0, 0.5); /* hairline darker-charcoal edge */
+  /* 2. Dark Grey Marble (operator-directed override, this session) — content
+     areas: cards, panels, dialogs, messages. Replaces Smoked Glass's blue-
+     tinted near-black with a neutral dark grey sampled from real pixel data:
+     public/textures/grey-marble-slab-2.jpg (the "Medium Gray Marble 02" file
+     the operator pointed to — real measurement puts it darker than
+     grey-marble-slab-1.jpg, so it's used here for the RECESSIVE content tier,
+     not the interactive tier; see DECISIONS for why the two were swapped
+     from the operator's literal filename labels). 10th/85th percentile of
+     the non-vein base stone: #161513-#1e1d1a; used the mid value. Same
+     translucent-glass mechanics as before (88-92% opaque, slab blurs
+     through, never carries its own marble texture) — only the tint changed,
+     not the material behavior. */
+  --surface-smoked-glass: rgba(25, 24, 22, 0.9);
+  --surface-smoked-glass-border: rgba(0, 0, 0, 0.5); /* hairline darker-charcoal edge, unchanged */
   --blur-smoked-glass: 24px; /* heavy backdrop blur, glassmorphism */
 
-  /* 3. Blue Marble — primary buttons only. Deep sapphire, glossy stone. */
-  --surface-blue-marble-start: #2b4e9c;
-  --surface-blue-marble-end: #4478e5;
-  --surface-blue-marble-glow: rgba(255, 255, 255, 0.18); /* soft top glow, light on a curve */
+  /* 3. Medium Gray Marble (operator-directed override, this session) —
+     interactive elements: buttons, nav, borders. Replaces Blue Marble's
+     sapphire with a neutral warm grey sampled from real pixel data:
+     public/textures/grey-marble-slab-1.jpg (the operator's "Light Gray
+     Marble 01" file — measured LIGHTER than grey-marble-slab-2.jpg, so used
+     here for the PROMINENT interactive tier: background < content <
+     interactive is the resulting lightness ladder, background darkest,
+     interactive most visible). 10th/85th percentile of the non-vein base
+     stone: #2A2925-#302F2B. Sampling architecture UNCHANGED from Blue
+     Marble (marble.css .surface-blue-marble still samples the same
+     continuous black-marble-slab.jpg at the same coordinates, MARBLE-
+     CONTRACT.md's "one continuous slab" rule — only the gradient's base
+     color changed, exactly like V8's fix; introducing a second, different
+     texture image into the button would break slab continuity). */
+  --surface-blue-marble-start: #2a2925;
+  --surface-blue-marble-end: #302f2b;
+  --surface-blue-marble-glow: rgba(255, 255, 255, 0.18); /* soft top glow, light on a curve — material-independent, unchanged */
 
   /* ---------------------------------------------------------------------
      EARNED COLOR — used sparingly, with meaning (MATERIALS.md "COLOR")

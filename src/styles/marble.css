@@ -8,10 +8,19 @@
 
    Deviation from that prior work, and why: it banned marble texture on
    every component, no exceptions. Current MATERIALS.md (CANON-
-   authoritative, postdates that prior work) requires Blue Marble
-   buttons to sample marble "from the same slab coordinates as the
+   authoritative, postdates that prior work) requires the primary-button
+   surface to sample marble "from the same slab coordinates as the
    background" as a deliberate, sole exception. Where they conflict,
-   MATERIALS.md wins — see BUILD-LOG.md DECISIONS. */
+   MATERIALS.md wins — see BUILD-LOG.md DECISIONS.
+
+   Class names below (.surface-smoked-glass, .surface-blue-marble) predate
+   an operator-directed three-tone grey override, this session, of
+   MATERIALS.md's Smoked Glass / Blue Marble color spec (now Dark Grey
+   Marble / Medium Gray Marble — see MATERIALS.md THE THREE SURFACES and
+   tokens.css). Only the token VALUES changed, not these class names or the
+   sampling mechanics — kept to avoid a large mechanical rename across
+   ~20 consuming files in the same change; logged as PARKED in
+   BUILD-LOG.md. */
 
 .marble-slab {
   position: fixed;
@@ -44,8 +53,9 @@
   z-index: 1;
 }
 
-/* Smoked Glass — cards and panels. Never carries its own texture; shows
-   stone only by letting the one fixed slab blur through behind it. */
+/* Dark Grey Marble (was Smoked Glass) — cards and panels. Never carries its
+   own texture; shows stone only by letting the one fixed slab blur through
+   behind it. Mechanics unchanged by the grey override, only the tint. */
 .surface-smoked-glass {
   background: var(--surface-smoked-glass);
   backdrop-filter: blur(var(--blur-smoked-glass));
@@ -55,36 +65,38 @@
   box-shadow: var(--shadow-card);
 }
 
-/* Blue Marble — primary buttons only, the one deliberate exception to
-   "components never carry texture." Samples the identical image, size,
-   and origin as .marble-slab, anchored to the viewport via
-   background-attachment: fixed so background-position resolves against
-   the viewport exactly as it does on the slab itself — the same
-   construction every Blue Marble surface shares, not a per-button
-   position hand-tuned to fake alignment. That is what makes the stone
-   read as one continuous slab showing through a cutout.
+/* Medium Gray Marble (was Blue Marble) — primary buttons only, the one
+   deliberate exception to "components never carry texture." Samples the
+   identical image, size, and origin as .marble-slab, anchored to the
+   viewport via background-attachment: fixed so background-position
+   resolves against the viewport exactly as it does on the slab itself —
+   the same construction every surface of this tier shares, not a
+   per-button position hand-tuned to fake alignment. That is what makes the
+   stone read as one continuous slab showing through a cutout.
 
-   Step 11.5 (VISUAL-AUDIT V8, applied): the sapphire gradient used to sit
-   ABOVE the texture with background-blend-mode: color, which takes hue/
-   saturation from the gradient but LUMINANCE from whatever the texture
-   happens to be at that viewport-fixed sample point — so the button's
-   actual brightness was entirely at the mercy of which patch of a mostly-
-   dark texture it landed on (a real capture confirmed this: near-black at
-   one scroll/viewport position, sharp bright cyan patches at another —
-   uneven, not just dim). Reordered so the gradient is now the BASE layer
-   (its own consistent luminance always shows) and the texture sits above
-   it blended with soft-light instead — soft-light nudges the base up or
-   down by the texture's local value without ever fully overriding it
-   (Cs=0.5 leaves Cb unchanged; this is the standard CSS technique for
-   "visible texture, stable base color"), which is what MATERIALS.md
-   actually asks for — "marble texture visible at close inspection," i.e.
-   texture as a detail on top of a reliable sapphire, not the other way
-   round. Same slab coordinates, same background-attachment: fixed
-   continuity MARBLE-CONTRACT.md requires — only the blend relationship
-   changed, not the sampling. Border + darker glow are new: V3's own button
-   shows a visible hairline edge, which the previous borderless version
-   didn't have — added at a low enough opacity to read as "depth," not the
-   visible-border MATERIALS.md's general spacing section discourages. */
+   Step 11.5 (VISUAL-AUDIT V8, applied — base color later overridden grey,
+   this session, but the layering fix itself still stands): the gradient
+   used to sit ABOVE the texture with background-blend-mode: color, which
+   takes hue/saturation from the gradient but LUMINANCE from whatever the
+   texture happens to be at that viewport-fixed sample point — so the
+   button's actual brightness was entirely at the mercy of which patch of a
+   mostly-dark texture it landed on (a real capture confirmed this:
+   near-black at one scroll/viewport position, sharp bright patches at
+   another — uneven, not just dim). Reordered so the gradient is now the
+   BASE layer (its own consistent luminance always shows) and the texture
+   sits above it blended with soft-light instead — soft-light nudges the
+   base up or down by the texture's local value without ever fully
+   overriding it (Cs=0.5 leaves Cb unchanged; this is the standard CSS
+   technique for "visible texture, stable base color"), which is what
+   MATERIALS.md actually asks for — "marble texture visible at close
+   inspection," i.e. texture as a detail on top of a reliable base color,
+   not the other way round. Same slab coordinates, same
+   background-attachment: fixed continuity MARBLE-CONTRACT.md requires —
+   only the blend relationship changed, not the sampling. Border + darker
+   glow are new: V3's own button shows a visible hairline edge, which the
+   previous borderless version didn't have — added at a low enough opacity
+   to read as "depth," not the visible-border MATERIALS.md's general
+   spacing section discourages. */
 .surface-blue-marble {
   background-image: linear-gradient(180deg, var(--surface-blue-marble-glow), transparent 45%),
     linear-gradient(

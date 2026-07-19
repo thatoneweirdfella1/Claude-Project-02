@@ -7,11 +7,13 @@
 
 There are three surfaces. Not seven. The old seven-name system (Graphite, Slate, Mist, Pearl, Obsidian, Onyx, Luminescence) is dead. Do not build it. "Light" is not a material, it is the lighting and reflection rules below.
 
-**1. Black Marble (background).** The entire viewport. Deep charcoal stone, #020202 to #060702 (corrected Step 11.5 — real per-pixel sample of the locked texture file's base stone, trimmed mean excluding vein highlights; the prior #0B0C0E to #151618 range didn't match the asset it claimed to be sampled from). Polished, subtle veining, barely noticeable, matte lustre not mirror. Sampled from the provided black marble texture file.
+**REVISED, operator-directed override, this session:** the two non-background surfaces (formerly Smoked Glass and Blue Marble) are replaced with a three-tone grey marble system — Black stays background-only; the two grey tiers this file always provisioned ("two greys, for the layered mid and light surfaces where the design calls for them," below) are now activated for that exact purpose. Real hex values, sampled by real per-pixel analysis of the locked texture files, not eyeballed:
 
-**2. Smoked Glass (cards and panels).** Dark translucent glass, 88 to 92 percent opaque so the marble slab blurs through it. Heavy background blur (glassmorphism). Hairline darker-charcoal edge. Corners 12 to 16px on cards, 8 to 12px on buttons. Never opaque. Never carries its own marble.
+**1. Black Marble (background only).** The entire viewport. Deep charcoal stone, #020202 to #060702 (Step 11.5, corrected against a real per-pixel sample of the locked black-marble-slab.jpg). Polished, subtle veining, barely noticeable, matte lustre not mirror.
 
-**3. Blue Marble (primary buttons only).** Deep sapphire, #2B4E9C to #4478E5. Marble texture visible at close inspection, sampled from the same slab coordinates as the background. Glossy but stone, not plastic. Soft internal glow at the top suggesting light on a curve, not neon. Minimum 44px clickable. White text.
+**2. Medium Gray Marble (interactive elements — buttons, nav, borders).** Warm neutral grey, #2A2925 to #302F2B — sampled from public/textures/grey-marble-slab-1.jpg (the lighter of the two provisioned grey textures; used here, not for content, so interactive elements read as the most prominent tier: background < content < interactive). Marble texture visible at close inspection, sampled from the same slab coordinates as the background (same continuous-slab architecture the old Blue Marble used — only the base color changed). Glossy but stone, not plastic. Soft internal glow at the top suggesting light on a curve, not neon. Minimum 44px clickable. White text.
+
+**3. Dark Grey Marble (content areas — messages, dialogs, cards, panels).** Dark neutral grey translucent glass, #161513 to #1E1D1A — sampled from public/textures/grey-marble-slab-2.jpg (the darker of the two provisioned grey textures; recedes closer to the black background so content doesn't compete with interactive elements). 88 to 92 percent opaque so the marble slab blurs through it. Heavy background blur (glassmorphism). Hairline darker-charcoal edge. Corners 12 to 16px on cards, 8 to 12px on buttons. Never opaque. Never carries its own marble texture (same "translucent glass over the one slab" mechanic as before — only the tint changed).
 
 ---
 
@@ -19,11 +21,11 @@ There are three surfaces. Not seven. The old seven-name system (Graphite, Slate,
 
 The marble is ONE continuous slab behind the entire viewport, at z-index 0, sampled at 100 percent scale, with a constant background-size and shared origin, tiling seamlessly. It is never regenerated per component. It is never rescaled to fit a button or card. Veins do not scale with window size, only the amount of visible slab changes when the window resizes.
 
-Cards and panels are Smoked Glass layered on top of that one slab, letting it blur through. Blue Marble buttons are the only surfaces that sample marble directly, and they sample from the same slab coordinates so the stone reads continuous.
+Dark Grey Marble panels are translucent glass layered on top of that one slab, letting it blur through. Medium Gray Marble buttons are the only surfaces that sample marble directly, and they sample from the same slab coordinates so the stone reads continuous.
 
 Enforceable checks: on window resize across a 300px range, vein width and spacing stay identical. No visible seam anywhere. No stretching. No component shows a lighter or darker rectangle where texture was cleared. The bottom margin shows a full-width band of slab crossing all three columns.
 
-Three texture files are provided: one black marble (background), two greys (for the layered mid and light surfaces where the design calls for them).
+Three texture files are provided: one black marble (background), two greys (now activated for the Medium Gray interactive tier and the Dark Grey content tier — see above).
 
 ---
 
@@ -31,7 +33,7 @@ Three texture files are provided: one black marble (background), two greys (for 
 
 **Monochrome base (85 percent of the interface).** White and gray. Body text white or very light gray. Secondary text muted gray. Tertiary text further reduced opacity.
 
-**Earned color, used sparingly and with meaning.** Cyan #00D9FF for secondary interactive elements, section headers, links, the gear icon, checkboxes, dropdown arrows. Blue Marble for primary buttons and active selection only. Purple #8B5CF6 for the logo "AI" text and for state pills (Emotion pill is purple, this is intended). Red for destructive actions only (Close Session, Replace Answer).
+**Earned color, used sparingly and with meaning.** Cyan #00D9FF for secondary interactive elements, section headers, links, the gear icon, checkboxes, dropdown arrows. Medium Gray Marble for primary buttons and active selection only (operator-directed override, this session — was Blue Marble; see THE THREE SURFACES). Purple #8B5CF6 for the logo "AI" text and for state pills (Emotion pill is purple, this is intended). Red for destructive actions only (Close Session, Replace Answer).
 
 **State pill colors (from the screenshot).** Emotion purple, RSD red, Interest green, Cognitive Mode blue. These are earned-color exceptions for UX clarity and override any "no rogue colors" rule in the old files.
 
