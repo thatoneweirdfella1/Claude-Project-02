@@ -15,10 +15,13 @@ seamless tiling via `background-repeat: repeat`. Never regenerated, never rescal
 Everything else — every column, panel, card, pill, bar, modal, and piece of text — renders in one
 sibling layer at `z-index: 1`. That layer occludes the slab; it does not repaint it.
 
-**The one deliberate exception:** Blue Marble buttons sample marble texture directly, from the
-same slab coordinates as the background, so the stone reads as one continuous piece showing
+**The one deliberate exception:** Medium Gray Marble buttons (renamed from Blue Marble — operator-
+directed three-tone grey override, see BUILD-LOG.md DECISIONS) sample marble texture directly, from
+the same slab coordinates as the background, so the stone reads as one continuous piece showing
 through a cutout rather than a separate patch. This is a CANON/MATERIALS.md requirement, not a
-violation of "no per-component marble" — it is the sole named exception to that rule.
+violation of "no per-component marble" — it is the sole named exception to that rule. The override
+changed the button's base gradient COLOR only; it still samples `black-marble-slab.jpg`, not a grey
+texture — see THE ASSETS below for why.
 
 ## THE ASSETS
 
@@ -27,15 +30,22 @@ that necessitated the split (the root FILE-MANIFEST.md is the real Step 0 delive
 the texture files being supplied; the addendum covers what Step 0 couldn't have known).
 
 **Rendered (what the CSS actually loads):**
-- `public/textures/black-marble-slab.jpg` — the slab background AND the Blue Marble buttons'
-  marble layer. Seamless 2508×2508 mirrored supertile. Only asset with an active consumer.
-- `public/textures/grey-marble-slab-1.jpg`, `grey-marble-slab-2.jpg` — seamless supertiles,
-  reserved, no active consumer. CANON's three-surface system has no defined use for a fourth
-  "grey marble" surface yet.
+- `public/textures/black-marble-slab.jpg` — the slab background AND the Medium Gray Marble
+  buttons' marble layer. Seamless 2508×2508 mirrored supertile. Only asset with an active `url()`
+  consumer — this did not change with the grey override; introducing a second texture image into
+  the button would break the one-continuous-slab illusion (the background stays Black Marble).
+- `public/textures/medium-gray-marble-slab.jpg`, `dark-grey-marble-slab.jpg` (renamed, this
+  session, from `grey-marble-slab-1.jpg`/`grey-marble-slab-2.jpg` to match their measured
+  darkness — see BUILD-LOG.md DECISIONS). Seamless supertiles. No active `url()` consumer — CANON's
+  three-surface system still has no defined use for a fourth, separately-rendered "grey marble"
+  surface — but as of the grey override they DO have an active use as a COLOR-SAMPLING source: real
+  per-pixel analysis of these two files produced the hex values now in tokens.css for Medium Gray
+  Marble (`--surface-blue-marble-start/-end`) and Dark Grey Marble (`--surface-smoked-glass`).
 
 **Canonical source (not loaded by any component, kept as source of record):**
-- `public/textures/black-marble.png`, `grey-marble-1.png`, `grey-marble-2.png` — the raw
-  1254×1254 originals as supplied. Do not point CSS at these; they do not tile seamlessly (see
+- `public/textures/black-marble.png`, `medium-gray-marble.png`, `dark-grey-marble.png` (renamed,
+  this session, from `grey-marble-1.png`/`grey-marble-2.png`) — the raw 1254×1254 originals as
+  supplied. Do not point CSS at these; they do not tile seamlessly (see
   FILE-MANIFEST-STEP1.3-ADDENDUM.md).
 
 World scale is fixed at `--slab-tile-size: 2508px` (tokens.css), matching the rendered assets'
