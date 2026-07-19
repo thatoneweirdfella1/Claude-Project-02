@@ -44,16 +44,16 @@
   display: inline-block;
 }
 
+/* Material comes from the shared `surface-smoked-glass` class (Dropdown.tsx
+   applies it to the <select> directly) — this rule is layout/typography,
+   plus border-radius (button-weight, not that class's own card-weight
+   default). */
 .primitive-dropdown select {
   appearance: none;
   -webkit-appearance: none;
   width: 100%;
   min-height: 44px;
   padding: var(--space-dropdown-padding) 32px var(--space-dropdown-padding) var(--space-dropdown-padding);
-  background: var(--surface-smoked-glass);
-  backdrop-filter: blur(var(--blur-smoked-glass));
-  -webkit-backdrop-filter: blur(var(--blur-smoked-glass));
-  border: 1px solid var(--surface-smoked-glass-border);
   border-radius: var(--radius-button);
   color: var(--text-primary);
   font-family: var(--font-family-base);

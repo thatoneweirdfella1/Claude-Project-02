@@ -76,14 +76,15 @@
   margin-top: 8px;
 }
 
+/* Material comes from the shared `surface-smoked-glass` class (TSX applies
+   both) — this rule is layout only, plus border-radius (button-weight, not
+   that class's own card-weight default). */
 .partner-picker__option {
   display: flex;
   align-items: flex-start;
   gap: 8px;
   padding: 8px 10px;
-  border: 1px solid var(--surface-smoked-glass-border);
   border-radius: var(--radius-button);
-  background: var(--surface-smoked-glass);
   cursor: pointer;
 }
 

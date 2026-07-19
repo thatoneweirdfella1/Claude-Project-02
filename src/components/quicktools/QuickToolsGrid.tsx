@@ -71,7 +71,7 @@ function Tile({
     <div ref={rootRef} className="quick-tools-tile">
       <button
         type="button"
-        className="quick-tools-tile__button"
+        className="surface-smoked-glass quick-tools-tile__button"
         aria-expanded={open}
         aria-haspopup="dialog"
         onClick={() => setOpen((wasOpen) => !wasOpen)}
@@ -82,7 +82,7 @@ function Tile({
         <span className="quick-tools-tile__label">{label}</span>
       </button>
       {open && (
-        <div className="quick-tools-tile__popover" role="dialog">
+        <div className="surface-smoked-glass quick-tools-tile__popover" role="dialog">
           {children}
         </div>
       )}
@@ -119,7 +119,7 @@ function PromptLibraryTile() {
         renderTrigger={({ open, onClick }) => (
           <button
             type="button"
-            className="quick-tools-tile__button"
+            className="surface-smoked-glass quick-tools-tile__button"
             aria-expanded={open}
             aria-haspopup="menu"
             onClick={onClick}

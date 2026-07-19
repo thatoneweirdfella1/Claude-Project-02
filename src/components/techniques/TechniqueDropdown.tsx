@@ -78,7 +78,7 @@ export function TechniqueDropdown() {
         <button
           ref={triggerRef}
           type="button"
-          className="technique-dropdown__trigger"
+          className="surface-smoked-glass technique-dropdown__trigger"
           aria-haspopup="listbox"
           aria-expanded={open}
           aria-labelledby="technique-dropdown-label"
@@ -91,7 +91,7 @@ export function TechniqueDropdown() {
       {open && (
         <div
           ref={panelRef}
-          className="technique-popover"
+          className="surface-smoked-glass technique-popover"
           role="menu"
           aria-label="Choose techniques"
           data-testid="technique-popover"

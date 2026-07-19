@@ -188,7 +188,11 @@ export function AttachContextControls({
       </GlassButton>
 
       {open && (
-        <div className="attach-context-controls__popover" role="menu" data-testid="attach-popover">
+        <div
+          className="surface-smoked-glass attach-context-controls__popover"
+          role="menu"
+          data-testid="attach-popover"
+        >
           {view === "menu" && (
             <>
               <button
@@ -340,7 +344,7 @@ export function AttachContextControls({
 
       {rejections.length > 0 && (
         <div
-          className="attach-context-controls__rejections"
+          className="surface-smoked-glass attach-context-controls__rejections"
           role="status"
           data-testid="attach-rejections"
         >

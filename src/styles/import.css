@@ -59,6 +59,12 @@
   gap: var(--space-list-item-margin);
 }
 
+/* Material comes from the shared `surface-smoked-glass` class (TSX applies
+   both) — these rows sit inside ImportModal's GlassCard (content-tier,
+   goes light) but stay dark/chrome themselves, same "stays-dark control
+   nested in a light card" pattern as StateDetectionPanel's Adjust button.
+   Layout only here, plus border-radius (button-weight, not that class's
+   own card-weight default). */
 .import-modal__row {
   display: flex;
   flex-direction: column;
@@ -71,8 +77,6 @@
      minimum to every clickable target). */
   min-height: 44px;
   padding: var(--space-list-item-margin);
-  background: var(--surface-smoked-glass);
-  border: 1px solid var(--surface-smoked-glass-border);
   border-radius: var(--radius-button);
   color: var(--text-primary);
   font-family: var(--font-family-base);
@@ -125,10 +129,13 @@
   font-size: var(--font-size-body);
 }
 
+/* Material (background/blur) comes from the shared `surface-smoked-glass`
+   class (TSX applies both) — border stays its own cyan (this is the
+   modal's primary CTA, not the default hairline), and radius stays
+   button-weight, not that class's own card-weight default. */
 .import-modal__primary {
   min-height: 44px;
   padding: 0 var(--space-row-margin);
-  background: var(--surface-smoked-glass);
   border: 1px solid var(--accent-cyan);
   border-radius: var(--radius-button);
   color: var(--text-primary);

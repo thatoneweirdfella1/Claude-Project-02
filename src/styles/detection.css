@@ -165,6 +165,9 @@
   border-color: var(--accent-cyan);
 }
 
+/* Material comes from the shared `surface-smoked-glass` class (TSX applies
+   both) — layout only, plus box-shadow (modal-weight, differs from that
+   class's own card-weight default). */
 .pill-corrector {
   position: absolute;
   top: 100%;
@@ -177,11 +180,6 @@
   flex-direction: column;
   gap: 8px;
   padding: 10px;
-  background: var(--surface-smoked-glass);
-  backdrop-filter: blur(var(--blur-smoked-glass));
-  -webkit-backdrop-filter: blur(var(--blur-smoked-glass));
-  border: 1px solid var(--surface-smoked-glass-border);
-  border-radius: var(--radius-card);
   box-shadow: var(--shadow-modal);
 }
 

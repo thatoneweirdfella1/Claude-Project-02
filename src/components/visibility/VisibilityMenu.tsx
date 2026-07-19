@@ -96,7 +96,11 @@ export function VisibilityMenu() {
       </GlassButton>
 
       {open && (
-        <div className="visibility-menu__popover" role="menu" data-testid="visibility-popover">
+        <div
+          className="surface-smoked-glass visibility-menu__popover"
+          role="menu"
+          data-testid="visibility-popover"
+        >
           <p className="visibility-menu__title">Theme</p>
           <div
             className="visibility-menu__theme-row"

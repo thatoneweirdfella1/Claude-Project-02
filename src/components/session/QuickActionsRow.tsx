@@ -152,7 +152,7 @@ export function QuickActionsRow() {
           </GlassButton>
 
           {moreOpen && (
-            <div className="quick-actions-row__popover" role="menu">
+            <div className="surface-smoked-glass quick-actions-row__popover" role="menu">
               {closeView === "menu" && (
                 <button
                   type="button"

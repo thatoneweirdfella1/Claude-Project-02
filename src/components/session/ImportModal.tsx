@@ -265,7 +265,7 @@ export function ImportModal({ onClose }: ImportModalProps) {
             <div className="import-modal__rows">
               <button
                 type="button"
-                className="import-modal__row"
+                className="surface-smoked-glass import-modal__row"
                 onClick={() => setView("outside")}
               >
                 <span className="import-modal__row-label">Bring in outside content</span>
@@ -273,7 +273,7 @@ export function ImportModal({ onClose }: ImportModalProps) {
               </button>
               <button
                 type="button"
-                className="import-modal__row"
+                className="surface-smoked-glass import-modal__row"
                 onClick={() => setView("app-data")}
               >
                 <span className="import-modal__row-label">Restore saved data</span>
@@ -289,7 +289,7 @@ export function ImportModal({ onClose }: ImportModalProps) {
               {renderBack("groups", "Import")}
               <button
                 type="button"
-                className="import-modal__row"
+                className="surface-smoked-glass import-modal__row"
                 disabled={busy}
                 onClick={() => contextFileInput.current?.click()}
               >
@@ -298,7 +298,7 @@ export function ImportModal({ onClose }: ImportModalProps) {
               </button>
               <button
                 type="button"
-                className="import-modal__row"
+                className="surface-smoked-glass import-modal__row"
                 disabled={busy}
                 onClick={() => setView("url")}
               >
@@ -307,7 +307,7 @@ export function ImportModal({ onClose }: ImportModalProps) {
               </button>
               <button
                 type="button"
-                className="import-modal__row"
+                className="surface-smoked-glass import-modal__row"
                 disabled={busy}
                 onClick={() => pickJsonFor("chat-history")}
               >
@@ -322,7 +322,7 @@ export function ImportModal({ onClose }: ImportModalProps) {
               {renderBack("groups", "Import")}
               <button
                 type="button"
-                className="import-modal__row"
+                className="surface-smoked-glass import-modal__row"
                 disabled={busy}
                 onClick={() => setView("previous-conversation")}
               >
@@ -338,7 +338,7 @@ export function ImportModal({ onClose }: ImportModalProps) {
                   <button
                     key={kind}
                     type="button"
-                    className="import-modal__row"
+                    className="surface-smoked-glass import-modal__row"
                     disabled={busy}
                     onClick={() => pickJsonFor(kind)}
                   >
@@ -370,7 +370,7 @@ export function ImportModal({ onClose }: ImportModalProps) {
               />
               <button
                 type="submit"
-                className="import-modal__primary"
+                className="surface-smoked-glass import-modal__primary"
                 disabled={busy || urlValue.trim().length === 0}
               >
                 Fetch
@@ -393,7 +393,7 @@ export function ImportModal({ onClose }: ImportModalProps) {
                   <button
                     key={record.id}
                     type="button"
-                    className="import-modal__row"
+                    className="surface-smoked-glass import-modal__row"
                     disabled={busy}
                     onClick={() => handleLoadSession(record)}
                   >

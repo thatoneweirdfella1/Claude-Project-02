@@ -123,7 +123,7 @@ export function LoadTemplateMenu({ renderTrigger }: LoadTemplateMenuProps = {}) 
       )}
 
       {open && (
-        <div className="quick-actions-row__popover" role="menu">
+        <div className="surface-smoked-glass quick-actions-row__popover" role="menu">
           {view === "list" && (
             <>
               <p className="quick-actions-row__popover-title">Templates</p>

@@ -255,6 +255,17 @@ each option, confirm documentElement's data-theme flips, confirm the choice surv
 past the 5s autosave interval). Full suite re-run clean: tsc -b, vite build, oxlint (same one
 pre-existing unrelated QuickActionsRow warning), vitest 583/583, E2E 5/5 (4 prior + the new one).
 
+FOLLOW-UP, same class of bug, found by a real sweep (not assumed fixed once the pattern was
+understood): the .visibility-menu__popover fix above was one instance of a systemic issue —
+six more popovers/dropdowns across the app had the identical dark-on-dark bug, missed because
+most never used the shared `surface-smoked-glass` class the way GlassButton/GlassCard do; they
+reimplemented the material inline via the bare CSS variable, which no class-based override list
+could ever catch by construction. Reworked at the root instead of patching each one: every real
+"stays dark" surface now carries the shared class, and tokens.css's override keys off that class
+directly instead of an enumerated list. See BUILD-LOG.md's WHERE YOU ARE for the full account and
+the operator's own suggestion that prompted the fix ("use the black template that exists... instead
+of remaking it all from scratch").
+
 **Observation, out of scope for both audits:** below ~1000px viewport width the fixed 200/300px
 rails overlap the center column (app-narrow.png) — no step spec'd responsive behavior and CANON
 locks the desktop dims; flagging so 12.x knows narrow-window behavior is undefined, not broken.

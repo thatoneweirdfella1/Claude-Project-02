@@ -43,7 +43,7 @@ export function PartnerPicker({ value, onChange, disabled = false }: PartnerPick
           const isDisabled = !isChecked && value.length >= MAX_PARTNERS;
 
           return (
-            <label key={id} className="partner-picker__option">
+            <label key={id} className="surface-smoked-glass partner-picker__option">
               <input
                 type="checkbox"
                 name="debate-partners"

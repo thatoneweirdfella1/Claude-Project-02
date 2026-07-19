@@ -19,7 +19,7 @@ interface DropdownProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, "c
 export function Dropdown({ options, className = "", ...rest }: DropdownProps) {
   return (
     <div className={`primitive-dropdown ${className}`.trim()}>
-      <select {...rest}>
+      <select className="surface-smoked-glass" {...rest}>
         {options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}

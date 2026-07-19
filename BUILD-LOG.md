@@ -1,6 +1,42 @@
 # DIVERGENCE.AI BUILD LOG
 
 ## WHERE YOU ARE
+A follow-up session, operator-directed, found and fixed a systemic light-theme bug the V16 session
+(below) didn't catch: it fixed the theme TOGGLE and two individual dark-on-dark text bugs
+(.state-detection-panel__adjust, .visibility-menu__popover), but a real sweep across every other
+popover/dropdown/menu in the app — prompted by the operator asking "is there anything at all that
+needs to be addressed" before doing the API setup — found the SAME bug in six more places
+(Attach popover + its rejection notice, the Technique dropdown trigger/popover, pill-corrector, the
+"More" popover shared by Import/Load-Template/Saved-Prompts, Quick Tools tile button/popover, the
+partner picker, import-modal rows, and the native Model/Directness `<select>`). Root cause,
+confirmed with real computed-style checks (getComputedStyle, not just eyeballing screenshots which
+had already been misleading once this session): almost none of these ever used the shared
+`.surface-smoked-glass` class — each reimplemented the same background/blur/border declarations
+inline via the bare `var(--surface-smoked-glass)` custom property, which is exactly why the old
+"enumerate every class that should stay dark" approach in tokens.css could never have caught them
+by construction — every new popover had to remember to add itself to a list, and most didn't.
+
+Fixed at the root, per the operator's own suggestion ("use the black template that exists... instead
+of remaking it all from scratch"): every one of those components now actually carries the shared
+`surface-smoked-glass` class (background/blur/border/radius/shadow all come from one place, same as
+GlassButton/GlassCard always did), their own CSS rules were stripped down to layout-only plus the
+handful of properties that genuinely differ (border-radius, box-shadow, a custom border color),
+and tokens.css's light-theme "stays dark" override was reworked to key off `.surface-smoked-glass`
+itself instead of an enumerated class list — any future popover that uses the shared class gets
+correct light-theme text for free, no tokens.css edit required. The four surfaces that are
+genuinely CONTENT (not chrome) and should go LIGHT like the composer textarea — clarify-prompt's
+input, import-modal's URL input, the rating-comment box, and the debate-view transcript column —
+joined the existing content-tier list instead. Verified with real computed-style assertions across
+every retrofitted surface (not just visual screenshots — the first screenshot-only pass this session
+genuinely missed a real bug at the container-vs-descendant-color level) plus full-page/popover
+screenshots in both themes for the ones that matter most (gear popover, Router tile, partner picker,
+debate view). Full suite clean: tsc -b, vite build, oxlint (same one pre-existing unrelated warning),
+vitest 583/583, E2E 5/5 (unchanged — this is a rendering-detail fix, no new user-facing flow).
+
+Deploy readiness, re-confirmed after this fix: nothing else found. This closes the loop the operator
+opened by asking whether anything needed addressing before the Vercel API-key setup — the answer was
+yes, and it's now fixed and verified, not just found and left open.
+
 A follow-up session closed VISUAL-AUDIT V16 — the theme toggle, explicitly flagged (both here and
 in VISUAL-AUDIT.md) as the one Phase 11 finding that actually blocks Step 12.3, unlike the other
 escalated/deferred items. The prior light-theme follow-up (below) had built the store field,
