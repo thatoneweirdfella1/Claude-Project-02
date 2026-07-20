@@ -12,9 +12,13 @@
 
 /// <reference types="node" />
 import { handleXaiRequest } from "../src/services/debate/xaiHandler.js";
+import { isAuthorized, unauthorizedResponse } from "../src/services/appAccess.js";
 
 export const config = { runtime: "edge" };
 
 export default function handler(request: Request): Promise<Response> {
+  if (!isAuthorized(request, process.env.APP_ACCESS_PASSWORD)) {
+    return Promise.resolve(unauthorizedResponse());
+  }
   return handleXaiRequest(request, process.env.XAI_API_KEY);
 }

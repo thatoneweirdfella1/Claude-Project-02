@@ -12,9 +12,13 @@
 
 /// <reference types="node" />
 import { handleGoogleRequest } from "../src/services/debate/googleHandler.js";
+import { isAuthorized, unauthorizedResponse } from "../src/services/appAccess.js";
 
 export const config = { runtime: "edge" };
 
 export default function handler(request: Request): Promise<Response> {
+  if (!isAuthorized(request, process.env.APP_ACCESS_PASSWORD)) {
+    return Promise.resolve(unauthorizedResponse());
+  }
   return handleGoogleRequest(request, process.env.GOOGLE_API_KEY);
 }

@@ -10,13 +10,33 @@ import { test, expect } from "@playwright/test";
    (accountStore.theme is one of ACCOUNT_PERSISTED_KEYS). */
 
 test("theme toggle: gear dropdown switches and persists Light/Dark/Auto", async ({ page }) => {
+  // AppAccessGate (operator-directed, post-12.3) checks /api/verify-access
+  // before AppShell ever mounts — mirrors the real "no APP_ACCESS_PASSWORD
+  // configured" case (true for local dev), same mock installModelMocks
+  // registers for every other E2E test.
+  await page.route("**/api/verify-access", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ requiresPassword: false, ok: true }),
+    });
+  });
+
   await page.goto("/");
+
+  // AppAccessGate resolves (an async /api/verify-access check) before
+  // AppShell — and therefore useThemeEffect — ever mounts, so data-theme
+  // isn't set until the gear button itself exists. Waiting on the gear is
+  // both the natural "app is actually up" signal and avoids a race against
+  // that async check.
+  const settingsButton = page.getByLabel("Settings");
+  await expect(settingsButton).toBeVisible();
 
   // Default is dark (accountStore's documented default, unchanged from every
   // prior session's only theme) until a user picks something else.
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
 
-  await page.getByLabel("Settings").click();
+  await settingsButton.click();
   const popover = page.locator('[data-testid="visibility-popover"]');
   await expect(popover).toBeVisible();
 

@@ -11,9 +11,13 @@
 
 /// <reference types="node" />
 import { handleProxyRequest } from "../src/services/proxyHandler.js";
+import { isAuthorized, unauthorizedResponse } from "../src/services/appAccess.js";
 
 export const config = { runtime: "edge" };
 
 export default function handler(request: Request): Promise<Response> {
+  if (!isAuthorized(request, process.env.APP_ACCESS_PASSWORD)) {
+    return Promise.resolve(unauthorizedResponse());
+  }
   return handleProxyRequest(request, process.env.ANTHROPIC_API_KEY);
 }

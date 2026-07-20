@@ -15,6 +15,7 @@
    runDebate takes one of each and cannot be handed the same client twice. */
 
 import type { ModelId } from "../modelRegistry";
+import { appAccessHeaders } from "../appAccessClient";
 import type { DebatePartner, DebatePartnerId } from "./roster";
 
 export interface DebateCompletionRequest {
@@ -62,7 +63,7 @@ export function createPartnerClient(fetchImpl: typeof fetch = fetch): DebatePart
   return async ({ partner, system, input, signal }) => {
     const response = await fetchImpl(partnerEndpoint(partner.id), {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", ...appAccessHeaders() },
       body: JSON.stringify({ model: partner.id, system, input }),
       signal,
     });

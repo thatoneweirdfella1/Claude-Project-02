@@ -1,6 +1,41 @@
 # DIVERGENCE.AI BUILD LOG
 
 ## WHERE YOU ARE
+A follow-up session, operator-directed, built a real app-level access gate (new: appAccess.ts,
+appAccessClient.ts, api/verify-access.ts, AppAccessGate.tsx) after the operator correctly pushed
+back on the earlier advice to just disable Vercel's Deployment Protection. That earlier advice was
+incomplete: Deployment Protection is a whole-SITE wall (blocks the page's HTML/JS entirely for
+anyone not Vercel-authenticated, including the operator outside a Vercel session), not a scoped
+protection for the actual thing worth protecting — the provider API spend. Confirmed by direct code
+read: zero auth/rate-limiting existed anywhere in api/*.ts before this session; once Deployment
+Protection is off, those endpoints would be wide open to anyone with the URL. Built instead: a
+shared APP_ACCESS_PASSWORD env var, checked server-side (appAccess.ts's isAuthorized, FAILS CLOSED
+on any ambiguous case — no configured password, missing header, wrong header all reject) by every
+api/*.ts entry point (proxy, proxy-openai, proxy-xai, proxy-google, proxy-deepseek, fetch-url)
+before it does any real work, i.e. before ever touching a provider. Client side: AppAccessGate.tsx
+wraps AppShell in main.tsx, checks /api/verify-access once at mount (a free, no-provider-call
+endpoint that reports whether a password is even configured, so local dev/CI/e2e — which never set
+this var — never gate themselves), shows a password form if locked, and stores a correct password
+in localStorage so every subsequent real API call (proxyClient.ts, debate/client.ts, urlContext.ts —
+all three updated) carries it automatically via a shared appAccessHeaders() helper. DEPLOY.md updated
+with the new env var and an explicit instruction to turn Vercel's Deployment Protection OFF for
+Production once this is set (the app's own gate replaces it, without blocking the operator's own
+access). Verified: 15 new unit tests (appAccess.test.ts, appAccessClient.test.ts — fail-closed cases
+explicitly covered), 2 new E2E tests (access-gate.spec.ts — confirms the real UI never renders behind
+a locked gate, a wrong password shows an error and doesn't unlock, a correct one unlocks AND the
+stored password actually rides along on the next real /api/proxy call, not just the gate's own check).
+Existing e2e suite required two small fixes for the new async gate-before-mount step (theme-toggle.spec.ts
+now waits for the gear button before asserting on data-theme; e2e/mocks.ts's installModelMocks now also
+mocks /api/verify-access as "no password configured," mirroring real local-dev/CI behavior) — both
+fixes, not workarounds around a real bug. Full suite clean: tsc -b, vite build, oxlint (same one
+pre-existing unrelated warning), vitest 598/598 (up from 583), E2E 7/7 (5 prior + 2 new).
+
+STILL NEEDED, operator's own action, not code: set APP_ACCESS_PASSWORD in Vercel (Project Settings →
+Environment Variables, Production scope) to a real value, redeploy, then turn Deployment Protection
+off for Production. Until the env var is set, the app fails closed — the gate will never unlock for
+anyone, including the operator, which is the correct default (a misconfigured server should be
+unusable, not silently open) but means the live site stays inaccessible until this one step happens.
+
 A follow-up session, operator-directed, found and fixed a systemic light-theme bug the V16 session
 (below) didn't catch: it fixed the theme TOGGLE and two individual dark-on-dark text bugs
 (.state-detection-panel__adjust, .visibility-menu__popover), but a real sweep across every other

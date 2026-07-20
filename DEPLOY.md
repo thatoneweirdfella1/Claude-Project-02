@@ -19,21 +19,33 @@ CORS and never holds a provider API key.
    push there ships, with no separate merge-to-main step required. (If a
    `main`-based release process is wanted instead, that's a separate decision —
    flag it and it can be set up as an explicit later step, not assumed here.)
-4. **Environment variables** — add all five as encrypted secrets (Project
+4. **Environment variables** — add all six as encrypted secrets (Project
    Settings → Environment Variables), each server-side only, never exposed to
    the client bundle:
 
-   | Variable | Consumed by | Provider |
+   | Variable | Consumed by | Purpose |
    |---|---|---|
    | `ANTHROPIC_API_KEY` | `api/proxy.ts` | Anthropic (main pipeline: translation, routing, technique composition, answers) |
    | `OPENAI_API_KEY` | `api/proxy-openai.ts` | OpenAI (debate partner) |
    | `XAI_API_KEY` | `api/proxy-xai.ts` | xAI (debate partner) |
    | `DEEPSEEK_API_KEY` | `api/proxy-deepseek.ts` | DeepSeek (debate partner) |
    | `GOOGLE_API_KEY` | `api/proxy-google.ts` | Google (debate partner) |
-
-   `api/fetch-url.ts` (URL-context fetch) needs no key.
+   | `APP_ACCESS_PASSWORD` | every `api/*.ts` incl. `fetch-url.ts` | **App access gate** (operator-directed, post-12.3) — a shared password gating every provider-touching endpoint. Pick your own value; there's no default, and if it's unset the app is unusable (fails closed, not open — see appAccess.ts). The live app itself prompts for this on first load; nothing else needs it typed in manually. |
 
 5. **Deploy.** Vercel builds and assigns a `*.vercel.app` production URL.
+
+## Deployment Protection — turn it OFF for Production
+
+Vercel's own "Deployment Protection" (Settings → Deployment Protection) is a
+whole-SITE login wall — it blocks the page's HTML/JS from loading at all for
+anyone not authenticated into this Vercel account, including the operator
+outside a Vercel-logged-in session. That's NOT what actually protects the
+provider API spend; `APP_ACCESS_PASSWORD` above is. Leaving Vercel's
+Deployment Protection on for Production and adding the password gate on top
+means NOBODY (not even the operator, from their phone) can reach the app
+without a Vercel login. Turn Deployment Protection off (or scope it to
+Preview only) once `APP_ACCESS_PASSWORD` is set — the app is still closed to
+strangers, just via its own gate instead of Vercel's.
 
 ## Why no vercel.json
 

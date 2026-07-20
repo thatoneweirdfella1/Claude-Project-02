@@ -12,9 +12,13 @@
 
 /// <reference types="node" />
 import { handleDeepseekRequest } from "../src/services/debate/deepseekHandler.js";
+import { isAuthorized, unauthorizedResponse } from "../src/services/appAccess.js";
 
 export const config = { runtime: "edge" };
 
 export default function handler(request: Request): Promise<Response> {
+  if (!isAuthorized(request, process.env.APP_ACCESS_PASSWORD)) {
+    return Promise.resolve(unauthorizedResponse());
+  }
   return handleDeepseekRequest(request, process.env.DEEPSEEK_API_KEY);
 }

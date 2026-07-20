@@ -102,8 +102,26 @@ const SYNTHESIS_REPLY = {
 
 /** Registers every /api/proxy* interception this suite needs. Call once per
     test, before navigating — Playwright routes registered on a Page apply to
-    all subsequent requests from that page. */
+    all subsequent requests from that page.
+
+    Also mocks /api/verify-access as "no password configured" (requiresPassword:
+    false) — AppAccessGate.tsx calls this once at mount before rendering
+    anything else, mirroring the real behavior when APP_ACCESS_PASSWORD isn't
+    set server-side (true for local dev and this whole E2E suite, same as it
+    was before the access gate existed). Tests that specifically need to
+    exercise the gate itself (e2e/access-gate.spec.ts) register their own,
+    more specific route instead — Playwright matches the LAST-registered
+    route for a URL first, so a test-specific route added after this call
+    still wins. */
 export async function installModelMocks(page: Page, answer: MockAnswer): Promise<void> {
+  await page.route("**/api/verify-access", async (route: Route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ requiresPassword: false, ok: true }),
+    });
+  });
+
   await page.route("**/api/proxy", async (route: Route) => {
     await delay(MOCK_LATENCY_MS);
     const request = route.request();

@@ -12,9 +12,13 @@
 
 /// <reference types="node" />
 import { handleOpenAiRequest } from "../src/services/debate/openaiHandler.js";
+import { isAuthorized, unauthorizedResponse } from "../src/services/appAccess.js";
 
 export const config = { runtime: "edge" };
 
 export default function handler(request: Request): Promise<Response> {
+  if (!isAuthorized(request, process.env.APP_ACCESS_PASSWORD)) {
+    return Promise.resolve(unauthorizedResponse());
+  }
   return handleOpenAiRequest(request, process.env.OPENAI_API_KEY);
 }
