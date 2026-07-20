@@ -1,6 +1,21 @@
 # DIVERGENCE.AI BUILD LOG
 
 ## WHERE YOU ARE
+A follow-up session rolled back the just-generated white-marble-slab.jpg (previous entry below): on
+real review the operator found it read as noise/scratches, not stone — a genuine miss, not a taste
+disagreement to argue with. Rather than attempt a third generation blind, light theme's
+`.marble-slab` now sets `background-image: none`, falling through to the existing light fallback
+color (`--surface-black-marble-start: #f5f5f5`, already correct for light theme) — a plain, calm
+off-white with zero texture, zero risk of another bad result. white-marble-slab.jpg is left in
+public/textures/ unreferenced rather than deleted, in case a future session wants the file history.
+Real light marble texture is explicitly parked as future work, not abandoned — needs either a
+properly-licensed real source image (this sandbox's network policy blocks general outbound web
+access, confirmed via the proxy status endpoint — fetching stock-texture sites and Wikimedia both
+came back "403, policy denial," not a site-side block, so sourcing one isn't possible from inside
+this environment without the operator providing a file or URL directly) or a generation attempt
+someone's actually happy with. Full suite re-run clean: tsc -b, vite build, oxlint, vitest 598/598,
+E2E 7/7 (unchanged — pure CSS revert, same as when the texture was added).
+
 A follow-up session replaced the light theme's marble slab entirely, after the operator reported the
 just-shipped contrast()/brightness() filter fix (previous entry below) still wasn't right: "the marble
 and white areas are still a huge issue... I actually had a vision for it as looking fancy and upper

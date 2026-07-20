@@ -47,41 +47,20 @@
     var(--slab-tile-size) var(--slab-tile-size); /* fixed world scale, never rescaled */
 }
 
-/* LIGHT THEME — real dedicated asset (public/textures/white-marble-slab.jpg),
-   replacing an earlier filter: invert() approach entirely.
-
-   HISTORY, why this changed twice in one session: first attempt (still
-   visible in git history) was filter: invert(1) hue-rotate(180deg) on the
-   dark asset — operator-reported as "too bright... looks like a diced up
-   vegetable." Root cause: invert() flips light/dark but not vein DENSITY —
-   the dark texture's fine cellular/faceted mottling (barely visible on
-   near-black) becomes a field of visible light-grey speckling once
-   inverted to white. Second attempt added contrast()/brightness() to the
-   filter to wash that out — measurably closer to calm (verified against
-   Divergence_AI_Light_App_Screenshot_V2.png crops), but a flat filter
-   can't tell "background mottling" apart from "the veins themselves," so
-   softening one necessarily softens the other — operator's actual request
-   was the opposite of soft: "high gloss white marble finish with heavy
-   contrasted black veins." No amount of filter tuning on an asset
-   authored for a dark, moody look was going to deliver a crisp light
-   luxury one — they're different textures, not two brightness settings
-   of the same texture. Discovering the source asset also carried a
-   third-party watermark (visible only once inverted+brightened — invisible
-   on black) confirmed it wasn't worth re-processing further either way.
-
-   This is a genuinely separate, generated asset instead: same underlying
-   TECHNIQUE the operator asked for (derive light from the dark slab's own
-   visual grammar — flowing branched veins, cellular depth, one continuous
-   slab, same --slab-tile-size world scale — so light/dark stay the same
-   kind of thing, just recolored) but built as real content, not a color
-   transform: a soft warm-white base with gentle low-frequency cloud
-   variation (not flat dead white), organic branching veins drawn near-
-   black for real contrast, and a faint gloss highlight for the "polished
-   stone" read. No filter needed — the asset already IS the light theme's
-   own vein density and contrast, tuned at generation time instead of at
-   render time. */
+/* LIGHT THEME — flat off-white, no texture. Operator-directed pullback:
+   two attempts at a light marble texture this session (filter: invert()
+   on the dark asset, then a from-scratch generated white-marble-slab.jpg)
+   both missed badly — the generated asset in particular read as noise,
+   not stone, on real review. Rather than guess a third time, this drops
+   texture entirely for light theme and ships a plain, calm off-white
+   background instead. Real light marble (a proper source image, or a
+   generation attempt someone's actually happy with) is future work, not
+   abandoned — this is a deliberate "ship something inoffensive now"
+   fallback, not a final design decision. white-marble-slab.jpg stays in
+   public/textures/ unreferenced rather than deleted, in case a future
+   session picks this back up and wants the file history intact. */
 :root[data-theme="light"] .marble-slab {
-  background-image: url("/textures/white-marble-slab.jpg");
+  background-image: none;
 }
 
 /* Everything else renders in one sibling layer above the slab. */
