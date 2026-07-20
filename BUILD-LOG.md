@@ -1,6 +1,21 @@
 # DIVERGENCE.AI BUILD LOG
 
 ## WHERE YOU ARE
+A follow-up session, operator-reported with a real screenshot (a "TEMPLATES" popover rendering half
+off-screen from the Prompt Library Quick Tools tile), fixed a real popover-overflow bug:
+`.quick-tools-tile__popover` and the `.quick-tools-tile .quick-actions-row__popover` override
+(quicktools.css) both anchored `left: 0`, opening popovers RIGHTWARD from tiles that live inside
+col-right — a 300px column flush against the viewport's own right edge, with nowhere for a
+220-260px-wide popover to actually go. Every tile in the 3-column grid was at real risk, worst for
+the rightmost column (exactly what the report showed) but the 2nd column too at narrower widths.
+Fixed by anchoring `right: 0` instead (opens leftward into the space that's actually available) —
+verified with real Playwright boundingBox() assertions (not just a screenshot check) confirming all
+five tiles' popovers now stay fully within the viewport, plus a direct screenshot reproduction of
+the reported case (Prompt Library's popover, now fully visible: TEMPLATES / Quick Question / Deep
+Analysis / Learning Mode / + Save current settings as template). Full suite re-run clean: tsc -b,
+vite build, oxlint (same one pre-existing unrelated warning), vitest 598/598, E2E 7/7 (unchanged —
+this is a pure CSS positioning fix, no new test needed beyond the throwaway verification already run).
+
 A follow-up session, operator-directed, built a real app-level access gate (new: appAccess.ts,
 appAccessClient.ts, api/verify-access.ts, AppAccessGate.tsx) after the operator correctly pushed
 back on the earlier advice to just disable Vercel's Deployment Protection. That earlier advice was

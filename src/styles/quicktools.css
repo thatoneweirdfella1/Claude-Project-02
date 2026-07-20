@@ -118,11 +118,23 @@
 
 /* Material comes from the shared `surface-smoked-glass` class — layout
    only, plus box-shadow (modal-weight, differs from that class's own
-   card-weight default). */
+   card-weight default).
+
+   `right: 0` (was `left: 0`, operator-reported): every Quick Tools tile
+   sits inside col-right, a 300px column flush against the viewport's own
+   right edge — a popover opening RIGHTWARD from a tile there has nowhere
+   to go but off-screen, which is exactly what got reported (a popover
+   "half off screen, can't make it out"). Anchoring the popover's right
+   edge to the tile's right edge instead opens it LEFTWARD, into the
+   sidebar/center-column space that's actually available, regardless of
+   which of the grid's 3 columns the tile is in — real screenshot confirmed
+   the cutoff (Prompt Library tile, 3rd/rightmost column, is where it's
+   worst, but 2nd-column tiles were at real risk of the same thing at
+   narrower widths, not just the 3rd). */
 .quick-tools-tile__popover {
   position: absolute;
   top: 100%;
-  left: 0;
+  right: 0;
   z-index: 10;
   margin-top: 6px;
   width: max(220px, 100%);
@@ -230,12 +242,18 @@
 
 /* PromptLibraryTile reuses LoadTemplateMenu (Step 9.2) wholesale — its
    popover is styled as `.quick-actions-row__popover` (session.css),
-   anchored `bottom: 100%` for the composer footer. Nested inside a grid
-   tile in the sidebar, "pop up above the trigger" is the wrong direction
-   (a tile could be in any row) — flip it to match every other tile here. */
+   anchored `bottom: 100%; left: 0` for the composer footer. Nested inside a
+   grid tile in the sidebar, "pop up above the trigger" is the wrong
+   direction (a tile could be in any row) — flip it to match every other
+   tile here. `left: auto; right: 0` (operator-reported, real screenshot):
+   same col-right-flush-against-the-viewport-edge overflow as
+   .quick-tools-tile__popover just above — this is in fact the exact
+   popover the report showed cut off (Prompt Library tile). */
 .quick-tools-tile .quick-actions-row__popover {
   bottom: auto;
   top: 100%;
+  left: auto;
+  right: 0;
   margin-bottom: 0;
   margin-top: 6px;
 }
