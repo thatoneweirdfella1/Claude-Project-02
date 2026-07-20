@@ -1,6 +1,41 @@
 # DIVERGENCE.AI BUILD LOG
 
 ## WHERE YOU ARE
+A follow-up session replaced the light theme's marble slab entirely, after the operator reported the
+just-shipped contrast()/brightness() filter fix (previous entry below) still wasn't right: "the marble
+and white areas are still a huge issue... I actually had a vision for it as looking fancy and upper
+class with a high gloss white marble finish with heavy contrasted black veins." A flat CSS filter on
+the dark texture couldn't deliver that — softening the busy cellular mottling with contrast/brightness
+necessarily softened the actual veins too (they're not separable at the filter level), and the desired
+look (bold black-on-white, not just "lighter") is a genuinely different texture than "the dark one,
+inverted," not a brightness setting of it. Separately found and worth recording: the source texture
+(public/textures/black-marble-slab.jpg) carries a hidden third-party watermark ("Let's Enhance.io")
+invisible on near-black but glaringly visible once inverted+brightened — operator confirmed this was
+their own asset, run through an upscaler, and said to stop trying to salvage it and "make a fancy ass
+one" instead.
+
+Generated a real, dedicated light-marble texture asset from scratch (Python/PIL, no numpy available in
+this sandbox — pure stdlib random walks + PIL drawing/blur), new file
+public/textures/white-marble-slab.jpg, same 2508px world scale as --slab-tile-size so no stretching:
+a warm-white base with gentle low-frequency "cloud" variation (small random grid, upsampled + blurred —
+avoids both flat-dead-white and the original's busy mottling), organic branching vein paths (momentum-
+based random walk, tapering width, secondary branches off primary veins, near-black core color with a
+soft blurred halo for a natural "ink into stone" edge, not a hard CAD line), and a faint off-center
+gloss highlight. Iterated through several real generated attempts before this one — an early version
+had visible autocontrast banding (looked like a topographic contour map, discarded), a later version
+tried the codebase's own documented "mirrored supertile" seamless-tiling technique (tokens.css's
+--slab-tile-size comment calls the ORIGINAL dark asset a "seamless mirrored supertile") but produced an
+obvious kaleidoscope/diamond symmetry artifact that read as computer-generated rather than natural —
+discarded in favor of a plain non-mirrored generation once the math confirmed --slab-tile-size (2508px)
+already exceeds any normal viewport in both dimensions, meaning the repeat seam essentially never
+becomes visible in practice; an obviously-symmetric texture that "solves" a seam nobody sees was the
+wrong trade. marble.css's light-theme override now points background-image directly at the new asset —
+no filter at all, replacing the invert()/hue-rotate()/contrast()/brightness() chain entirely. Verified
+with a real render (not just the standalone generated file) that it renders correctly through the
+app's actual .marble-slab compositing. Dark theme untouched (separate selector, base rule unchanged).
+Full suite re-run clean: tsc -b, vite build (confirmed the new asset lands in dist/textures/ via
+Vite's public/ passthrough), oxlint, vitest 598/598, E2E 7/7.
+
 A follow-up session fixed two more operator-reported issues, both measured/verified against real
 renders, not eyeballed.
 
