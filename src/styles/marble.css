@@ -47,21 +47,39 @@
     var(--slab-tile-size) var(--slab-tile-size); /* fixed world scale, never rescaled */
 }
 
-/* LIGHT THEME (this session): no separate light marble texture asset
-   exists (the operator has only ever provided black + two greys — see
-   MARBLE-CONTRACT.md THE ASSETS), so the same locked black-marble-slab.jpg
-   is inverted at the pixel level. Safe specifically here because
-   .marble-slab has no children — inverting a leaf element with no nested
-   interactive content can't accidentally flip a button/nav item that's
-   supposed to stay dark (see tokens.css's light-theme block for why that
-   distinction matters). hue-rotate(180deg) after invert corrects the
-   texture's warm off-white veins from inverting into an odd cool blue —
-   the two together bring a raw invert closer to a neutral warm-gray vein
-   on white stone, calibrated by real rendered capture against
-   Divergence_AI_Light_App_Screenshot_V2.png, same iterative method as
-   every other calibrated value in this file (V8/V14), not guessed. */
+/* LIGHT THEME: no separate light marble texture asset exists (the operator
+   has only ever provided black + two greys — see MARBLE-CONTRACT.md THE
+   ASSETS), so the same locked black-marble-slab.jpg is inverted at the
+   pixel level. Safe specifically here because .marble-slab has no
+   children — inverting a leaf element with no nested interactive content
+   can't accidentally flip a button/nav item that's supposed to stay dark
+   (see tokens.css's light-theme block for why that distinction matters).
+   hue-rotate(180deg) after invert corrects the texture's warm off-white
+   veins from inverting into an odd cool blue.
+
+   contrast(0.35) brightness(1.55) — REAL BUG FOUND AND FIXED, operator-
+   reported ("too bright and... looks like a diced up vegetable... random
+   tidbits"): a bare invert()/hue-rotate() flips light↔dark but does NOT
+   change vein DENSITY or CONTRAST — the dark texture was authored with
+   dense, high-contrast veining meant to look moody on near-black, and a
+   straight invert carries that exact same density/contrast over onto
+   white, which reads as busy speckling rather than calm stone. Measured,
+   not eyeballed: a same-position crop of this render vs. the same crop of
+   Divergence_AI_Light_App_Screenshot_V2.png (Python/PIL, luminance mean +
+   population stdev) showed this render at stdev ~89 against the
+   reference's ~15 in comparable bare-marble regions — nearly 6x the
+   reference's vein contrast, with pixels going as dark as luminance 16 in
+   a theme that's supposed to read as clean white. contrast(0.35) compresses
+   that spread toward mid-grey, brightness(1.55) pushes the compressed
+   result back up to the reference's actual brightness range (mean ~244-255
+   in bare regions) — re-measured after tuning until both landed close to
+   the reference's own numbers, not just "looks lighter now." The previous
+   version of this comment claimed this exact filter chain (minus the
+   contrast/brightness terms) was already "calibrated by real rendered
+   capture" — it wasn't, in the sense that mattered: brightness/hue were
+   checked, vein density never was. */
 :root[data-theme="light"] .marble-slab {
-  filter: invert(1) hue-rotate(180deg);
+  filter: invert(1) hue-rotate(180deg) contrast(0.35) brightness(1.55);
 }
 
 /* Everything else renders in one sibling layer above the slab. */

@@ -1,6 +1,37 @@
 # DIVERGENCE.AI BUILD LOG
 
 ## WHERE YOU ARE
+A follow-up session fixed two more operator-reported issues, both measured/verified against real
+renders, not eyeballed.
+
+(1) Light theme's marble slab was genuinely too busy — operator's words: "too bright... looks like a
+diced up vegetable... random tidbits." Root-caused, not just re-tuned by feel: `filter: invert(1)
+hue-rotate(180deg)` flips light/dark but does NOT touch vein density/contrast — the dark texture was
+authored with dense, high-contrast veining meant to look moody on near-black, and a bare invert
+carries that exact density onto white. Measured with Python/PIL luminance stats on matched crops:
+this render's bare-marble stdev was ~89 against the reference screenshot's ~15-16 in comparable
+regions — nearly 6x the reference's actual vein contrast, with pixels as dark as luminance 16 in a
+"light" theme. Added `contrast(0.35) brightness(1.55)` to the light-theme filter chain, tuned by
+re-measuring against the same reference crops until both landed in the reference's actual range
+(mean ~244-255, stdev ~10-20 depending on region) — not just "looks lighter now." marble.css's own
+prior comment claiming this filter was already "calibrated by real rendered capture" was corrected
+in place — brightness/hue were checked before, vein DENSITY never was.
+
+(2) Logo brain mark was disproportionately large against the wordmark — operator's words: "supposed
+to be symmetrical size wise." Root cause: the wordmark was sized off `--font-size-card-title` (14px),
+a token meant for small card headings elsewhere, never a brand logotype — against a 32px brain icon,
+a real ~3:1 mismatch (the actual source asset, DivergenceAILogo.png, pairs a somewhat-larger brain
+with a still-substantial wordmark, roughly 1.3-1.4:1 by cap-height, not 3:1). Per the operator's own
+explicit direction (shrink the brain toward the wordmark's weight, then scale the whole lockup up
+slightly so the brain's fine linework stays legible): logo-mark height 32px -> 28px, wordmark given
+its own dedicated 22px font-size (was the borrowed 14px token). Verified fits the 60px topbar cleanly
+in both themes with a real render, no clipping/overlap with the Search/Templates/Quick Reference
+buttons beside it.
+
+Both are pure CSS changes, no new tests needed beyond the throwaway visual verification already run
+(same reasoning as the popover-overflow fix above). Full suite re-run clean: tsc -b, vite build,
+oxlint (same one pre-existing unrelated warning), vitest 598/598, E2E 7/7.
+
 A follow-up session, operator-reported with a real screenshot (a "TEMPLATES" popover rendering half
 off-screen from the Prompt Library Quick Tools tile), fixed a real popover-overflow bug:
 `.quick-tools-tile__popover` and the `.quick-tools-tile .quick-actions-row__popover` override

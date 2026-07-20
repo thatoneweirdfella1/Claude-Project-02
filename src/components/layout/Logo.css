@@ -15,18 +15,30 @@
   user-select: none;
 }
 
+/* Brain-mark/wordmark sizing (operator-reported): was height:32px against
+   the wordmark's borrowed --font-size-card-title (14px, a token meant for
+   small card headings elsewhere, not a brand logotype) — a real ~3:1 size
+   mismatch, brain towering over a comparatively tiny caption. The real
+   source asset (DivergenceAILogo.png) itself pairs a somewhat-larger brain
+   with a still-substantial wordmark (roughly 1.3-1.4:1 by cap-height, not
+   the ~3:1 this had drifted to). Operator's explicit direction: shrink the
+   brain toward the wordmark's weight rather than grow the wordmark to the
+   brain's, then scale the whole lockup up slightly so the brain's fine
+   geometric linework doesn't go illegible at a smaller relative size. */
 .logo-mark {
-  height: 32px;
+  height: 28px; /* was 32px */
   width: auto; /* preserves the asset's own aspect ratio, doesn't force a square */
   flex-shrink: 0;
 }
 
 /* Wordmark: "Divergence" in white, ".AI" in the logo gradient — mixed
    case, matching the real brand asset (was "DIVERGENCE"/"AI", both
-   uppercase, a Step 1.6 placeholder guess). */
+   uppercase, a Step 1.6 placeholder guess). font-size is now its own
+   dedicated value (was var(--font-size-card-title), a borrowed token never
+   meant for the brand logotype — see .logo-mark's comment above). */
 .logo-wordmark {
   font-family: var(--font-family-base);
-  font-size: var(--font-size-card-title);
+  font-size: 22px;
   font-weight: var(--font-weight-card-title);
   letter-spacing: 0.02em;
 }
