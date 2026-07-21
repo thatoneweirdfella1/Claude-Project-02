@@ -54,6 +54,17 @@
   color: transparent;
 }
 
+/* GOLD LAYOUT (CLAUDE.md "Design layouts"): the operator's Gold mockups
+   show ".AI" as plain text, not the blue-violet-magenta gradient — this
+   suppresses the gradient back to a normal solid color for this layout,
+   rather than forking Logo.tsx's JSX just to drop one class. */
+:root[data-layout="gold"] .logo-word-ai {
+  background: none;
+  -webkit-background-clip: initial;
+  background-clip: initial;
+  color: var(--text-primary);
+}
+
 /* BrainMark (BrainMark.tsx) — the same logo-mark.png asset, reused at
    whatever small size a caller needs (composer label, message avatar,
    TRANSLATE & ASK, Translate nav item — see BrainMark.tsx). */

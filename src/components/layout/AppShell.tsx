@@ -2,6 +2,7 @@ import { CenterColumn } from "../pipeline";
 import { QuickToolsGrid } from "../quicktools";
 import { useAccountStore } from "../../stores/accountStore";
 import { AccordionStack } from "./AccordionStack";
+import { useDesignLayoutEffect } from "./useDesignLayoutEffect";
 import { LeftNav } from "./LeftNav";
 import { TopBar } from "./TopBar";
 import { useThemeEffect } from "./useThemeEffect";
@@ -57,6 +58,7 @@ import { useThemeEffect } from "./useThemeEffect";
 export function AppShell() {
   const visibility = useAccountStore((s) => s.visibility);
   useThemeEffect(); // CANON Feature 12 — resolves theme + Auto, writes documentElement's data-theme
+  useDesignLayoutEffect(); // CLAUDE.md "Design layouts" — writes documentElement's data-layout
 
   return (
     <div className="app-shell app-layer">

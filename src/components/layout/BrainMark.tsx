@@ -1,3 +1,4 @@
+import { useAccountStore } from "../../stores/accountStore";
 import "./Logo.css";
 
 /* BrainMark — the same brand brain mark as the top-bar Logo, reused at
@@ -10,7 +11,13 @@ import "./Logo.css";
    the old placeholder brain. A plain <img>, not an inline SVG, so there's
    no gradient-id-uniqueness concern to manage here (that was specific to
    the old inline-SVG-with-gradient approach — a raster <img> has no such
-   issue no matter how many times it's rendered on one page). */
+   issue no matter how many times it's rendered on one page).
+
+   GOLD LAYOUT (CLAUDE.md "Design layouts"): swaps to the same
+   logo-mark-gold.png recolor Logo.tsx uses, for every one of this mark's
+   reuse spots — otherwise the composer label/avatar/TRANSLATE&ASK/nav
+   item would stay the original palette while only the top-bar logo
+   changed, reading as inconsistent rather than a real re-skin. */
 
 export interface BrainMarkProps {
   /** Pixel height; width follows the asset's own aspect ratio. Default
@@ -20,10 +27,13 @@ export interface BrainMarkProps {
 }
 
 export function BrainMark({ size = 18, className = "" }: BrainMarkProps) {
+  const layout = useAccountStore((s) => s.layout);
+  const markSrc = layout === "gold" ? "/logo-mark-gold.png" : "/logo-mark.png";
+
   return (
     <img
       className={`brain-mark ${className}`.trim()}
-      src="/logo-mark.png"
+      src={markSrc}
       alt="Divergence.AI"
       style={{ height: size }}
     />

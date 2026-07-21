@@ -247,6 +247,15 @@
      --------------------------------------------------------------------- */
 
   --slab-tile-size: 2508px; /* native resolution of the seamless mirrored supertile texture; never cover/contain/percent/vw/vh */
+
+  /* Gold layout's own slab textures (public/textures/gold-marble-{light,dark}-slab.png)
+     are real generated images at their own native 1536x1024 resolution — NOT square
+     like the original slab's 2508x2508, so this can't reuse --slab-tile-size (which
+     would stretch a 3:2 image into a square and distort every vein). Two dimensions,
+     not one, same "never rescaled" rule as the original, just an actual aspect ratio
+     preserved instead of assumed square. */
+  --gold-slab-tile-width: 1536px;
+  --gold-slab-tile-height: 1024px;
 }
 
 /* -----------------------------------------------------------------------
@@ -374,4 +383,38 @@
     against a near-white fill */
   --text-primary: #16151a;
   --text-secondary: #55565f;
+}
+
+/* ===========================================================================
+   GOLD LAYOUT (CLAUDE.md "Design layouts") — a complete re-skin, independent
+   of theme. Overrides --accent-cyan itself (rather than introducing a
+   parallel --accent-gold and updating every one of its consumers) so every
+   accent-colored surface in the app — borders, focus rings, section-header
+   text, dropdown chevrons, hover glows, all already reading this one token —
+   recolors for free. Same "keep the token name, change the value" precedent
+   marble.css already set for .surface-smoked-glass/.surface-blue-marble when
+   those went from blue/smoked-glass to grey, logged there as intentional
+   naming debt, not an oversight.
+
+   Real sampled values (Python/PIL, most-common-saturated-gold-hued-pixel
+   bucket scan), not guessed, from the operator's own reference mockups:
+   Gold_Layout_Dark_Reference.png's gold reads bright/warm (#e69628);
+   Gold_Layout_Light_Reference.png's own gold is a deeper, more muted bronze
+   (#a08246) — the mockups themselves use different shades per theme, same
+   "chrome needs more contrast punch on white than on black" reasoning as
+   every other theme-aware color in this build. tint-06/12/25 are derived
+   with color-mix so they can't drift out of sync with the base color the
+   way three independently-hardcoded rgb() values could. */
+:root[data-layout="gold"] {
+  --accent-cyan: #e69628;
+  --accent-cyan-tint-06: color-mix(in srgb, #e69628 6%, transparent);
+  --accent-cyan-tint-12: color-mix(in srgb, #e69628 12%, transparent);
+  --accent-cyan-tint-25: color-mix(in srgb, #e69628 25%, transparent);
+}
+
+:root[data-layout="gold"][data-theme="light"] {
+  --accent-cyan: #a08246;
+  --accent-cyan-tint-06: color-mix(in srgb, #a08246 6%, transparent);
+  --accent-cyan-tint-12: color-mix(in srgb, #a08246 12%, transparent);
+  --accent-cyan-tint-25: color-mix(in srgb, #a08246 25%, transparent);
 }

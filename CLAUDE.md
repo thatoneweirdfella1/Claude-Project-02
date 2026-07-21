@@ -37,3 +37,31 @@ stop and treat that as a signal you've misunderstood the task — re-read this f
    describes.
 4. Update `BUILD-LOG.md` (`WHERE YOU ARE`, `DECISIONS`, `PARKED`, the `STEPS` checkbox) and
    commit before moving on to the next step.
+
+## Design layouts
+
+The app supports multiple complete, selectable visual layouts — not just the Light/Dark
+theme toggle (CANON Feature 12). A "layout" is a full re-skin: accent color, marble
+textures, logo treatment, card/button styling. Theme (light/dark) and layout are
+independent and orthogonal — every layout should work in both themes.
+
+**The standing rule:** whenever the operator uploads a new design mockup/reference image
+(screenshots of a redesign, a color palette board, generated texture images, etc.), build
+it out as a new layout option and add it to the layout picker (the gear/Settings menu,
+alongside the Theme radiogroup) so the operator can select it live — don't just apply it
+in place of the existing design. The existing design (marble + cyan accent, matching
+CANON.md and Divergence_AI_App_Screenshot_V3.png/Divergence_AI_Light_App_Screenshot_V2.png)
+is always the `"original"` layout and stays selectable; new layouts are added alongside it,
+never by replacing it in the code.
+
+**Current layouts:**
+- `"original"` — the CANON-driven marble/cyan design, default.
+- `"gold"` — marble + gold accent, per `Gold_Layout_Light_Reference.png` /
+  `Gold_Layout_Dark_Reference.png` (repo root, the operator's own mockups) and the two
+  generated marble textures in `public/textures/gold-marble-{light,dark}-slab.png`.
+
+A new layout's structural CONTENT (nav items, panel names, feature set) should match
+CANON's existing structure unless the operator explicitly asks for structural changes too
+— a layout is a re-skin, not license to redesign the information architecture on sight.
+If a new mockup's structure conflicts with CANON (different nav items, different panel
+set, etc.), flag the conflict and ask rather than silently picking one.

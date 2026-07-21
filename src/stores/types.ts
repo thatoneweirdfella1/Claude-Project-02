@@ -212,6 +212,14 @@ export type SavedVariables = Record<string, string>;
    stored as a resolved value — see useThemeEffect.ts. */
 export type ThemePreference = "light" | "dark" | "auto";
 
+/* Layout — a complete visual re-skin (accent color, marble textures, logo
+   treatment, card/button styling), independent of ThemePreference above:
+   every layout works in both light and dark. See CLAUDE.md "Design
+   layouts" for the standing rule this exists to serve — new operator-
+   uploaded designs become new LayoutId values here, added alongside
+   "original", never replacing it. */
+export type LayoutId = "original" | "gold";
+
 /* Visibility settings (CANON Feature 12) — the seven sidebar checkboxes.
    Fully specified by CANON now, including exact defaults below. */
 export interface VisibilitySettings {
@@ -355,6 +363,10 @@ export interface AccountState {
       session's only rendered theme; this field didn't exist before, so a
       default that changes nothing for existing users is correct. */
   theme: ThemePreference;
+  /** Design layout (CLAUDE.md "Design layouts") — default "original" for
+      the same reason theme defaults to "dark": changes nothing for
+      existing users until they explicitly pick something else. */
+  layout: LayoutId;
   learnedPreferences: LearnedPreferences;
   /** Step 6.4 ADD: every state-pill correction the user has made, across all
       sessions (this store persists across browser closes — corrections must

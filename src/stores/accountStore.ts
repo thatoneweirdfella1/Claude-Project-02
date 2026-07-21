@@ -2,6 +2,7 @@ import { create } from "zustand";
 import type {
   AccountState,
   ArchivedPair,
+  LayoutId,
   LearnedPreferences,
   LearningAuditEntry,
   PlanFlag,
@@ -98,6 +99,7 @@ export function createInitialAccountState(): AccountState {
     variables: {},
     visibility: { ...DEFAULT_VISIBILITY },
     theme: "dark", // CANON Feature 12 — default unchanged from every prior session's only theme
+    layout: "original", // CLAUDE.md "Design layouts" — default unchanged from every prior session's only layout
     learnedPreferences: { routing: {}, technique: {} },
     stateCorrections: [], // Step 6.4
     sessions: [], // Step 9.1
@@ -115,6 +117,7 @@ export const ACCOUNT_PERSISTED_KEYS: (keyof AccountState)[] = [
   "variables",
   "visibility",
   "theme",
+  "layout",
   "learnedPreferences",
   "stateCorrections",
   "sessions",
@@ -141,6 +144,9 @@ interface AccountActions {
       resolved light/dark value ("auto" is resolved at render time, see
       useThemeEffect.ts, not here). */
   setTheme: (theme: ThemePreference) => void;
+  /** CLAUDE.md "Design layouts" — which complete visual re-skin is active.
+      Orthogonal to theme; every layout works in both light and dark. */
+  setLayout: (layout: LayoutId) => void;
   setLearnedPreferences: (prefs: LearnedPreferences) => void;
   /** Step 10.2 — atomic write for the learning-loop applier
       (services/learningLoop/applier.ts): sets the updated
@@ -198,6 +204,7 @@ export const useAccountStore = create<AccountStore>((set) => ({
     }),
   setVisibility: (patch) => set((s) => ({ visibility: { ...s.visibility, ...patch } })),
   setTheme: (theme) => set({ theme }),
+  setLayout: (layout) => set({ layout }),
   setLearnedPreferences: (learnedPreferences) => set({ learnedPreferences }),
   applyLearningRefinements: (updated, newAuditEntries) =>
     set((s) => {
