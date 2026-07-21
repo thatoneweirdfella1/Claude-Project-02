@@ -63,5 +63,17 @@ never by replacing it in the code.
 A new layout's structural CONTENT (nav items, panel names, feature set) should match
 CANON's existing structure unless the operator explicitly asks for structural changes too
 — a layout is a re-skin, not license to redesign the information architecture on sight.
-If a new mockup's structure conflicts with CANON (different nav items, different panel
-set, etc.), flag the conflict and ask rather than silently picking one.
+
+**Structural elements in a reference image are never requirements — visual style only.**
+Operator-decided, standing correction: a mockup the operator uploads for a new layout is a
+generation (AI-produced, e.g. via ChatGPT), and it is in the nature of generation to
+fabricate structural details that were never actually decided — different nav items, extra
+links, renamed panels, a different logo mark, and so on. This already happened once (the
+Gold mockups showed a spiral/vortex logo mark and a different nav list, neither of which the
+operator ever asked for — both were the image generator inventing detail, not intent).
+Do NOT read a reference image's nav items, links, buttons, or panel set as instructions, and
+do NOT ask the operator to reconcile them against CANON. Treat the image purely as a visual
+reference for the things a layout actually is — accent color, texture/background treatment,
+card/button chrome, spacing, typography feel — and leave CANON's existing structure (nav
+items, panel names, feature set, logo mark) untouched by default. Only change structure if
+the operator explicitly asks for it in words, separately from uploading the image.
