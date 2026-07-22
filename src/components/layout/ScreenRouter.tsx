@@ -635,6 +635,7 @@ function TasksScreen() {
 
 function TemplatesScreen() {
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const [formData, setFormData] = useState({
     title: "",
     model: "auto" as const,
@@ -650,8 +651,13 @@ function TemplatesScreen() {
   const setTechniques = useSessionStore((s) => s.setTechniques);
   const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
 
-  const builtInTemplates = templates.filter((t) => t.id.startsWith("template-"));
-  const customTemplates = templates.filter((t) => !t.id.startsWith("template-"));
+  const allTemplates = templates.filter((t) => {
+    const searchLower = searchTerm.toLowerCase();
+    return t.title.toLowerCase().includes(searchLower);
+  });
+
+  const builtInTemplates = allTemplates.filter((t) => t.id.startsWith("template-"));
+  const customTemplates = allTemplates.filter((t) => !t.id.startsWith("template-"));
 
   const allTechniques = ["auto-detect", "socratic", "chain-of-thought", "verify", "examples"];
 
@@ -705,6 +711,26 @@ function TemplatesScreen() {
         </div>
       </div>
       <div className="screen__content">
+        {templates.length > 0 && (
+          <div style={{ marginBottom: "24px" }}>
+            <input
+              type="text"
+              placeholder="Search templates..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "10px 12px",
+                fontSize: "13px",
+                border: "1px solid var(--accent-cyan-tint-06)",
+                borderRadius: "4px",
+                background: "var(--surface-base)",
+                color: "var(--text-primary)",
+              }}
+            />
+          </div>
+        )}
+
         {showCreateForm && (
           <div className="template-form">
             <div className="form-group">
@@ -853,6 +879,12 @@ function TemplatesScreen() {
 
         {templates.length === 0 && (
           <p>No templates yet. Save a template from the Translate screen using "Close Session → Archive Tagged" or create one manually.</p>
+        )}
+
+        {templates.length > 0 && builtInTemplates.length === 0 && customTemplates.length === 0 && (
+          <p style={{ color: "var(--text-secondary)" }}>
+            No templates match your search. Try a different search term.
+          </p>
         )}
       </div>
     </div>
