@@ -1133,7 +1133,9 @@ Blocked: the proxy's live deploy + real streamed call (parked for Step 12.3, unc
 
 ## PENDING TASKS (Not Yet Started)
 
-### Fable 5 Model Recommendation & Prompt Translation
+**⚠️ HOLD: Fable 5 Model Recommendation & Prompt Translation is ON HOLD.** User is uncertain whether this work will help or hurt. Do not start implementation. Wait for further go-ahead.
+
+### Fable 5 Model Recommendation & Prompt Translation (HOLD)
 - **Source**: User uploaded fabletranslator.ts, fable-translator-system-prompt.md, Fable 5 Prompting Guide
 - **What**: Model recommendation engine + prompt translator that reformats user input for each model's strengths (Fable gets 5-part structure: goal/reason/boundaries/verification/format)
 - **Status**: Not started
