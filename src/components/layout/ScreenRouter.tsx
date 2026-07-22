@@ -151,17 +151,29 @@ function DashboardScreen() {
 
 function MessagesScreen() {
   const sessions = useAccountStore((s) => s.sessions);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [roleFilter, setRoleFilter] = useState<"all" | "user" | "assistant">("all");
 
-  const allMessages = sessions
-    .flatMap((session) =>
-      session.conversation.map((msg) => ({
-        ...msg,
-        sessionId: session.id,
-        sessionTag: session.tag || `Session ${session.id.slice(0, 6)}`,
-      }))
-    )
+  const allMessages = sessions.flatMap((session) =>
+    session.conversation.map((msg) => ({
+      ...msg,
+      sessionId: session.id,
+      sessionTag: session.tag || `Session ${session.id.slice(0, 6)}`,
+    }))
+  );
+
+  const filteredMessages = allMessages
+    .filter((msg) => {
+      if (roleFilter !== "all" && msg.role !== roleFilter) return false;
+      if (!searchTerm) return true;
+      const searchLower = searchTerm.toLowerCase();
+      return (
+        msg.content.toLowerCase().includes(searchLower) ||
+        msg.sessionTag.toLowerCase().includes(searchLower)
+      );
+    })
     .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
-    .slice(0, 50);
+    .slice(0, 100);
 
   if (allMessages.length === 0) {
     return (
@@ -182,22 +194,62 @@ function MessagesScreen() {
         <h1>Messages</h1>
       </div>
       <div className="screen__content">
-        <div className="messages-list">
-          {allMessages.map((msg, idx) => (
-            <div key={`${msg.sessionId}-${idx}`} className="message-item">
-              <div className="message-item__header">
-                <span className="message-item__session">{msg.sessionTag}</span>
-                <span className="message-item__role">{msg.role}</span>
-                {msg.timestamp && (
-                  <span className="message-item__time">
-                    {new Date(msg.timestamp).toLocaleString()}
-                  </span>
-                )}
-              </div>
-              <p className="message-item__content">{msg.content}</p>
-            </div>
-          ))}
+        <div style={{ display: "flex", gap: "12px", marginBottom: "24px" }}>
+          <input
+            type="text"
+            placeholder="Search messages..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{
+              flex: 1,
+              padding: "10px 12px",
+              fontSize: "13px",
+              border: "1px solid var(--accent-cyan-tint-06)",
+              borderRadius: "4px",
+              background: "var(--surface-base)",
+              color: "var(--text-primary)",
+            }}
+          />
+          <select
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value as "all" | "user" | "assistant")}
+            style={{
+              padding: "10px 12px",
+              fontSize: "13px",
+              border: "1px solid var(--accent-cyan-tint-06)",
+              borderRadius: "4px",
+              background: "var(--surface-base)",
+              color: "var(--text-primary)",
+            }}
+          >
+            <option value="all">All Messages</option>
+            <option value="user">Your Messages</option>
+            <option value="assistant">AI Messages</option>
+          </select>
         </div>
+
+        {filteredMessages.length === 0 ? (
+          <p style={{ color: "var(--text-secondary)" }}>
+            No messages match your search.
+          </p>
+        ) : (
+          <div className="messages-list">
+            {filteredMessages.map((msg, idx) => (
+              <div key={`${msg.sessionId}-${idx}`} className="message-item">
+                <div className="message-item__header">
+                  <span className="message-item__session">{msg.sessionTag}</span>
+                  <span className="message-item__role">{msg.role}</span>
+                  {msg.timestamp && (
+                    <span className="message-item__time">
+                      {new Date(msg.timestamp).toLocaleString()}
+                    </span>
+                  )}
+                </div>
+                <p className="message-item__content">{msg.content}</p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
