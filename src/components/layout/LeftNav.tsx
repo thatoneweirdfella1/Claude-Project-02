@@ -54,6 +54,7 @@ const NAV_ITEMS: Array<{ label: string; screen: ScreenId; Icon: LucideIcon | nul
   { label: "Integrations", screen: "integrations", Icon: Code2 },
   { label: "Tasks", screen: "tasks", Icon: ListChecks },
   { label: "Customize", screen: "customize", Icon: SlidersHorizontal },
+  { label: "Sessions", screen: "sessions", Icon: ArchiveIcon },
   { label: "Translate", screen: "translate", Icon: null }, // BrainMark, not a lucide icon — see comment above
 ];
 

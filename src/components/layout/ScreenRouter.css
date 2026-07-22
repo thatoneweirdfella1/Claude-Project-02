@@ -34,3 +34,91 @@
 .screen__content p:last-child {
   margin: 0;
 }
+
+.session-list,
+.trashed-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.session-item,
+.trashed-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid var(--accent-cyan-tint-06);
+  border-radius: 6px;
+  background: var(--surface-smoked-glass);
+}
+
+.session-item__header,
+.trashed-item__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.session-item__header h3,
+.trashed-item__header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.session-item__date,
+.trashed-item__date {
+  font-size: 13px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.session-item__description,
+.trashed-item__description {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.session-item__actions,
+.trashed-item__actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.session-item__action-btn,
+.trashed-item__action-btn {
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.session-item__action-btn--primary,
+.trashed-item__action-btn--primary {
+  background: var(--accent-cyan);
+  color: var(--text-on-cyan);
+}
+
+.session-item__action-btn--primary:hover,
+.trashed-item__action-btn--primary:hover {
+  background: var(--accent-cyan-tint-02);
+}
+
+.session-item__action-btn--danger,
+.trashed-item__action-btn--danger {
+  background: var(--accent-red, #ef4444);
+  color: white;
+}
+
+.session-item__action-btn--danger:hover,
+.trashed-item__action-btn--danger:hover {
+  background: var(--accent-red-dark, #dc2626);
+}

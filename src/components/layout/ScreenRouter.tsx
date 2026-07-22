@@ -1,4 +1,5 @@
 import { useSessionStore } from "../../stores/sessionStore";
+import { useAccountStore } from "../../stores/accountStore";
 import { CenterColumn } from "../pipeline";
 
 function HomeScreen() {
@@ -119,14 +120,124 @@ function CustomizeScreen() {
   );
 }
 
+function SessionsScreen() {
+  const sessions = useAccountStore((s) => s.sessions);
+  const loadSessionRecord = useSessionStore((s) => s.loadSessionRecord);
+  const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
+  const moveSessionToTrash = useAccountStore((s) => s.moveSessionToTrash);
+
+  const handleLoadSession = (sessionId: string) => {
+    const session = sessions.find((s) => s.id === sessionId);
+    if (session) {
+      loadSessionRecord(session);
+      setCurrentScreen("translate");
+    }
+  };
+
+  const handleDeleteSession = (sessionId: string) => {
+    moveSessionToTrash(sessionId);
+  };
+
+  return (
+    <div className="screen screen-sessions">
+      <div className="screen__header">
+        <h1>Sessions</h1>
+      </div>
+      <div className="screen__content">
+        {sessions.length === 0 ? (
+          <p>No saved sessions yet. Create one in the Translate screen.</p>
+        ) : (
+          <div className="session-list">
+            {sessions.map((session) => (
+              <div key={session.id} className="session-item">
+                <div className="session-item__header">
+                  <h3>{session.title}</h3>
+                  <span className="session-item__date">
+                    {new Date(session.timestamp).toLocaleString()}
+                  </span>
+                </div>
+                {session.description && (
+                  <p className="session-item__description">{session.description}</p>
+                )}
+                <div className="session-item__actions">
+                  <button
+                    type="button"
+                    className="session-item__action-btn session-item__action-btn--primary"
+                    onClick={() => handleLoadSession(session.id)}
+                  >
+                    Load
+                  </button>
+                  <button
+                    type="button"
+                    className="session-item__action-btn session-item__action-btn--danger"
+                    onClick={() => handleDeleteSession(session.id)}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function TrashScreen() {
+  const trashed = useAccountStore((s) => s.trashed);
+  const restoreSessionFromTrash = useAccountStore((s) => s.restoreSessionFromTrash);
+  const deleteSessionFromTrash = useAccountStore((s) => s.deleteSessionFromTrash);
+
+  const handleRestoreSession = (sessionId: string) => {
+    restoreSessionFromTrash(sessionId);
+  };
+
+  const handlePermanentlyDelete = (sessionId: string) => {
+    deleteSessionFromTrash(sessionId);
+  };
+
   return (
     <div className="screen screen-trash">
       <div className="screen__header">
         <h1>Trash</h1>
       </div>
       <div className="screen__content">
-        <p>Deleted sessions and items — coming soon.</p>
+        {trashed.length === 0 ? (
+          <p>No deleted sessions. Items you delete from Sessions will appear here.</p>
+        ) : (
+          <div className="trashed-list">
+            {trashed.map((session) => (
+              <div key={session.id} className="trashed-item">
+                <div className="trashed-item__header">
+                  <h3>{session.title}</h3>
+                  <span className="trashed-item__date">
+                    {new Date(session.timestamp).toLocaleString()}
+                  </span>
+                </div>
+                {session.description && (
+                  <p className="trashed-item__description">{session.description}</p>
+                )}
+                <div className="trashed-item__actions">
+                  <button
+                    type="button"
+                    className="trashed-item__action-btn trashed-item__action-btn--primary"
+                    onClick={() => handleRestoreSession(session.id)}
+                  >
+                    Restore
+                  </button>
+                  <button
+                    type="button"
+                    className="trashed-item__action-btn trashed-item__action-btn--danger"
+                    onClick={() => handlePermanentlyDelete(session.id)}
+                  >
+                    Delete Permanently
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -156,6 +267,8 @@ export function ScreenRouter() {
       return <TasksScreen />;
     case "customize":
       return <CustomizeScreen />;
+    case "sessions":
+      return <SessionsScreen />;
     case "trash":
       return <TrashScreen />;
     default:

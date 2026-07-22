@@ -320,6 +320,7 @@ export type ScreenId =
   | "integrations"
   | "tasks"
   | "customize"
+  | "sessions"
   | "trash";
 
 export interface SessionState {
@@ -381,6 +382,9 @@ export interface AccountState {
       NAVIGATION, Step 9.7) — both read this same list, filtered by
       `archived`. */
   sessions: SessionRecord[];
+  /** Deleted sessions moved to trash (not permanently deleted). Can be
+      restored or permanently deleted from here. */
+  trashed: SessionRecord[];
   /** Step 9.2 ADD — CANON Feature 11 "Load Template" / Feature 12's Prompt
       Library tile ("save/load prompt templates") — the same list. Seeded
       with a few built-in presets (accountStore.ts) so the feature is

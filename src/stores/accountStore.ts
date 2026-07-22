@@ -103,6 +103,7 @@ export function createInitialAccountState(): AccountState {
     learnedPreferences: { routing: {}, technique: {} },
     stateCorrections: [], // Step 6.4
     sessions: [], // Step 9.1
+    trashed: [], // Deleted sessions (can be restored or permanently deleted)
     templates: DEFAULT_TEMPLATES.map((t) => ({ ...t, techniques: [...t.techniques] })), // Step 9.2 — fresh objects/arrays, no shared references
     learningAuditLog: [], // Step 10.2
   };
@@ -121,6 +122,7 @@ export const ACCOUNT_PERSISTED_KEYS: (keyof AccountState)[] = [
   "learnedPreferences",
   "stateCorrections",
   "sessions",
+  "trashed",
   "templates",
   "learningAuditLog",
 ];
@@ -168,6 +170,12 @@ interface AccountActions {
   /** Step 9.1 — files one duplicated or closed-and-archived session. Pure
       append; nothing here ever removes or mutates a past record. */
   addSessionRecord: (record: SessionRecord) => void;
+  /** Move a session from active history to trash (soft delete). */
+  moveSessionToTrash: (id: string) => void;
+  /** Permanently delete a session from trash. */
+  deleteSessionFromTrash: (id: string) => void;
+  /** Restore a trashed session back to active history. */
+  restoreSessionFromTrash: (id: string) => void;
   /** Step 9.2 — save the current settings (+ optional context/starter
       question) as a reusable template. */
   addTemplate: (template: PromptTemplate) => void;
@@ -228,6 +236,18 @@ export const useAccountStore = create<AccountStore>((set) => ({
       };
     }),
   addSessionRecord: (record) => set((s) => ({ sessions: [...s.sessions, record] })),
+  moveSessionToTrash: (id) =>
+    set((s) => ({
+      sessions: s.sessions.filter((rec) => rec.id !== id),
+      trashed: [...s.trashed, ...s.sessions.filter((rec) => rec.id === id)],
+    })),
+  deleteSessionFromTrash: (id) =>
+    set((s) => ({ trashed: s.trashed.filter((rec) => rec.id !== id) })),
+  restoreSessionFromTrash: (id) =>
+    set((s) => ({
+      trashed: s.trashed.filter((rec) => rec.id !== id),
+      sessions: [...s.sessions, ...s.trashed.filter((rec) => rec.id === id)],
+    })),
   addTemplate: (template) => set((s) => ({ templates: [...s.templates, template] })),
   removeTemplate: (id) =>
     set((s) => ({ templates: s.templates.filter((t) => t.id !== id) })),
