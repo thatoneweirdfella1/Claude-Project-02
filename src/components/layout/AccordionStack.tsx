@@ -2,6 +2,7 @@ import { useState, type ReactNode } from "react";
 import { GlassPanel } from "../primitives";
 import { ContextSnapshotContent } from "../context";
 import { useAccountStore } from "../../stores/accountStore";
+import { useSessionStore } from "../../stores/sessionStore";
 import type { VisibilitySettings } from "../../stores/types";
 
 /* AccordionStack (Step 9.5) — CANON Feature 12: "Sidebar accordions are
@@ -43,10 +44,58 @@ function PlaceholderNote({ text }: { text: string }) {
 }
 
 function RecentSessionsContent() {
-  // Placeholder: could show saved sessions, previous conversations, etc.
-  // For now, just show that this feature doesn't exist yet.
+  const sessions = useAccountStore((s) => s.sessions);
+  const loadSessionRecord = useSessionStore((s) => s.loadSessionRecord);
+  const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
+  const moveSessionToTrash = useAccountStore((s) => s.moveSessionToTrash);
+
+  const recentSessions = [...sessions].reverse().slice(0, 3);
+
+  if (recentSessions.length === 0) {
+    return <PlaceholderNote text="No saved sessions yet." />;
+  }
+
+  const handleLoad = (sessionId: string) => {
+    const session = sessions.find((s) => s.id === sessionId);
+    if (session) {
+      loadSessionRecord(session);
+      setCurrentScreen("translate");
+    }
+  };
+
+  const handleDelete = (sessionId: string) => {
+    moveSessionToTrash(sessionId);
+  };
+
   return (
-    <PlaceholderNote text="Session history and saved conversations — no step in the build plan owns this feature yet." />
+    <div className="accordion-panel__content">
+      {recentSessions.map((session) => (
+        <div key={session.id} className="recent-session-item">
+          <div className="recent-session-item__header">
+            <h4 className="recent-session-item__title">{session.tag || `Session ${session.id.slice(0, 6)}`}</h4>
+            <span className="recent-session-item__date">
+              {new Date(session.createdAt).toLocaleDateString()}
+            </span>
+          </div>
+          <div className="recent-session-item__actions">
+            <button
+              type="button"
+              className="recent-session-item__btn recent-session-item__btn--primary"
+              onClick={() => handleLoad(session.id)}
+            >
+              Load
+            </button>
+            <button
+              type="button"
+              className="recent-session-item__btn recent-session-item__btn--secondary"
+              onClick={() => handleDelete(session.id)}
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }
 
