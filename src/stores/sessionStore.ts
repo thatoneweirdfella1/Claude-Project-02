@@ -3,6 +3,8 @@ import type {
   ContextItem,
   ConversationMessage,
   DirectnessLevel,
+  MethodologyPhase,
+  MethodologyType,
   ModelSelection,
   ScreenId,
   SessionRecord,
@@ -33,6 +35,9 @@ export function createInitialSessionState(): SessionState {
     statePills: { emotion: null, rsd: null, interest: null, cognitive: null },
     variables: {}, // Step 7.4: session-local variables, default empty
     currentScreen: "translate", // Step 9.7: default to the main composer view
+    methodology: "standard", // 3-State Methodology: default to standard
+    methodologyPhase: "define", // Current phase when using 3-state
+    lockedProblemStatement: "", // Locked problem statement to prevent drift
   };
 }
 
@@ -48,6 +53,9 @@ export const SESSION_PERSISTED_KEYS: (keyof SessionState)[] = [
   "statePills",
   "variables",
   "currentScreen",
+  "methodology",
+  "methodologyPhase",
+  "lockedProblemStatement",
 ];
 
 interface SessionActions {
@@ -105,6 +113,12 @@ interface SessionActions {
       a conversation they no longer belong to. currentScreen is deliberately
       untouched — navigation is orthogonal to which session is loaded. */
   loadSessionRecord: (record: SessionRecord) => void;
+  /** Set which methodology to use (standard or 3-state). */
+  setMethodology: (methodology: MethodologyType) => void;
+  /** Set the current phase when using 3-state methodology. */
+  setMethodologyPhase: (phase: MethodologyPhase) => void;
+  /** Lock the problem statement to prevent drift during 3-state execution. */
+  setLockedProblemStatement: (statement: string) => void;
   /** Replace persisted fields wholesale — used by autosave rehydrate (Step 1.8). */
   hydrate: (state: Partial<SessionState>) => void;
 }
@@ -159,5 +173,8 @@ export const useSessionStore = create<SessionStore>((set) => ({
       draftInput: "",
       statePills: { emotion: null, rsd: null, interest: null, cognitive: null },
     }),
+  setMethodology: (methodology) => set({ methodology }),
+  setMethodologyPhase: (methodologyPhase) => set({ methodologyPhase }),
+  setLockedProblemStatement: (lockedProblemStatement) => set({ lockedProblemStatement }),
   hydrate: (state) => set(state),
 }));

@@ -312,6 +312,30 @@ export interface StateCorrection {
   timestamp: number;
 }
 
+/* 3-State Methodology tracking (DEFINE → TEST → STABILIZE). Records which
+   problem-solving approach was used in a session, the phase it reached,
+   and validation/audit results from the TEST phase. */
+export type MethodologyType = "standard" | "3-state";
+export type MethodologyPhase = "define" | "test" | "stabilize";
+
+export interface HallucinationAudit {
+  claimId: string;
+  text: string;
+  confidence: number;
+  verified: boolean;
+  notes: string;
+}
+
+export interface MethodologyEntry {
+  id: string;
+  sessionId: string;
+  methodology: MethodologyType;
+  phase: MethodologyPhase;
+  lockedProblemStatement: string;
+  hallucinations: HallucinationAudit[];
+  timestamp: number;
+}
+
 /* ── The two store state shapes (top-level: authoritative at Step 1.7) ── */
 
 /** Session store — cleared when a session closes (CANON). */
@@ -360,6 +384,12 @@ export interface SessionState {
       screen's content is shown in the center column. Defaults to "translate"
       (the composer view). */
   currentScreen: ScreenId;
+  /** 3-State Methodology selection. Defaults to "standard". */
+  methodology: MethodologyType;
+  /** Current phase in 3-State Methodology (if active). */
+  methodologyPhase: MethodologyPhase;
+  /** Locked problem statement for DEFINE phase. Prevents drift. */
+  lockedProblemStatement: string;
 }
 
 /** Account store — persists across browser closes (CANON). */
@@ -404,4 +434,6 @@ export interface AccountState {
       refinement actually applied to learnedPreferences. Bounded (see
       accountStore.ts) — same reasoning as stateCorrections/telemetry. */
   learningAuditLog: LearningAuditEntry[];
+  /** 3-State Methodology tracking across sessions. Bounded to prevent unbounded growth. */
+  methodologyLog: MethodologyEntry[];
 }
