@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Pencil, Star } from "lucide-react";
+import { Pencil, Star, Copy } from "lucide-react";
 import { useSessionStore } from "../../stores/sessionStore";
 import { useAccountStore } from "../../stores/accountStore";
 import { CenterColumn } from "../pipeline";
@@ -335,6 +335,7 @@ function ArchiveScreen() {
   const moveSessionToTrash = useAccountStore((s) => s.moveSessionToTrash);
   const updateSessionTag = useAccountStore((s) => s.updateSessionTag);
   const toggleSessionStar = useAccountStore((s) => s.toggleSessionStar);
+  const duplicateSession = useAccountStore((s) => s.duplicateSession);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<"recent" | "oldest" | "name" | "archived">("archived");
@@ -586,6 +587,15 @@ function ArchiveScreen() {
                           style={{ padding: "8px 10px", minWidth: "auto" }}
                         >
                           <Pencil size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          className="session-item__action-btn"
+                          onClick={() => duplicateSession(session.id)}
+                          title="Duplicate session"
+                          style={{ padding: "8px 10px", minWidth: "auto" }}
+                        >
+                          <Copy size={16} />
                         </button>
                         <button
                           type="button"
@@ -1475,6 +1485,7 @@ function SessionsScreen() {
   const moveSessionToTrash = useAccountStore((s) => s.moveSessionToTrash);
   const updateSessionTag = useAccountStore((s) => s.updateSessionTag);
   const toggleSessionStar = useAccountStore((s) => s.toggleSessionStar);
+  const duplicateSession = useAccountStore((s) => s.duplicateSession);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<"recent" | "oldest" | "name">("recent");
@@ -1714,6 +1725,15 @@ function SessionsScreen() {
                           style={{ padding: "8px 10px", minWidth: "auto" }}
                         >
                           <Pencil size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          className="session-item__action-btn"
+                          onClick={() => duplicateSession(session.id)}
+                          title="Duplicate session"
+                          style={{ padding: "8px 10px", minWidth: "auto" }}
+                        >
+                          <Copy size={16} />
                         </button>
                         <button
                           type="button"

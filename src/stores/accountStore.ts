@@ -188,6 +188,8 @@ interface AccountActions {
   toggleSessionStar: (id: string) => void;
   /** Toggle a template's starred/favorite status. */
   toggleTemplateStar: (id: string) => void;
+  /** Duplicate a session (copy all data and create a new session). */
+  duplicateSession: (id: string) => void;
   /** Replace persisted fields wholesale — used by autosave rehydrate (Step 1.8). */
   hydrate: (state: Partial<AccountState>) => void;
 }
@@ -285,5 +287,22 @@ export const useAccountStore = create<AccountStore>((set) => ({
         tmpl.id === id ? { ...tmpl, starred: !tmpl.starred } : tmpl,
       ),
     })),
+  duplicateSession: (id) =>
+    set((s) => {
+      const original = s.sessions.find((rec) => rec.id === id);
+      if (!original) return {};
+      const duplicate: SessionRecord = {
+        ...original,
+        id: `session-${Date.now()}`,
+        createdAt: Date.now(),
+        archived: false,
+        closedAt: undefined,
+        tag: `Copy of ${original.tag || `Session ${original.id.slice(0, 6)}`}`,
+        conversation: original.conversation.map((msg) => ({ ...msg })),
+        context: original.context.map((ctx) => ({ ...ctx })),
+        variables: { ...original.variables },
+      };
+      return { sessions: [...s.sessions, duplicate] };
+    }),
   hydrate: (state) => set(state),
 }));
