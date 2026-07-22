@@ -82,11 +82,50 @@ This session completed a massive build-out of facade features into end-to-end wo
 - All store actions update and persist via autosave
 - Added e2e test suite for Session History (session-history.spec.ts)
 
+**Additional Screens Built After Initial Pass:**
+
+13. **Templates Screen** (new):
+    - View all built-in and custom templates
+    - Click "Use Template" to load settings into current session
+    - Delete button for custom templates (built-in templates cannot be deleted)
+    - Sections for built-in vs. custom templates
+    - Shows model, directness, techniques, and starter question for each
+
+14. **Integrations Screen** (revamped):
+    - Educational showcase of 6 planned integrations (Email, Slack, Google Docs, Notion, GitHub, Discord)
+    - Each card shows emoji, name, description, and status
+    - Clearly marked as "Coming Soon" so users know when to expect them
+
+15. **Settings Screen** (new):
+    - Account section: plan and email
+    - Storage & Sync section: sessions saved, trash count, total messages, export-data button
+    - Display section: note that theme/layout/visibility are in the top-bar gear menu
+    - About section: version and product description
+    - Data export functionality (JSON backup with timestamp)
+
 **What's NOT Yet Built (placeholder screens remain):**
-- Integrations screen (marked "decorative placeholder, not planned this build")
 - Customize screen (shows explanation that it's for future feature-panel layout configuration)
 - Full Recent Activity might expand beyond creation/archive events (Step 11.x work if planned)
 - Token usage from actual API calls (Step 5.x if integrated)
+
+**Navigation Summary (All 13 screens now functional):**
+Left nav shows 12 destination screens + Translate tab:
+1. Home — landing page with CTA and recent sessions
+2. Dashboard — metrics cards (sessions, trash, templates, feedback, Q/A pairs)
+3. Messages — recent 50 messages across all sessions with metadata
+4. Archive — archived sessions with load/delete
+5. Resources — Getting Started / Features / Tips educational content
+6. Projects — sessions grouped by project tags
+7. Integrations — future integration showcase (Email, Slack, Docs, Notion, GitHub, Discord)
+8. Tasks — extracted action items from conversation content
+9. Templates — view/use/delete built-in and custom templates
+10. Customize — placeholder for future feature (panel layout configuration)
+11. Settings — account, storage, display settings, data export
+12. Sessions — view saved sessions, load or delete
+13. Translate — (main editor, already existed)
+
+Plus accessible from nav bottom or sidebar:
+- Trash — deleted sessions, restore or permanently delete
 
 **End-to-End Completeness:**
 Every completed feature works from user action → state change → persistence → rendering. No partial facades:
