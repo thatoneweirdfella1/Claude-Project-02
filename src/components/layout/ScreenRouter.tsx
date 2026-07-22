@@ -3,13 +3,84 @@ import { useAccountStore } from "../../stores/accountStore";
 import { CenterColumn } from "../pipeline";
 
 function HomeScreen() {
+  const sessions = useAccountStore((s) => s.sessions);
+  const loadSessionRecord = useSessionStore((s) => s.loadSessionRecord);
+  const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
+
+  const recentSessions = [...sessions].reverse().slice(0, 3);
+
+  const handleLoadSession = (sessionId: string) => {
+    const session = sessions.find((s) => s.id === sessionId);
+    if (session) {
+      loadSessionRecord(session);
+      setCurrentScreen("translate");
+    }
+  };
+
   return (
     <div className="screen screen-home">
       <div className="screen__header">
-        <h1>Home</h1>
+        <h1>Welcome to Divergence.AI</h1>
       </div>
       <div className="screen__content">
-        <p>Welcome to Divergence.AI. Start a new translation in the Translate screen.</p>
+        <div className="home-section">
+          <h2>Get Started</h2>
+          <p>Divergence.AI is an ADHD-friendly AI translator that helps you communicate your thoughts clearly. Start composing in the <strong>Translate</strong> tab on the left.</p>
+          <div className="home-cta">
+            <button
+              type="button"
+              className="home-cta__btn"
+              onClick={() => setCurrentScreen("translate")}
+            >
+              Go to Translate
+            </button>
+          </div>
+        </div>
+
+        {recentSessions.length > 0 && (
+          <div className="home-section">
+            <h2>Recent Sessions</h2>
+            <div className="home-session-list">
+              {recentSessions.map((session) => (
+                <button
+                  key={session.id}
+                  type="button"
+                  className="home-session-card"
+                  onClick={() => handleLoadSession(session.id)}
+                >
+                  <div className="home-session-card__title">
+                    {session.tag || `Session ${session.id.slice(0, 6)}`}
+                  </div>
+                  <div className="home-session-card__meta">
+                    {new Date(session.createdAt).toLocaleDateString()} •{" "}
+                    {session.conversation.length} messages
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="home-section">
+          <h2>Quick Tips</h2>
+          <ul className="home-tips">
+            <li>Use <strong>Directness</strong> (1–5) to control formality: low is casual, high is professional</li>
+            <li>Try different <strong>Techniques</strong> (Socratic, Chain-of-thought, etc.) to explore response styles</li>
+            <li>Save frequently used settings as <strong>Templates</strong> for quick reuse</li>
+            <li>Search past sessions and templates from the top bar</li>
+          </ul>
+        </div>
+
+        <div className="home-section">
+          <h2>Features</h2>
+          <ul className="home-features">
+            <li><strong>Sessions:</strong> Save and load complete conversations</li>
+            <li><strong>Templates:</strong> Reuse your favorite settings</li>
+            <li><strong>Search:</strong> Quickly find sessions and templates</li>
+            <li><strong>Dashboard:</strong> View your account statistics</li>
+            <li><strong>Archive:</strong> Browse closed and saved sessions</li>
+          </ul>
+        </div>
       </div>
     </div>
   );
