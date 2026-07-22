@@ -9,6 +9,7 @@ import {
   ListChecks,
   MessageSquare,
   Archive as ArchiveIcon,
+  Settings,
   SlidersHorizontal,
   Trash2,
   LogOut,
@@ -56,6 +57,7 @@ const NAV_ITEMS: Array<{ label: string; screen: ScreenId; Icon: LucideIcon | nul
   { label: "Tasks", screen: "tasks", Icon: ListChecks },
   { label: "Templates", screen: "templates", Icon: BookOpen },
   { label: "Customize", screen: "customize", Icon: SlidersHorizontal },
+  { label: "Settings", screen: "settings", Icon: Settings },
   { label: "Sessions", screen: "sessions", Icon: ArchiveIcon },
   { label: "Translate", screen: "translate", Icon: null }, // BrainMark, not a lucide icon — see comment above
 ];

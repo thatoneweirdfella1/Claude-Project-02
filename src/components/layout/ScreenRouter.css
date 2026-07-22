@@ -660,3 +660,70 @@
   background: var(--accent-cyan-tint-12);
   color: var(--text-secondary);
 }
+
+.settings-section {
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--accent-cyan-tint-06);
+}
+
+.settings-section:last-of-type {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.settings-section h3 {
+  margin: 0 0 16px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.settings-section__note {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.settings-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--accent-cyan-tint-12);
+}
+
+.settings-item:last-of-type {
+  border-bottom: none;
+}
+
+.settings-item__label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.settings-item__value {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.settings-btn {
+  padding: 10px 16px;
+  margin-top: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--accent-cyan);
+  color: var(--text-on-cyan);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.settings-btn:hover {
+  background: var(--accent-cyan-tint-02);
+}

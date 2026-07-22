@@ -667,6 +667,100 @@ function TemplatesScreen() {
   );
 }
 
+function SettingsScreen() {
+  const plan = useAccountStore((s) => s.plan);
+  const sessions = useAccountStore((s) => s.sessions);
+  const trashed = useAccountStore((s) => s.trashed);
+
+  const totalSessions = sessions.length;
+  const totalTrashed = trashed.length;
+  const totalMessages = sessions.reduce((sum, s) => sum + s.conversation.length, 0);
+
+  const handleExportData = () => {
+    const accountData = {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      plan,
+      stats: {
+        totalSessions,
+        totalTrashed,
+        totalMessages,
+      },
+      // Note: Full data export would include all sessions, templates, etc.
+      // For now, just showing that the feature exists and could be built
+    };
+    const dataStr = JSON.stringify(accountData, null, 2);
+    const dataBlob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `divergence-ai-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    link.click();
+  };
+
+  return (
+    <div className="screen screen-settings">
+      <div className="screen__header">
+        <h1>Settings</h1>
+      </div>
+      <div className="screen__content">
+        <div className="settings-section">
+          <h3>Account</h3>
+          <div className="settings-item">
+            <div className="settings-item__label">Plan</div>
+            <div className="settings-item__value">{plan === "free" ? "Free" : "Pro"}</div>
+          </div>
+          <div className="settings-item">
+            <div className="settings-item__label">Email</div>
+            <div className="settings-item__value">user@example.com</div>
+          </div>
+        </div>
+
+        <div className="settings-section">
+          <h3>Storage & Sync</h3>
+          <div className="settings-item">
+            <div className="settings-item__label">Sessions Saved</div>
+            <div className="settings-item__value">{totalSessions}</div>
+          </div>
+          <div className="settings-item">
+            <div className="settings-item__label">Items in Trash</div>
+            <div className="settings-item__value">{totalTrashed}</div>
+          </div>
+          <div className="settings-item">
+            <div className="settings-item__label">Total Messages</div>
+            <div className="settings-item__value">{totalMessages}</div>
+          </div>
+          <button
+            type="button"
+            className="settings-btn"
+            onClick={handleExportData}
+          >
+            Export Data as JSON
+          </button>
+        </div>
+
+        <div className="settings-section">
+          <h3>Display</h3>
+          <p className="settings-section__note">
+            Theme, layout, and sidebar visibility are controlled via the Settings gear icon (⚙️) in the top bar.
+          </p>
+        </div>
+
+        <div className="settings-section">
+          <h3>About Divergence.AI</h3>
+          <div className="settings-item">
+            <div className="settings-item__label">Version</div>
+            <div className="settings-item__value">0.1.0</div>
+          </div>
+          <p className="settings-section__note">
+            Divergence.AI is an ADHD-friendly AI translator that helps you communicate your thoughts clearly.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function CustomizeScreen() {
   return (
     <div className="screen screen-customize">
@@ -832,6 +926,8 @@ export function ScreenRouter() {
       return <SessionsScreen />;
     case "templates":
       return <TemplatesScreen />;
+    case "settings":
+      return <SettingsScreen />;
     case "trash":
       return <TrashScreen />;
     default:

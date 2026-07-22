@@ -322,6 +322,7 @@ export type ScreenId =
   | "customize"
   | "sessions"
   | "templates"
+  | "settings"
   | "trash";
 
 export interface SessionState {
