@@ -180,6 +180,8 @@ interface AccountActions {
       question) as a reusable template. */
   addTemplate: (template: PromptTemplate) => void;
   removeTemplate: (id: string) => void;
+  /** Update a session's tag (rename it). */
+  updateSessionTag: (id: string, newTag: string) => void;
   /** Replace persisted fields wholesale — used by autosave rehydrate (Step 1.8). */
   hydrate: (state: Partial<AccountState>) => void;
 }
@@ -251,5 +253,10 @@ export const useAccountStore = create<AccountStore>((set) => ({
   addTemplate: (template) => set((s) => ({ templates: [...s.templates, template] })),
   removeTemplate: (id) =>
     set((s) => ({ templates: s.templates.filter((t) => t.id !== id) })),
+  updateSessionTag: (id, newTag) =>
+    set((s) => ({
+      sessions: s.sessions.map((rec) => (rec.id === id ? { ...rec, tag: newTag } : rec)),
+      trashed: s.trashed.map((rec) => (rec.id === id ? { ...rec, tag: newTag } : rec)),
+    })),
   hydrate: (state) => set(state),
 }));

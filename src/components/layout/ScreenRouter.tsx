@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Pencil } from "lucide-react";
 import { useSessionStore } from "../../stores/sessionStore";
 import { useAccountStore } from "../../stores/accountStore";
 import { CenterColumn } from "../pipeline";
@@ -260,9 +261,12 @@ function ArchiveScreen() {
   const loadSessionRecord = useSessionStore((s) => s.loadSessionRecord);
   const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
   const moveSessionToTrash = useAccountStore((s) => s.moveSessionToTrash);
+  const updateSessionTag = useAccountStore((s) => s.updateSessionTag);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<"recent" | "oldest" | "name" | "archived">("archived");
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renamingText, setRenamingText] = useState("");
 
   const archivedSessions = sessions.filter((s) => s.archived);
 
@@ -276,6 +280,19 @@ function ArchiveScreen() {
 
   const handleDeleteSession = (sessionId: string) => {
     moveSessionToTrash(sessionId);
+  };
+
+  const handleRenameStart = (sessionId: string, currentTag: string) => {
+    setRenamingId(sessionId);
+    setRenamingText(currentTag);
+  };
+
+  const handleRenameSave = (sessionId: string) => {
+    if (renamingText.trim()) {
+      updateSessionTag(sessionId, renamingText.trim());
+    }
+    setRenamingId(null);
+    setRenamingText("");
   };
 
   const handleExportSession = (session: typeof sessions[0]) => {
@@ -363,46 +380,101 @@ function ArchiveScreen() {
                 {sortedSessions.map((session) => (
                   <div key={session.id} className="session-item">
                     <div className="session-item__header">
-                      <div>
-                        <h3>{session.tag || `Session ${session.id.slice(0, 8)}`}</h3>
-                        {session.closedAt && (
-                          <span className="session-item__closed-date">
-                            Archived: {new Date(session.closedAt).toLocaleString()}
-                          </span>
-                        )}
-                      </div>
-                      <span className="session-item__date">
-                        Created: {new Date(session.createdAt).toLocaleString()}
-                      </span>
+                      {renamingId === session.id ? (
+                        <div style={{ display: "flex", gap: "8px", alignItems: "center", flex: 1 }}>
+                          <input
+                            type="text"
+                            value={renamingText}
+                            onChange={(e) => setRenamingText(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") handleRenameSave(session.id);
+                              if (e.key === "Escape") {
+                                setRenamingId(null);
+                                setRenamingText("");
+                              }
+                            }}
+                            autoFocus
+                            style={{
+                              flex: 1,
+                              padding: "6px 8px",
+                              fontSize: "14px",
+                              border: "1px solid var(--accent-cyan)",
+                              borderRadius: "4px",
+                              background: "var(--surface-base)",
+                              color: "var(--text-primary)",
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleRenameSave(session.id)}
+                            style={{
+                              padding: "6px 12px",
+                              fontSize: "12px",
+                              background: "var(--accent-cyan)",
+                              color: "var(--text-on-accent)",
+                              border: "none",
+                              borderRadius: "4px",
+                              cursor: "pointer",
+                            }}
+                          >
+                            Save
+                          </button>
+                        </div>
+                      ) : (
+                        <div>
+                          <h3>{session.tag || `Session ${session.id.slice(0, 8)}`}</h3>
+                          {session.closedAt && (
+                            <span className="session-item__closed-date">
+                              Archived: {new Date(session.closedAt).toLocaleString()}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      {renamingId !== session.id && (
+                        <span className="session-item__date">
+                          Created: {new Date(session.createdAt).toLocaleString()}
+                        </span>
+                      )}
                     </div>
                     <p className="session-item__description">
                       Model: {session.model} • Directness: {session.directness} •{" "}
                       {session.conversation.length} messages
                     </p>
-                    <div className="session-item__actions">
-                      <button
-                        type="button"
-                        className="session-item__action-btn session-item__action-btn--primary"
-                        onClick={() => handleLoadSession(session.id)}
-                      >
-                        Load
-                      </button>
-                      <button
-                        type="button"
-                        className="session-item__action-btn"
-                        onClick={() => handleExportSession(session)}
-                        style={{ background: "var(--accent-cyan-tint-12)", color: "var(--text-primary)" }}
-                      >
-                        Export
-                      </button>
-                      <button
-                        type="button"
-                        className="session-item__action-btn session-item__action-btn--danger"
-                        onClick={() => handleDeleteSession(session.id)}
-                      >
-                        Delete
-                      </button>
-                    </div>
+                    {renamingId !== session.id && (
+                      <div className="session-item__actions">
+                        <button
+                          type="button"
+                          className="session-item__action-btn session-item__action-btn--primary"
+                          onClick={() => handleLoadSession(session.id)}
+                        >
+                          Load
+                        </button>
+                        <button
+                          type="button"
+                          className="session-item__action-btn"
+                          onClick={() => handleRenameStart(session.id, session.tag || `Session ${session.id.slice(0, 8)}`)}
+                          title="Rename session"
+                          style={{ padding: "8px 10px", minWidth: "auto" }}
+                        >
+                          <Pencil size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          className="session-item__action-btn"
+                          onClick={() => handleExportSession(session)}
+                          style={{ background: "var(--accent-cyan-tint-12)", color: "var(--text-primary)" }}
+                        >
+                          Export
+                        </button>
+                        <button
+                          type="button"
+                          className="session-item__action-btn session-item__action-btn--danger"
+                          onClick={() => handleDeleteSession(session.id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -1056,9 +1128,12 @@ function SessionsScreen() {
   const loadSessionRecord = useSessionStore((s) => s.loadSessionRecord);
   const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
   const moveSessionToTrash = useAccountStore((s) => s.moveSessionToTrash);
+  const updateSessionTag = useAccountStore((s) => s.updateSessionTag);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<"recent" | "oldest" | "name">("recent");
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renamingText, setRenamingText] = useState("");
 
   const handleLoadSession = (sessionId: string) => {
     const session = sessions.find((s) => s.id === sessionId);
@@ -1070,6 +1145,19 @@ function SessionsScreen() {
 
   const handleDeleteSession = (sessionId: string) => {
     moveSessionToTrash(sessionId);
+  };
+
+  const handleRenameStart = (sessionId: string, currentTag: string) => {
+    setRenamingId(sessionId);
+    setRenamingText(currentTag);
+  };
+
+  const handleRenameSave = (sessionId: string) => {
+    if (renamingText.trim()) {
+      updateSessionTag(sessionId, renamingText.trim());
+    }
+    setRenamingId(null);
+    setRenamingText("");
   };
 
   const handleExportSession = (session: typeof sessions[0]) => {
@@ -1154,39 +1242,94 @@ function SessionsScreen() {
                 {sortedSessions.map((session) => (
                   <div key={session.id} className="session-item">
                     <div className="session-item__header">
-                      <h3>{session.tag || `Session ${session.id.slice(0, 8)}`}</h3>
-                      <span className="session-item__date">
-                        {new Date(session.createdAt).toLocaleString()}
-                      </span>
+                      {renamingId === session.id ? (
+                        <div style={{ display: "flex", gap: "8px", alignItems: "center", flex: 1 }}>
+                          <input
+                            type="text"
+                            value={renamingText}
+                            onChange={(e) => setRenamingText(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") handleRenameSave(session.id);
+                              if (e.key === "Escape") {
+                                setRenamingId(null);
+                                setRenamingText("");
+                              }
+                            }}
+                            autoFocus
+                            style={{
+                              flex: 1,
+                              padding: "6px 8px",
+                              fontSize: "14px",
+                              border: "1px solid var(--accent-cyan)",
+                              borderRadius: "4px",
+                              background: "var(--surface-base)",
+                              color: "var(--text-primary)",
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleRenameSave(session.id)}
+                            style={{
+                              padding: "6px 12px",
+                              fontSize: "12px",
+                              background: "var(--accent-cyan)",
+                              color: "var(--text-on-accent)",
+                              border: "none",
+                              borderRadius: "4px",
+                              cursor: "pointer",
+                            }}
+                          >
+                            Save
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          <h3>{session.tag || `Session ${session.id.slice(0, 8)}`}</h3>
+                          <span className="session-item__date">
+                            {new Date(session.createdAt).toLocaleString()}
+                          </span>
+                        </>
+                      )}
                     </div>
                     <p className="session-item__description">
                       Model: {session.model} • Directness: {session.directness} •{" "}
                       {session.conversation.length} messages
                     </p>
-                    <div className="session-item__actions">
-                      <button
-                        type="button"
-                        className="session-item__action-btn session-item__action-btn--primary"
-                        onClick={() => handleLoadSession(session.id)}
-                      >
-                        Load
-                      </button>
-                      <button
-                        type="button"
-                        className="session-item__action-btn"
-                        onClick={() => handleExportSession(session)}
-                        style={{ background: "var(--accent-cyan-tint-12)", color: "var(--text-primary)" }}
-                      >
-                        Export
-                      </button>
-                      <button
-                        type="button"
-                        className="session-item__action-btn session-item__action-btn--danger"
-                        onClick={() => handleDeleteSession(session.id)}
-                      >
-                        Delete
-                      </button>
-                    </div>
+                    {renamingId !== session.id && (
+                      <div className="session-item__actions">
+                        <button
+                          type="button"
+                          className="session-item__action-btn session-item__action-btn--primary"
+                          onClick={() => handleLoadSession(session.id)}
+                        >
+                          Load
+                        </button>
+                        <button
+                          type="button"
+                          className="session-item__action-btn"
+                          onClick={() => handleRenameStart(session.id, session.tag || `Session ${session.id.slice(0, 8)}`)}
+                          title="Rename session"
+                          style={{ padding: "8px 10px", minWidth: "auto" }}
+                        >
+                          <Pencil size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          className="session-item__action-btn"
+                          onClick={() => handleExportSession(session)}
+                          style={{ background: "var(--accent-cyan-tint-12)", color: "var(--text-primary)" }}
+                        >
+                          Export
+                        </button>
+                        <button
+                          type="button"
+                          className="session-item__action-btn session-item__action-btn--danger"
+                          onClick={() => handleDeleteSession(session.id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -1202,9 +1345,12 @@ function TrashScreen() {
   const trashed = useAccountStore((s) => s.trashed);
   const restoreSessionFromTrash = useAccountStore((s) => s.restoreSessionFromTrash);
   const deleteSessionFromTrash = useAccountStore((s) => s.deleteSessionFromTrash);
+  const updateSessionTag = useAccountStore((s) => s.updateSessionTag);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<"recent" | "oldest" | "name">("recent");
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renamingText, setRenamingText] = useState("");
 
   const handleRestoreSession = (sessionId: string) => {
     restoreSessionFromTrash(sessionId);
@@ -1212,6 +1358,19 @@ function TrashScreen() {
 
   const handlePermanentlyDelete = (sessionId: string) => {
     deleteSessionFromTrash(sessionId);
+  };
+
+  const handleRenameStart = (sessionId: string, currentTag: string) => {
+    setRenamingId(sessionId);
+    setRenamingText(currentTag);
+  };
+
+  const handleRenameSave = (sessionId: string) => {
+    if (renamingText.trim()) {
+      updateSessionTag(sessionId, renamingText.trim());
+    }
+    setRenamingId(null);
+    setRenamingText("");
   };
 
   const filteredSessions = trashed.filter((session) => {
@@ -1286,31 +1445,86 @@ function TrashScreen() {
                 {sortedSessions.map((session) => (
                   <div key={session.id} className="trashed-item">
                     <div className="trashed-item__header">
-                      <h3>{session.tag || `Session ${session.id.slice(0, 8)}`}</h3>
-                      <span className="trashed-item__date">
-                        {new Date(session.createdAt).toLocaleString()}
-                      </span>
+                      {renamingId === session.id ? (
+                        <div style={{ display: "flex", gap: "8px", alignItems: "center", flex: 1 }}>
+                          <input
+                            type="text"
+                            value={renamingText}
+                            onChange={(e) => setRenamingText(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") handleRenameSave(session.id);
+                              if (e.key === "Escape") {
+                                setRenamingId(null);
+                                setRenamingText("");
+                              }
+                            }}
+                            autoFocus
+                            style={{
+                              flex: 1,
+                              padding: "6px 8px",
+                              fontSize: "14px",
+                              border: "1px solid var(--accent-cyan)",
+                              borderRadius: "4px",
+                              background: "var(--surface-base)",
+                              color: "var(--text-primary)",
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleRenameSave(session.id)}
+                            style={{
+                              padding: "6px 12px",
+                              fontSize: "12px",
+                              background: "var(--accent-cyan)",
+                              color: "var(--text-on-accent)",
+                              border: "none",
+                              borderRadius: "4px",
+                              cursor: "pointer",
+                            }}
+                          >
+                            Save
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          <h3>{session.tag || `Session ${session.id.slice(0, 8)}`}</h3>
+                          <span className="trashed-item__date">
+                            {new Date(session.createdAt).toLocaleString()}
+                          </span>
+                        </>
+                      )}
                     </div>
                     <p className="trashed-item__description">
                       Model: {session.model} • Directness: {session.directness} •{" "}
                       {session.conversation.length} messages
                     </p>
-                    <div className="trashed-item__actions">
-                      <button
-                        type="button"
-                        className="trashed-item__action-btn trashed-item__action-btn--primary"
-                        onClick={() => handleRestoreSession(session.id)}
-                      >
-                        Restore
-                      </button>
-                      <button
-                        type="button"
-                        className="trashed-item__action-btn trashed-item__action-btn--danger"
-                        onClick={() => handlePermanentlyDelete(session.id)}
-                      >
-                        Delete Permanently
-                      </button>
-                    </div>
+                    {renamingId !== session.id && (
+                      <div className="trashed-item__actions">
+                        <button
+                          type="button"
+                          className="trashed-item__action-btn trashed-item__action-btn--primary"
+                          onClick={() => handleRestoreSession(session.id)}
+                        >
+                          Restore
+                        </button>
+                        <button
+                          type="button"
+                          className="trashed-item__action-btn"
+                          onClick={() => handleRenameStart(session.id, session.tag || `Session ${session.id.slice(0, 8)}`)}
+                          title="Rename session"
+                          style={{ padding: "8px 10px", minWidth: "auto" }}
+                        >
+                          <Pencil size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          className="trashed-item__action-btn trashed-item__action-btn--danger"
+                          onClick={() => handlePermanentlyDelete(session.id)}
+                        >
+                          Delete Permanently
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
