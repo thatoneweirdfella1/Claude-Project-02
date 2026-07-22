@@ -223,6 +223,16 @@ function ArchiveScreen() {
     moveSessionToTrash(sessionId);
   };
 
+  const handleExportSession = (session: typeof sessions[0]) => {
+    const sessionData = JSON.stringify(session, null, 2);
+    const dataBlob = new Blob([sessionData], { type: "application/json" });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `divergence-session-${session.tag || session.id}-${new Date().toISOString().slice(0, 10)}.json`;
+    link.click();
+  };
+
   return (
     <div className="screen screen-archive">
       <div className="screen__header">
@@ -258,6 +268,14 @@ function ArchiveScreen() {
                     onClick={() => handleLoadSession(session.id)}
                   >
                     Load
+                  </button>
+                  <button
+                    type="button"
+                    className="session-item__action-btn"
+                    onClick={() => handleExportSession(session)}
+                    style={{ background: "var(--accent-cyan-tint-12)", color: "var(--text-primary)" }}
+                  >
+                    Export
                   </button>
                   <button
                     type="button"
@@ -899,6 +917,16 @@ function SessionsScreen() {
     moveSessionToTrash(sessionId);
   };
 
+  const handleExportSession = (session: typeof sessions[0]) => {
+    const sessionData = JSON.stringify(session, null, 2);
+    const dataBlob = new Blob([sessionData], { type: "application/json" });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `divergence-session-${session.tag || session.id}-${new Date().toISOString().slice(0, 10)}.json`;
+    link.click();
+  };
+
   return (
     <div className="screen screen-sessions">
       <div className="screen__header">
@@ -927,6 +955,14 @@ function SessionsScreen() {
                     onClick={() => handleLoadSession(session.id)}
                   >
                     Load
+                  </button>
+                  <button
+                    type="button"
+                    className="session-item__action-btn"
+                    onClick={() => handleExportSession(session)}
+                    style={{ background: "var(--accent-cyan-tint-12)", color: "var(--text-primary)" }}
+                  >
+                    Export
                   </button>
                   <button
                     type="button"
