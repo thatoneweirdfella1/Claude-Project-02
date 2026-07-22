@@ -182,6 +182,8 @@ interface AccountActions {
       question) as a reusable template. */
   addTemplate: (template: PromptTemplate) => void;
   removeTemplate: (id: string) => void;
+  /** Update an existing template's properties. */
+  updateTemplate: (id: string, updates: Partial<PromptTemplate>) => void;
   /** Update a session's tag (rename it). */
   updateSessionTag: (id: string, newTag: string) => void;
   /** Toggle a session's starred/favorite status. */
@@ -267,6 +269,10 @@ export const useAccountStore = create<AccountStore>((set) => ({
   addTemplate: (template) => set((s) => ({ templates: [...s.templates, template] })),
   removeTemplate: (id) =>
     set((s) => ({ templates: s.templates.filter((t) => t.id !== id) })),
+  updateTemplate: (id, updates) =>
+    set((s) => ({
+      templates: s.templates.map((t) => (t.id === id ? { ...t, ...updates } : t)),
+    })),
   updateSessionTag: (id, newTag) =>
     set((s) => ({
       sessions: s.sessions.map((rec) => (rec.id === id ? { ...rec, tag: newTag } : rec)),

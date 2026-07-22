@@ -898,10 +898,11 @@ function TasksScreen() {
 
 function TemplatesScreen() {
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [formData, setFormData] = useState({
     title: "",
-    model: "auto" as const,
+    model: "auto" as "auto" | "claude-haiku-4-5" | "claude-sonnet-5" | "claude-opus-4-8",
     directness: 2,
     techniques: [] as string[],
   });
@@ -909,6 +910,7 @@ function TemplatesScreen() {
   const templates = useAccountStore((s) => s.templates);
   const removeTemplate = useAccountStore((s) => s.removeTemplate);
   const addTemplate = useAccountStore((s) => s.addTemplate);
+  const updateTemplate = useAccountStore((s) => s.updateTemplate);
   const toggleTemplateStar = useAccountStore((s) => s.toggleTemplateStar);
   const setModel = useSessionStore((s) => s.setModel);
   const setDirectness = useSessionStore((s) => s.setDirectness);
@@ -948,6 +950,34 @@ function TemplatesScreen() {
       setFormData({ title: "", model: "auto", directness: 2, techniques: [] });
       setShowCreateForm(false);
     }
+  };
+
+  const handleEditTemplate = (template: typeof templates[0]) => {
+    setEditingId(template.id);
+    setFormData({
+      title: template.title,
+      model: template.model,
+      directness: template.directness,
+      techniques: template.techniques || [],
+    });
+  };
+
+  const handleSaveEdit = () => {
+    if (editingId && formData.title.trim()) {
+      updateTemplate(editingId, {
+        title: formData.title,
+        model: formData.model,
+        directness: formData.directness as 1 | 2 | 3,
+        techniques: formData.techniques as any,
+      });
+      setEditingId(null);
+      setFormData({ title: "", model: "auto", directness: 2, techniques: [] });
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setFormData({ title: "", model: "auto", directness: 2, techniques: [] });
   };
 
   const toggleTechnique = (technique: string) => {
@@ -1016,8 +1046,9 @@ function TemplatesScreen() {
                 onChange={(e) => setFormData({ ...formData, model: e.target.value as any })}
               >
                 <option value="auto">Auto (Recommended)</option>
-                <option value="gpt-4">GPT-4</option>
-                <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                <option value="claude-haiku-4-5">Claude Haiku 4.5</option>
+                <option value="claude-sonnet-5">Claude Sonnet 5</option>
+                <option value="claude-opus-4-8">Claude Opus 4.8</option>
               </select>
             </div>
             <div className="form-group">
@@ -1111,50 +1142,132 @@ function TemplatesScreen() {
             <div className="template-list">
               {customTemplates.map((template) => (
                 <div key={template.id} className="template-card">
-                  <div className="template-card__header">
-                    <h4>{template.title}</h4>
-                  </div>
-                  <div className="template-card__meta">
-                    <span className="template-card__badge">Model: {template.model}</span>
-                    <span className="template-card__badge">Directness: {template.directness}</span>
-                  </div>
-                  {template.techniques && template.techniques.length > 0 && (
-                    <div className="template-card__techniques">
-                      {template.techniques.map((t) => (
-                        <span key={t} className="template-card__technique">
-                          {t}
-                        </span>
-                      ))}
-                    </div>
+                  {editingId === template.id ? (
+                    <>
+                      <div className="form-group">
+                        <label className="form-group__label">Template Name</label>
+                        <input
+                          type="text"
+                          className="form-group__input"
+                          value={formData.title}
+                          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                          autoFocus
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-group__label">Model</label>
+                        <select
+                          className="form-group__input"
+                          value={formData.model}
+                          onChange={(e) => setFormData({ ...formData, model: e.target.value as any })}
+                        >
+                          <option value="auto">Auto (Recommended)</option>
+                          <option value="claude-haiku-4-5">Claude Haiku 4.5</option>
+                          <option value="claude-sonnet-5">Claude Sonnet 5</option>
+                          <option value="claude-opus-4-8">Claude Opus 4.8</option>
+                        </select>
+                      </div>
+                      <div className="form-group">
+                        <label className="form-group__label">Directness ({formData.directness})</label>
+                        <input
+                          type="range"
+                          min="1"
+                          max="5"
+                          value={formData.directness}
+                          onChange={(e) => setFormData({ ...formData, directness: parseInt(e.target.value) })}
+                          className="form-group__slider"
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-group__label">Techniques</label>
+                        <div className="form-group__techniques">
+                          {allTechniques.map((tech) => (
+                            <label key={tech} className="form-group__checkbox-label">
+                              <input
+                                type="checkbox"
+                                checked={formData.techniques.includes(tech)}
+                                onChange={() => toggleTechnique(tech)}
+                              />
+                              {tech}
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                      <div style={{ display: "flex", gap: "8px" }}>
+                        <button
+                          type="button"
+                          className="settings-btn"
+                          onClick={handleSaveEdit}
+                        >
+                          Save
+                        </button>
+                        <button
+                          type="button"
+                          className="settings-btn"
+                          onClick={handleCancelEdit}
+                          style={{ background: "var(--surface-elevated)" }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="template-card__header">
+                        <h4>{template.title}</h4>
+                      </div>
+                      <div className="template-card__meta">
+                        <span className="template-card__badge">Model: {template.model}</span>
+                        <span className="template-card__badge">Directness: {template.directness}</span>
+                      </div>
+                      {template.techniques && template.techniques.length > 0 && (
+                        <div className="template-card__techniques">
+                          {template.techniques.map((t) => (
+                            <span key={t} className="template-card__technique">
+                              {t}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {template.starterQuestion && (
+                        <p className="template-card__description">{template.starterQuestion}</p>
+                      )}
+                      <div className="template-card__actions">
+                        <button
+                          type="button"
+                          className="template-card__btn template-card__btn--primary"
+                          onClick={() => handleLoadTemplate(template)}
+                        >
+                          Use Template
+                        </button>
+                        <button
+                          type="button"
+                          className="template-card__btn"
+                          onClick={() => handleEditTemplate(template)}
+                          title="Edit template"
+                          style={{ padding: "8px 10px", minWidth: "auto" }}
+                        >
+                          <Pencil size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          className="template-card__btn"
+                          onClick={() => toggleTemplateStar(template.id)}
+                          title={template.starred ? "Remove from favorites" : "Add to favorites"}
+                          style={{ padding: "8px 10px", minWidth: "auto", color: template.starred ? "var(--accent-cyan)" : "var(--text-primary)" }}
+                        >
+                          <Star size={16} fill={template.starred ? "currentColor" : "none"} />
+                        </button>
+                        <button
+                          type="button"
+                          className="template-card__btn template-card__btn--danger"
+                          onClick={() => handleDeleteTemplate(template.id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </>
                   )}
-                  {template.starterQuestion && (
-                    <p className="template-card__description">{template.starterQuestion}</p>
-                  )}
-                  <div className="template-card__actions">
-                    <button
-                      type="button"
-                      className="template-card__btn template-card__btn--primary"
-                      onClick={() => handleLoadTemplate(template)}
-                    >
-                      Use Template
-                    </button>
-                    <button
-                      type="button"
-                      className="template-card__btn"
-                      onClick={() => toggleTemplateStar(template.id)}
-                      title={template.starred ? "Remove from favorites" : "Add to favorites"}
-                      style={{ padding: "8px 10px", minWidth: "auto", color: template.starred ? "var(--accent-cyan)" : "var(--text-primary)" }}
-                    >
-                      <Star size={16} fill={template.starred ? "currentColor" : "none"} />
-                    </button>
-                    <button
-                      type="button"
-                      className="template-card__btn template-card__btn--danger"
-                      onClick={() => handleDeleteTemplate(template.id)}
-                    >
-                      Delete
-                    </button>
-                  </div>
                 </div>
               ))}
             </div>
