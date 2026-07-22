@@ -1,31 +1,104 @@
 # DIVERGENCE.AI BUILD LOG
 
 ## WHERE YOU ARE
-This session completed the Session History system — the data model, persistence, and UI for saving,
-loading, deleting, and restoring sessions. Sessions were already being created via QuickActionsRow
-(New Session, Duplicate Session, Close Session with Save/Archive/Discard options), but there was no
-way to view, load, or manage them. Now fully wired:
+This session completed a massive build-out of facade features into end-to-end working systems:
 
-**Completed:**
-1. Added `trashed: SessionRecord[]` field to AccountState with three new store actions:
-   - `moveSessionToTrash(id)` — soft-deletes a session (moves from `sessions` to `trashed` array)
-   - `deleteSessionFromTrash(id)` — permanent delete from trash
-   - `restoreSessionFromTrash(id)` — restore from trash back to active sessions
-2. Added "trashed" to `ACCOUNT_PERSISTED_KEYS` so trash survives browser close/reload
-3. Built `SessionsScreen` component — displays `accountStore.sessions` with Load/Delete buttons
-4. Built working `TrashScreen` — displays `accountStore.trashed` with Restore/Delete-Permanently
-5. Added "Sessions" nav item to left nav (using ArchiveIcon), screen type added to ScreenId union
-6. Load flow: `loadSessionRecord(session)` restores model/directness/techniques/context/variables/
-   conversation history, then `setCurrentScreen("translate")` returns user to main editor
-7. Delete/Restore/Permanent Delete flows all work end-to-end with immediate persistence via autosave
-8. Added stylesheet with `.session-item`, `.trashed-item`, and action button styles
-9. TypeScript compiles clean; production build succeeds
+**Major Features Completed:**
 
-This completes "View/Load/Delete/Restore" as a closed system. Sessions already auto-save via
-QuickActionsRow, so a user can: (1) Duplicate/Close-Save a session → auto-persisted to `sessions`,
-(2) navigate to Sessions screen → see it in the list, (3) Load → returns to Translate with that
-session's full state restored, (4) Delete → moves to Trash, (5) later go to Trash → Restore. Complete
-end-to-end flow from creation through archival through recovery.
+1. **Session History System** (Step 9.1 extension):
+   - Added `trashed: SessionRecord[]` for soft-delete with restore capability
+   - Three new store actions: `moveSessionToTrash`, `deleteSessionFromTrash`, `restoreSessionFromTrash`
+   - Sessions screen: view all saved sessions, Load or Delete buttons
+   - Trash screen: view deleted sessions, Restore or Permanently Delete
+   - Sessions appear in left nav, navigable, fully functional end-to-end
+
+2. **Search Feature** (new, across codebase):
+   - Implemented in TopBar's SearchPopover
+   - Searches sessions by tag/title and templates by title
+   - Results display in sections (Sessions, Templates) capped at 3 each
+   - Click Load Session → restores full session state + switches to Translate
+   - Click Load Template → applies template settings to current session
+
+3. **Recent Sessions Accordion Panel** (Step 9.5 content):
+   - Shows 3 most recent sessions from `accountStore.sessions`
+   - Load/Delete buttons for each session
+   - Real data, immediate updates
+
+4. **Dashboard Screen** (new):
+   - Metrics cards showing: total sessions, trash count, templates, feedback ratings, Q/A pairs
+   - Breaks down archived sessions and custom templates in subtotals
+   - Responsive grid layout, live data from stores
+
+5. **Archive Screen** (new):
+   - Lists sessions with `archived: true`
+   - Shows archive date (closedAt)
+   - Load and Delete buttons
+   - Empty state if no archived sessions
+
+6. **Messages Screen** (new):
+   - Shows recent 50 messages across all sessions
+   - Displays sender (role), timestamp, session tag, and message content
+   - Left-border accent to distinguish from other content
+   - Sorted by recency
+
+7. **Resources Screen** (new):
+   - Three content cards: Getting Started, Features, Tips
+   - Educational content explaining core app concepts and best practices
+
+8. **Projects Screen** (new):
+   - Groups sessions by project (parsed from tags before colon)
+   - Shows count per project
+   - Lists sessions under each project with creation date
+   - Empty state explains how to create projects via tagging
+
+9. **Tasks Screen** (new):
+   - Extracts action items from assistant responses
+   - Pattern matching for bullet points and TODO/FIXME markers
+   - Shows unique tasks with session source
+   - Capped at 20 most recent unique tasks
+
+10. **Home Screen** (rebuilt):
+    - Welcome section with CTA to go to Translate
+    - Recent sessions grid (if any exist)
+    - Quick tips list (5 key points about Directness, Techniques, Templates, Search, Archive)
+    - Features list (5 bullet points describing core features)
+    - All links/buttons fully wired
+
+11. **Recent Activity Accordion Panel** (new):
+    - Pulls session creation and archive events from store
+    - Shows timestamp and description for each activity
+    - Sorted by recency, capped at 5
+    - Empty state if no activity
+
+12. **Token Usage Accordion Panel** (enhanced):
+    - Replaces stub with real metrics: message count and estimated tokens
+    - Formula: `messages × 50 tokens/message` (conservative estimate)
+    - Notes that actual usage awaits API integration
+
+**Testing & Build Status:**
+- All TypeScript compiles clean (tsc -b)
+- Production build succeeds (vite build)
+- All screens navigable from left nav
+- All store actions update and persist via autosave
+- Added e2e test suite for Session History (session-history.spec.ts)
+
+**What's NOT Yet Built (placeholder screens remain):**
+- Integrations screen (marked "decorative placeholder, not planned this build")
+- Customize screen (shows explanation that it's for future feature-panel layout configuration)
+- Full Recent Activity might expand beyond creation/archive events (Step 11.x work if planned)
+- Token usage from actual API calls (Step 5.x if integrated)
+
+**End-to-End Completeness:**
+Every completed feature works from user action → state change → persistence → rendering. No partial facades:
+- Search: type → results appear → click → session loads or template applies
+- Sessions: created via QuickActionsRow → appears in Sessions screen → Load button works → full session restored
+- Delete: click Delete → moves to Trash → appears in Trash screen → Restore brings it back
+- Dashboard: shows real live counts updated when sessions are created/deleted
+- Archive: shows actual archived sessions, load/delete both work
+- Messages: displays actual conversation history
+- Projects: groups real sessions by parsed tags
+- Tasks: extracts real action items from conversations
+- Home: shows recent sessions, all links work
 
 New concept: `LayoutId` (`src/stores/types.ts`) — `"original" | "gold"` — independent of and
 orthogonal to `ThemePreference`; every layout works in both light and dark. `accountStore.layout`
