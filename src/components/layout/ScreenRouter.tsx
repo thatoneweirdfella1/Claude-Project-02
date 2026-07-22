@@ -1684,6 +1684,7 @@ function SessionsScreen() {
   const [sortBy, setSortBy] = useState<"recent" | "oldest" | "name">("recent");
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renamingText, setRenamingText] = useState("");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleLoadSession = (sessionId: string) => {
@@ -1742,6 +1743,31 @@ function SessionsScreen() {
     };
     reader.readAsText(file);
     event.target.value = "";
+  };
+
+  const toggleSessionSelect = (sessionId: string) => {
+    const newSelected = new Set(selectedIds);
+    if (newSelected.has(sessionId)) {
+      newSelected.delete(sessionId);
+    } else {
+      newSelected.add(sessionId);
+    }
+    setSelectedIds(newSelected);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === sortedSessions.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(sortedSessions.map((s) => s.id)));
+    }
+  };
+
+  const handleBulkDelete = () => {
+    if (confirm(`Delete ${selectedIds.size} session(s)?`)) {
+      selectedIds.forEach((id) => moveSessionToTrash(id));
+      setSelectedIds(new Set());
+    }
   };
 
   const filteredSessions = sessions.filter((session) => {
@@ -1830,121 +1856,200 @@ function SessionsScreen() {
               />
             </div>
 
+            {selectedIds.size > 0 && (
+              <div
+                style={{
+                  display: "flex",
+                  gap: "12px",
+                  marginBottom: "24px",
+                  padding: "12px",
+                  background: "var(--accent-cyan-tint-12)",
+                  borderRadius: "4px",
+                  alignItems: "center",
+                }}
+              >
+                <span style={{ flex: 1, fontSize: "14px", fontWeight: "500" }}>
+                  {selectedIds.size} session{selectedIds.size !== 1 ? "s" : ""} selected
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedIds(new Set())}
+                  style={{
+                    padding: "8px 12px",
+                    fontSize: "13px",
+                    border: "1px solid var(--accent-cyan)",
+                    borderRadius: "4px",
+                    background: "transparent",
+                    color: "var(--text-primary)",
+                    cursor: "pointer",
+                  }}
+                >
+                  Clear
+                </button>
+                <button
+                  type="button"
+                  onClick={handleBulkDelete}
+                  style={{
+                    padding: "8px 12px",
+                    fontSize: "13px",
+                    border: "none",
+                    borderRadius: "4px",
+                    background: "var(--accent-danger)",
+                    color: "white",
+                    cursor: "pointer",
+                  }}
+                >
+                  Delete Selected
+                </button>
+              </div>
+            )}
+
             {sortedSessions.length === 0 ? (
               <p style={{ color: "var(--text-secondary)" }}>
                 No sessions match your search. Try adjusting your search term.
               </p>
             ) : (
               <div className="session-list">
+                {sortedSessions.length > 0 && (
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      marginBottom: "12px",
+                      paddingBottom: "12px",
+                      borderBottom: "1px solid var(--accent-cyan-tint-06)",
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.size === sortedSessions.length && sortedSessions.length > 0}
+                      onChange={toggleSelectAll}
+                      style={{ marginRight: "12px", cursor: "pointer" }}
+                    />
+                    <span style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
+                      Select All
+                    </span>
+                  </div>
+                )}
                 {sortedSessions.map((session) => (
                   <div key={session.id} className="session-item">
-                    <div className="session-item__header">
-                      {renamingId === session.id ? (
-                        <div style={{ display: "flex", gap: "8px", alignItems: "center", flex: 1 }}>
-                          <input
-                            type="text"
-                            value={renamingText}
-                            onChange={(e) => setRenamingText(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") handleRenameSave(session.id);
-                              if (e.key === "Escape") {
-                                setRenamingId(null);
-                                setRenamingText("");
-                              }
-                            }}
-                            autoFocus
-                            style={{
-                              flex: 1,
-                              padding: "6px 8px",
-                              fontSize: "14px",
-                              border: "1px solid var(--accent-cyan)",
-                              borderRadius: "4px",
-                              background: "var(--surface-base)",
-                              color: "var(--text-primary)",
-                            }}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleRenameSave(session.id)}
-                            style={{
-                              padding: "6px 12px",
-                              fontSize: "12px",
-                              background: "var(--accent-cyan)",
-                              color: "var(--text-on-accent)",
-                              border: "none",
-                              borderRadius: "4px",
-                              cursor: "pointer",
-                            }}
-                          >
-                            Save
-                          </button>
+                    <div style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(session.id)}
+                        onChange={() => toggleSessionSelect(session.id)}
+                        style={{ marginTop: "8px", cursor: "pointer" }}
+                      />
+                      <div style={{ flex: 1 }}>
+                        <div className="session-item__header">
+                          {renamingId === session.id ? (
+                            <div style={{ display: "flex", gap: "8px", alignItems: "center", flex: 1 }}>
+                              <input
+                                type="text"
+                                value={renamingText}
+                                onChange={(e) => setRenamingText(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") handleRenameSave(session.id);
+                                  if (e.key === "Escape") {
+                                    setRenamingId(null);
+                                    setRenamingText("");
+                                  }
+                                }}
+                                autoFocus
+                                style={{
+                                  flex: 1,
+                                  padding: "6px 8px",
+                                  fontSize: "14px",
+                                  border: "1px solid var(--accent-cyan)",
+                                  borderRadius: "4px",
+                                  background: "var(--surface-base)",
+                                  color: "var(--text-primary)",
+                                }}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleRenameSave(session.id)}
+                                style={{
+                                  padding: "6px 12px",
+                                  fontSize: "12px",
+                                  background: "var(--accent-cyan)",
+                                  color: "var(--text-on-accent)",
+                                  border: "none",
+                                  borderRadius: "4px",
+                                  cursor: "pointer",
+                                }}
+                              >
+                                Save
+                              </button>
+                            </div>
+                          ) : (
+                            <>
+                              <h3>{session.tag || `Session ${session.id.slice(0, 8)}`}</h3>
+                              <span className="session-item__date">
+                                {new Date(session.createdAt).toLocaleString()}
+                              </span>
+                            </>
+                          )}
                         </div>
-                      ) : (
-                        <>
-                          <h3>{session.tag || `Session ${session.id.slice(0, 8)}`}</h3>
-                          <span className="session-item__date">
-                            {new Date(session.createdAt).toLocaleString()}
-                          </span>
-                        </>
-                      )}
-                    </div>
-                    <p className="session-item__description">
-                      Model: {session.model} • Directness: {session.directness} •{" "}
-                      {session.conversation.length} messages
-                    </p>
-                    {renamingId !== session.id && (
-                      <div className="session-item__actions">
-                        <button
-                          type="button"
-                          className="session-item__action-btn session-item__action-btn--primary"
-                          onClick={() => handleLoadSession(session.id)}
-                        >
-                          Load
-                        </button>
-                        <button
-                          type="button"
-                          className="session-item__action-btn"
-                          onClick={() => toggleSessionStar(session.id)}
-                          title={session.starred ? "Remove from favorites" : "Add to favorites"}
-                          style={{ padding: "8px 10px", minWidth: "auto", color: session.starred ? "var(--accent-cyan)" : "var(--text-primary)" }}
-                        >
-                          <Star size={16} fill={session.starred ? "currentColor" : "none"} />
-                        </button>
-                        <button
-                          type="button"
-                          className="session-item__action-btn"
-                          onClick={() => handleRenameStart(session.id, session.tag || `Session ${session.id.slice(0, 8)}`)}
-                          title="Rename session"
-                          style={{ padding: "8px 10px", minWidth: "auto" }}
-                        >
-                          <Pencil size={16} />
-                        </button>
-                        <button
-                          type="button"
-                          className="session-item__action-btn"
-                          onClick={() => duplicateSession(session.id)}
-                          title="Duplicate session"
-                          style={{ padding: "8px 10px", minWidth: "auto" }}
-                        >
-                          <Copy size={16} />
-                        </button>
-                        <button
-                          type="button"
-                          className="session-item__action-btn"
-                          onClick={() => handleExportSession(session)}
-                          style={{ background: "var(--accent-cyan-tint-12)", color: "var(--text-primary)" }}
-                        >
-                          Export
-                        </button>
-                        <button
-                          type="button"
-                          className="session-item__action-btn session-item__action-btn--danger"
-                          onClick={() => handleDeleteSession(session.id)}
-                        >
-                          Delete
-                        </button>
+                        <p className="session-item__description">
+                          Model: {session.model} • Directness: {session.directness} •{" "}
+                          {session.conversation.length} messages
+                        </p>
+                        {renamingId !== session.id && (
+                          <div className="session-item__actions">
+                            <button
+                              type="button"
+                              className="session-item__action-btn session-item__action-btn--primary"
+                              onClick={() => handleLoadSession(session.id)}
+                            >
+                              Load
+                            </button>
+                            <button
+                              type="button"
+                              className="session-item__action-btn"
+                              onClick={() => toggleSessionStar(session.id)}
+                              title={session.starred ? "Remove from favorites" : "Add to favorites"}
+                              style={{ padding: "8px 10px", minWidth: "auto", color: session.starred ? "var(--accent-cyan)" : "var(--text-primary)" }}
+                            >
+                              <Star size={16} fill={session.starred ? "currentColor" : "none"} />
+                            </button>
+                            <button
+                              type="button"
+                              className="session-item__action-btn"
+                              onClick={() => handleRenameStart(session.id, session.tag || `Session ${session.id.slice(0, 8)}`)}
+                              title="Rename session"
+                              style={{ padding: "8px 10px", minWidth: "auto" }}
+                            >
+                              <Pencil size={16} />
+                            </button>
+                            <button
+                              type="button"
+                              className="session-item__action-btn"
+                              onClick={() => duplicateSession(session.id)}
+                              title="Duplicate session"
+                              style={{ padding: "8px 10px", minWidth: "auto" }}
+                            >
+                              <Copy size={16} />
+                            </button>
+                            <button
+                              type="button"
+                              className="session-item__action-btn"
+                              onClick={() => handleExportSession(session)}
+                              style={{ background: "var(--accent-cyan-tint-12)", color: "var(--text-primary)" }}
+                            >
+                              Export
+                            </button>
+                            <button
+                              type="button"
+                              className="session-item__action-btn session-item__action-btn--danger"
+                              onClick={() => handleDeleteSession(session.id)}
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        )}
                       </div>
-                    )}
+                    </div>
                   </div>
                 ))}
               </div>
