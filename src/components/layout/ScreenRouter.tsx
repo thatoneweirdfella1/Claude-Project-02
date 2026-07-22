@@ -16,13 +16,62 @@ function HomeScreen() {
 }
 
 function DashboardScreen() {
+  const sessions = useAccountStore((s) => s.sessions);
+  const trashed = useAccountStore((s) => s.trashed);
+  const templates = useAccountStore((s) => s.templates);
+  const ratings = useAccountStore((s) => s.ratings);
+  const archivedPairs = useAccountStore((s) => s.archivedPairs);
+
+  const totalSessions = sessions.length;
+  const totalArchivedSessions = sessions.filter((s) => s.archived).length;
+  const totalTrashed = trashed.length;
+  const customTemplates = templates.filter((t) => !t.id.startsWith("template-")).length;
+  const totalRatings = ratings.length;
+  const totalArchivedPairs = archivedPairs.length;
+
   return (
     <div className="screen screen-dashboard">
       <div className="screen__header">
         <h1>Dashboard</h1>
       </div>
       <div className="screen__content">
-        <p>Session statistics and analytics — coming soon.</p>
+        <div className="dashboard-grid">
+          <div className="dashboard-card">
+            <h3 className="dashboard-card__title">Sessions</h3>
+            <div className="dashboard-card__metric">{totalSessions}</div>
+            <p className="dashboard-card__label">saved sessions</p>
+            {totalArchivedSessions > 0 && (
+              <p className="dashboard-card__subtext">
+                {totalArchivedSessions} archived
+              </p>
+            )}
+          </div>
+          <div className="dashboard-card">
+            <h3 className="dashboard-card__title">Trash</h3>
+            <div className="dashboard-card__metric">{totalTrashed}</div>
+            <p className="dashboard-card__label">deleted items</p>
+          </div>
+          <div className="dashboard-card">
+            <h3 className="dashboard-card__title">Templates</h3>
+            <div className="dashboard-card__metric">{templates.length}</div>
+            <p className="dashboard-card__label">templates available</p>
+            {customTemplates > 0 && (
+              <p className="dashboard-card__subtext">
+                {customTemplates} custom
+              </p>
+            )}
+          </div>
+          <div className="dashboard-card">
+            <h3 className="dashboard-card__title">Feedback</h3>
+            <div className="dashboard-card__metric">{totalRatings}</div>
+            <p className="dashboard-card__label">ratings given</p>
+          </div>
+          <div className="dashboard-card">
+            <h3 className="dashboard-card__title">Q/A Pairs</h3>
+            <div className="dashboard-card__metric">{totalArchivedPairs}</div>
+            <p className="dashboard-card__label">archived pairs</p>
+          </div>
+        </div>
       </div>
     </div>
   );
