@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>DIVERGENCE.AI — Token Swatch</title>
+    <link rel="stylesheet" href="/src/styles/tokens.css" />
+    <style>
+      /* Page chrome only — not design tokens, this file is a dev-only QA tool
+         and is not part of the shipped app. */
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 32px;
+        background: linear-gradient(
+          160deg,
+          var(--surface-black-marble-start),
+          var(--surface-black-marble-end)
+        );
+        color: var(--text-primary);
+        font-family: var(--font-family-base);
+      }
+      h1 {
+        font-size: 20px;
+        font-weight: 500;
+        margin: 0 0 8px;
+      }
+      p.note {
+        color: var(--text-secondary);
+        font-size: var(--font-size-body);
+        max-width: 640px;
+        margin: 0 0 var(--space-section-margin);
+      }
+      section {
+        margin-bottom: var(--space-section-margin);
+      }
+      h2 {
+        font-size: var(--font-size-section-header);
+        font-weight: var(--font-weight-section-header);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--accent-cyan);
+        margin: 0 0 var(--space-row-margin);
+      }
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-row-margin);
+      }
+      .swatch {
+        width: 160px;
+      }
+      .chip {
+        height: 72px;
+        border-radius: var(--radius-card);
+        border: 1px solid var(--surface-smoked-glass-border);
+        box-shadow: var(--shadow-card);
+      }
+      .chip.button {
+        height: 44px;
+        border-radius: var(--radius-button);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-weight: var(--font-weight-label);
+      }
+      .label {
+        margin-top: var(--space-list-item-margin);
+        font-size: var(--font-size-label-secondary);
+        font-weight: var(--font-weight-label-secondary);
+        color: var(--text-secondary);
+      }
+      .var-name {
+        font-size: var(--font-size-metadata);
+        color: rgb(255 255 255 / var(--text-metadata-opacity));
+        font-family: ui-monospace, monospace;
+      }
+
+      /* Surfaces */
+      .black-marble {
+        background: linear-gradient(
+          160deg,
+          var(--surface-black-marble-start),
+          var(--surface-black-marble-end)
+        );
+      }
+      .smoked-glass {
+        background: var(--surface-smoked-glass);
+        backdrop-filter: blur(var(--blur-smoked-glass));
+      }
+      .blue-marble {
+        background: linear-gradient(
+          160deg,
+          var(--surface-blue-marble-start),
+          var(--surface-blue-marble-end)
+        );
+        position: relative;
+        overflow: hidden;
+      }
+      .blue-marble::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          to bottom,
+          var(--surface-blue-marble-glow),
+          transparent 60%
+        );
+      }
+
+      /* Accents / state pills rendered as actual pills, not flat chips */
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: var(--font-size-label-secondary);
+        border: 1px solid currentColor;
+        background: rgb(255 255 255 / 0.04);
+      }
+      .pill.emotion {
+        color: var(--state-emotion);
+      }
+      .pill.rsd {
+        color: var(--state-rsd);
+      }
+      .pill.interest {
+        color: var(--state-interest);
+      }
+      .pill.cognitive {
+        color: var(--state-cognitive);
+      }
+
+      /* Typography samples */
+      .type-sample {
+        background: var(--surface-smoked-glass);
+        border: 1px solid var(--surface-smoked-glass-border);
+        border-radius: var(--radius-card);
+        padding: var(--space-card-padding);
+        margin-bottom: var(--space-list-item-margin);
+      }
+      .type-section-header {
+        font-size: var(--font-size-section-header);
+        font-weight: var(--font-weight-section-header);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--accent-cyan);
+        margin: 0 0 8px;
+      }
+      .type-card-title {
+        font-size: var(--font-size-card-title);
+        font-weight: var(--font-weight-card-title);
+        margin: 0 0 8px;
+      }
+      .type-body {
+        font-size: var(--font-size-body);
+        font-weight: var(--font-weight-body);
+        line-height: var(--line-height-body);
+        margin: 0 0 8px;
+      }
+      .type-label {
+        font-size: var(--font-size-label);
+        font-weight: var(--font-weight-label);
+        margin: 0 0 8px;
+      }
+      .type-label-secondary {
+        font-size: var(--font-size-label-secondary);
+        font-weight: var(--font-weight-label-secondary);
+        color: var(--text-secondary);
+        margin: 0 0 8px;
+      }
+      .type-metadata {
+        font-size: var(--font-size-metadata);
+        font-weight: var(--font-weight-metadata);
+        color: rgb(255 255 255 / var(--text-metadata-opacity));
+        margin: 0;
+      }
+
+      /* Spacing / radius / shadow demo */
+      .spacing-demo {
+        display: flex;
+        gap: var(--space-list-item-margin);
+        flex-wrap: wrap;
+      }
+      .spacing-box {
+        background: var(--surface-smoked-glass);
+        border: 1px solid var(--surface-smoked-glass-border);
+        color: var(--text-secondary);
+        font-size: var(--font-size-metadata);
+        text-align: center;
+      }
+      .shadow-demo {
+        display: flex;
+        gap: 32px;
+      }
+      .shadow-box {
+        width: 160px;
+        height: 80px;
+        background: var(--surface-smoked-glass);
+        border-radius: var(--radius-card);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-secondary);
+        font-size: var(--font-size-metadata);
+      }
+    </style>
+  </head>
+  <body>
+    <h1>DIVERGENCE.AI — Token Swatch (Step 1.2)</h1>
+    <p class="note">
+      Every token in tokens.css, rendered, to eyeball against
+      Divergence_AI_App_Screenshot_V3.png. Dev-only page, not shipped —
+      not linked from the app shell.
+    </p>
+
+    <section>
+      <h2>Surfaces</h2>
+      <div class="row">
+        <div class="swatch">
+          <div class="chip black-marble"></div>
+          <div class="label">Black Marble</div>
+          <div class="var-name">--surface-black-marble-start/end</div>
+        </div>
+        <div class="swatch">
+          <div class="chip smoked-glass"></div>
+          <div class="label">Smoked Glass</div>
+          <div class="var-name">--surface-smoked-glass</div>
+        </div>
+        <div class="swatch">
+          <div class="chip blue-marble"></div>
+          <div class="label">Blue Marble</div>
+          <div class="var-name">--surface-blue-marble-start/end</div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Buttons</h2>
+      <div class="row">
+        <div class="swatch">
+          <div class="chip button blue-marble">TRANSLATE &amp; ASK</div>
+          <div class="label">Primary (Blue Marble)</div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Earned Color</h2>
+      <div class="row">
+        <div class="swatch">
+          <div class="chip" style="background: var(--accent-cyan)"></div>
+          <div class="label">Cyan</div>
+          <div class="var-name">--accent-cyan</div>
+        </div>
+        <div class="swatch">
+          <div class="chip" style="background: var(--accent-purple)"></div>
+          <div class="label">Purple (logo "AI")</div>
+          <div class="var-name">--accent-purple</div>
+        </div>
+        <div class="swatch">
+          <div class="chip" style="background: var(--action-destructive)"></div>
+          <div class="label">Destructive red</div>
+          <div class="var-name">--action-destructive</div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>State Pills</h2>
+      <div class="row">
+        <span class="pill emotion">● Emotion: Overwhelmed</span>
+        <span class="pill rsd">● RSD: High</span>
+        <span class="pill interest">● Interest: High</span>
+        <span class="pill cognitive">● Cognitive Mode: Analytical</span>
+      </div>
+    </section>
+
+    <section>
+      <h2>Text</h2>
+      <div class="type-sample">
+        <p class="type-body" style="color: var(--text-primary)">Primary text — white</p>
+        <p class="type-body" style="color: var(--text-secondary)">Secondary text — muted gray</p>
+        <p class="type-metadata">Metadata text — white at 0.6 opacity</p>
+      </div>
+    </section>
+
+    <section>
+      <h2>Typography Scale</h2>
+      <div class="type-sample">
+        <p class="type-section-header">Section Header 12px Caps Cyan</p>
+        <p class="type-card-title">Card Title 14px / 500</p>
+        <p class="type-body">
+          Body text 14px / 400, line-height 1.6. Quantum entanglement is a
+          phenomenon where two particles become linked, so the state of one
+          instantly influences the state of the other, no matter how far
+          apart they are.
+        </p>
+        <p class="type-label">Label 14px / 500</p>
+        <p class="type-label-secondary">Secondary label 12px / 400</p>
+        <p class="type-metadata">Metadata 12px / 400 / opacity 0.6 — "2m ago"</p>
+      </div>
+    </section>
+
+    <section>
+      <h2>Spacing</h2>
+      <div class="spacing-demo">
+        <div class="spacing-box" style="width: 24px; height: 24px; line-height: 24px;">24</div>
+        <div class="spacing-box" style="width: 20px; height: 20px; line-height: 20px;">20</div>
+        <div class="spacing-box" style="width: 16px; height: 16px; line-height: 16px;">16</div>
+        <div class="spacing-box" style="width: 12px; height: 12px; line-height: 12px;">12</div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Radius</h2>
+      <div class="row">
+        <div class="swatch">
+          <div class="chip smoked-glass" style="border-radius: var(--radius-card)"></div>
+          <div class="label">Card — 14px</div>
+        </div>
+        <div class="swatch">
+          <div class="chip button blue-marble" style="border-radius: var(--radius-button)"></div>
+          <div class="label">Button — 8px</div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Shadows</h2>
+      <div class="shadow-demo">
+        <div class="shadow-box" style="box-shadow: var(--shadow-card)">Card shadow</div>
+        <div class="shadow-box" style="box-shadow: var(--shadow-modal)">Modal shadow</div>
+      </div>
+    </section>
+  </body>
+</html>

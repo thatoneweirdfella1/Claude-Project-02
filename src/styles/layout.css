@@ -1,0 +1,63 @@
+/* layout.css — app frame only.
+   Dimensions are LOCKED by CANON.md "LAYOUT":
+   top bar 60px, left column 200px, center flex, right column 300px.
+   Do not change these numbers without changing CANON.md first.
+   Marble/glass styling lives in marble.css (Step 1.3) — keep this file structural. */
+
+:root {
+  --topbar-height: 60px;
+  --left-col-width: 200px;
+  --right-col-width: 300px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: var(--font-family-base);
+  color: var(--text-primary);
+  /* No background here: .marble-slab (marble.css) is a fixed, full-viewport
+     layer that covers body entirely and owns the real background. */
+}
+
+.app-shell {
+  display: grid;
+  grid-template-rows: var(--topbar-height) 1fr;
+  grid-template-columns: var(--left-col-width) 1fr var(--right-col-width);
+  grid-template-areas:
+    "topbar topbar topbar"
+    "left   center right";
+  /* Slightly under 100vh so a full-width band of slab is visible below the
+     frame, crossing all three columns — MATERIALS.md "THE SLAB RULE"
+     enforceable check. Grid rows/columns/areas above are unchanged. */
+  height: calc(100vh - var(--space-section-margin));
+}
+
+.topbar {
+  grid-area: topbar;
+  border-bottom: 1px solid var(--surface-smoked-glass-border);
+}
+
+.col-left {
+  grid-area: left;
+  border-right: 1px solid var(--surface-smoked-glass-border);
+}
+
+.col-center {
+  grid-area: center;
+  min-width: 0; /* lets the flex/center track shrink instead of overflowing */
+  overflow-y: auto;
+}
+
+.col-right {
+  grid-area: right;
+  border-left: 1px solid var(--surface-smoked-glass-border);
+}

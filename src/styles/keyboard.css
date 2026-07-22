@@ -1,0 +1,16 @@
+/* keyboard.css — the framework's one global visual rule (Step 1.9):
+   a visible focus ring at every keyboard stop, for CANON's ADHD HARD RULES
+   (Accessibility, "100% usable by Tab, Enter, Escape") and the step's
+   requirement 1 ("visible focus rings").
+
+   primitives.css already rings the primitive classes explicitly; this rule
+   is the safety net so ANY natively-focusable element a later step adds —
+   even a plain <a>/<button>/<input> not built from a primitive — gets the
+   same ring for free. Uses :where() so specificity stays 0 and a component
+   can still override the ring intentionally. :focus-visible (not :focus) so
+   the ring shows for keyboard users without flashing on mouse click. */
+
+:where(a[href], button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}

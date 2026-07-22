@@ -1,0 +1,72 @@
+# CONVENTIONS.md
+
+You are reading this with no memory of this repo. That is expected — every build step
+runs in a fresh session. This file plus BUILD-LOG.md is your orientation. Product truth
+lives in CANON.md; where anything disagrees with CANON.md, CANON.md wins.
+
+## Repo layout
+
+```
+divergence-ai/
+├── BUILD-LOG.md          ← read FIRST, update LAST, every step (append-only except WHERE YOU ARE)
+├── CANON.md              ← product truth (copy in from reference files if absent)
+├── STACK.md              ← the locked stack and why; do not re-litigate it
+├── CONVENTIONS.md        ← this file
+├── index.html            ← Vite entry; mounts #root
+├── package.json          ← name: divergence-ai; scripts: dev / build / lint / preview
+├── vite.config.ts
+├── tsconfig*.json
+├── public/               ← static assets served as-is (favicon; marble textures land here in Step 3.1)
+└── src/
+    ├── main.tsx          ← ReactDOM entry; renders <AppShell/>; imports global styles
+    ├── components/
+    │   └── layout/       ← structural frame components (AppShell.tsx lives here)
+    │   └── <feature>/    ← one folder per CANON feature as it's built, e.g.
+    │                        translation/, statepills/, transparency/, sessions/
+    ├── stores/           ← Zustand stores. Exactly two planned (CANON "STORES AND
+    │                        PERSISTENCE"): sessionStore.ts, accountStore.ts (Step 6.3)
+    ├── services/         ← non-UI logic: API client, streaming, persistence (idb),
+    │                        and the drop-in routing engine (routing.js + routing.d.ts, Step 1.5/2.2)
+    └── styles/
+        ├── layout.css    ← the structural frame ONLY (grid, dimensions). Locked numbers
+        │                    from CANON: topbar 60px, left 200px, center flex, right 300px.
+        └── tokens.css    ← design tokens as CSS custom properties (Step 1.2 fills this)
+```
+
+## Naming
+
+- **Components:** PascalCase file and export, one component per file (`AppShell.tsx`,
+  `StateDetectionPanel.tsx`). Named exports, not default.
+- **Stores/services/utilities:** camelCase files (`sessionStore.ts`, `apiClient.ts`).
+- **CSS:** plain kebab-case class names (`.col-left`, `.state-pill`). Global stylesheets
+  in `src/styles/`, imported once from `main.tsx`. Component-scoped styles, when needed,
+  as `ComponentName.css` next to the component — but prefer tokens + global classes.
+- **CSS custom properties:** kebab-case with a domain prefix once tokens exist
+  (`--surface-black-marble`, not `--color1`).
+- **Test IDs:** every structural region carries `data-testid` (`topbar`, `col-left`,
+  `col-center`, `col-right`). Add them to new interactive regions as you build.
+
+## Rules that keep 60 blind sessions coherent
+
+1. **Read BUILD-LOG.md before writing anything.** Update it before reporting done:
+   edit only WHERE YOU ARE, append to DECISIONS and PARKED, tick your step in STEPS.
+2. **Don't restructure the frame.** `AppShell.tsx` + `layout.css` define the locked
+   grid. Features mount inside the four regions.
+3. **Don't re-decide the stack.** STACK.md is settled. Adding a dependency is a
+   DECISIONS line in BUILD-LOG.md with a one-line justification.
+4. **CANON's numbers are not suggestions.** 60/200/300px frame, 5s autosave, 10MB/50MB
+   context limits, max 4 stacked techniques — quote CANON when you implement one.
+5. **Keyboard-first.** Everything reachable by Tab/Enter/Escape (CANON "ADHD HARD
+   RULES"). Build it in as you go; Step 11.3 audits, it does not retrofit.
+6. **No black boxes.** Anything that makes a decision (routing, techniques, state
+   detection) must expose what it decided and why — design the data shape for the
+   Transparency card (Feature 8) even in steps before it exists.
+
+## Dev commands
+
+```
+npm install       # once per fresh environment
+npm run dev       # dev server (vite), default port 5173
+npm run build     # tsc -b && vite build → dist/
+npm run lint      # oxlint
+```
