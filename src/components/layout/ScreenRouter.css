@@ -595,3 +595,68 @@
   background: var(--accent-red, #ef4444);
   color: white;
 }
+
+.integrations-intro {
+  margin-bottom: 24px;
+}
+
+.integrations-intro p {
+  margin-bottom: 12px;
+}
+
+.integrations-intro p:last-child {
+  margin-bottom: 0;
+}
+
+.integrations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.integration-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 20px;
+  border: 1px solid var(--accent-cyan-tint-06);
+  border-radius: 6px;
+  background: var(--surface-smoked-glass);
+  text-align: center;
+}
+
+.integration-card__icon {
+  font-size: 32px;
+}
+
+.integration-card__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.integration-card__description {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.integration-card__status {
+  margin-top: 8px;
+}
+
+.integration-card__badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.integration-card__badge--planned {
+  background: var(--accent-cyan-tint-12);
+  color: var(--text-secondary);
+}

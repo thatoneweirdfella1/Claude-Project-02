@@ -399,13 +399,73 @@ function ProjectsScreen() {
 }
 
 function IntegrationsScreen() {
+  const integrations = [
+    {
+      name: "Email",
+      icon: "📧",
+      description: "Send translated thoughts directly to your inbox or email them to others",
+      status: "planned",
+    },
+    {
+      name: "Slack",
+      icon: "💬",
+      description: "Post translated messages to Slack channels and save them to your workspace",
+      status: "planned",
+    },
+    {
+      name: "Google Docs",
+      icon: "📄",
+      description: "Export translated conversations to Google Docs for further editing and sharing",
+      status: "planned",
+    },
+    {
+      name: "Notion",
+      icon: "📝",
+      description: "Save sessions and templates to your Notion workspace for centralized knowledge management",
+      status: "planned",
+    },
+    {
+      name: "GitHub",
+      icon: "🐙",
+      description: "Create GitHub issues with translated problem descriptions and technical details",
+      status: "planned",
+    },
+    {
+      name: "Discord",
+      icon: "🎮",
+      description: "Share translated messages with your Discord communities and servers",
+      status: "planned",
+    },
+  ];
+
   return (
     <div className="screen screen-integrations">
       <div className="screen__header">
         <h1>Integrations</h1>
       </div>
       <div className="screen__content">
-        <p>External integrations — decorative placeholder, not planned for this build.</p>
+        <div className="integrations-intro">
+          <p>
+            Divergence.AI integrations let you send your translated thoughts to the tools you already use. Connect your favorite apps to streamline your workflow.
+          </p>
+          <p style={{ color: "var(--text-secondary)", fontSize: "13px" }}>
+            Integrations are planned for a future release. All features listed below are coming soon.
+          </p>
+        </div>
+        <div className="integrations-grid">
+          {integrations.map((integration) => (
+            <div key={integration.name} className="integration-card">
+              <div className="integration-card__icon">{integration.icon}</div>
+              <h3 className="integration-card__title">{integration.name}</h3>
+              <p className="integration-card__description">{integration.description}</p>
+              <div className="integration-card__status">
+                <span className="integration-card__badge integration-card__badge--planned">
+                  Coming Soon
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
