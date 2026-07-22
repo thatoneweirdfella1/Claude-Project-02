@@ -321,6 +321,7 @@ export type ScreenId =
   | "tasks"
   | "customize"
   | "sessions"
+  | "templates"
   | "trash";
 
 export interface SessionState {

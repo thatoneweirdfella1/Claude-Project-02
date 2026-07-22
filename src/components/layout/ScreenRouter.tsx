@@ -486,6 +486,127 @@ function TasksScreen() {
   );
 }
 
+function TemplatesScreen() {
+  const templates = useAccountStore((s) => s.templates);
+  const removeTemplate = useAccountStore((s) => s.removeTemplate);
+  const setModel = useSessionStore((s) => s.setModel);
+  const setDirectness = useSessionStore((s) => s.setDirectness);
+  const setTechniques = useSessionStore((s) => s.setTechniques);
+  const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
+
+  const builtInTemplates = templates.filter((t) => t.id.startsWith("template-"));
+  const customTemplates = templates.filter((t) => !t.id.startsWith("template-"));
+
+  const handleLoadTemplate = (template: typeof templates[0]) => {
+    setModel(template.model);
+    setDirectness(template.directness);
+    setTechniques(template.techniques);
+    setCurrentScreen("translate");
+  };
+
+  const handleDeleteTemplate = (templateId: string) => {
+    removeTemplate(templateId);
+  };
+
+  return (
+    <div className="screen screen-templates">
+      <div className="screen__header">
+        <h1>Templates</h1>
+      </div>
+      <div className="screen__content">
+        {builtInTemplates.length > 0 && (
+          <div className="templates-section">
+            <h3 className="templates-section__title">Built-in Templates</h3>
+            <div className="template-list">
+              {builtInTemplates.map((template) => (
+                <div key={template.id} className="template-card">
+                  <div className="template-card__header">
+                    <h4>{template.title}</h4>
+                  </div>
+                  <div className="template-card__meta">
+                    <span className="template-card__badge">Model: {template.model}</span>
+                    <span className="template-card__badge">Directness: {template.directness}</span>
+                  </div>
+                  {template.techniques && template.techniques.length > 0 && (
+                    <div className="template-card__techniques">
+                      {template.techniques.map((t) => (
+                        <span key={t} className="template-card__technique">
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {template.starterQuestion && (
+                    <p className="template-card__description">{template.starterQuestion}</p>
+                  )}
+                  <button
+                    type="button"
+                    className="template-card__btn template-card__btn--primary"
+                    onClick={() => handleLoadTemplate(template)}
+                  >
+                    Use Template
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {customTemplates.length > 0 && (
+          <div className="templates-section">
+            <h3 className="templates-section__title">Custom Templates</h3>
+            <div className="template-list">
+              {customTemplates.map((template) => (
+                <div key={template.id} className="template-card">
+                  <div className="template-card__header">
+                    <h4>{template.title}</h4>
+                  </div>
+                  <div className="template-card__meta">
+                    <span className="template-card__badge">Model: {template.model}</span>
+                    <span className="template-card__badge">Directness: {template.directness}</span>
+                  </div>
+                  {template.techniques && template.techniques.length > 0 && (
+                    <div className="template-card__techniques">
+                      {template.techniques.map((t) => (
+                        <span key={t} className="template-card__technique">
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {template.starterQuestion && (
+                    <p className="template-card__description">{template.starterQuestion}</p>
+                  )}
+                  <div className="template-card__actions">
+                    <button
+                      type="button"
+                      className="template-card__btn template-card__btn--primary"
+                      onClick={() => handleLoadTemplate(template)}
+                    >
+                      Use Template
+                    </button>
+                    <button
+                      type="button"
+                      className="template-card__btn template-card__btn--danger"
+                      onClick={() => handleDeleteTemplate(template.id)}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {templates.length === 0 && (
+          <p>No templates yet. Save a template from the Translate screen using "Close Session → Archive Tagged" or create one manually.</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function CustomizeScreen() {
   return (
     <div className="screen screen-customize">
@@ -649,6 +770,8 @@ export function ScreenRouter() {
       return <CustomizeScreen />;
     case "sessions":
       return <SessionsScreen />;
+    case "templates":
+      return <TemplatesScreen />;
     case "trash":
       return <TrashScreen />;
     default:

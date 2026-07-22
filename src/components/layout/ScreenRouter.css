@@ -481,3 +481,117 @@
 .home-features li:last-child {
   margin-bottom: 0;
 }
+
+.templates-section {
+  margin-bottom: 32px;
+}
+
+.templates-section:last-of-type {
+  margin-bottom: 0;
+}
+
+.templates-section__title {
+  margin: 0 0 16px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--accent-cyan-tint-06);
+  padding-bottom: 8px;
+}
+
+.template-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.template-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--accent-cyan-tint-06);
+  border-radius: 6px;
+  background: var(--surface-smoked-glass);
+}
+
+.template-card__header h4 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.template-card__meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.template-card__badge {
+  display: inline-block;
+  padding: 4px 8px;
+  background: var(--accent-cyan-tint-12);
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.template-card__techniques {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.template-card__technique {
+  display: inline-block;
+  padding: 3px 8px;
+  background: var(--accent-cyan-tint-25);
+  border-radius: 3px;
+  font-size: 11px;
+  color: var(--text-primary);
+}
+
+.template-card__description {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.template-card__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.template-card__btn {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.template-card__btn--primary {
+  background: var(--accent-cyan);
+  color: var(--text-on-cyan);
+}
+
+.template-card__btn--primary:hover {
+  background: var(--accent-cyan-tint-02);
+}
+
+.template-card__btn--danger {
+  background: transparent;
+  color: var(--accent-red, #ef4444);
+  border: 1px solid var(--accent-red, #ef4444);
+}
+
+.template-card__btn--danger:hover {
+  background: var(--accent-red, #ef4444);
+  color: white;
+}
