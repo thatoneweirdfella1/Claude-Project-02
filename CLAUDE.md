@@ -136,7 +136,6 @@ Even if the rule is broken and Claude modifies backups without asking:
 3. `BACKUP-CHANGES.md` creates an audit trail — authorized changes are logged, unauthorized changes are missing from the log.
 4. You can always compare any backup against the reference to see what changed.
 5. You can always point to a snapshot and say "good thing this exists — we know what was there before the change."
-
 ## 3-State Methodology
 
 **DEFINE → TEST → STABILIZE** — A problem-solving framework optimized for ADHD users,
