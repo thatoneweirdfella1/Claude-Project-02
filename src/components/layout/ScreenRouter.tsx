@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Pencil } from "lucide-react";
 import { useSessionStore } from "../../stores/sessionStore";
 import { useAccountStore } from "../../stores/accountStore";
@@ -267,6 +267,7 @@ function ArchiveScreen() {
   const [sortBy, setSortBy] = useState<"recent" | "oldest" | "name" | "archived">("archived");
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renamingText, setRenamingText] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const archivedSessions = sessions.filter((s) => s.archived);
 
@@ -295,6 +296,8 @@ function ArchiveScreen() {
     setRenamingText("");
   };
 
+  const addSessionRecord = useAccountStore((s) => s.addSessionRecord);
+
   const handleExportSession = (session: typeof sessions[0]) => {
     const sessionData = JSON.stringify(session, null, 2);
     const dataBlob = new Blob([sessionData], { type: "application/json" });
@@ -303,6 +306,27 @@ function ArchiveScreen() {
     link.href = url;
     link.download = `divergence-session-${session.tag || session.id}-${new Date().toISOString().slice(0, 10)}.json`;
     link.click();
+  };
+
+  const handleImportSession = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const sessionData = JSON.parse(e.target?.result as string);
+        if (sessionData.id && sessionData.conversation && sessionData.model) {
+          addSessionRecord(sessionData);
+        } else {
+          alert("Invalid session file format");
+        }
+      } catch {
+        alert("Error reading session file");
+      }
+    };
+    reader.readAsText(file);
+    event.target.value = "";
   };
 
   const filteredSessions = archivedSessions.filter((session) => {
@@ -369,6 +393,29 @@ function ArchiveScreen() {
                 <option value="oldest">Oldest First</option>
                 <option value="name">By Name</option>
               </select>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                style={{
+                  padding: "10px 16px",
+                  fontSize: "13px",
+                  border: "1px solid var(--accent-cyan-tint-06)",
+                  borderRadius: "4px",
+                  background: "var(--surface-base)",
+                  color: "var(--text-primary)",
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Import
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".json"
+                onChange={handleImportSession}
+                style={{ display: "none" }}
+              />
             </div>
 
             {sortedSessions.length === 0 ? (
@@ -1134,6 +1181,7 @@ function SessionsScreen() {
   const [sortBy, setSortBy] = useState<"recent" | "oldest" | "name">("recent");
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renamingText, setRenamingText] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleLoadSession = (sessionId: string) => {
     const session = sessions.find((s) => s.id === sessionId);
@@ -1160,6 +1208,8 @@ function SessionsScreen() {
     setRenamingText("");
   };
 
+  const addSessionRecord = useAccountStore((s) => s.addSessionRecord);
+
   const handleExportSession = (session: typeof sessions[0]) => {
     const sessionData = JSON.stringify(session, null, 2);
     const dataBlob = new Blob([sessionData], { type: "application/json" });
@@ -1168,6 +1218,27 @@ function SessionsScreen() {
     link.href = url;
     link.download = `divergence-session-${session.tag || session.id}-${new Date().toISOString().slice(0, 10)}.json`;
     link.click();
+  };
+
+  const handleImportSession = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const sessionData = JSON.parse(e.target?.result as string);
+        if (sessionData.id && sessionData.conversation && sessionData.model) {
+          addSessionRecord(sessionData);
+        } else {
+          alert("Invalid session file format");
+        }
+      } catch {
+        alert("Error reading session file");
+      }
+    };
+    reader.readAsText(file);
+    event.target.value = "";
   };
 
   const filteredSessions = sessions.filter((session) => {
@@ -1231,6 +1302,29 @@ function SessionsScreen() {
                 <option value="oldest">Oldest First</option>
                 <option value="name">By Name</option>
               </select>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                style={{
+                  padding: "10px 16px",
+                  fontSize: "13px",
+                  border: "1px solid var(--accent-cyan-tint-06)",
+                  borderRadius: "4px",
+                  background: "var(--surface-base)",
+                  color: "var(--text-primary)",
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Import
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".json"
+                onChange={handleImportSession}
+                style={{ display: "none" }}
+              />
             </div>
 
             {sortedSessions.length === 0 ? (
