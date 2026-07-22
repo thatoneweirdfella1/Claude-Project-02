@@ -184,6 +184,8 @@ interface AccountActions {
   updateSessionTag: (id: string, newTag: string) => void;
   /** Toggle a session's starred/favorite status. */
   toggleSessionStar: (id: string) => void;
+  /** Toggle a template's starred/favorite status. */
+  toggleTemplateStar: (id: string) => void;
   /** Replace persisted fields wholesale — used by autosave rehydrate (Step 1.8). */
   hydrate: (state: Partial<AccountState>) => void;
 }
@@ -267,6 +269,12 @@ export const useAccountStore = create<AccountStore>((set) => ({
       ),
       trashed: s.trashed.map((rec) =>
         rec.id === id ? { ...rec, starred: !rec.starred } : rec,
+      ),
+    })),
+  toggleTemplateStar: (id) =>
+    set((s) => ({
+      templates: s.templates.map((tmpl) =>
+        tmpl.id === id ? { ...tmpl, starred: !tmpl.starred } : tmpl,
       ),
     })),
   hydrate: (state) => set(state),

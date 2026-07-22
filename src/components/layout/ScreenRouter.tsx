@@ -827,6 +827,7 @@ function TemplatesScreen() {
   const templates = useAccountStore((s) => s.templates);
   const removeTemplate = useAccountStore((s) => s.removeTemplate);
   const addTemplate = useAccountStore((s) => s.addTemplate);
+  const toggleTemplateStar = useAccountStore((s) => s.toggleTemplateStar);
   const setModel = useSessionStore((s) => s.setModel);
   const setDirectness = useSessionStore((s) => s.setDirectness);
   const setTechniques = useSessionStore((s) => s.setTechniques);
@@ -998,13 +999,24 @@ function TemplatesScreen() {
                   {template.starterQuestion && (
                     <p className="template-card__description">{template.starterQuestion}</p>
                   )}
-                  <button
-                    type="button"
-                    className="template-card__btn template-card__btn--primary"
-                    onClick={() => handleLoadTemplate(template)}
-                  >
-                    Use Template
-                  </button>
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <button
+                      type="button"
+                      className="template-card__btn template-card__btn--primary"
+                      onClick={() => handleLoadTemplate(template)}
+                    >
+                      Use Template
+                    </button>
+                    <button
+                      type="button"
+                      className="template-card__btn"
+                      onClick={() => toggleTemplateStar(template.id)}
+                      title={template.starred ? "Remove from favorites" : "Add to favorites"}
+                      style={{ padding: "8px 10px", minWidth: "auto", color: template.starred ? "var(--accent-cyan)" : "var(--text-primary)" }}
+                    >
+                      <Star size={16} fill={template.starred ? "currentColor" : "none"} />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -1043,6 +1055,15 @@ function TemplatesScreen() {
                       onClick={() => handleLoadTemplate(template)}
                     >
                       Use Template
+                    </button>
+                    <button
+                      type="button"
+                      className="template-card__btn"
+                      onClick={() => toggleTemplateStar(template.id)}
+                      title={template.starred ? "Remove from favorites" : "Add to favorites"}
+                      style={{ padding: "8px 10px", minWidth: "auto", color: template.starred ? "var(--accent-cyan)" : "var(--text-primary)" }}
+                    >
+                      <Star size={16} fill={template.starred ? "currentColor" : "none"} />
                     </button>
                     <button
                       type="button"

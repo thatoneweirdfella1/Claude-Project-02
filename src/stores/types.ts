@@ -200,6 +200,8 @@ export interface PromptTemplate {
   techniques: TechniqueId[];
   context?: ContextItem[];
   starterQuestion?: string;
+  /** True when user has starred/favorited this template for quick access. */
+  starred?: boolean;
 }
 
 /* Explicitly-saved variables ($name -> value), CANON Feature 6/11.
