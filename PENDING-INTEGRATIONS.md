@@ -283,6 +283,112 @@ MAX_LEARNING_AUDIT_ENTRIES:
 
 ---
 
+## TASK 3: Fable 5 Model Recommendation & Prompt Translation
+
+**Source**: User uploaded `fabletranslator.ts`, `fable-translator-system-prompt.md`, and `Fable 5 Prompting Guide` requesting integration for model-aware prompt reformatting.
+
+**What it is**: A three-part system that:
+1. **Model Recommendation Engine**: Analyzes user input and suggests best model (Haiku/Sonnet/Fable)
+2. **Prompt Translator**: Reformats user text to match selected model's strengths/weaknesses
+3. **Context-Aware Reformatting**: Applies model-specific rules (Fable gets 5-part structure, Haiku gets compressed, Sonnet balanced)
+
+**Why it matters**:
+- Fable 5 has different optimal prompting patterns than Opus/Sonnet (goal ≠ steps, strict boundaries, evidence-citation clauses)
+- Reduces friction by auto-suggesting best model for each question type
+- Reduces hallucinations by reformatting prompts to match model's strengths (Fable excels at autonomous work with clear boundaries)
+- Implements smart model routing per Divergence's core feature set
+
+**Data to integrate** (from uploaded files):
+
+```
+FABLE 5 PROMPTING RULES:
+- NEVER step-by-step micromanagement (punishes Fable)
+- DO: Give goal (not steps), reason, boundaries, verification, format
+- DO: Explicit evidence-citation requirement before reporting progress
+- AVOID: Vague "be thorough" without success criteria
+- AVOID: Asking Fable to narrate its reasoning (can trigger fallback to Opus)
+
+MODEL SELECTION HEURISTICS:
+- Haiku: Simple factual lookups, routine work (<5 min thinking)
+- Sonnet: Balanced reasoning, tradeoff analysis, moderate complexity
+- Fable: Autonomous long-horizon work, architecture decisions, difficult debugging
+  
+ACCURACY PATTERNS:
+- Fable: High accuracy on autonomous work, first-shot correctness on complex problems
+- Fable weakness: Verbosity (2.4x token output), confident fabrication in narrative
+- Fable cost: $10/$50 per million tokens (2x Opus pricing)
+```
+
+**Files to edit**:
+
+1. **`src/services/modelRecommendation.ts`** (NEW FILE)
+   - Export function: `analyzeQuestion(text: string): { recommended: ModelId, reasoning: string, confidence: 0-1 }`
+   - Heuristics: keyword detection (autonomous, debug, architecture), complexity scoring, task type inference
+   - Returns one of: "claude-haiku-4-5" | "claude-sonnet-5" | "claude-opus-4-8"
+
+2. **`src/services/promptTranslator.ts`** (NEW FILE, wraps fabletranslator.ts)
+   - Export function: `translateForModel(rawText: string, model: ModelId, context: AppContext): Promise<string>`
+   - Fable path: Run through 5-part structure translator (using uploaded `fable-translator-system-prompt.md`)
+   - Opus/Sonnet path: Light cleanup or pass-through (traditional prompting still works)
+   - Haiku path: Compress to essentials, drop verbose context
+
+3. **`src/components/composer/ControlRow.tsx`** (integrate recommendation)
+   - Add visual badge/chip showing recommended model (optional, faded if not selected)
+   - On model dropdown change: show tooltip explaining why that model is good/not ideal for detected question type
+
+4. **`src/components/composer/TranslateAskButton.tsx`** (wire translator)
+   - Before sending: detect question type, recommend model
+   - If Fable selected (or recommended): run through `promptTranslator.translateForModel()`
+   - Show reformatted text option (let user see what was rewritten)
+   - Send reformatted text to API with model choice
+
+5. **`src/stores/sessionStore.ts`** (track recommendations)
+   - Add field: `suggestedModel: ModelId | null` (the recommendation from analyzer)
+   - Add field: `translatedPrompt: string | null` (reformatted text before sending)
+   - Add action: `recordModelChoice(chosen: ModelId, suggested: ModelId, used: boolean)` (track if user follows recommendation)
+
+6. **`CLAUDE.md`** (add section)
+   ```markdown
+   ## Model Recommendation & Prompt Translation
+   
+   When user types a question:
+   1. Analyzer detects question type and recommends best model
+   2. If Fable selected: reformats prompt into 5-part structure (goal, reason, boundaries, verification, format)
+   3. If Haiku selected: compresses to essentials
+   4. If Sonnet selected: keeps balanced detail
+   
+   Fable rules: goal ≠ steps, explicit boundaries, evidence-citation clauses, no step-by-step micromanagement
+   
+   Track recommendation accuracy: did user accept recommendation? Did chosen model succeed?
+   ```
+
+7. **Integrate uploaded files**:
+   - Copy `fabletranslator.ts` content into `src/services/promptTranslator.ts` as helper
+   - Load `fable-translator-system-prompt.md` as constant in promptTranslator (cached, not re-fetched each time)
+   - Reference `Fable 5 Prompting Guide` as source for model-selection heuristics
+
+**How to know when done**:
+- [ ] `analyzeQuestion()` detects question type and recommends model with reasoning
+- [ ] Model recommendation shown in composer (optional badge)
+- [ ] `translateForModel()` works for Fable (5-part structure applied)
+- [ ] `translateForModel()` works for Haiku (compression applied)
+- [ ] `translateForModel()` works for Sonnet (pass-through or light cleanup)
+- [ ] Fable path uses uploaded system prompt (not generating new one)
+- [ ] User can see reformatted prompt before sending
+- [ ] Recommendation tracking persists (did user follow suggestion?)
+- [ ] Tooltip explains model choice reasoning
+- [ ] End-to-end test: type complex question → get Fable recommended → see 5-part reformat → send works
+
+**Acceptance criteria**:
+- Model recommendation working (tested on variety of question types)
+- Prompt translation for Fable applies all 5 parts correctly
+- Prompt translation for other models doesn't break existing behavior
+- User can toggle between auto-reformatted and original prompt
+- Recommendation accuracy tracked (for learning which questions really need which model)
+- No extra API calls for recommendation (heuristic-based, not LLM-based)
+
+---
+
 ## COMPLETED TASKS
 
 *(Move tasks here when done. Keep for reference.)*
@@ -293,15 +399,17 @@ MAX_LEARNING_AUDIT_ENTRIES:
 
 - Task 1 source: Decision Record Generation From Workflow conversation (3-state methodology validation)
 - Task 2 source: Learnable Signal Patterns Verification conversation (multi-signal learning system)
-- Both tasks reduce friction and hallucinations for ADHD users
-- Both tasks implement core CANON features (Feature 6-8: Rating, Variables, Learning)
-- Integration makes Divergence app feature-complete per original specification
+- Task 3 source: User uploaded Fable files + guide (model recommendation and prompt translation)
+- Tasks 1-2 reduce friction and hallucinations for ADHD users
+- Tasks 1-2 implement core CANON features (Feature 6-8: Rating, Variables, Learning)
+- Task 3 implements model-aware prompt optimization (Fable 5 specific integration)
+- All three tasks together make Divergence app feature-complete and production-ready
 
 ---
 
 ## How to Check Status
 
-**"What's not finished?"** → Read this file. Tasks 1 and 2 are the answer.
+**"What's not finished?"** → Read this file. Tasks 1, 2, and 3 are the answer.
 
 **Auditing progress**: 
 ```bash
