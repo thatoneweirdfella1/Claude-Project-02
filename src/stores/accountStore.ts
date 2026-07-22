@@ -44,6 +44,7 @@ export const MAX_STATE_CORRECTIONS = 1000;
 export function createInitialAccountState(): AccountState {
   return {
     plan: "free", // CANON/ROUTING: default free so the gated path is exercised by default. NOT billing.
+    currentScreen: "home", // Navigation: default to home screen
     archivedPairs: [],
     ratings: [],
     savedPrompts: [],
@@ -57,6 +58,7 @@ export function createInitialAccountState(): AccountState {
 /** Persisted data keys, for the autosave layer (Step 1.8). */
 export const ACCOUNT_PERSISTED_KEYS: (keyof AccountState)[] = [
   "plan",
+  "currentScreen",
   "archivedPairs",
   "ratings",
   "savedPrompts",
@@ -68,6 +70,7 @@ export const ACCOUNT_PERSISTED_KEYS: (keyof AccountState)[] = [
 
 interface AccountActions {
   setPlan: (plan: PlanFlag) => void;
+  setCurrentScreen: (screen: import("./types").ScreenId) => void;
   archivePair: (pair: ArchivedPair) => void;
   addRating: (rating: Rating) => void;
   addSavedPrompt: (prompt: SavedPrompt) => void;
@@ -90,6 +93,7 @@ export const useAccountStore = create<AccountStore>((set) => ({
   ...createInitialAccountState(),
 
   setPlan: (plan) => set({ plan }),
+  setCurrentScreen: (screen) => set({ currentScreen: screen }),
   archivePair: (pair) => set((s) => ({ archivedPairs: [...s.archivedPairs, pair] })),
   addRating: (rating) => set((s) => ({ ratings: [...s.ratings, rating] })),
   addSavedPrompt: (prompt) => set((s) => ({ savedPrompts: [...s.savedPrompts, prompt] })),
