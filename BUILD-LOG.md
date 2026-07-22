@@ -1,12 +1,31 @@
 # DIVERGENCE.AI BUILD LOG
 
 ## WHERE YOU ARE
-A follow-up session built a "Design Layouts" system, per an explicit new operator standing rule:
-whenever a new design mockup gets uploaded going forward, build it as a new selectable layout added
-to a picker rather than replacing the existing design in place. This came up because the operator
-uploaded two real "Gold Website FINAL" mockup screenshots (gold accent color, marble in both themes,
-different logo/card styling) and, mid-scoping-questions, said to keep the current design too and add
-the new one as a list the operator can choose from.
+This session completed the Session History system — the data model, persistence, and UI for saving,
+loading, deleting, and restoring sessions. Sessions were already being created via QuickActionsRow
+(New Session, Duplicate Session, Close Session with Save/Archive/Discard options), but there was no
+way to view, load, or manage them. Now fully wired:
+
+**Completed:**
+1. Added `trashed: SessionRecord[]` field to AccountState with three new store actions:
+   - `moveSessionToTrash(id)` — soft-deletes a session (moves from `sessions` to `trashed` array)
+   - `deleteSessionFromTrash(id)` — permanent delete from trash
+   - `restoreSessionFromTrash(id)` — restore from trash back to active sessions
+2. Added "trashed" to `ACCOUNT_PERSISTED_KEYS` so trash survives browser close/reload
+3. Built `SessionsScreen` component — displays `accountStore.sessions` with Load/Delete buttons
+4. Built working `TrashScreen` — displays `accountStore.trashed` with Restore/Delete-Permanently
+5. Added "Sessions" nav item to left nav (using ArchiveIcon), screen type added to ScreenId union
+6. Load flow: `loadSessionRecord(session)` restores model/directness/techniques/context/variables/
+   conversation history, then `setCurrentScreen("translate")` returns user to main editor
+7. Delete/Restore/Permanent Delete flows all work end-to-end with immediate persistence via autosave
+8. Added stylesheet with `.session-item`, `.trashed-item`, and action button styles
+9. TypeScript compiles clean; production build succeeds
+
+This completes "View/Load/Delete/Restore" as a closed system. Sessions already auto-save via
+QuickActionsRow, so a user can: (1) Duplicate/Close-Save a session → auto-persisted to `sessions`,
+(2) navigate to Sessions screen → see it in the list, (3) Load → returns to Translate with that
+session's full state restored, (4) Delete → moves to Trash, (5) later go to Trash → Restore. Complete
+end-to-end flow from creation through archival through recovery.
 
 New concept: `LayoutId` (`src/stores/types.ts`) — `"original" | "gold"` — independent of and
 orthogonal to `ThemePreference`; every layout works in both light and dark. `accountStore.layout`
