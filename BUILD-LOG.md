@@ -1,7 +1,69 @@
 # DIVERGENCE.AI BUILD LOG
 
 ## WHERE YOU ARE
-This session completed a massive build-out of facade features into end-to-end working systems:
+Continuing previous session's feature completions with UI enhancements and discovery tools:
+
+**New Features Added This Session:**
+
+1. **Template Creation Form** (Templates screen):
+   - Full-featured form with template name input
+   - Model selection dropdown (Auto, GPT-4, GPT-3.5 Turbo)
+   - Directness range slider (1-5) with live value display
+   - Techniques multi-select checkboxes (auto-detect, socratic, chain-of-thought, verify, examples)
+   - Create/Cancel buttons with form validation
+   - CSS styling (.template-form, .form-group, .form-group__input, etc.)
+   - Full end-to-end: form submission adds to account store templates
+
+2. **Keyboard Shortcuts System** (App-wide):
+   - Global keyboard event listener with shortcut registry
+   - 7 navigation shortcuts (Ctrl+T: Translate, Ctrl+H: Home, Ctrl+D: Dashboard, Ctrl+S: Sessions, Ctrl+L: Templates, Ctrl+M: Messages, Ctrl+K: Search)
+   - Help shortcut (? key) opens keyboard shortcuts reference modal
+   - Shortcuts organized by category (Navigation, Help)
+   - useKeyboardShortcuts hook integrated into AppShell
+   - KeyboardShortcutsModal displays all shortcuts with formatted key combinations
+   - CSS styling for modal and keyboard hint display
+
+3. **Session Export Functionality** (Sessions & Archive screens):
+   - Export button on each session (Load/Export/Delete action trio)
+   - Exports complete SessionRecord as JSON file
+   - File naming includes session tag/ID and export date
+   - Downloads to user's computer for backup or sharing
+   - Consistent styling across Sessions and Archive screens
+
+4. **Session Search & Sorting** (Sessions screen):
+   - Real-time search input filtering by tag or session ID
+   - Case-insensitive, partial-match search
+   - Sort dropdown: Most Recent (default), Oldest First, By Name
+   - Display message count in session description
+   - "No results" message when search is empty
+   - Fully functional filtering before sorting
+
+5. **Archive Search & Sorting** (Archive screen):
+   - Same search/sort UI as Sessions screen
+   - Sort options: Most Recently Archived (default), Most Recently Created, Oldest First, By Name
+   - Shows both creation and archive dates for better context
+   - Message count display
+   - Consistent styling and behavior
+
+6. **Trash Search & Sorting** (Trash screen):
+   - Search and sort (Most Recent, Oldest First, By Name)
+   - Message count in descriptions
+   - Unified discovery experience across all session management screens
+
+7. **Template Search** (Templates screen):
+   - Search input to filter built-in and custom templates by title
+   - Real-time filtering, case-insensitive
+   - "No templates match your search" message
+   - Maintains separation between built-in and custom template sections
+
+8. **Message Search & Filtering** (Messages screen):
+   - Search input for message content and session tags
+   - Role filter dropdown: All Messages, Your Messages (user), AI Messages (assistant)
+   - Increased message limit from 50 to 100
+   - "No messages match your search" empty state
+   - Case-insensitive content search
+
+**Previous Session Features (still operational):**
 
 **Major Features Completed:**
 
