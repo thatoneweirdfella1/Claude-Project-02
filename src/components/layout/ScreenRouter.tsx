@@ -905,6 +905,9 @@ function SessionsScreen() {
   const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
   const moveSessionToTrash = useAccountStore((s) => s.moveSessionToTrash);
 
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState<"recent" | "oldest" | "name">("recent");
+
   const handleLoadSession = (sessionId: string) => {
     const session = sessions.find((s) => s.id === sessionId);
     if (session) {
@@ -927,6 +930,25 @@ function SessionsScreen() {
     link.click();
   };
 
+  const filteredSessions = sessions.filter((session) => {
+    const searchLower = searchTerm.toLowerCase();
+    const tag = (session.tag || `Session ${session.id.slice(0, 6)}`).toLowerCase();
+    return tag.includes(searchLower) || session.id.includes(searchTerm);
+  });
+
+  const sortedSessions = [...filteredSessions].sort((a, b) => {
+    switch (sortBy) {
+      case "recent":
+        return b.createdAt - a.createdAt;
+      case "oldest":
+        return a.createdAt - b.createdAt;
+      case "name":
+        return ((a.tag || a.id) || "").localeCompare((b.tag || b.id) || "");
+      default:
+        return 0;
+    }
+  });
+
   return (
     <div className="screen screen-sessions">
       <div className="screen__header">
@@ -936,45 +958,88 @@ function SessionsScreen() {
         {sessions.length === 0 ? (
           <p>No saved sessions yet. Create one in the Translate screen.</p>
         ) : (
-          <div className="session-list">
-            {sessions.map((session) => (
-              <div key={session.id} className="session-item">
-                <div className="session-item__header">
-                  <h3>{session.tag || `Session ${session.id.slice(0, 8)}`}</h3>
-                  <span className="session-item__date">
-                    {new Date(session.createdAt).toLocaleString()}
-                  </span>
-                </div>
-                <p className="session-item__description">
-                  Model: {session.model} • Directness: {session.directness}
-                </p>
-                <div className="session-item__actions">
-                  <button
-                    type="button"
-                    className="session-item__action-btn session-item__action-btn--primary"
-                    onClick={() => handleLoadSession(session.id)}
-                  >
-                    Load
-                  </button>
-                  <button
-                    type="button"
-                    className="session-item__action-btn"
-                    onClick={() => handleExportSession(session)}
-                    style={{ background: "var(--accent-cyan-tint-12)", color: "var(--text-primary)" }}
-                  >
-                    Export
-                  </button>
-                  <button
-                    type="button"
-                    className="session-item__action-btn session-item__action-btn--danger"
-                    onClick={() => handleDeleteSession(session.id)}
-                  >
-                    Delete
-                  </button>
-                </div>
+          <>
+            <div style={{ display: "flex", gap: "12px", marginBottom: "24px" }}>
+              <input
+                type="text"
+                placeholder="Search sessions..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{
+                  flex: 1,
+                  padding: "10px 12px",
+                  fontSize: "13px",
+                  border: "1px solid var(--accent-cyan-tint-06)",
+                  borderRadius: "4px",
+                  background: "var(--surface-base)",
+                  color: "var(--text-primary)",
+                }}
+              />
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as "recent" | "oldest" | "name")}
+                style={{
+                  padding: "10px 12px",
+                  fontSize: "13px",
+                  border: "1px solid var(--accent-cyan-tint-06)",
+                  borderRadius: "4px",
+                  background: "var(--surface-base)",
+                  color: "var(--text-primary)",
+                }}
+              >
+                <option value="recent">Most Recent</option>
+                <option value="oldest">Oldest First</option>
+                <option value="name">By Name</option>
+              </select>
+            </div>
+
+            {sortedSessions.length === 0 ? (
+              <p style={{ color: "var(--text-secondary)" }}>
+                No sessions match your search. Try adjusting your search term.
+              </p>
+            ) : (
+              <div className="session-list">
+                {sortedSessions.map((session) => (
+                  <div key={session.id} className="session-item">
+                    <div className="session-item__header">
+                      <h3>{session.tag || `Session ${session.id.slice(0, 8)}`}</h3>
+                      <span className="session-item__date">
+                        {new Date(session.createdAt).toLocaleString()}
+                      </span>
+                    </div>
+                    <p className="session-item__description">
+                      Model: {session.model} • Directness: {session.directness} •{" "}
+                      {session.conversation.length} messages
+                    </p>
+                    <div className="session-item__actions">
+                      <button
+                        type="button"
+                        className="session-item__action-btn session-item__action-btn--primary"
+                        onClick={() => handleLoadSession(session.id)}
+                      >
+                        Load
+                      </button>
+                      <button
+                        type="button"
+                        className="session-item__action-btn"
+                        onClick={() => handleExportSession(session)}
+                        style={{ background: "var(--accent-cyan-tint-12)", color: "var(--text-primary)" }}
+                      >
+                        Export
+                      </button>
+                      <button
+                        type="button"
+                        className="session-item__action-btn session-item__action-btn--danger"
+                        onClick={() => handleDeleteSession(session.id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            )}
+          </>
         )}
       </div>
     </div>
