@@ -78,52 +78,250 @@ function DashboardScreen() {
 }
 
 function MessagesScreen() {
+  const sessions = useAccountStore((s) => s.sessions);
+
+  const allMessages = sessions
+    .flatMap((session) =>
+      session.conversation.map((msg) => ({
+        ...msg,
+        sessionId: session.id,
+        sessionTag: session.tag || `Session ${session.id.slice(0, 6)}`,
+      }))
+    )
+    .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
+    .slice(0, 50);
+
+  if (allMessages.length === 0) {
+    return (
+      <div className="screen screen-messages">
+        <div className="screen__header">
+          <h1>Messages</h1>
+        </div>
+        <div className="screen__content">
+          <p>No messages yet. Start a conversation in the Translate screen.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="screen screen-messages">
       <div className="screen__header">
         <h1>Messages</h1>
       </div>
       <div className="screen__content">
-        <p>Conversation history and archived messages — coming soon.</p>
+        <div className="messages-list">
+          {allMessages.map((msg, idx) => (
+            <div key={`${msg.sessionId}-${idx}`} className="message-item">
+              <div className="message-item__header">
+                <span className="message-item__session">{msg.sessionTag}</span>
+                <span className="message-item__role">{msg.role}</span>
+                {msg.timestamp && (
+                  <span className="message-item__time">
+                    {new Date(msg.timestamp).toLocaleString()}
+                  </span>
+                )}
+              </div>
+              <p className="message-item__content">{msg.content}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
 }
 
 function ArchiveScreen() {
+  const sessions = useAccountStore((s) => s.sessions);
+  const loadSessionRecord = useSessionStore((s) => s.loadSessionRecord);
+  const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
+  const moveSessionToTrash = useAccountStore((s) => s.moveSessionToTrash);
+
+  const archivedSessions = sessions.filter((s) => s.archived);
+
+  const handleLoadSession = (sessionId: string) => {
+    const session = sessions.find((s) => s.id === sessionId);
+    if (session) {
+      loadSessionRecord(session);
+      setCurrentScreen("translate");
+    }
+  };
+
+  const handleDeleteSession = (sessionId: string) => {
+    moveSessionToTrash(sessionId);
+  };
+
   return (
     <div className="screen screen-archive">
       <div className="screen__header">
         <h1>Archive</h1>
       </div>
       <div className="screen__content">
-        <p>Archived sessions and conversations — coming soon.</p>
+        {archivedSessions.length === 0 ? (
+          <p>No archived sessions yet. Use "Close Session → Save and Archive" to archive conversations.</p>
+        ) : (
+          <div className="session-list">
+            {archivedSessions.map((session) => (
+              <div key={session.id} className="session-item">
+                <div className="session-item__header">
+                  <div>
+                    <h3>{session.tag || `Session ${session.id.slice(0, 8)}`}</h3>
+                    {session.closedAt && (
+                      <span className="session-item__closed-date">
+                        Archived: {new Date(session.closedAt).toLocaleString()}
+                      </span>
+                    )}
+                  </div>
+                  <span className="session-item__date">
+                    {new Date(session.createdAt).toLocaleString()}
+                  </span>
+                </div>
+                <p className="session-item__description">
+                  Model: {session.model} • Directness: {session.directness}
+                </p>
+                <div className="session-item__actions">
+                  <button
+                    type="button"
+                    className="session-item__action-btn session-item__action-btn--primary"
+                    onClick={() => handleLoadSession(session.id)}
+                  >
+                    Load
+                  </button>
+                  <button
+                    type="button"
+                    className="session-item__action-btn session-item__action-btn--danger"
+                    onClick={() => handleDeleteSession(session.id)}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
 function ResourcesScreen() {
+  const resources = [
+    {
+      title: "Getting Started",
+      description: "Learn how to use Divergence.AI to translate your thoughts into clear communication.",
+      items: [
+        "1. Type your thoughts in the composer",
+        "2. Click Translate & Ask to get AI feedback",
+        "3. Explore different directness and technique options",
+      ],
+    },
+    {
+      title: "Features",
+      description: "Core features of Divergence.AI",
+      items: [
+        "Sessions: Save and load conversation sessions",
+        "Templates: Create and reuse preset configurations",
+        "Search: Find sessions and templates quickly",
+      ],
+    },
+    {
+      title: "Tips",
+      description: "Best practices for getting better results",
+      items: [
+        "Use Directness to control response formality",
+        "Try different Techniques to explore various response styles",
+        "Save successful sessions as templates",
+      ],
+    },
+  ];
+
   return (
     <div className="screen screen-resources">
       <div className="screen__header">
         <h1>Resources</h1>
       </div>
       <div className="screen__content">
-        <p>Knowledge base and resources — coming soon.</p>
+        <div className="resources-grid">
+          {resources.map((resource) => (
+            <div key={resource.title} className="resource-card">
+              <h3 className="resource-card__title">{resource.title}</h3>
+              <p className="resource-card__description">{resource.description}</p>
+              <ul className="resource-card__list">
+                {resource.items.map((item) => (
+                  <li key={item} className="resource-card__item">
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
 }
 
 function ProjectsScreen() {
+  const sessions = useAccountStore((s) => s.sessions);
+
+  const projectsMap = new Map<string, typeof sessions>();
+  const defaultProject = "Unsorted";
+
+  sessions.forEach((session) => {
+    const projectName = session.tag ? session.tag.split(":")[0].trim() : defaultProject;
+    if (!projectsMap.has(projectName)) {
+      projectsMap.get(projectName) || projectsMap.set(projectName, []);
+    }
+    projectsMap.get(projectName)?.push(session);
+  });
+
+  const projects = Array.from(projectsMap.entries()).sort(([a], [b]) => {
+    if (a === defaultProject) return 1;
+    if (b === defaultProject) return -1;
+    return a.localeCompare(b);
+  });
+
+  if (projects.length === 0 || (projects.length === 1 && projects[0][0] === defaultProject && projects[0][1].length === 0)) {
+    return (
+      <div className="screen screen-projects">
+        <div className="screen__header">
+          <h1>Projects</h1>
+        </div>
+        <div className="screen__content">
+          <p>No projects yet. Sessions tagged with a project name will appear here. Use "Close Session → Archive Tagged" to tag sessions with a project name (e.g., "MyProject: Description").</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="screen screen-projects">
       <div className="screen__header">
         <h1>Projects</h1>
       </div>
       <div className="screen__content">
-        <p>Organize conversations by project — coming soon.</p>
+        <div className="projects-list">
+          {projects.map(([projectName, projectSessions]) => (
+            <div key={projectName} className="project-group">
+              <h3 className="project-group__title">
+                {projectName}
+                <span className="project-group__count">{projectSessions.length}</span>
+              </h3>
+              <div className="project-sessions">
+                {projectSessions.map((session) => (
+                  <div key={session.id} className="project-session">
+                    <div className="project-session__info">
+                      <h4>{session.tag || `Session ${session.id.slice(0, 6)}`}</h4>
+                      <span className="project-session__date">
+                        {new Date(session.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -143,13 +341,75 @@ function IntegrationsScreen() {
 }
 
 function TasksScreen() {
+  const sessions = useAccountStore((s) => s.sessions);
+
+  const extractedTasks: Array<{
+    content: string;
+    sessionId: string;
+    sessionTag: string;
+    timestamp?: number;
+  }> = [];
+
+  const taskPatterns = [
+    /(?:^|\n)[-*]\s+(\[[ x]\]\s+)?(.+)/gm,
+    /(?:^|\n)(?:TODO|FIXME|NOTE)[\s:]+(.+)/gm,
+  ];
+
+  sessions.forEach((session) => {
+    session.conversation.forEach((msg) => {
+      if (msg.role === "assistant") {
+        taskPatterns.forEach((pattern) => {
+          let match;
+          while ((match = pattern.exec(msg.content)) !== null) {
+            const taskContent = match[2] || match[1];
+            if (taskContent && taskContent.length < 150) {
+              extractedTasks.push({
+                content: taskContent.trim(),
+                sessionId: session.id,
+                sessionTag: session.tag || `Session ${session.id.slice(0, 6)}`,
+                timestamp: msg.timestamp,
+              });
+            }
+          }
+        });
+      }
+    });
+  });
+
+  const uniqueTasks = Array.from(
+    new Map(extractedTasks.map((t) => [t.content, t])).values()
+  ).slice(0, 20);
+
+  if (uniqueTasks.length === 0) {
+    return (
+      <div className="screen screen-tasks">
+        <div className="screen__header">
+          <h1>Tasks</h1>
+        </div>
+        <div className="screen__content">
+          <p>No tasks found. Tasks are automatically extracted from AI responses that contain action items or bullet points.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="screen screen-tasks">
       <div className="screen__header">
         <h1>Tasks</h1>
       </div>
       <div className="screen__content">
-        <p>Action items extracted from conversations — coming soon.</p>
+        <div className="tasks-list">
+          {uniqueTasks.map((task) => (
+            <div key={task.content} className="task-item">
+              <div className="task-item__checkbox" />
+              <div className="task-item__content">
+                <p className="task-item__text">{task.content}</p>
+                <span className="task-item__session">{task.sessionTag}</span>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
