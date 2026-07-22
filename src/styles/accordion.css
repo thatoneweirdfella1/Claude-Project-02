@@ -54,3 +54,41 @@
   font-weight: var(--font-weight-label-secondary);
   opacity: var(--text-metadata-opacity);
 }
+
+.accordion-panel__content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.accordion-panel__stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--accent-cyan-tint-06);
+}
+
+.accordion-panel__stat-row:last-of-type {
+  border-bottom: none;
+}
+
+.accordion-panel__stat-label {
+  font-size: var(--font-size-label-secondary);
+  font-weight: var(--font-weight-label-secondary);
+  color: var(--text-secondary);
+}
+
+.accordion-panel__stat-value {
+  font-family: var(--font-family-ui);
+  font-size: var(--font-size-label-secondary);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.accordion-panel__note {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}

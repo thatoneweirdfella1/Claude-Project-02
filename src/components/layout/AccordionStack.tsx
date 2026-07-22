@@ -42,6 +42,70 @@ function PlaceholderNote({ text }: { text: string }) {
   return <p className="accordion-panel__placeholder">{text}</p>;
 }
 
+function RecentSessionsContent() {
+  // Placeholder: could show saved sessions, previous conversations, etc.
+  // For now, just show that this feature doesn't exist yet.
+  return (
+    <PlaceholderNote text="Session history and saved conversations — no step in the build plan owns this feature yet." />
+  );
+}
+
+function RecentActivityContent() {
+  return (
+    <PlaceholderNote text="Recent activity log — coming in a future step." />
+  );
+}
+
+function TokenUsageContent() {
+  return (
+    <div className="accordion-panel__content">
+      <div className="accordion-panel__stat-row">
+        <span className="accordion-panel__stat-label">Feature Status</span>
+        <span className="accordion-panel__stat-value">Not built yet</span>
+      </div>
+      <p className="accordion-panel__note">
+        This panel will show token usage for this session and today's total when the feature is built.
+      </p>
+    </div>
+  );
+}
+
+function ModelStatusContent() {
+  return (
+    <div className="accordion-panel__content">
+      <div className="accordion-panel__stat-row">
+        <span className="accordion-panel__stat-label">Status</span>
+        <span className="accordion-panel__stat-value" style={{ color: "var(--accent-cyan)" }}>
+          Ready
+        </span>
+      </div>
+      <p className="accordion-panel__note">
+        Models are currently available and responding normally.
+      </p>
+    </div>
+  );
+}
+
+function ActiveSessionContent() {
+  return (
+    <div className="accordion-panel__content">
+      <div className="accordion-panel__stat-row">
+        <span className="accordion-panel__stat-label">Session ID</span>
+        <span className="accordion-panel__stat-value" style={{ fontSize: "11px", fontFamily: "monospace" }}>
+          {`sess-${Math.random().toString(36).slice(2, 8)}`}
+        </span>
+      </div>
+      <div className="accordion-panel__stat-row">
+        <span className="accordion-panel__stat-label">Created</span>
+        <span className="accordion-panel__stat-value">{new Date().toLocaleTimeString()}</span>
+      </div>
+      <p className="accordion-panel__note">
+        This session's details. Close and start a new session anytime using the New Session button.
+      </p>
+    </div>
+  );
+}
+
 export function AccordionStack() {
   const visibility = useAccountStore((s) => s.visibility);
   // VISUAL-AUDIT V7 (Step 11.5): V3 shows all six accordions collapsed.
@@ -54,38 +118,28 @@ export function AccordionStack() {
     {
       key: "recentSessions",
       label: "Recent Sessions",
-      content: (
-        <PlaceholderNote text="Recent Sessions isn't built yet — no step in the plan currently owns its content." />
-      ),
+      content: <RecentSessionsContent />,
     },
     { key: "contextSnapshot", label: "Context Snapshot", content: <ContextSnapshotContent /> },
     {
       key: "recentActivity",
       label: "Recent Activity",
-      content: (
-        <PlaceholderNote text="Recent Activity isn't built yet — no step in the plan currently owns its content." />
-      ),
+      content: <RecentActivityContent />,
     },
     {
       key: "tokenUsage",
       label: "Token Usage",
-      content: (
-        <PlaceholderNote text="Token Usage isn't built yet — no step in the plan currently owns its content." />
-      ),
+      content: <TokenUsageContent />,
     },
     {
       key: "modelStatus",
       label: "Model Status",
-      content: (
-        <PlaceholderNote text="Model Status isn't built yet — no step in the plan currently owns its content." />
-      ),
+      content: <ModelStatusContent />,
     },
     {
       key: "activeSession",
       label: "Active Session",
-      content: (
-        <PlaceholderNote text="Active Session isn't built yet — no step in the plan currently owns its content." />
-      ),
+      content: <ActiveSessionContent />,
     },
   ];
 
