@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { QuickToolsGrid } from "../quicktools";
 import { useAccountStore } from "../../stores/accountStore";
 import { AccordionStack } from "./AccordionStack";
@@ -6,6 +7,8 @@ import { LeftNav } from "./LeftNav";
 import { TopBar } from "./TopBar";
 import { useThemeEffect } from "./useThemeEffect";
 import { ScreenRouter } from "./ScreenRouter";
+import { KeyboardShortcutsModal } from "../KeyboardShortcutsModal";
+import { useKeyboardShortcuts } from "../../keyboard/useKeyboardShortcuts";
 
 /* AppShell — the structural frame from CANON.md "LAYOUT".
    Regions were empty by design at Step 1.1 (skeleton only), then held
@@ -57,24 +60,30 @@ import { ScreenRouter } from "./ScreenRouter";
 
 export function AppShell() {
   const visibility = useAccountStore((s) => s.visibility);
+  const [showShortcuts, setShowShortcuts] = useState(false);
+
   useThemeEffect(); // CANON Feature 12 — resolves theme + Auto, writes documentElement's data-theme
   useDesignLayoutEffect(); // CLAUDE.md "Design layouts" — writes documentElement's data-layout
+  useKeyboardShortcuts(() => setShowShortcuts(true));
 
   return (
-    <div className="app-shell app-layer">
-      <header className="topbar" aria-label="Top bar" data-testid="topbar">
-        <TopBar />
-      </header>
-      <nav className="col-left" aria-label="Primary navigation" data-testid="col-left">
-        <LeftNav />
-      </nav>
-      <main className="col-center" data-testid="col-center">
-        <ScreenRouter />
-      </main>
-      <aside className="col-right" aria-label="Sidebar panels" data-testid="col-right">
-        {visibility.quickTools && <QuickToolsGrid />}
-        <AccordionStack />
-      </aside>
-    </div>
+    <>
+      <div className="app-shell app-layer">
+        <header className="topbar" aria-label="Top bar" data-testid="topbar">
+          <TopBar />
+        </header>
+        <nav className="col-left" aria-label="Primary navigation" data-testid="col-left">
+          <LeftNav />
+        </nav>
+        <main className="col-center" data-testid="col-center">
+          <ScreenRouter />
+        </main>
+        <aside className="col-right" aria-label="Sidebar panels" data-testid="col-right">
+          {visibility.quickTools && <QuickToolsGrid />}
+          <AccordionStack />
+        </aside>
+      </div>
+      <KeyboardShortcutsModal open={showShortcuts} onClose={() => setShowShortcuts(false)} />
+    </>
   );
 }
