@@ -68,7 +68,7 @@ describe("createInitialSessionState", () => {
 });
 
 describe("SESSION_PERSISTED_KEYS", () => {
-  it("is exactly the nine documented fields", () => {
+  it("is exactly the twelve documented fields", () => {
     expect([...SESSION_PERSISTED_KEYS].sort()).toEqual(
       [
         "draftInput",
@@ -80,6 +80,9 @@ describe("SESSION_PERSISTED_KEYS", () => {
         "statePills",
         "variables",
         "currentScreen",
+        "methodology",
+        "methodologyPhase",
+        "lockedProblemStatement",
       ].sort(),
     );
   });
