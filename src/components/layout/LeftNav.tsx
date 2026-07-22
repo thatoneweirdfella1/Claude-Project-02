@@ -59,6 +59,10 @@ export function LeftNav() {
   const currentScreen = useSessionStore((s) => s.currentScreen);
   const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
 
+  function handleLogout() {
+    window.location.href = "/logout";
+  }
+
   return (
     <div className="leftnav-content">
       <div className="leftnav-items">
@@ -74,7 +78,7 @@ export function LeftNav() {
         ))}
       </div>
       <div className="leftnav-bottom">
-        <GlassButton className="leftnav-item">
+        <GlassButton className="leftnav-item" title="Trash — coming soon">
           <Trash2 size={16} aria-hidden="true" />
           Trash
         </GlassButton>
@@ -82,7 +86,7 @@ export function LeftNav() {
           <span className="system-status-dot" aria-hidden="true" />
           System Status
         </div>
-        <GlassButton className="leftnav-item">
+        <GlassButton className="leftnav-item" onClick={handleLogout}>
           <LogOut size={16} aria-hidden="true" />
           Logout
         </GlassButton>

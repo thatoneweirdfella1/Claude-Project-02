@@ -1,4 +1,3 @@
-import { CenterColumn } from "../pipeline";
 import { QuickToolsGrid } from "../quicktools";
 import { useAccountStore } from "../../stores/accountStore";
 import { AccordionStack } from "./AccordionStack";
@@ -6,6 +5,7 @@ import { useDesignLayoutEffect } from "./useDesignLayoutEffect";
 import { LeftNav } from "./LeftNav";
 import { TopBar } from "./TopBar";
 import { useThemeEffect } from "./useThemeEffect";
+import { ScreenRouter } from "./ScreenRouter";
 
 /* AppShell — the structural frame from CANON.md "LAYOUT".
    Regions were empty by design at Step 1.1 (skeleton only), then held
@@ -69,7 +69,7 @@ export function AppShell() {
         <LeftNav />
       </nav>
       <main className="col-center" data-testid="col-center">
-        <CenterColumn />
+        <ScreenRouter />
       </main>
       <aside className="col-right" aria-label="Sidebar panels" data-testid="col-right">
         {visibility.quickTools && <QuickToolsGrid />}
