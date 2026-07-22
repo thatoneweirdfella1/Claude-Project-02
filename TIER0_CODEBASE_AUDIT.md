@@ -115,8 +115,8 @@ Persistence (persistence.ts → IndexedDB)
 | **Marble Textures** | ⚠️  Partial | components/layout/MarbleSlab, styles/marble.css | Textures loaded, but decorative only; not yet integrated into UI |
 | **Translation/Clarification** | ⚠️  Partial | services/translation/, components/translation/ | Infrastructure built (detect ambiguity, suggest clarifications), but gate logic may not be fully active |
 | **Search (Cmd+K)** | ❌ Not Started | TopBar.tsx stub | Placeholder button exists; no search index or results UI |
-| **Navigation Routing** | ❌ Not Started | components/layout/LeftNav.tsx | NavItems are buttons, not wired to route changes or active states |
-| **13 Destination Screens** | ❌ Not Started | (no src/screens/) | Expected: Home, Dashboard, Messages, Archive, Resources, Projects, Integrations, Tasks, Templates, Customize, Settings, Sessions, Translate |
+| **Navigation Routing** | ✅ Complete | src/screens/, components/layout/LeftNav.tsx, services via AccountStore | All 13 screens created and navigable; LeftNav buttons wired to setCurrentScreen; active state styling in place |
+| **13 Destination Screens** | ✅ Complete | src/screens/ | All 13 screens created: Home, Dashboard, Messages, Archive, Resources, Projects, Integrations, Tasks, Templates, Customize, Settings, Sessions, Translate |
 | **Right Sidebar Panels** | ❌ Not Started | components/pipeline/index.tsx | Placeholders for Quick Tools, Recent Sessions, Context Snapshot, Token Usage, Model Status, Active Session |
 | **Session Management** | ⚠️  Partial | services/persistence.ts | Persistence layer exists; UI for soft-delete, restore, trash not yet built |
 | **Soft-Delete/Trash** | ⚠️  Partial | LeftNav.tsx (Trash button), persistence | Trash button exists; 30-day window logic not verified |
@@ -130,17 +130,17 @@ Persistence (persistence.ts → IndexedDB)
 
 ## SECTION 3: CRITICAL MISMATCHES & CONFLICTS
 
-### Mismatch 1: Navigation Structure
-**DECISIONS_LOG says:** 13 destination screens (Home, Dashboard, Messages, Archive, Resources, Projects, Integrations, Tasks, Templates, Customize, Settings, Sessions, Translate)  
-**LeftNav.tsx shows:** 10 nav items (Home, Dashboard, Messages, Archive, Resources, Projects, Integrations, Tasks, Customize, Translate) + Trash + System Status + Logout  
-**Missing from UI:** Templates, Settings, Sessions
+### Mismatch 1: Navigation Structure (✅ RESOLVED)
+**Status:** COMPLETE as of latest commit
 
-**Impact:** Navigation incomplete. Users cannot access Templates, Settings, Sessions screens.
+All 13 destination screens now created and wired:
+- ✅ src/screens/ directory created with 13 screen components
+- ✅ LeftNav buttons wired to setCurrentScreen() actions
+- ✅ CenterColumn renders conditional screens based on currentScreen
+- ✅ Navigation state persists via AccountState.currentScreen
+- ✅ All 13 screens accessible and navigable
 
-**Resolution Required:**
-- [ ] Add Templates, Settings, Sessions to LeftNav.tsx
-- [ ] Create screens for all 13 destinations (currently no src/screens/)
-- [ ] Wire LeftNav buttons to actual routing (currently inert)
+Users can now navigate between all screens. Home screen renders conversation interface; other screens show their respective content.
 
 ---
 
@@ -194,8 +194,8 @@ Persistence (persistence.ts → IndexedDB)
 ## SECTION 5: UNFINISHED PANELS & FEATURES CHECKLIST
 
 ### High Priority (Blocking MVP)
-- [ ] Navigation routing (LeftNav buttons → screen changes)
-- [ ] 13 Destination screens (create src/screens/ + 13 screen components)
+- [x] Navigation routing (LeftNav buttons → screen changes) — ✅ COMPLETE
+- [x] 13 Destination screens (create src/screens/ + 13 screen components) — ✅ COMPLETE
 - [ ] Search UI (results panel, search indexing)
 - [ ] Right sidebar panels (Quick Tools, Accordion stack)
 - [ ] Settings screen (theme toggle, model defaults, technique defaults, directness default)
@@ -344,19 +344,18 @@ detection/detect.ts
 ✅ **Accessibility:** aria-labels and data-testid on key elements  
 
 ### Weaknesses
-❌ **Navigation:** Not wired; users cannot navigate between screens  
 ❌ **Documentation:** No architecture guide, no component API docs  
 ❌ **Duplication:** Possible logic duplication in detection/routing/techniques (needs audit)  
-❌ **Screens:** No destination screens implemented (only skeleton)  
-❌ **Settings:** No way to change theme, model defaults, preferences  
+❌ **Settings:** Settings screen exists but no form/controls yet  
 ❌ **Right Sidebar:** Placeholders only  
 ❌ **Search:** Not implemented  
 ❌ **Marble Textures:** Loaded but possibly not visible  
+❌ **Screen Content:** Screens created but most are stubs (only showing titles)
 
 ### Overall Assessment
-**VERDICT: TIER 0 Foundation 60% Complete**
+**VERDICT: TIER 0 Foundation 70% Complete**
 
-The pipeline, core services (detection, routing, techniques, composition, translation), and persistence are solid. The skeleton UI is in place and responsive. However, navigation routing, destination screens, settings UI, and right sidebar panels are blocking full functionality. Estimate 1-2 weeks to reach 100% TIER 0 (fully functional MVP with all basic features).
+The pipeline, core services (detection, routing, techniques, composition, translation), persistence, and navigation are solid. All 13 screens are now created and navigable. The skeleton UI is responsive. Remaining blockers: settings screen controls, right sidebar panels, search, and filling screen stubs with actual content. Estimate 1-2 weeks to reach 100% TIER 0 (fully functional MVP with all basic features).
 
 ---
 
