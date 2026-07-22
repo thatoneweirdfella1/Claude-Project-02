@@ -4,6 +4,8 @@ import { GlassButton } from "../primitives";
 import { VisibilityMenu } from "../visibility";
 import { LoadTemplateMenu } from "../session";
 import { useDismissableLayer } from "../../keyboard";
+import { useAccountStore } from "../../stores/accountStore";
+import { useSessionStore } from "../../stores/sessionStore";
 import { Logo } from "./Logo";
 import "./TopBar.css";
 
@@ -25,6 +27,39 @@ import "./TopBar.css";
 
 function SearchPopover({ open, setOpen, rootRef }: { open: boolean; setOpen: (v: boolean) => void; rootRef: React.RefObject<HTMLDivElement | null> }) {
   const [query, setQuery] = useState("");
+  const sessions = useAccountStore((s) => s.sessions);
+  const templates = useAccountStore((s) => s.templates);
+  const loadSessionRecord = useSessionStore((s) => s.loadSessionRecord);
+  const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
+  const setModel = useSessionStore((s) => s.setModel);
+  const setDirectness = useSessionStore((s) => s.setDirectness);
+  const setTechniques = useSessionStore((s) => s.setTechniques);
+
+  const searchResults = {
+    sessions: sessions.filter((s) =>
+      (s.tag || `Session ${s.id.slice(0, 6)}`).toLowerCase().includes(query.toLowerCase())
+    ),
+    templates: templates.filter((t) => t.title.toLowerCase().includes(query.toLowerCase())),
+  };
+
+  const handleLoadSession = (sessionId: string) => {
+    const session = sessions.find((s) => s.id === sessionId);
+    if (session) {
+      loadSessionRecord(session);
+      setCurrentScreen("translate");
+      setOpen(false);
+    }
+  };
+
+  const handleLoadTemplate = (templateId: string) => {
+    const template = templates.find((t) => t.id === templateId);
+    if (template) {
+      setModel(template.model);
+      setDirectness(template.directness);
+      setTechniques(template.techniques);
+      setOpen(false);
+    }
+  };
 
   return (
     <div ref={rootRef} className="topbar-popover-wrapper">
@@ -33,7 +68,7 @@ function SearchPopover({ open, setOpen, rootRef }: { open: boolean; setOpen: (v:
         Search
       </GlassButton>
       {open && (
-        <div className="surface-smoked-glass topbar-popover" role="region" aria-label="Search">
+        <div className="surface-smoked-glass topbar-popover topbar-popover--search" role="region" aria-label="Search">
           <input
             type="text"
             className="topbar-popover__input"
@@ -45,8 +80,46 @@ function SearchPopover({ open, setOpen, rootRef }: { open: boolean; setOpen: (v:
           <div className="topbar-popover__results">
             {query.length === 0 ? (
               <p className="topbar-popover__empty">Type to search sessions and templates</p>
-            ) : (
+            ) : searchResults.sessions.length === 0 && searchResults.templates.length === 0 ? (
               <p className="topbar-popover__empty">No results for "{query}"</p>
+            ) : (
+              <>
+                {searchResults.sessions.length > 0 && (
+                  <div className="search-results-group">
+                    <p className="search-results-group__title">Sessions</p>
+                    {searchResults.sessions.slice(0, 3).map((session) => (
+                      <button
+                        key={session.id}
+                        type="button"
+                        className="search-result-item search-result-item--session"
+                        onClick={() => handleLoadSession(session.id)}
+                      >
+                        <span className="search-result-item__text">
+                          {session.tag || `Session ${session.id.slice(0, 6)}`}
+                        </span>
+                        <span className="search-result-item__meta">
+                          {new Date(session.createdAt).toLocaleDateString()}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {searchResults.templates.length > 0 && (
+                  <div className="search-results-group">
+                    <p className="search-results-group__title">Templates</p>
+                    {searchResults.templates.slice(0, 3).map((template) => (
+                      <button
+                        key={template.id}
+                        type="button"
+                        className="search-result-item search-result-item--template"
+                        onClick={() => handleLoadTemplate(template.id)}
+                      >
+                        <span className="search-result-item__text">{template.title}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
