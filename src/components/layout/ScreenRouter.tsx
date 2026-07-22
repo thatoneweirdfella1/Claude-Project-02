@@ -119,6 +119,19 @@ function CustomizeScreen() {
   );
 }
 
+function TrashScreen() {
+  return (
+    <div className="screen screen-trash">
+      <div className="screen__header">
+        <h1>Trash</h1>
+      </div>
+      <div className="screen__content">
+        <p>Deleted sessions and items — coming soon.</p>
+      </div>
+    </div>
+  );
+}
+
 export function ScreenRouter() {
   const currentScreen = useSessionStore((s) => s.currentScreen);
 
@@ -143,6 +156,8 @@ export function ScreenRouter() {
       return <TasksScreen />;
     case "customize":
       return <CustomizeScreen />;
+    case "trash":
+      return <TrashScreen />;
     default:
       const _exhaustive: never = currentScreen;
       return _exhaustive;

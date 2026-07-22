@@ -319,7 +319,8 @@ export type ScreenId =
   | "projects"
   | "integrations"
   | "tasks"
-  | "customize";
+  | "customize"
+  | "trash";
 
 export interface SessionState {
   /** The composer's in-progress, not-yet-submitted text (Step 5.0). Lives here

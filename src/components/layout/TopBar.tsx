@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Bell, BookOpen, ChevronDown, HelpCircle, Search, LogOut } from "lucide-react";
 import { GlassButton } from "../primitives";
 import { VisibilityMenu } from "../visibility";
+import { LoadTemplateMenu } from "../session";
 import { useDismissableLayer } from "../../keyboard";
 import { Logo } from "./Logo";
 import "./TopBar.css";
@@ -223,10 +224,14 @@ export function TopBar() {
       </div>
       <div className="topbar-center">
         <SearchPopover open={searchOpen} setOpen={setSearchOpen} rootRef={searchRef} />
-        <GlassButton title="Quick Tools has Prompt Library">
-          <BookOpen size={16} aria-hidden="true" />
-          Templates
-        </GlassButton>
+        <LoadTemplateMenu
+          renderTrigger={({ open, onClick }) => (
+            <GlassButton onClick={onClick} aria-expanded={open}>
+              <BookOpen size={16} aria-hidden="true" />
+              Templates
+            </GlassButton>
+          )}
+        />
         <QuickReferencePopover open={refOpen} setOpen={setRefOpen} rootRef={refRef} />
       </div>
       <div className="topbar-right">

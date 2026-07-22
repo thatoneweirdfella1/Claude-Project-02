@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import {
   Code2,
   Folder,
@@ -14,6 +15,7 @@ import {
 } from "lucide-react";
 import { useSessionStore } from "../../stores/sessionStore";
 import { GlassButton } from "../primitives";
+import { useDismissableLayer } from "../../keyboard";
 import { BrainMark } from "./BrainMark";
 import type { ScreenId } from "../../stores/types";
 
@@ -55,6 +57,48 @@ const NAV_ITEMS: Array<{ label: string; screen: ScreenId; Icon: LucideIcon | nul
   { label: "Translate", screen: "translate", Icon: null }, // BrainMark, not a lucide icon — see comment above
 ];
 
+function SystemStatusPopover() {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [status] = useState("Operational");
+  const [uptime] = useState("All systems running normally");
+
+  useDismissableLayer(open, () => setOpen(false));
+
+  useEffect(() => {
+    if (!open) return;
+    function onPointerDown(event: MouseEvent) {
+      if (rootRef.current?.contains(event.target as Node)) return;
+      setOpen(false);
+    }
+    document.addEventListener("mousedown", onPointerDown);
+    return () => document.removeEventListener("mousedown", onPointerDown);
+  }, [open]);
+
+  return (
+    <div ref={rootRef} className="system-status-wrapper">
+      <button
+        type="button"
+        className="system-status system-status--interactive"
+        data-testid="system-status"
+        onClick={() => setOpen(!open)}
+      >
+        <span className={`system-status-dot system-status-dot--${status.toLowerCase()}`} aria-hidden="true" />
+        System Status
+      </button>
+      {open && (
+        <div className="surface-smoked-glass system-status-popover" role="region" aria-label="System Status">
+          <div className="system-status-popover__item">
+            <span className="system-status-dot system-status-dot--operational" aria-hidden="true" />
+            <span className="system-status-popover__text">{status}</span>
+          </div>
+          <p className="system-status-popover__note">{uptime}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function LeftNav() {
   const currentScreen = useSessionStore((s) => s.currentScreen);
   const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
@@ -78,14 +122,14 @@ export function LeftNav() {
         ))}
       </div>
       <div className="leftnav-bottom">
-        <GlassButton className="leftnav-item" title="Trash — coming soon">
+        <GlassButton
+          className="leftnav-item"
+          onClick={() => setCurrentScreen("trash")}
+        >
           <Trash2 size={16} aria-hidden="true" />
           Trash
         </GlassButton>
-        <div className="system-status" data-testid="system-status">
-          <span className="system-status-dot" aria-hidden="true" />
-          System Status
-        </div>
+        <SystemStatusPopover />
         <GlassButton className="leftnav-item" onClick={handleLogout}>
           <LogOut size={16} aria-hidden="true" />
           Logout
