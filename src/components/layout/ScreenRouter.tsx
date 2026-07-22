@@ -980,6 +980,7 @@ function TemplatesScreen() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedTemplateIds, setSelectedTemplateIds] = useState<Set<string>>(new Set());
   const [formData, setFormData] = useState({
     title: "",
     model: "auto" as "auto" | "claude-haiku-4-5" | "claude-sonnet-5" | "claude-opus-4-8",
@@ -1067,6 +1068,31 @@ function TemplatesScreen() {
         ? prev.techniques.filter((t: string) => t !== technique)
         : [...prev.techniques, technique],
     }));
+  };
+
+  const toggleTemplateSelect = (templateId: string) => {
+    const newSelected = new Set(selectedTemplateIds);
+    if (newSelected.has(templateId)) {
+      newSelected.delete(templateId);
+    } else {
+      newSelected.add(templateId);
+    }
+    setSelectedTemplateIds(newSelected);
+  };
+
+  const toggleSelectAllTemplates = () => {
+    if (selectedTemplateIds.size === customTemplates.length) {
+      setSelectedTemplateIds(new Set());
+    } else {
+      setSelectedTemplateIds(new Set(customTemplates.map((t) => t.id)));
+    }
+  };
+
+  const handleBulkDeleteTemplates = () => {
+    if (confirm(`Delete ${selectedTemplateIds.size} template(s)?`)) {
+      selectedTemplateIds.forEach((id) => removeTemplate(id));
+      setSelectedTemplateIds(new Set());
+    }
   };
 
   return (
@@ -1219,10 +1245,85 @@ function TemplatesScreen() {
         {customTemplates.length > 0 && (
           <div className="templates-section">
             <h3 className="templates-section__title">Custom Templates</h3>
+            {selectedTemplateIds.size > 0 && (
+              <div
+                style={{
+                  display: "flex",
+                  gap: "12px",
+                  marginBottom: "16px",
+                  padding: "12px",
+                  background: "var(--accent-cyan-tint-12)",
+                  borderRadius: "4px",
+                  alignItems: "center",
+                }}
+              >
+                <span style={{ flex: 1, fontSize: "14px", fontWeight: "500" }}>
+                  {selectedTemplateIds.size} template{selectedTemplateIds.size !== 1 ? "s" : ""} selected
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedTemplateIds(new Set())}
+                  style={{
+                    padding: "8px 12px",
+                    fontSize: "13px",
+                    border: "1px solid var(--accent-cyan)",
+                    borderRadius: "4px",
+                    background: "transparent",
+                    color: "var(--text-primary)",
+                    cursor: "pointer",
+                  }}
+                >
+                  Clear
+                </button>
+                <button
+                  type="button"
+                  onClick={handleBulkDeleteTemplates}
+                  style={{
+                    padding: "8px 12px",
+                    fontSize: "13px",
+                    border: "none",
+                    borderRadius: "4px",
+                    background: "var(--accent-danger)",
+                    color: "white",
+                    cursor: "pointer",
+                  }}
+                >
+                  Delete Selected
+                </button>
+              </div>
+            )}
             <div className="template-list">
+              {customTemplates.length > 0 && (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    marginBottom: "12px",
+                    paddingBottom: "12px",
+                    borderBottom: "1px solid var(--accent-cyan-tint-06)",
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedTemplateIds.size === customTemplates.length && customTemplates.length > 0}
+                    onChange={toggleSelectAllTemplates}
+                    style={{ marginRight: "12px", cursor: "pointer" }}
+                  />
+                  <span style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
+                    Select All
+                  </span>
+                </div>
+              )}
               {customTemplates.map((template) => (
-                <div key={template.id} className="template-card">
-                  {editingId === template.id ? (
+                <div key={template.id} style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
+                  <input
+                    type="checkbox"
+                    checked={selectedTemplateIds.has(template.id)}
+                    onChange={() => toggleTemplateSelect(template.id)}
+                    style={{ marginTop: "12px", cursor: "pointer" }}
+                  />
+                  <div className="template-card" style={{ flex: 1 }}>
+                    {editingId === template.id ? (
                     <>
                       <div className="form-group">
                         <label className="form-group__label">Template Name</label>
@@ -1348,6 +1449,7 @@ function TemplatesScreen() {
                       </div>
                     </>
                   )}
+                  </div>
                 </div>
               ))}
             </div>
