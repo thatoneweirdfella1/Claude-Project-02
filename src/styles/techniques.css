@@ -1,0 +1,163 @@
+/* techniques.css — Technique dropdown + manual popover + demo (Step 4.5).
+   Tokens only. .technique-dropdown reuses .primitive-dropdown's wrapper
+   (chevron via primitives.css's existing ::after rule) with its own trigger
+   button styled to match the Model/Directness native <select> look exactly. */
+
+.technique-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+}
+
+.technique-field__label {
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-secondary);
+  font-weight: var(--font-weight-label-secondary);
+}
+
+/* Trigger button — visually identical to .primitive-dropdown select
+   (marble.css/primitives.css), since the wrapping .primitive-dropdown class
+   already supplies the chevron via its ::after rule. */
+.technique-dropdown__trigger {
+  appearance: none;
+  width: 100%;
+  min-height: 44px;
+  padding: var(--space-dropdown-padding) 32px var(--space-dropdown-padding) var(--space-dropdown-padding);
+  background: var(--surface-smoked-glass);
+  backdrop-filter: blur(var(--blur-smoked-glass));
+  -webkit-backdrop-filter: blur(var(--blur-smoked-glass));
+  border: 1px solid var(--surface-smoked-glass-border);
+  border-radius: var(--radius-button);
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label);
+  font-weight: var(--font-weight-label);
+  text-align: left;
+  cursor: pointer;
+}
+
+.technique-popover {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 10;
+  margin-top: 6px;
+  width: min(340px, 90vw);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-list-item-margin);
+  padding: var(--space-card-padding);
+  background: var(--surface-smoked-glass);
+  backdrop-filter: blur(var(--blur-smoked-glass));
+  -webkit-backdrop-filter: blur(var(--blur-smoked-glass));
+  border: 1px solid var(--surface-smoked-glass-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-modal);
+}
+
+.technique-popover__auto {
+  min-height: 44px;
+  padding: var(--space-button-vertical) var(--space-button-horizontal);
+  border: 1px solid var(--surface-smoked-glass-border);
+  border-radius: var(--radius-button);
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label);
+  font-weight: var(--font-weight-label);
+  text-align: left;
+  cursor: pointer;
+}
+
+.technique-popover__auto--active {
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+
+.technique-popover__summary {
+  margin: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-metadata);
+  font-weight: var(--font-weight-metadata);
+}
+
+/* Capped height so at most ~5 rows show without scrolling — CANON ADHD rule
+   "never more than 5-7 simultaneous choices in a view" applied literally to
+   the visible viewport, not just to the count of techniques that exist. */
+.technique-popover__list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.technique-popover__row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: var(--space-list-item-margin);
+  row-gap: 2px;
+  padding: 8px;
+  border-radius: var(--radius-button);
+  cursor: pointer;
+}
+
+.technique-popover__row:hover {
+  background: rgb(255 255 255 / 0.04);
+}
+
+.technique-popover__row--disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.technique-popover__row input {
+  grid-row: 1 / span 2;
+  align-self: start;
+  margin-top: 2px;
+  min-width: 18px;
+  min-height: 18px;
+}
+
+.technique-popover__row-label {
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label);
+  font-weight: var(--font-weight-label);
+}
+
+.technique-popover__row-effect {
+  grid-column: 2;
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-metadata);
+  font-weight: var(--font-weight-metadata);
+}
+
+.technique-demo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-list-item-margin);
+}
+
+.technique-demo__label {
+  margin: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-metadata);
+  font-weight: var(--font-weight-metadata);
+  opacity: var(--text-metadata-opacity);
+}
+
+.technique-demo__auto-reasoning,
+.technique-demo__composed {
+  margin: 0;
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-secondary);
+  font-weight: var(--font-weight-label-secondary);
+  line-height: var(--line-height-body);
+}

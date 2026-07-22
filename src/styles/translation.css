@@ -1,0 +1,123 @@
+/* translation.css — conversation-area UI for the confidence gates and clarify
+   flow (Step 2.3). Tokens only, no hardcoded values (tokens.css). Colors stay
+   neutral/informative, never alarming (CANON ADHD Sensory rule): the low-
+   confidence state reads as "let's check," not "error." */
+
+/* .conversation-area itself moved to streaming.css at Step 5.1 — that
+   component now owns the region (real messages + streaming demo), not this
+   file's gate/clarify cards, which mount inside it via TranslationCard. */
+
+.translation-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-list-item-margin);
+}
+
+.translation-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-row-margin);
+}
+
+.translation-card__label {
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-secondary);
+  font-weight: var(--font-weight-label-secondary);
+}
+
+.translation-card__prompt {
+  margin: 0;
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-body);
+  line-height: var(--line-height-body);
+}
+
+.translation-card__note {
+  margin: 0;
+  padding: var(--space-input-padding);
+  border-radius: var(--radius-button);
+  border: 1px solid var(--state-cognitive);
+  color: var(--text-primary);
+  background: rgb(255 255 255 / 0.04);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-secondary);
+  font-weight: var(--font-weight-label-secondary);
+}
+
+.translation-card__reasoning,
+.translation-card__status {
+  margin: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-secondary);
+  font-weight: var(--font-weight-label-secondary);
+  line-height: var(--line-height-body);
+}
+
+.translation-card__gaps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-list-item-margin);
+}
+
+/* Confidence badge — score always visible when the app proceeds. Neutral
+   green at high confidence, cyan at moderate; never red (that's for destructive
+   actions only, tokens.css). */
+.confidence-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-metadata);
+  font-weight: var(--font-weight-metadata);
+}
+
+.confidence-badge--proceed {
+  color: var(--status-online);
+}
+
+.confidence-badge--moderate {
+  color: var(--state-cognitive);
+}
+
+/* Clarify prompt — shown instead of an answer below 60. */
+.clarify-prompt {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-list-item-margin);
+}
+
+.clarify-prompt__question {
+  margin: 0;
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-body);
+  line-height: var(--line-height-body);
+}
+
+.clarify-prompt__input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--space-input-padding);
+  border-radius: var(--radius-button);
+  border: 1px solid var(--surface-smoked-glass-border);
+  background: var(--surface-smoked-glass);
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-body);
+  line-height: var(--line-height-body);
+  resize: vertical;
+}
+
+.clarify-prompt__actions {
+  display: flex;
+  justify-content: flex-end;
+}

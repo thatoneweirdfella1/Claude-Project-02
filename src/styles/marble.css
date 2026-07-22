@@ -1,0 +1,73 @@
+/* marble.css — the marble slab system, MATERIALS.md "THE SLAB RULE".
+   One continuous slab behind the entire viewport, never regenerated or
+   rescaled per component. Architecture ported from a prior measured
+   investigation into these same source textures (see FILE-MANIFEST.md
+   and MARBLE-CONTRACT.md): one fixed-position slab element owns all
+   marble in the product; every other surface is glass or flat color
+   and shows stone only by transparency to that one slab.
+
+   Deviation from that prior work, and why: it banned marble texture on
+   every component, no exceptions. Current MATERIALS.md (CANON-
+   authoritative, postdates that prior work) requires Blue Marble
+   buttons to sample marble "from the same slab coordinates as the
+   background" as a deliberate, sole exception. Where they conflict,
+   MATERIALS.md wins — see BUILD-LOG.md DECISIONS. */
+
+.marble-slab {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-color: var(--surface-black-marble-start); /* fallback if the image fails to load */
+  background-image: url("/textures/black-marble-slab.jpg");
+  background-repeat: repeat;
+  background-position: 0 0; /* shared origin: viewport top-left */
+  background-size: var(--slab-tile-size) var(--slab-tile-size); /* fixed world scale, never rescaled */
+}
+
+/* Everything else renders in one sibling layer above the slab. */
+.app-layer {
+  position: relative;
+  z-index: 1;
+}
+
+/* Smoked Glass — cards and panels. Never carries its own texture; shows
+   stone only by letting the one fixed slab blur through behind it. */
+.surface-smoked-glass {
+  background: var(--surface-smoked-glass);
+  backdrop-filter: blur(var(--blur-smoked-glass));
+  -webkit-backdrop-filter: blur(var(--blur-smoked-glass));
+  border: 1px solid var(--surface-smoked-glass-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+/* Blue Marble — primary buttons only, the one deliberate exception to
+   "components never carry texture." Samples the identical image, size,
+   and origin as .marble-slab, anchored to the viewport via
+   background-attachment: fixed so background-position resolves against
+   the viewport exactly as it does on the slab itself — the same
+   construction every Blue Marble surface shares, not a per-button
+   position hand-tuned to fake alignment. That is what makes the stone
+   read as one continuous slab showing through a cutout. */
+.surface-blue-marble {
+  background-image: linear-gradient(180deg, var(--surface-blue-marble-glow), transparent 45%),
+    linear-gradient(160deg, var(--surface-blue-marble-start), var(--surface-blue-marble-end)),
+    url("/textures/black-marble-slab.jpg");
+  background-blend-mode: normal, color, normal;
+  background-repeat: no-repeat, no-repeat, repeat;
+  background-position: 0 0, 0 0, 0 0;
+  background-attachment: scroll, scroll, fixed;
+  background-size:
+    100% 100%,
+    100% 100%,
+    var(--slab-tile-size) var(--slab-tile-size);
+  border: none;
+  border-radius: var(--radius-button);
+  min-height: 44px;
+  padding: var(--space-button-vertical) var(--space-button-horizontal);
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label);
+  font-weight: var(--font-weight-label);
+}

@@ -1,0 +1,148 @@
+/* tokens.css — the whole visual system as CSS custom properties.
+   Source of truth: MATERIALS.md (text) and Divergence_AI_App_Screenshot_V3.png
+   (color, screenshot wins where they disagree — CANON.md).
+   No component may hold a hardcoded hex, px, or shadow value. Every visual
+   value a component needs is a var() reference to a token defined here.
+   Tokens are named for what they are FOR, not what they look like. */
+
+:root {
+  /* ---------------------------------------------------------------------
+     SURFACES — the three-material system (MATERIALS.md "THE THREE SURFACES")
+     --------------------------------------------------------------------- */
+
+  /* 1. Black Marble — full-viewport background slab. */
+  --surface-black-marble-start: #0b0c0e;
+  --surface-black-marble-end: #151618;
+
+  /* 2. Smoked Glass — cards and panels. 88-92% opaque so the slab blurs
+     through (picked 90%, the midpoint). Never opaque, never carries its
+     own marble. Base tone is a hair lighter/bluer than the black marble
+     so panels read as a distinct layer floating on the slab. */
+  --surface-smoked-glass: rgba(17, 19, 24, 0.9);
+  --surface-smoked-glass-border: rgba(0, 0, 0, 0.5); /* hairline darker-charcoal edge */
+  --blur-smoked-glass: 24px; /* heavy backdrop blur, glassmorphism */
+
+  /* 3. Blue Marble — primary buttons only. Deep sapphire, glossy stone. */
+  --surface-blue-marble-start: #2b4e9c;
+  --surface-blue-marble-end: #4478e5;
+  --surface-blue-marble-glow: rgba(255, 255, 255, 0.18); /* soft top glow, light on a curve */
+
+  /* ---------------------------------------------------------------------
+     EARNED COLOR — used sparingly, with meaning (MATERIALS.md "COLOR")
+     --------------------------------------------------------------------- */
+
+  --accent-cyan: #00d9ff; /* secondary interactive: headers, links, gear, checkboxes, dropdown arrows */
+  --accent-purple: #8b5cf6; /* logo "AI" text; same purple reused for the Emotion pill, intentionally */
+
+  /* Logo aurora mix (CANON "THE LOGO"): neon green, purple, pink blended.
+     Logo-scoped — this three-color aurora is the brand mark's identity, not
+     a general-purpose accent. Purple reuses --accent-purple so the "AI" text
+     stays the one purple the rest of the app uses. Green/pink are exact hex
+     here because CANON names only the hue ("neon green", "pink"); a future
+     session with the brand source can retune these two token values without
+     touching the logo component. */
+  --logo-aurora-green: #39ff14;
+  --logo-aurora-purple: var(--accent-purple);
+  --logo-aurora-pink: #ff4fd8;
+  --logo-aurora-gradient: linear-gradient(
+    100deg,
+    var(--logo-aurora-green),
+    var(--logo-aurora-purple),
+    var(--logo-aurora-pink)
+  );
+
+  /* ---------------------------------------------------------------------
+     STATE PILLS — Feature 5 (State Detection), colors fixed by the screenshot
+     --------------------------------------------------------------------- */
+
+  --state-emotion: var(--accent-purple);
+  --state-rsd: #ef4444; /* closest clean red to the screenshot's RSD pill; see BUILD-LOG DECISIONS */
+  --state-interest: #22c55e;
+  --state-cognitive: #3b9eff; /* distinct from Blue Marble's sapphire so button vs. pill never reads as the same surface */
+
+  /* ---------------------------------------------------------------------
+     ACTIONS
+     --------------------------------------------------------------------- */
+
+  --action-destructive: #ef4444; /* red, destructive actions only (Close Session, Replace Answer) */
+
+  --status-online: #22c55e; /* System Status dot. Same value as --state-interest — MATERIALS.md defines only one green in the palette — but a separate token, since the two concepts (system health vs. detected interest level) are unrelated and could diverge later. */
+
+  /* ---------------------------------------------------------------------
+     TEXT — monochrome base, 85% of the interface (MATERIALS.md "COLOR")
+     --------------------------------------------------------------------- */
+
+  --text-primary: #ffffff; /* body, answers, card titles, labels */
+  --text-secondary: #a6abb5; /* muted gray: secondary labels, timestamps */
+  --text-metadata-opacity: 0.6; /* tertiary/metadata: apply to white, e.g. rgb(255 255 255 / var(--text-metadata-opacity)) */
+
+  /* ---------------------------------------------------------------------
+     TYPOGRAPHY (MATERIALS.md "TYPOGRAPHY")
+     Anthropic Sans is named in MATERIALS.md but is not publicly licensed,
+     so it cannot ship in this build. Inter is the substitute: SIL Open
+     Font License (freely shippable), a neutral humanist-geometric sans
+     at the same register as Anthropic Sans, and the de facto standard for
+     dense UI text at 12-14px, which is what this whole type scale lives
+     at. Loading/self-hosting the actual font file is Step 3.4's job
+     (MATERIALS.md application) — this token only fixes the stack so no
+     component ever hardcodes a font-family.
+     --------------------------------------------------------------------- */
+
+  --font-family-base: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* Never use a weight of 600 or heavier anywhere in this app. */
+
+  --font-size-section-header: 12px;
+  --font-weight-section-header: 300;
+
+  --font-size-card-title: 14px;
+  --font-weight-card-title: 500;
+
+  --font-size-body: 14px;
+  --font-weight-body: 400;
+  --line-height-body: 1.6;
+
+  --font-size-label: 14px;
+  --font-weight-label: 500;
+
+  --font-size-label-secondary: 12px;
+  --font-weight-label-secondary: 400;
+
+  --font-size-metadata: 12px;
+  --font-weight-metadata: 400;
+
+  /* ---------------------------------------------------------------------
+     SPACING (MATERIALS.md "SPACING, CORNERS, SHADOWS")
+     --------------------------------------------------------------------- */
+
+  --space-button-vertical: 12px;
+  --space-button-horizontal: 16px;
+  --space-card-padding: 20px;
+  --space-input-padding: 12px;
+  --space-dropdown-padding: 12px;
+  --space-modal-padding: 12px;
+
+  --space-section-margin: 24px; /* between major sections */
+  --space-row-margin: 16px; /* between rows */
+  --space-list-item-margin: 12px; /* between list items */
+
+  /* ---------------------------------------------------------------------
+     RADIUS
+     --------------------------------------------------------------------- */
+
+  --radius-card: 14px; /* MATERIALS.md range is 12-16px; 14px is the midpoint, adjustable here without touching components */
+  --radius-button: 8px;
+
+  /* ---------------------------------------------------------------------
+     SHADOWS — separation only, never decorative, single shadow, no layers
+     --------------------------------------------------------------------- */
+
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.15);
+  --shadow-modal: 0 4px 16px rgba(0, 0, 0, 0.2);
+
+  /* ---------------------------------------------------------------------
+     SLAB (Step 1.3, MATERIALS.md "THE SLAB RULE" / MARBLE-CONTRACT.md)
+     --------------------------------------------------------------------- */
+
+  --slab-tile-size: 2508px; /* native resolution of the seamless mirrored supertile texture; never cover/contain/percent/vw/vh */
+}

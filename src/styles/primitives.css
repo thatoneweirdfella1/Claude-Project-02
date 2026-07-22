@@ -1,0 +1,96 @@
+/* primitives.css — the reusable component library's visual layer.
+   Material rules (.surface-smoked-glass, .surface-blue-marble) already
+   exist in marble.css (Step 1.3) and are not re-decided here — this
+   file only adds layout/sizing for the primitives that compose them,
+   plus the two primitives that don't reuse an existing surface
+   (GlassButton is smoked glass + button layout; Dropdown and Pill are
+   new). Every primitive gets a visible :focus-visible ring per CANON's
+   ADHD hard rules ("Focus ring visible at every keyboard stop"). */
+
+.primitive-glass-card {
+  display: block;
+  padding: var(--space-card-padding);
+}
+
+.primitive-glass-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-list-item-margin);
+  padding: var(--space-card-padding);
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.primitive-glass-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: var(--space-button-vertical) var(--space-button-horizontal);
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label);
+  font-weight: var(--font-weight-label);
+  cursor: pointer;
+}
+
+.primitive-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.primitive-dropdown select {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  min-height: 44px;
+  padding: var(--space-dropdown-padding) 32px var(--space-dropdown-padding) var(--space-dropdown-padding);
+  background: var(--surface-smoked-glass);
+  backdrop-filter: blur(var(--blur-smoked-glass));
+  -webkit-backdrop-filter: blur(var(--blur-smoked-glass));
+  border: 1px solid var(--surface-smoked-glass-border);
+  border-radius: var(--radius-button);
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label);
+  font-weight: var(--font-weight-label);
+  cursor: pointer;
+}
+
+.primitive-dropdown::after {
+  content: "";
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border-right: 1.5px solid var(--accent-cyan);
+  border-bottom: 1.5px solid var(--accent-cyan);
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+}
+
+.primitive-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--pill-color);
+  background: rgb(255 255 255 / 0.04);
+  color: var(--pill-color);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-secondary);
+  font-weight: var(--font-weight-label-secondary);
+}
+
+/* Focus ring — every primitive, visible at every keyboard stop. */
+.primitive-glass-card:focus-visible,
+.primitive-glass-panel:focus-visible,
+.primitive-glass-button:focus-visible,
+.surface-blue-marble:focus-visible,
+.primitive-dropdown select:focus-visible,
+.primitive-pill:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
