@@ -1119,6 +1119,9 @@ function TrashScreen() {
   const restoreSessionFromTrash = useAccountStore((s) => s.restoreSessionFromTrash);
   const deleteSessionFromTrash = useAccountStore((s) => s.deleteSessionFromTrash);
 
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState<"recent" | "oldest" | "name">("recent");
+
   const handleRestoreSession = (sessionId: string) => {
     restoreSessionFromTrash(sessionId);
   };
@@ -1126,6 +1129,25 @@ function TrashScreen() {
   const handlePermanentlyDelete = (sessionId: string) => {
     deleteSessionFromTrash(sessionId);
   };
+
+  const filteredSessions = trashed.filter((session) => {
+    const searchLower = searchTerm.toLowerCase();
+    const tag = (session.tag || `Session ${session.id.slice(0, 6)}`).toLowerCase();
+    return tag.includes(searchLower) || session.id.includes(searchTerm);
+  });
+
+  const sortedSessions = [...filteredSessions].sort((a, b) => {
+    switch (sortBy) {
+      case "recent":
+        return b.createdAt - a.createdAt;
+      case "oldest":
+        return a.createdAt - b.createdAt;
+      case "name":
+        return ((a.tag || a.id) || "").localeCompare((b.tag || b.id) || "");
+      default:
+        return 0;
+    }
+  });
 
   return (
     <div className="screen screen-trash">
@@ -1136,37 +1158,80 @@ function TrashScreen() {
         {trashed.length === 0 ? (
           <p>No deleted sessions. Items you delete from Sessions will appear here.</p>
         ) : (
-          <div className="trashed-list">
-            {trashed.map((session) => (
-              <div key={session.id} className="trashed-item">
-                <div className="trashed-item__header">
-                  <h3>{session.tag || `Session ${session.id.slice(0, 8)}`}</h3>
-                  <span className="trashed-item__date">
-                    {new Date(session.createdAt).toLocaleString()}
-                  </span>
-                </div>
-                <p className="trashed-item__description">
-                  Model: {session.model} • Directness: {session.directness}
-                </p>
-                <div className="trashed-item__actions">
-                  <button
-                    type="button"
-                    className="trashed-item__action-btn trashed-item__action-btn--primary"
-                    onClick={() => handleRestoreSession(session.id)}
-                  >
-                    Restore
-                  </button>
-                  <button
-                    type="button"
-                    className="trashed-item__action-btn trashed-item__action-btn--danger"
-                    onClick={() => handlePermanentlyDelete(session.id)}
-                  >
-                    Delete Permanently
-                  </button>
-                </div>
+          <>
+            <div style={{ display: "flex", gap: "12px", marginBottom: "24px" }}>
+              <input
+                type="text"
+                placeholder="Search trash..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{
+                  flex: 1,
+                  padding: "10px 12px",
+                  fontSize: "13px",
+                  border: "1px solid var(--accent-cyan-tint-06)",
+                  borderRadius: "4px",
+                  background: "var(--surface-base)",
+                  color: "var(--text-primary)",
+                }}
+              />
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as "recent" | "oldest" | "name")}
+                style={{
+                  padding: "10px 12px",
+                  fontSize: "13px",
+                  border: "1px solid var(--accent-cyan-tint-06)",
+                  borderRadius: "4px",
+                  background: "var(--surface-base)",
+                  color: "var(--text-primary)",
+                }}
+              >
+                <option value="recent">Most Recent</option>
+                <option value="oldest">Oldest First</option>
+                <option value="name">By Name</option>
+              </select>
+            </div>
+
+            {sortedSessions.length === 0 ? (
+              <p style={{ color: "var(--text-secondary)" }}>
+                No deleted sessions match your search.
+              </p>
+            ) : (
+              <div className="trashed-list">
+                {sortedSessions.map((session) => (
+                  <div key={session.id} className="trashed-item">
+                    <div className="trashed-item__header">
+                      <h3>{session.tag || `Session ${session.id.slice(0, 8)}`}</h3>
+                      <span className="trashed-item__date">
+                        {new Date(session.createdAt).toLocaleString()}
+                      </span>
+                    </div>
+                    <p className="trashed-item__description">
+                      Model: {session.model} • Directness: {session.directness} •{" "}
+                      {session.conversation.length} messages
+                    </p>
+                    <div className="trashed-item__actions">
+                      <button
+                        type="button"
+                        className="trashed-item__action-btn trashed-item__action-btn--primary"
+                        onClick={() => handleRestoreSession(session.id)}
+                      >
+                        Restore
+                      </button>
+                      <button
+                        type="button"
+                        className="trashed-item__action-btn trashed-item__action-btn--danger"
+                        onClick={() => handlePermanentlyDelete(session.id)}
+                      >
+                        Delete Permanently
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            )}
+          </>
         )}
       </div>
     </div>
