@@ -6,10 +6,16 @@ import { CenterColumn } from "../pipeline";
 
 function HomeScreen() {
   const sessions = useAccountStore((s) => s.sessions);
+  const templates = useAccountStore((s) => s.templates);
   const loadSessionRecord = useSessionStore((s) => s.loadSessionRecord);
   const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
+  const setModel = useSessionStore((s) => s.setModel);
+  const setDirectness = useSessionStore((s) => s.setDirectness);
+  const setTechniques = useSessionStore((s) => s.setTechniques);
 
   const recentSessions = [...sessions].reverse().slice(0, 3);
+  const starredSessions = sessions.filter((s) => s.starred);
+  const starredTemplates = templates.filter((t) => t.starred);
 
   const handleLoadSession = (sessionId: string) => {
     const session = sessions.find((s) => s.id === sessionId);
@@ -17,6 +23,13 @@ function HomeScreen() {
       loadSessionRecord(session);
       setCurrentScreen("translate");
     }
+  };
+
+  const handleLoadTemplate = (template: typeof templates[0]) => {
+    setModel(template.model);
+    setDirectness(template.directness);
+    setTechniques(template.techniques);
+    setCurrentScreen("translate");
   };
 
   return (
@@ -60,6 +73,65 @@ function HomeScreen() {
                 </button>
               ))}
             </div>
+          </div>
+        )}
+
+        {(starredSessions.length > 0 || starredTemplates.length > 0) && (
+          <div className="home-section">
+            <h2>⭐ Favorites</h2>
+            {starredSessions.length > 0 && (
+              <div style={{ marginBottom: "20px" }}>
+                <h3 style={{ fontSize: "14px", fontWeight: "600", marginBottom: "12px", color: "var(--text-secondary)" }}>Favorite Sessions</h3>
+                <div className="home-session-list">
+                  {starredSessions.slice(0, 3).map((session) => (
+                    <button
+                      key={session.id}
+                      type="button"
+                      className="home-session-card"
+                      onClick={() => handleLoadSession(session.id)}
+                    >
+                      <div className="home-session-card__title">
+                        {session.tag || `Session ${session.id.slice(0, 6)}`}
+                      </div>
+                      <div className="home-session-card__meta">
+                        {new Date(session.createdAt).toLocaleDateString()} •{" "}
+                        {session.conversation.length} messages
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {starredTemplates.length > 0 && (
+              <div>
+                <h3 style={{ fontSize: "14px", fontWeight: "600", marginBottom: "12px", color: "var(--text-secondary)" }}>Favorite Templates</h3>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: "12px" }}>
+                  {starredTemplates.slice(0, 4).map((template) => (
+                    <button
+                      key={template.id}
+                      type="button"
+                      onClick={() => handleLoadTemplate(template)}
+                      style={{
+                        padding: "12px",
+                        background: "var(--surface-tint-01)",
+                        border: "1px solid var(--accent-cyan-tint-06)",
+                        borderRadius: "6px",
+                        cursor: "pointer",
+                        textAlign: "left",
+                        color: "var(--text-primary)",
+                      }}
+                    >
+                      <div style={{ fontSize: "13px", fontWeight: "500", marginBottom: "4px" }}>
+                        {template.title}
+                      </div>
+                      <div style={{ fontSize: "11px", color: "var(--text-secondary)" }}>
+                        {template.model} • D:{template.directness}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
