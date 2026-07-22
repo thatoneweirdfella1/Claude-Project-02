@@ -26,6 +26,32 @@ progress that looked like forward motion but wasn't. Do not repeat this pattern.
 If you ever find yourself about to run `git checkout -b` or any branch-creation command,
 stop and treat that as a signal you've misunderstood the task — re-read this file instead.
 
+## Multi-account coordination
+
+When two or more accounts work on `build` simultaneously, preventing silent overwrites and lost work
+requires strict discipline:
+
+**Before every push, without exception:**
+```
+git pull origin build --rebase
+```
+
+This pulls any commits the other account has pushed and rebases your commits on top. If both accounts
+touched the same file, git forces a visible merge conflict during the rebase — you must manually
+resolve it. This visibility is what prevents silent data loss. Skipping the rebase or force-pushing
+past a conflict is how work dies.
+
+**Every commit message must name the account:**
+```
+[Account 1] Fix authentication gate
+[Account 2] Build Sessions nav screen
+```
+
+This way, the commit history makes clear who did what, and drift between accounts becomes visible.
+
+**Never `git push --force` to `build`. Ever.** A failed rebase is always the safe recovery path.
+A force-push is always wrong.
+
 ## Every build step
 
 1. Read `BUILD-LOG.md` first — the `WHERE YOU ARE` section at the top has the last completed
