@@ -159,6 +159,8 @@ export interface SessionRecord {
   /** User-entered label from "archive tagged" — absent for a plain "save
       and archive". */
   tag?: string;
+  /** True when user has starred/favorited this session for quick access. */
+  starred?: boolean;
   model: ModelSelection;
   directness: DirectnessLevel;
   techniques: TechniqueId[];

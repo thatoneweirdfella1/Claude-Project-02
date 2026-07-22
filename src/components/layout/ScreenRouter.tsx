@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Pencil } from "lucide-react";
+import { Pencil, Star } from "lucide-react";
 import { useSessionStore } from "../../stores/sessionStore";
 import { useAccountStore } from "../../stores/accountStore";
 import { CenterColumn } from "../pipeline";
@@ -262,6 +262,7 @@ function ArchiveScreen() {
   const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
   const moveSessionToTrash = useAccountStore((s) => s.moveSessionToTrash);
   const updateSessionTag = useAccountStore((s) => s.updateSessionTag);
+  const toggleSessionStar = useAccountStore((s) => s.toggleSessionStar);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<"recent" | "oldest" | "name" | "archived">("archived");
@@ -495,6 +496,15 @@ function ArchiveScreen() {
                           onClick={() => handleLoadSession(session.id)}
                         >
                           Load
+                        </button>
+                        <button
+                          type="button"
+                          className="session-item__action-btn"
+                          onClick={() => toggleSessionStar(session.id)}
+                          title={session.starred ? "Remove from favorites" : "Add to favorites"}
+                          style={{ padding: "8px 10px", minWidth: "auto", color: session.starred ? "var(--accent-cyan)" : "var(--text-primary)" }}
+                        >
+                          <Star size={16} fill={session.starred ? "currentColor" : "none"} />
                         </button>
                         <button
                           type="button"
@@ -1176,6 +1186,7 @@ function SessionsScreen() {
   const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
   const moveSessionToTrash = useAccountStore((s) => s.moveSessionToTrash);
   const updateSessionTag = useAccountStore((s) => s.updateSessionTag);
+  const toggleSessionStar = useAccountStore((s) => s.toggleSessionStar);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<"recent" | "oldest" | "name">("recent");
@@ -1401,6 +1412,15 @@ function SessionsScreen() {
                         <button
                           type="button"
                           className="session-item__action-btn"
+                          onClick={() => toggleSessionStar(session.id)}
+                          title={session.starred ? "Remove from favorites" : "Add to favorites"}
+                          style={{ padding: "8px 10px", minWidth: "auto", color: session.starred ? "var(--accent-cyan)" : "var(--text-primary)" }}
+                        >
+                          <Star size={16} fill={session.starred ? "currentColor" : "none"} />
+                        </button>
+                        <button
+                          type="button"
+                          className="session-item__action-btn"
                           onClick={() => handleRenameStart(session.id, session.tag || `Session ${session.id.slice(0, 8)}`)}
                           title="Rename session"
                           style={{ padding: "8px 10px", minWidth: "auto" }}
@@ -1440,6 +1460,7 @@ function TrashScreen() {
   const restoreSessionFromTrash = useAccountStore((s) => s.restoreSessionFromTrash);
   const deleteSessionFromTrash = useAccountStore((s) => s.deleteSessionFromTrash);
   const updateSessionTag = useAccountStore((s) => s.updateSessionTag);
+  const toggleSessionStar = useAccountStore((s) => s.toggleSessionStar);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<"recent" | "oldest" | "name">("recent");
@@ -1600,6 +1621,15 @@ function TrashScreen() {
                           onClick={() => handleRestoreSession(session.id)}
                         >
                           Restore
+                        </button>
+                        <button
+                          type="button"
+                          className="trashed-item__action-btn"
+                          onClick={() => toggleSessionStar(session.id)}
+                          title={session.starred ? "Remove from favorites" : "Add to favorites"}
+                          style={{ padding: "8px 10px", minWidth: "auto", color: session.starred ? "var(--accent-cyan)" : "var(--text-primary)" }}
+                        >
+                          <Star size={16} fill={session.starred ? "currentColor" : "none"} />
                         </button>
                         <button
                           type="button"
