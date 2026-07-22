@@ -103,3 +103,59 @@ reference for the things a layout actually is — accent color, texture/backgrou
 card/button chrome, spacing, typography feel — and leave CANON's existing structure (nav
 items, panel names, feature set, logo mark) untouched by default. Only change structure if
 the operator explicitly asks for it in words, separately from uploading the image.
+
+## 3-State Methodology
+
+**DEFINE → TEST → STABILIZE** — A problem-solving framework optimized for ADHD users,
+discovered from friction analysis across 824 conversations. Implemented as an optional
+methodology selector in the Composer (defaults to Standard).
+
+### How it works
+
+**DEFINE Phase:** Lock the exact problem statement. No exploration, no branching paths.
+Output is directive-only, extreme brevity (max ~10 lines), one chosen path.
+
+**TEST Phase:** Validate the approach. Self-critique enabled. Claims fact-checked.
+Hallucination audit displays. Confidence scoring on assertions.
+
+**STABILIZE Phase:** Deliver final, audited result. No reversals or caveats.
+All claims verified or marked as unverifiable.
+
+### ADHD Constraints (9 documented patterns)
+
+1. Zero procedural memory — user cannot retain multi-step sequences
+2. Cognitive shutdown under load — long explanations trigger shutdown
+3. Working memory limits — false choices cause infinite loops
+4. Pressure-induced failure — time/stress causes execution failure
+5. Loop-without-closure — unresolved loops cause disengagement
+6. Dopamine/reward driven — needs visible progress markers
+7. Context loss on long sessions — information degrades over time
+8. Sensitivity to vague instructions — ambiguity causes paralysis
+9. Multiple paths paralysis — too many options trigger calculation freeze
+
+### Communication Rules (7 proven patterns)
+
+1. **Directive-only:** No "if you want to". Direct commands only.
+2. **Extreme brevity:** Max ~10 lines per response.
+3. **No explanations:** Explain only when explicitly asked.
+4. **No branching paths:** Single chosen path; system decides, not user.
+5. **Visible progress:** Every response shows forward movement (✓, →, "Next:", etc).
+6. **Locked problem:** Problem statement repeats at each phase to prevent drift.
+7. **No optional statements:** Every statement is required; no "you could" suggestions.
+
+### Failure modes to avoid
+
+- Clarification questions (triggers expansion loops)
+- Optional statements (triggers infinite calculation)
+- Long explanations (triggers cognitive shutdown)
+- Back-and-forth dialogue (triggers disengagement)
+- Goal drift mid-session (requires complete restart)
+
+### Storage and audit
+
+3-State usage is tracked in `accountStore.methodologyLog` — bounded to 200 entries.
+Each session's methodology choice, phases reached, locked problem, and hallucination
+audits are recorded for learning and continuous improvement.
+
+See `services/methodologyEngine.ts` for phase detection, compliance analysis, and
+self-critique generation.

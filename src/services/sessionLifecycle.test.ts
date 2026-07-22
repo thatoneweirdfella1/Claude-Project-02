@@ -13,6 +13,9 @@ function session(overrides: Partial<SessionState> = {}): SessionState {
     statePills: { emotion: "calm", rsd: "low", interest: "medium", cognitive: "analytical" },
     variables: { name: "value" },
     currentScreen: "translate",
+    methodology: "standard",
+    methodologyPhase: "define",
+    lockedProblemStatement: "",
     ...overrides,
   };
 }

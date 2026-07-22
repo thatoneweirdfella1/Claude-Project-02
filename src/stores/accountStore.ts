@@ -5,6 +5,7 @@ import type {
   LayoutId,
   LearnedPreferences,
   LearningAuditEntry,
+  MethodologyEntry,
   PlanFlag,
   PromptTemplate,
   Rating,
@@ -58,6 +59,9 @@ export const MAX_STATE_CORRECTIONS = 1000;
     MAX_STATE_CORRECTIONS/telemetry's MAX_TELEMETRY_ENTRIES. */
 export const MAX_LEARNING_AUDIT_ENTRIES = 500;
 
+/** Cap on stored methodology entries — bounded to prevent unbounded growth. */
+export const MAX_METHODOLOGY_ENTRIES = 200;
+
 /** Step 9.2 — a few built-in presets so Load Template is immediately usable
     before any user has saved one of their own (CANON names the feature but
     not what should ship in it). Fixed string ids, not generated, so they
@@ -106,6 +110,7 @@ export function createInitialAccountState(): AccountState {
     trashed: [], // Deleted sessions (can be restored or permanently deleted)
     templates: DEFAULT_TEMPLATES.map((t) => ({ ...t, techniques: [...t.techniques] })), // Step 9.2 — fresh objects/arrays, no shared references
     learningAuditLog: [], // Step 10.2
+    methodologyLog: [], // 3-State Methodology tracking
   };
 }
 
@@ -125,6 +130,7 @@ export const ACCOUNT_PERSISTED_KEYS: (keyof AccountState)[] = [
   "trashed",
   "templates",
   "learningAuditLog",
+  "methodologyLog",
 ];
 
 interface AccountActions {
@@ -192,6 +198,8 @@ interface AccountActions {
   toggleTemplateStar: (id: string) => void;
   /** Duplicate a session (copy all data and create a new session). */
   duplicateSession: (id: string) => void;
+  /** Record methodology usage and audit results from a session. */
+  recordMethodology: (entry: MethodologyEntry) => void;
   /** Replace persisted fields wholesale — used by autosave rehydrate (Step 1.8). */
   hydrate: (state: Partial<AccountState>) => void;
 }
@@ -309,6 +317,16 @@ export const useAccountStore = create<AccountStore>((set) => ({
         variables: { ...original.variables },
       };
       return { sessions: [...s.sessions, duplicate] };
+    }),
+  recordMethodology: (entry) =>
+    set((s) => {
+      const next = [...s.methodologyLog, entry];
+      return {
+        methodologyLog:
+          next.length > MAX_METHODOLOGY_ENTRIES
+            ? next.slice(next.length - MAX_METHODOLOGY_ENTRIES)
+            : next,
+      };
     }),
   hydrate: (state) => set(state),
 }));
