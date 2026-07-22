@@ -1133,32 +1133,30 @@ Blocked: the proxy's live deploy + real streamed call (parked for Step 12.3, unc
 
 ## PENDING TASKS (Not Yet Started)
 
-The following three tasks have been identified from prior sessions and scattered analysis. These must be completed before claiming the app is feature-complete:
-
-### TASK 1: 3-State Methodology Validation & Integration
-- **Source**: Prior Claude Code session analyzing 824 conversations for ADHD workflow optimization
-- **What**: Problem-solving methodology (DEFINE → TEST → STABILIZE) with 9 ADHD constraints, 7 communication rules, 4 failure modes
-- **Status**: Not started
-- **Files to edit**: src/stores/types.ts, src/stores/accountStore.ts, src/stores/sessionStore.ts, ControlRow.tsx, methodologyEngine.ts (NEW), TransparencyCard.tsx, CLAUDE.md
-- **Assign to**: Claude session with "Decision_Record_Generation_From_Workflow" analysis
-- **See**: PENDING-INTEGRATIONS.md TASK 1 for full details, data to integrate, and acceptance criteria
-
-### TASK 2: Learnable Signal Patterns Verification & Integration
-- **Source**: Prior Claude Code session analyzing multi-signal feedback hierarchy from 8340 conversations
-- **What**: Learning system with three-tier signal hierarchy (primary/secondary/tertiary) with accuracy degradation (1.0 → 0.85 → 0.70)
-- **Status**: Not started
-- **Files to edit**: src/stores/types.ts, src/stores/accountStore.ts, RatingRow.tsx, learningEngine.ts (NEW), sessionStore.ts, SessionsScreen, learningAuditViewer.ts (NEW), CLAUDE.md
-- **Assign to**: Claude session with "Learnable_Signal_Patterns_Verification" analysis
-- **See**: PENDING-INTEGRATIONS.md TASK 2 for full details, signal hierarchy, degradation formula, and acceptance criteria
-
-### TASK 3: Fable 5 Model Recommendation & Prompt Translation
+### Fable 5 Model Recommendation & Prompt Translation
 - **Source**: User uploaded fabletranslator.ts, fable-translator-system-prompt.md, Fable 5 Prompting Guide
 - **What**: Model recommendation engine + prompt translator that reformats user input for each model's strengths (Fable gets 5-part structure: goal/reason/boundaries/verification/format)
 - **Status**: Not started
 - **Files to edit**: modelRecommendation.ts (NEW), promptTranslator.ts (NEW), ControlRow.tsx, TranslateAskButton.tsx, sessionStore.ts, CLAUDE.md
 - **See**: PENDING-INTEGRATIONS.md TASK 3 for full details, model selection heuristics, and acceptance criteria
 
-**Permanent record**: PENDING-INTEGRATIONS.md contains complete specifications. This section exists to flag them in BUILD-LOG.md so they're never forgotten.
+---
+
+## ASSIGNED TO OTHER SESSIONS (In Progress)
+
+### 3-State Methodology Validation & Integration
+- **Assigned to**: Claude session with "Decision_Record_Generation_From_Workflow" analysis
+- **Source**: Prior Claude Code session analyzing 824 conversations for ADHD workflow optimization
+- **What**: Problem-solving methodology (DEFINE → TEST → STABILIZE) with 9 ADHD constraints, 7 communication rules, 4 failure modes
+- **Status**: Ready for implementation
+- **See**: PENDING-INTEGRATIONS.md TASK 1 for full details, data to integrate, and acceptance criteria
+
+### Learnable Signal Patterns Verification & Integration
+- **Assigned to**: Claude session with "Learnable_Signal_Patterns_Verification" analysis
+- **Source**: Prior Claude Code session analyzing multi-signal feedback hierarchy from 8340 conversations
+- **What**: Learning system with three-tier signal hierarchy (primary/secondary/tertiary) with accuracy degradation (1.0 → 0.85 → 0.70)
+- **Status**: Ready for implementation
+- **See**: PENDING-INTEGRATIONS.md TASK 2 for full details, signal hierarchy, degradation formula, and acceptance criteria
 
 ---
 
