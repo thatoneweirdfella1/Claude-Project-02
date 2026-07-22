@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useSessionStore } from "../../stores/sessionStore";
 import { useAccountStore } from "../../stores/accountStore";
 import { CenterColumn } from "../pipeline";
@@ -547,8 +548,17 @@ function TasksScreen() {
 }
 
 function TemplatesScreen() {
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [formData, setFormData] = useState({
+    title: "",
+    model: "auto" as const,
+    directness: 2,
+    techniques: [] as string[],
+  });
+
   const templates = useAccountStore((s) => s.templates);
   const removeTemplate = useAccountStore((s) => s.removeTemplate);
+  const addTemplate = useAccountStore((s) => s.addTemplate);
   const setModel = useSessionStore((s) => s.setModel);
   const setDirectness = useSessionStore((s) => s.setDirectness);
   const setTechniques = useSessionStore((s) => s.setTechniques);
@@ -556,6 +566,8 @@ function TemplatesScreen() {
 
   const builtInTemplates = templates.filter((t) => t.id.startsWith("template-"));
   const customTemplates = templates.filter((t) => !t.id.startsWith("template-"));
+
+  const allTechniques = ["auto-detect", "socratic", "chain-of-thought", "verify", "examples"];
 
   const handleLoadTemplate = (template: typeof templates[0]) => {
     setModel(template.model);
@@ -568,12 +580,106 @@ function TemplatesScreen() {
     removeTemplate(templateId);
   };
 
+  const handleCreateTemplate = () => {
+    if (formData.title.trim()) {
+      addTemplate({
+        id: `custom-${Date.now()}`,
+        title: formData.title,
+        model: formData.model,
+        directness: formData.directness as 1 | 2 | 3,
+        techniques: formData.techniques as any,
+      });
+      setFormData({ title: "", model: "auto", directness: 2, techniques: [] });
+      setShowCreateForm(false);
+    }
+  };
+
+  const toggleTechnique = (technique: string) => {
+    setFormData((prev: typeof formData) => ({
+      ...prev,
+      techniques: prev.techniques.includes(technique)
+        ? prev.techniques.filter((t: string) => t !== technique)
+        : [...prev.techniques, technique],
+    }));
+  };
+
   return (
     <div className="screen screen-templates">
       <div className="screen__header">
-        <h1>Templates</h1>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <h1>Templates</h1>
+          <button
+            type="button"
+            className="settings-btn"
+            onClick={() => setShowCreateForm(!showCreateForm)}
+            style={{ margin: 0 }}
+          >
+            {showCreateForm ? "Cancel" : "Create Template"}
+          </button>
+        </div>
       </div>
       <div className="screen__content">
+        {showCreateForm && (
+          <div className="template-form">
+            <div className="form-group">
+              <label className="form-group__label">Template Name</label>
+              <input
+                type="text"
+                className="form-group__input"
+                placeholder="e.g., Quick FAQ"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                autoFocus
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-group__label">Model</label>
+              <select
+                className="form-group__input"
+                value={formData.model}
+                onChange={(e) => setFormData({ ...formData, model: e.target.value as any })}
+              >
+                <option value="auto">Auto (Recommended)</option>
+                <option value="gpt-4">GPT-4</option>
+                <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label className="form-group__label">Directness ({formData.directness})</label>
+              <input
+                type="range"
+                min="1"
+                max="5"
+                value={formData.directness}
+                onChange={(e) => setFormData({ ...formData, directness: parseInt(e.target.value) })}
+                className="form-group__slider"
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-group__label">Techniques</label>
+              <div className="form-group__techniques">
+                {allTechniques.map((tech) => (
+                  <label key={tech} className="form-group__checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={formData.techniques.includes(tech)}
+                      onChange={() => toggleTechnique(tech)}
+                    />
+                    {tech}
+                  </label>
+                ))}
+              </div>
+            </div>
+            <button
+              type="button"
+              className="settings-btn"
+              onClick={handleCreateTemplate}
+            >
+              Create
+            </button>
+          </div>
+        )}
+
         {builtInTemplates.length > 0 && (
           <div className="templates-section">
             <h3 className="templates-section__title">Built-in Templates</h3>
