@@ -100,20 +100,72 @@ function RecentSessionsContent() {
 }
 
 function RecentActivityContent() {
+  const sessions = useAccountStore((s) => s.sessions);
+
+  const activities: Array<{
+    type: string;
+    description: string;
+    timestamp: number;
+  }> = [];
+
+  sessions.forEach((session) => {
+    if (session.createdAt) {
+      activities.push({
+        type: "session-created",
+        description: `Session created: ${session.tag || `Session ${session.id.slice(0, 6)}`}`,
+        timestamp: session.createdAt,
+      });
+    }
+    if (session.closedAt) {
+      activities.push({
+        type: "session-closed",
+        description: `Session archived: ${session.tag || `Session ${session.id.slice(0, 6)}`}`,
+        timestamp: session.closedAt,
+      });
+    }
+  });
+
+  const recentActivities = activities.sort((a, b) => b.timestamp - a.timestamp).slice(0, 5);
+
+  if (recentActivities.length === 0) {
+    return <PlaceholderNote text="No recent activity." />;
+  }
+
   return (
-    <PlaceholderNote text="Recent activity log — coming in a future step." />
+    <div className="accordion-panel__content">
+      {recentActivities.map((activity, idx) => (
+        <div key={idx} className="activity-item">
+          <div className="activity-item__timestamp">
+            {new Date(activity.timestamp).toLocaleTimeString()}
+          </div>
+          <div className="activity-item__description">{activity.description}</div>
+        </div>
+      ))}
+    </div>
   );
 }
 
 function TokenUsageContent() {
+  const conversations = useAccountStore((s) =>
+    s.sessions.flatMap((session) => session.conversation)
+  );
+
+  const messageCount = conversations.length;
+  const estimatedTokensPerMessage = 50;
+  const estimatedTotalTokens = messageCount * estimatedTokensPerMessage;
+
   return (
     <div className="accordion-panel__content">
       <div className="accordion-panel__stat-row">
-        <span className="accordion-panel__stat-label">Feature Status</span>
-        <span className="accordion-panel__stat-value">Not built yet</span>
+        <span className="accordion-panel__stat-label">Messages</span>
+        <span className="accordion-panel__stat-value">{messageCount}</span>
+      </div>
+      <div className="accordion-panel__stat-row">
+        <span className="accordion-panel__stat-label">Est. Tokens</span>
+        <span className="accordion-panel__stat-value">{estimatedTotalTokens.toLocaleString()}</span>
       </div>
       <p className="accordion-panel__note">
-        This panel will show token usage for this session and today's total when the feature is built.
+        Estimated token usage across all sessions. Actual usage will be available when API integration is complete.
       </p>
     </div>
   );
