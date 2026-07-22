@@ -174,6 +174,37 @@ function DashboardScreen() {
   const totalRatings = ratings.length;
   const totalArchivedPairs = archivedPairs.length;
 
+  const totalMessages = sessions.reduce((sum, s) => sum + (s.conversation?.length || 0), 0);
+  const avgMessagesPerSession = totalSessions > 0 ? Math.round(totalMessages / totalSessions) : 0;
+
+  const modelCounts = sessions.reduce(
+    (acc, s) => {
+      const model = s.model || "auto";
+      acc[model] = (acc[model] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
+
+  const topModel =
+    Object.entries(modelCounts).sort(([, a], [, b]) => b - a)[0]?.[0] || "auto";
+
+  const techniqueCounts = sessions.reduce(
+    (acc, s) => {
+      (s.techniques || []).forEach((tech) => {
+        acc[tech] = (acc[tech] || 0) + 1;
+      });
+      return acc;
+    },
+    {} as Record<string, number>
+  );
+
+  const topTechnique =
+    Object.entries(techniqueCounts).sort(([, a], [, b]) => b - a)[0]?.[0] || "None";
+
+  const olderSessions = sessions.filter((s) => s.createdAt && Date.now() - s.createdAt > 86400000);
+  const recentActivity = sessions.length - olderSessions.length;
+
   return (
     <div className="screen screen-dashboard">
       <div className="screen__header">
@@ -188,6 +219,16 @@ function DashboardScreen() {
             {totalArchivedSessions > 0 && (
               <p className="dashboard-card__subtext">
                 {totalArchivedSessions} archived
+              </p>
+            )}
+          </div>
+          <div className="dashboard-card">
+            <h3 className="dashboard-card__title">Messages</h3>
+            <div className="dashboard-card__metric">{totalMessages}</div>
+            <p className="dashboard-card__label">total messages</p>
+            {avgMessagesPerSession > 0 && (
+              <p className="dashboard-card__subtext">
+                ~{avgMessagesPerSession} per session
               </p>
             )}
           </div>
@@ -217,6 +258,45 @@ function DashboardScreen() {
             <p className="dashboard-card__label">archived pairs</p>
           </div>
         </div>
+
+        {totalSessions > 0 && (
+          <div style={{ marginTop: "32px" }}>
+            <h2 style={{ marginBottom: "16px", fontSize: "16px", fontWeight: "600" }}>
+              Session Analytics
+            </h2>
+            <div className="dashboard-grid">
+              <div className="dashboard-card">
+                <h3 className="dashboard-card__title">Top Model</h3>
+                <div className="dashboard-card__metric" style={{ fontSize: "14px" }}>
+                  {topModel === "auto" ? "Auto" : topModel.replace("claude-", "")}
+                </div>
+                <p className="dashboard-card__label">most used in sessions</p>
+                {modelCounts[topModel] !== undefined && (
+                  <p className="dashboard-card__subtext">
+                    {modelCounts[topModel]} session{modelCounts[topModel] !== 1 ? "s" : ""}
+                  </p>
+                )}
+              </div>
+              <div className="dashboard-card">
+                <h3 className="dashboard-card__title">Top Technique</h3>
+                <div className="dashboard-card__metric" style={{ fontSize: "14px" }}>
+                  {topTechnique}
+                </div>
+                <p className="dashboard-card__label">most used technique</p>
+                {techniqueCounts[topTechnique] !== undefined && (
+                  <p className="dashboard-card__subtext">
+                    {techniqueCounts[topTechnique]} session{techniqueCounts[topTechnique] !== 1 ? "s" : ""}
+                  </p>
+                )}
+              </div>
+              <div className="dashboard-card">
+                <h3 className="dashboard-card__title">Recent Activity</h3>
+                <div className="dashboard-card__metric">{recentActivity}</div>
+                <p className="dashboard-card__label">sessions in last 24h</p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
