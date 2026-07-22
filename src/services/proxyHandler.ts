@@ -8,7 +8,7 @@
    platform entry lives in api/proxy.ts. fetchImpl is injectable so this is
    unit-testable without a network (the sandbox has none — see BUILD-LOG.md). */
 
-import { isModelId } from "./modelRegistry";
+import { isModelId } from "./modelRegistry.js";
 
 const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
 const ANTHROPIC_VERSION = "2023-06-01";

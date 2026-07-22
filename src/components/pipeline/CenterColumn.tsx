@@ -2,7 +2,7 @@ import { useCallback, useRef, useState } from "react";
 import { buildTranslateAskRequest, type TranslateAskRequest } from "../../services/composer";
 import { createProxyClient } from "../../services/proxyClient";
 import type { PipelineDone } from "../../services/pipeline";
-import { observePipeline } from "../../services/telemetry";
+import { getTelemetryEntries, observePipeline } from "../../services/telemetry";
 import {
   buildAdaptationNote,
   deriveStateFeeds,
@@ -10,10 +10,12 @@ import {
   toStatePills,
   type StateDetectionResult,
 } from "../../services/detection";
+import { mergeVariables, substituteVariables } from "../../services/context";
 import { useAccountStore } from "../../stores/accountStore";
 import { useSessionStore } from "../../stores/sessionStore";
 import { Composer } from "../composer";
 import type { PillDimension } from "../detection";
+import { QuickActionsRow } from "../session";
 import { ConversationArea, TranslationCard } from "../translation";
 import { StreamingAnswer } from "../streaming";
 import { usePipelineRun, type ActivePipelineRun } from "./usePipelineRun";
@@ -64,6 +66,12 @@ export function CenterColumn() {
 
   const [run, setRun] = useState<ActivePipelineRun | null>(null);
   const [detection, setDetection] = useState<StateDetectionResult | null>(null);
+  // Step 11.2 (latency): true while this turn's classification call is in
+  // flight. The pill panel is cleared on submit and the classification is a
+  // network round-trip that routinely exceeds 1s, so without this the panel
+  // would blank and silently reappear with no indicator — a CANON 1-second-rule
+  // miss. Drives a quiet inline "reading" status in the panel's own slot.
+  const [detecting, setDetecting] = useState(false);
   const runIdRef = useRef(0);
   const controllerRef = useRef<AbortController | null>(null);
   /** The raw text behind the current run — the base a refinement extends. */
@@ -101,13 +109,15 @@ export function CenterColumn() {
       // corrections every call (never stale — a correction made moments ago
       // on THIS session already counts toward the next classification).
       setDetection(null); // clear the panel immediately; this turn's read isn't in yet
+      setDetecting(true); // show the in-flight indicator until this call resolves (or is superseded)
       const adaptationNote = buildAdaptationNote(useAccountStore.getState().stateCorrections);
       void detectState(request.rawInput, {
         client: (req) => client.complete(req),
         signal: controller.signal,
         adaptationNote,
       }).then((outcome) => {
-        if (controller.signal.aborted) return; // superseded by a resubmit
+        if (controller.signal.aborted) return; // superseded by a resubmit — the newer run now owns `detecting`
+        setDetecting(false); // detectState never throws, so this .then always runs for the live call
         if (outcome.status === "ok") {
           setDetection(outcome.result);
           useSessionStore.getState().setStatePills(toStatePills(outcome.result));
@@ -132,19 +142,29 @@ export function CenterColumn() {
   }
 
   function handleRefine(refinedInput: string) {
+    // Step 7.4: substitute the NEWLY typed addition only — lastRawRef.current
+    // is the original submission's text, which Composer already substituted
+    // before this run ever started, so re-running substitution on it would
+    // be redundant (and, if a variable's own value happened to contain a
+    // "$name" pattern, could re-substitute unexpectedly). Only fresh user
+    // input gets substitution applied.
+    const s = useSessionStore.getState();
+    const substitutedAddition = substituteVariables(
+      refinedInput,
+      mergeVariables(useAccountStore.getState().variables, s.variables),
+    );
     addMessage({
       id: newMessageId(),
       role: "user",
-      content: refinedInput,
+      content: substitutedAddition,
       timestamp: Date.now(),
     });
     // Original + addition, so translation sees the whole thought; settings are
     // read fresh from the store (the user may have changed a dropdown since).
     // startRun also re-fires detection on this same combined text.
-    const s = useSessionStore.getState();
     startRun(
       buildTranslateAskRequest(
-        `${lastRawRef.current}\n\n${refinedInput}`,
+        `${lastRawRef.current}\n\n${substitutedAddition}`,
         { model: s.model, directness: s.directness, techniques: s.techniques },
         s.context,
       ),
@@ -153,6 +173,16 @@ export function CenterColumn() {
 
   const handleDone = useCallback(
     (done: PipelineDone) => {
+      // Step 8.5: snapshot this turn's telemetry-log id + current state pills
+      // onto the message, so the download modal can look up transparency/
+      // state-pills content for THIS specific answer later, not just "the
+      // most recent one." observePipeline (Step 5.4) has already recorded
+      // this run's entry via recordTelemetryEntry by the time its "done"
+      // event reaches here (usePipelineRun -> this callback), so the last
+      // entry in the log IS this run's — same timing this component already
+      // relies on nowhere else, first read here.
+      const entries = getTelemetryEntries();
+      const telemetryId = entries.length > 0 ? entries[entries.length - 1].id : undefined;
       addMessage({
         id: newMessageId(),
         role: "assistant",
@@ -161,6 +191,8 @@ export function CenterColumn() {
         confidence: done.confidence,
         downgraded: done.downgraded,
         notes: done.notes,
+        telemetryId,
+        statePills: useSessionStore.getState().statePills,
       });
       setRun(null); // the stored message takes over rendering from here
     },
@@ -218,10 +250,12 @@ export function CenterColumn() {
       <Composer
         onSubmit={handleSubmit}
         detection={detection}
+        detecting={detecting}
         onCorrectState={handleCorrectState}
         suggestedDirectness={suggestedDirectness}
         onApplyDirectness={() => setDirectness(suggestedDirectness!)}
       />
+      <QuickActionsRow />
     </>
   );
 }

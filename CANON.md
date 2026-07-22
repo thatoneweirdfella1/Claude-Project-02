@@ -14,14 +14,14 @@ Web first. One browser codebase. Windows and Android come later by wrapping this
 ## LOCKED DECISIONS (settled, do not reopen)
 
 1. **Visual truth is the V3 screenshot** (Divergence_AI_App_Screenshot_V3.png). If a file disagrees with the image, the image wins.
-2. **Three marble surfaces, not seven.** Black Marble background, Smoked Glass cards, Blue Marble buttons. The seven-name system (Graphite, Slate, Mist, Pearl, Obsidian, Onyx, Luminescence) is dead. "Light" is lighting rules, not a material. Full detail in MATERIALS.md.
+2. **Three marble surfaces, not seven.** Black Marble background, Smoked Glass cards, Blue Marble buttons. The seven-name system (Graphite, Slate, Mist, Pearl, Obsidian, Onyx, Luminescence) is dead. "Light" is lighting rules, not a material. Full detail in MATERIALS.md. The three-surface system applies to both a Light and Dark theme — this was designed early and screenshotted (Divergence_AI_Light_App_Screenshot V1/V2/V3) but never written into this file, which is why it read as dark-only. Settings includes a Light / Dark / Auto toggle (Auto follows the OS preference). This is a real, intended feature, not exploration that got superseded.
 3. **Model strings:** Haiku 4.5 is claude-haiku-4-5, Balanced is claude-sonnet-5, Opus 4.8 is claude-opus-4-8. Extended thinking is a toggle on a model, not a model. Ignore any "Opus Fast" or "Opus Thinking" naming.
 4. **State detection fires on the TRANSLATE & ASK button, not while typing.** No live-as-you-type detection.
 5. **Autosave every 5 seconds**, quiet background save. Crash and close protection.
 6. **Logged in by default**, persistence on, logout button bottom-left under System Status.
 7. **Purple is allowed on state pills** (the screenshot shows a purple Emotion pill), not logo-only.
 8. **Include every technique**, do not agonize over the count, prune later.
-9. **Quick Tools panel defaults to hidden (OFF).**
+9. ~~Quick Tools panel defaults to hidden (OFF).~~ **REVISED, operator-directed override — Quick Tools defaults to VISIBLE (ON), matching V3's own screenshot (a persistent six-tile grid, not hidden) and rule #1 above, which already outranked this rule before the operator settled it explicitly. Still user-togglable via Settings (Feature 12).** See BUILD-LOG.md DECISIONS.
 10. **Routing engine is already built and tested** (routing.js, tests.js). It is wired in, not rebuilt. See ROUTING.md.
 
 ---
@@ -44,19 +44,51 @@ Web first. One browser codebase. Windows and Android come later by wrapping this
 
 **8. Transparency Details.** An expandable card with three sub-cards: Routing (model, complexity score, domain, scope), Techniques (which applied and why), Confidence (translation, routing, technique, overall). The user always sees what the app decided and why. Never a black box.
 
-**9. Multi-AI Actions.** After an answer: Debate (two AIs argue opposite sides, two-column view), Consensus (common ground after a debate), Synthesis (combine perspectives into one refined answer the user can use to replace or merge). Consensus and Synthesis run on Opus at runtime.
+**9. Multi-AI Actions.** After an answer: Debate (2 to 4 AIs argue different sides in a multi-column view), Consensus (common ground after a debate), Synthesis (combine perspectives into one refined answer the user can use to replace or merge).
+
+Debate mode requires AT LEAST ONE non-Claude provider — never two-plus Claude calls arguing with itself, since same-model debate is known to converge into agreement-theater rather than surfacing real disagreement. Claude is always one participant. The user chooses in one of two ways:
+
+(a) **MANUAL** — pick 1 to 3 additional partners directly from the roster (GPT-5.5: agentic generalist; Gemini 3.1 Pro: abstract/reframing reasoning, best multimodal; Grok 4.3: real-time grounded, blunt counterpoint; DeepSeek V4 Pro: near-frontier reasoning at low cost), for a 2-to-4-way debate.
+
+(b) **AUTO-SELECT** — a single button lets the system choose the best partner(s) automatically, based on the roster's stated strengths (see ROUTING.md DEBATE PARTNERS) matched against the question's domain/complexity — e.g. an abstract-reasoning question favors Gemini, a real-time/current-events question favors Grok. Auto-select defaults to a single best-fit partner (2-way) unless the question's complexity or scope clearly benefits from more perspectives, in which case it may select up to 3.
+
+Consensus and Synthesis run on Opus at runtime, reading all participants' transcripts regardless of how many providers argued or how they were chosen.
 
 **10. Download and Export.** Download modal: pick content (answer text, confidence, rating, transparency, state pills) and format (Markdown default, HTML, JSON, PDF), then download or copy to clipboard.
 
-**11. Session Management.** New Session (fresh conversation, keeps settings, clears history and context), Duplicate Session (copy conversation, context, and settings), Load Template (pre-populate settings and a starter question), Saved Prompts (reuse questions), Import (from file, URL, previous conversation, variables, context snapshot, saved prompts, template settings), Close Session (save and archive, discard, or archive tagged).
+**11. Session Management.** New Session (fresh conversation, keeps settings, clears history and context), Duplicate Session (copy conversation, context, and settings), Load Template (pre-populate settings and a starter question), Saved Prompts (reuse questions), Import (from file, URL, previous conversation, chat history, variables, context snapshot, saved prompts, template settings), Close Session (save and archive, discard, or archive tagged). Note: "previous conversation" resumes a session already stored in-app; "chat history" imports an externally exported conversation log (a file import).
 
-**12. Visibility Toggle and Sidebar Management.** A gear dropdown (top right) with 7 checkboxes: Recent Sessions (ON), Context Snapshot (ON), Recent Activity (ON), Token Usage (ON), Model Status (ON), Quick Tools (OFF), Active Session (OFF), plus Reset to defaults. Quick Tools is a 2x3 grid: Router, Techniques, Prompt Library, Variables, Checkpoints, Dashboard. Sidebar accordions are revolving-door: only one panel expanded at a time.
+**12. Visibility Toggle and Sidebar Management.** A gear dropdown (top right) with theme toggle (Light / Dark / Auto) and 7 visibility checkboxes: Recent Sessions (ON), Context Snapshot (ON), Recent Activity (ON), Token Usage (ON), Model Status (ON), Quick Tools (**ON — revised, operator-directed override, matching V3's own screenshot; see rule #9 and BUILD-LOG.md DECISIONS**), Active Session (OFF), plus Reset to defaults. Quick Tools is a 2x3 grid: Router (click to view detailed routing decision), Techniques (click to view applied techniques in detail), Prompt Library (click to save/load prompt templates), Variables (click to manage context variables), Checkpoints (click to save/restore conversation states), Dashboard (click to view session statistics — same destination as the left-nav Dashboard item, see LEFT NAVIGATION). It sits above the accordion stack and does not itself collapse — only the six accordion panels below it do. Sidebar accordions are revolving-door: only one panel expanded at a time.
 
 ---
 
 ## LAYOUT (matches the V3 screenshot)
 
-Three columns over the marble slab. Left column 200px: nav (Home, Dashboard, Messages, Archive, Resources, Projects, Integrations, Tasks, Customize, Translate), with Trash, a green System Status dot, and a logout control at the bottom. Center column flex: conversation area, the input box ("What's on your mind?"), state detection panel, the Model/Directness/Technique dropdowns, Attach and Context controls, TRANSLATE & ASK button, transparency and multi-AI expanders, quick actions. Right column 300px: Quick Tools grid (hidden by default) and the accordion stack (Recent Sessions, Context Snapshot, Recent Activity, Token Usage, Model Status, Active Session). Top bar 60px: logo, Search, Templates, Quick Reference, gear, bell, help, user chip.
+Three columns over the marble slab. Left column 200px: nav (Home, Dashboard, Messages, Archive, Resources, Projects, Integrations, Tasks, Customize, Translate), with Trash, a green System Status dot, and a logout control at the bottom. Center column flex: conversation area, the input box ("What's on your mind?"), state detection panel, the Model/Directness/Technique dropdowns, Attach and Context controls, TRANSLATE & ASK button, transparency and multi-AI expanders, quick actions. Right column 300px: Quick Tools grid (visible by default, does not collapse — revised, operator-directed override, see rule #9) and the accordion stack below it (Recent Sessions, Context Snapshot, Recent Activity, Token Usage, Model Status, Active Session; revolving-door — only one expanded at a time). Top bar 60px: logo, Search, Templates, Quick Reference, gear, bell, help, user chip.
+
+---
+
+## LEFT NAVIGATION (the ten items named in LAYOUT)
+
+**Home.** Landing/overview screen: a recent activity feed plus quick stats. Distinct from Translate — Translate is the active composer view; Home is the "what's been happening" view.
+
+**Dashboard.** Session statistics. Same destination as the Quick Tools "Dashboard" tile (Feature 12) — one screen, not two. Both the left-nav item and the Quick Tools tile link here.
+
+**Messages.** List of ongoing and past conversation threads, inbox-style. Distinct from Archive — Messages is live/browsable sessions, Archive is closed ones.
+
+**Archive.** View of closed sessions. This is the screen Feature 11's "Close Session... save and archive" writes to — Archive shows what landed there.
+
+**Resources.** Saved links, files, and notes for reuse across conversations. A "+ Add Resource" button creates a new entry.
+
+**Projects.** Organizes conversations by project. A "+ New Project" button creates a new one.
+
+**Integrations.** NOT YET DEFINED. No real spec exists for this build — decorative placeholder until a future decision names what it actually does. Do not invent behavior for it.
+
+**Tasks.** Action items extracted from conversations. A "+ New Task" button creates a new one.
+
+**Customize.** A layout control panel: lets the user choose which panels/widgets exist and where they're positioned — e.g. which right-sidebar accordion sections show, the Quick Actions row's order/contents, possibly left-nav item visibility itself. A real feature-and-layout picker, not a generic settings/theme panel — theme itself already lives under the gear-icon Settings (Feature 12 / the screenshot's gear dropdown).
+
+**Translate.** The default/main view — the composer, conversation area, and everything Features 1–10 render into. No further definition needed; it's already the app's primary screen.
 
 ---
 
@@ -86,4 +118,6 @@ Two stores. **Session store**, cleared when a session closes: model selection, d
 
 ## THE LOGO
 
-A clean brain outline with synapses, colored in an aurora-borealis mix (neon green, purple, pink blended). "DIVERGENCE" in white, "AI" in the aurora mix. Nothing else inside the brain. Subtle synapse animation, not distracting. Top-left of the top bar.
+**REVISED, operator-directed override, this session:** the description below was a placeholder, written before any real brand asset existed (rule #1 already established the real asset wins on disagreement, same as the V3 screenshot). The real asset is `DivergenceAILogo.png` (repo root); the extracted icon lives at `public/logo-mark.png`.
+
+A detailed geometric/faceted brain mark, colored in a blue-violet-magenta gradient (not green/purple/pink). "Divergence" in white (mixed case, not all-caps), ".AI" in the same gradient. Nothing else inside the brain. No animation — the real asset is a static mark, not the placeholder's animated synapse dots. Top-left of the top bar; also reused at small size wherever the app shows "the AI is doing the thinking" (composer label, assistant message avatar, TRANSLATE & ASK, the Translate nav item — see BrainMark.tsx).

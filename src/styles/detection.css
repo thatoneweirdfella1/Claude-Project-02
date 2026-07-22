@@ -10,6 +10,19 @@
   padding: var(--space-card-padding);
 }
 
+/* Step 11.2 (latency): the in-flight indicator shown in the panel's slot while
+   the classification call is running. Quiet, static metadata text — same idiom
+   as the attach/URL/import status lines, no animation (CANON sensory rule). */
+.state-detection-panel__detecting {
+  margin: 0;
+  padding: var(--space-card-padding);
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-metadata);
+  font-weight: var(--font-weight-metadata);
+  opacity: var(--text-metadata-opacity);
+}
+
 .state-detection-panel__header {
   display: flex;
   align-items: center;
@@ -99,7 +112,7 @@
   padding: 8px 10px;
   border: 1px solid var(--accent-cyan);
   border-radius: var(--radius-button);
-  background: rgb(0 217 255 / 0.06);
+  background: var(--accent-cyan-tint-06);
 }
 
 .state-detection-panel__suggestion-text {
@@ -125,17 +138,23 @@
 }
 
 .state-detection-panel__suggestion-apply:hover {
-  background: rgb(0 217 255 / 0.12);
+  background: var(--accent-cyan-tint-12);
 }
 
+/* Adjust — a `surface-smoked-glass` button (TSX applies both classes), same
+   always-dark fill/texture/border as Attach/Context and every other button-
+   ish surface, not the transparent+cyan-text treatment this used to have.
+   Real captures of both reference screenshots confirm it stays dark with
+   white text in light theme too, even though its parent GlassCard goes
+   light around it (tokens.css's light-theme counter-override list handles
+   the text-color side; this rule only overrides sizing/radius down from
+   surface-smoked-glass's card-scaled defaults to button scale). */
 .state-detection-panel__adjust {
   flex-shrink: 0;
   min-height: 36px;
   padding: 6px 14px;
-  border: 1px solid var(--surface-smoked-glass-border);
   border-radius: var(--radius-button);
-  background: transparent;
-  color: var(--accent-cyan);
+  color: var(--text-primary);
   font-family: var(--font-family-base);
   font-size: var(--font-size-label-secondary);
   font-weight: var(--font-weight-label-secondary);
@@ -146,6 +165,9 @@
   border-color: var(--accent-cyan);
 }
 
+/* Material comes from the shared `surface-smoked-glass` class (TSX applies
+   both) — layout only, plus box-shadow (modal-weight, differs from that
+   class's own card-weight default). */
 .pill-corrector {
   position: absolute;
   top: 100%;
@@ -158,11 +180,6 @@
   flex-direction: column;
   gap: 8px;
   padding: 10px;
-  background: var(--surface-smoked-glass);
-  backdrop-filter: blur(var(--blur-smoked-glass));
-  -webkit-backdrop-filter: blur(var(--blur-smoked-glass));
-  border: 1px solid var(--surface-smoked-glass-border);
-  border-radius: var(--radius-card);
   box-shadow: var(--shadow-modal);
 }
 

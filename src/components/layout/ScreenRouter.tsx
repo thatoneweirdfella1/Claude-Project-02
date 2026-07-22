@@ -1,0 +1,2409 @@
+import { useState, useRef } from "react";
+import { Pencil, Star, Copy } from "lucide-react";
+import { useSessionStore } from "../../stores/sessionStore";
+import { useAccountStore } from "../../stores/accountStore";
+import { CenterColumn } from "../pipeline";
+
+function HomeScreen() {
+  const sessions = useAccountStore((s) => s.sessions);
+  const templates = useAccountStore((s) => s.templates);
+  const loadSessionRecord = useSessionStore((s) => s.loadSessionRecord);
+  const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
+  const setModel = useSessionStore((s) => s.setModel);
+  const setDirectness = useSessionStore((s) => s.setDirectness);
+  const setTechniques = useSessionStore((s) => s.setTechniques);
+
+  const recentSessions = [...sessions].reverse().slice(0, 3);
+  const starredSessions = sessions.filter((s) => s.starred);
+  const starredTemplates = templates.filter((t) => t.starred);
+
+  const handleLoadSession = (sessionId: string) => {
+    const session = sessions.find((s) => s.id === sessionId);
+    if (session) {
+      loadSessionRecord(session);
+      setCurrentScreen("translate");
+    }
+  };
+
+  const handleLoadTemplate = (template: typeof templates[0]) => {
+    setModel(template.model);
+    setDirectness(template.directness);
+    setTechniques(template.techniques);
+    setCurrentScreen("translate");
+  };
+
+  return (
+    <div className="screen screen-home">
+      <div className="screen__header">
+        <h1>Welcome to Divergence.AI</h1>
+      </div>
+      <div className="screen__content">
+        <div className="home-section">
+          <h2>Get Started</h2>
+          <p>Divergence.AI is an ADHD-friendly AI translator that helps you communicate your thoughts clearly. Start composing in the <strong>Translate</strong> tab on the left.</p>
+          <div className="home-cta">
+            <button
+              type="button"
+              className="home-cta__btn"
+              onClick={() => setCurrentScreen("translate")}
+            >
+              Go to Translate
+            </button>
+          </div>
+        </div>
+
+        {recentSessions.length > 0 && (
+          <div className="home-section">
+            <h2>Recent Sessions</h2>
+            <div className="home-session-list">
+              {recentSessions.map((session) => (
+                <button
+                  key={session.id}
+                  type="button"
+                  className="home-session-card"
+                  onClick={() => handleLoadSession(session.id)}
+                >
+                  <div className="home-session-card__title">
+                    {session.tag || `Session ${session.id.slice(0, 6)}`}
+                  </div>
+                  <div className="home-session-card__meta">
+                    {new Date(session.createdAt).toLocaleDateString()} •{" "}
+                    {session.conversation.length} messages
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {(starredSessions.length > 0 || starredTemplates.length > 0) && (
+          <div className="home-section">
+            <h2>⭐ Favorites</h2>
+            {starredSessions.length > 0 && (
+              <div style={{ marginBottom: "20px" }}>
+                <h3 style={{ fontSize: "14px", fontWeight: "600", marginBottom: "12px", color: "var(--text-secondary)" }}>Favorite Sessions</h3>
+                <div className="home-session-list">
+                  {starredSessions.slice(0, 3).map((session) => (
+                    <button
+                      key={session.id}
+                      type="button"
+                      className="home-session-card"
+                      onClick={() => handleLoadSession(session.id)}
+                    >
+                      <div className="home-session-card__title">
+                        {session.tag || `Session ${session.id.slice(0, 6)}`}
+                      </div>
+                      <div className="home-session-card__meta">
+                        {new Date(session.createdAt).toLocaleDateString()} •{" "}
+                        {session.conversation.length} messages
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {starredTemplates.length > 0 && (
+              <div>
+                <h3 style={{ fontSize: "14px", fontWeight: "600", marginBottom: "12px", color: "var(--text-secondary)" }}>Favorite Templates</h3>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: "12px" }}>
+                  {starredTemplates.slice(0, 4).map((template) => (
+                    <button
+                      key={template.id}
+                      type="button"
+                      onClick={() => handleLoadTemplate(template)}
+                      style={{
+                        padding: "12px",
+                        background: "var(--surface-tint-01)",
+                        border: "1px solid var(--accent-cyan-tint-06)",
+                        borderRadius: "6px",
+                        cursor: "pointer",
+                        textAlign: "left",
+                        color: "var(--text-primary)",
+                      }}
+                    >
+                      <div style={{ fontSize: "13px", fontWeight: "500", marginBottom: "4px" }}>
+                        {template.title}
+                      </div>
+                      <div style={{ fontSize: "11px", color: "var(--text-secondary)" }}>
+                        {template.model} • D:{template.directness}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="home-section">
+          <h2>Quick Tips</h2>
+          <ul className="home-tips">
+            <li>Use <strong>Directness</strong> (1–5) to control formality: low is casual, high is professional</li>
+            <li>Try different <strong>Techniques</strong> (Socratic, Chain-of-thought, etc.) to explore response styles</li>
+            <li>Save frequently used settings as <strong>Templates</strong> for quick reuse</li>
+            <li>Search past sessions and templates from the top bar</li>
+          </ul>
+        </div>
+
+        <div className="home-section">
+          <h2>Features</h2>
+          <ul className="home-features">
+            <li><strong>Sessions:</strong> Save and load complete conversations</li>
+            <li><strong>Templates:</strong> Reuse your favorite settings</li>
+            <li><strong>Search:</strong> Quickly find sessions and templates</li>
+            <li><strong>Dashboard:</strong> View your account statistics</li>
+            <li><strong>Archive:</strong> Browse closed and saved sessions</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DashboardScreen() {
+  const sessions = useAccountStore((s) => s.sessions);
+  const trashed = useAccountStore((s) => s.trashed);
+  const templates = useAccountStore((s) => s.templates);
+  const ratings = useAccountStore((s) => s.ratings);
+  const archivedPairs = useAccountStore((s) => s.archivedPairs);
+
+  const totalSessions = sessions.length;
+  const totalArchivedSessions = sessions.filter((s) => s.archived).length;
+  const totalTrashed = trashed.length;
+  const customTemplates = templates.filter((t) => !t.id.startsWith("template-")).length;
+  const totalRatings = ratings.length;
+  const totalArchivedPairs = archivedPairs.length;
+
+  const totalMessages = sessions.reduce((sum, s) => sum + (s.conversation?.length || 0), 0);
+  const avgMessagesPerSession = totalSessions > 0 ? Math.round(totalMessages / totalSessions) : 0;
+
+  const modelCounts = sessions.reduce(
+    (acc, s) => {
+      const model = s.model || "auto";
+      acc[model] = (acc[model] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
+
+  const topModel =
+    Object.entries(modelCounts).sort(([, a], [, b]) => b - a)[0]?.[0] || "auto";
+
+  const techniqueCounts = sessions.reduce(
+    (acc, s) => {
+      (s.techniques || []).forEach((tech) => {
+        acc[tech] = (acc[tech] || 0) + 1;
+      });
+      return acc;
+    },
+    {} as Record<string, number>
+  );
+
+  const topTechnique =
+    Object.entries(techniqueCounts).sort(([, a], [, b]) => b - a)[0]?.[0] || "None";
+
+  const olderSessions = sessions.filter((s) => s.createdAt && Date.now() - s.createdAt > 86400000);
+  const recentActivity = sessions.length - olderSessions.length;
+
+  return (
+    <div className="screen screen-dashboard">
+      <div className="screen__header">
+        <h1>Dashboard</h1>
+      </div>
+      <div className="screen__content">
+        <div className="dashboard-grid">
+          <div className="dashboard-card">
+            <h3 className="dashboard-card__title">Sessions</h3>
+            <div className="dashboard-card__metric">{totalSessions}</div>
+            <p className="dashboard-card__label">saved sessions</p>
+            {totalArchivedSessions > 0 && (
+              <p className="dashboard-card__subtext">
+                {totalArchivedSessions} archived
+              </p>
+            )}
+          </div>
+          <div className="dashboard-card">
+            <h3 className="dashboard-card__title">Messages</h3>
+            <div className="dashboard-card__metric">{totalMessages}</div>
+            <p className="dashboard-card__label">total messages</p>
+            {avgMessagesPerSession > 0 && (
+              <p className="dashboard-card__subtext">
+                ~{avgMessagesPerSession} per session
+              </p>
+            )}
+          </div>
+          <div className="dashboard-card">
+            <h3 className="dashboard-card__title">Trash</h3>
+            <div className="dashboard-card__metric">{totalTrashed}</div>
+            <p className="dashboard-card__label">deleted items</p>
+          </div>
+          <div className="dashboard-card">
+            <h3 className="dashboard-card__title">Templates</h3>
+            <div className="dashboard-card__metric">{templates.length}</div>
+            <p className="dashboard-card__label">templates available</p>
+            {customTemplates > 0 && (
+              <p className="dashboard-card__subtext">
+                {customTemplates} custom
+              </p>
+            )}
+          </div>
+          <div className="dashboard-card">
+            <h3 className="dashboard-card__title">Feedback</h3>
+            <div className="dashboard-card__metric">{totalRatings}</div>
+            <p className="dashboard-card__label">ratings given</p>
+          </div>
+          <div className="dashboard-card">
+            <h3 className="dashboard-card__title">Q/A Pairs</h3>
+            <div className="dashboard-card__metric">{totalArchivedPairs}</div>
+            <p className="dashboard-card__label">archived pairs</p>
+          </div>
+        </div>
+
+        {totalSessions > 0 && (
+          <div style={{ marginTop: "32px" }}>
+            <h2 style={{ marginBottom: "16px", fontSize: "16px", fontWeight: "600" }}>
+              Session Analytics
+            </h2>
+            <div className="dashboard-grid">
+              <div className="dashboard-card">
+                <h3 className="dashboard-card__title">Top Model</h3>
+                <div className="dashboard-card__metric" style={{ fontSize: "14px" }}>
+                  {topModel === "auto" ? "Auto" : topModel.replace("claude-", "")}
+                </div>
+                <p className="dashboard-card__label">most used in sessions</p>
+                {modelCounts[topModel] !== undefined && (
+                  <p className="dashboard-card__subtext">
+                    {modelCounts[topModel]} session{modelCounts[topModel] !== 1 ? "s" : ""}
+                  </p>
+                )}
+              </div>
+              <div className="dashboard-card">
+                <h3 className="dashboard-card__title">Top Technique</h3>
+                <div className="dashboard-card__metric" style={{ fontSize: "14px" }}>
+                  {topTechnique}
+                </div>
+                <p className="dashboard-card__label">most used technique</p>
+                {techniqueCounts[topTechnique] !== undefined && (
+                  <p className="dashboard-card__subtext">
+                    {techniqueCounts[topTechnique]} session{techniqueCounts[topTechnique] !== 1 ? "s" : ""}
+                  </p>
+                )}
+              </div>
+              <div className="dashboard-card">
+                <h3 className="dashboard-card__title">Recent Activity</h3>
+                <div className="dashboard-card__metric">{recentActivity}</div>
+                <p className="dashboard-card__label">sessions in last 24h</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function MessagesScreen() {
+  const sessions = useAccountStore((s) => s.sessions);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [roleFilter, setRoleFilter] = useState<"all" | "user" | "assistant">("all");
+
+  const allMessages = sessions.flatMap((session) =>
+    session.conversation.map((msg) => ({
+      ...msg,
+      sessionId: session.id,
+      sessionTag: session.tag || `Session ${session.id.slice(0, 6)}`,
+    }))
+  );
+
+  const filteredMessages = allMessages
+    .filter((msg) => {
+      if (roleFilter !== "all" && msg.role !== roleFilter) return false;
+      if (!searchTerm) return true;
+      const searchLower = searchTerm.toLowerCase();
+      return (
+        msg.content.toLowerCase().includes(searchLower) ||
+        msg.sessionTag.toLowerCase().includes(searchLower)
+      );
+    })
+    .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
+    .slice(0, 100);
+
+  if (allMessages.length === 0) {
+    return (
+      <div className="screen screen-messages">
+        <div className="screen__header">
+          <h1>Messages</h1>
+        </div>
+        <div className="screen__content">
+          <p>No messages yet. Start a conversation in the Translate screen.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="screen screen-messages">
+      <div className="screen__header">
+        <h1>Messages</h1>
+      </div>
+      <div className="screen__content">
+        <div style={{ display: "flex", gap: "12px", marginBottom: "24px" }}>
+          <input
+            type="text"
+            placeholder="Search messages..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{
+              flex: 1,
+              padding: "10px 12px",
+              fontSize: "13px",
+              border: "1px solid var(--accent-cyan-tint-06)",
+              borderRadius: "4px",
+              background: "var(--surface-base)",
+              color: "var(--text-primary)",
+            }}
+          />
+          <select
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value as "all" | "user" | "assistant")}
+            style={{
+              padding: "10px 12px",
+              fontSize: "13px",
+              border: "1px solid var(--accent-cyan-tint-06)",
+              borderRadius: "4px",
+              background: "var(--surface-base)",
+              color: "var(--text-primary)",
+            }}
+          >
+            <option value="all">All Messages</option>
+            <option value="user">Your Messages</option>
+            <option value="assistant">AI Messages</option>
+          </select>
+        </div>
+
+        {filteredMessages.length === 0 ? (
+          <p style={{ color: "var(--text-secondary)" }}>
+            No messages match your search.
+          </p>
+        ) : (
+          <div className="messages-list">
+            {filteredMessages.map((msg, idx) => (
+              <div key={`${msg.sessionId}-${idx}`} className="message-item">
+                <div className="message-item__header">
+                  <span className="message-item__session">{msg.sessionTag}</span>
+                  <span className="message-item__role">{msg.role}</span>
+                  {msg.timestamp && (
+                    <span className="message-item__time">
+                      {new Date(msg.timestamp).toLocaleString()}
+                    </span>
+                  )}
+                </div>
+                <p className="message-item__content">{msg.content}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ArchiveScreen() {
+  const sessions = useAccountStore((s) => s.sessions);
+  const loadSessionRecord = useSessionStore((s) => s.loadSessionRecord);
+  const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
+  const moveSessionToTrash = useAccountStore((s) => s.moveSessionToTrash);
+  const updateSessionTag = useAccountStore((s) => s.updateSessionTag);
+  const toggleSessionStar = useAccountStore((s) => s.toggleSessionStar);
+  const duplicateSession = useAccountStore((s) => s.duplicateSession);
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState<"recent" | "oldest" | "name" | "archived">("archived");
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renamingText, setRenamingText] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const archivedSessions = sessions.filter((s) => s.archived);
+
+  const handleLoadSession = (sessionId: string) => {
+    const session = sessions.find((s) => s.id === sessionId);
+    if (session) {
+      loadSessionRecord(session);
+      setCurrentScreen("translate");
+    }
+  };
+
+  const handleDeleteSession = (sessionId: string) => {
+    moveSessionToTrash(sessionId);
+  };
+
+  const handleRenameStart = (sessionId: string, currentTag: string) => {
+    setRenamingId(sessionId);
+    setRenamingText(currentTag);
+  };
+
+  const handleRenameSave = (sessionId: string) => {
+    if (renamingText.trim()) {
+      updateSessionTag(sessionId, renamingText.trim());
+    }
+    setRenamingId(null);
+    setRenamingText("");
+  };
+
+  const addSessionRecord = useAccountStore((s) => s.addSessionRecord);
+
+  const handleExportSession = (session: typeof sessions[0]) => {
+    const sessionData = JSON.stringify(session, null, 2);
+    const dataBlob = new Blob([sessionData], { type: "application/json" });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `divergence-session-${session.tag || session.id}-${new Date().toISOString().slice(0, 10)}.json`;
+    link.click();
+  };
+
+  const handleImportSession = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const sessionData = JSON.parse(e.target?.result as string);
+        if (sessionData.id && sessionData.conversation && sessionData.model) {
+          addSessionRecord(sessionData);
+        } else {
+          alert("Invalid session file format");
+        }
+      } catch {
+        alert("Error reading session file");
+      }
+    };
+    reader.readAsText(file);
+    event.target.value = "";
+  };
+
+  const filteredSessions = archivedSessions.filter((session) => {
+    const searchLower = searchTerm.toLowerCase();
+    const tag = (session.tag || `Session ${session.id.slice(0, 6)}`).toLowerCase();
+    return tag.includes(searchLower) || session.id.includes(searchTerm);
+  });
+
+  const sortedSessions = [...filteredSessions].sort((a, b) => {
+    switch (sortBy) {
+      case "recent":
+        return b.createdAt - a.createdAt;
+      case "oldest":
+        return a.createdAt - b.createdAt;
+      case "name":
+        return ((a.tag || a.id) || "").localeCompare((b.tag || b.id) || "");
+      case "archived":
+        return (b.closedAt || 0) - (a.closedAt || 0);
+      default:
+        return 0;
+    }
+  });
+
+  return (
+    <div className="screen screen-archive">
+      <div className="screen__header">
+        <h1>Archive</h1>
+      </div>
+      <div className="screen__content">
+        {archivedSessions.length === 0 ? (
+          <p>No archived sessions yet. Use "Close Session → Save and Archive" to archive conversations.</p>
+        ) : (
+          <>
+            <div style={{ display: "flex", gap: "12px", marginBottom: "24px" }}>
+              <input
+                type="text"
+                placeholder="Search archived sessions..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{
+                  flex: 1,
+                  padding: "10px 12px",
+                  fontSize: "13px",
+                  border: "1px solid var(--accent-cyan-tint-06)",
+                  borderRadius: "4px",
+                  background: "var(--surface-base)",
+                  color: "var(--text-primary)",
+                }}
+              />
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as "recent" | "oldest" | "name" | "archived")}
+                style={{
+                  padding: "10px 12px",
+                  fontSize: "13px",
+                  border: "1px solid var(--accent-cyan-tint-06)",
+                  borderRadius: "4px",
+                  background: "var(--surface-base)",
+                  color: "var(--text-primary)",
+                }}
+              >
+                <option value="archived">Most Recently Archived</option>
+                <option value="recent">Most Recently Created</option>
+                <option value="oldest">Oldest First</option>
+                <option value="name">By Name</option>
+              </select>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                style={{
+                  padding: "10px 16px",
+                  fontSize: "13px",
+                  border: "1px solid var(--accent-cyan-tint-06)",
+                  borderRadius: "4px",
+                  background: "var(--surface-base)",
+                  color: "var(--text-primary)",
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Import
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".json"
+                onChange={handleImportSession}
+                style={{ display: "none" }}
+              />
+            </div>
+
+            {sortedSessions.length === 0 ? (
+              <p style={{ color: "var(--text-secondary)" }}>
+                No archived sessions match your search.
+              </p>
+            ) : (
+              <div className="session-list">
+                {sortedSessions.map((session) => (
+                  <div key={session.id} className="session-item">
+                    <div className="session-item__header">
+                      {renamingId === session.id ? (
+                        <div style={{ display: "flex", gap: "8px", alignItems: "center", flex: 1 }}>
+                          <input
+                            type="text"
+                            value={renamingText}
+                            onChange={(e) => setRenamingText(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") handleRenameSave(session.id);
+                              if (e.key === "Escape") {
+                                setRenamingId(null);
+                                setRenamingText("");
+                              }
+                            }}
+                            autoFocus
+                            style={{
+                              flex: 1,
+                              padding: "6px 8px",
+                              fontSize: "14px",
+                              border: "1px solid var(--accent-cyan)",
+                              borderRadius: "4px",
+                              background: "var(--surface-base)",
+                              color: "var(--text-primary)",
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleRenameSave(session.id)}
+                            style={{
+                              padding: "6px 12px",
+                              fontSize: "12px",
+                              background: "var(--accent-cyan)",
+                              color: "var(--text-on-accent)",
+                              border: "none",
+                              borderRadius: "4px",
+                              cursor: "pointer",
+                            }}
+                          >
+                            Save
+                          </button>
+                        </div>
+                      ) : (
+                        <div>
+                          <h3>{session.tag || `Session ${session.id.slice(0, 8)}`}</h3>
+                          {session.closedAt && (
+                            <span className="session-item__closed-date">
+                              Archived: {new Date(session.closedAt).toLocaleString()}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      {renamingId !== session.id && (
+                        <span className="session-item__date">
+                          Created: {new Date(session.createdAt).toLocaleString()}
+                        </span>
+                      )}
+                    </div>
+                    <p className="session-item__description">
+                      Model: {session.model} • Directness: {session.directness} •{" "}
+                      {session.conversation.length} messages
+                    </p>
+                    {renamingId !== session.id && (
+                      <div className="session-item__actions">
+                        <button
+                          type="button"
+                          className="session-item__action-btn session-item__action-btn--primary"
+                          onClick={() => handleLoadSession(session.id)}
+                        >
+                          Load
+                        </button>
+                        <button
+                          type="button"
+                          className="session-item__action-btn"
+                          onClick={() => toggleSessionStar(session.id)}
+                          title={session.starred ? "Remove from favorites" : "Add to favorites"}
+                          style={{ padding: "8px 10px", minWidth: "auto", color: session.starred ? "var(--accent-cyan)" : "var(--text-primary)" }}
+                        >
+                          <Star size={16} fill={session.starred ? "currentColor" : "none"} />
+                        </button>
+                        <button
+                          type="button"
+                          className="session-item__action-btn"
+                          onClick={() => handleRenameStart(session.id, session.tag || `Session ${session.id.slice(0, 8)}`)}
+                          title="Rename session"
+                          style={{ padding: "8px 10px", minWidth: "auto" }}
+                        >
+                          <Pencil size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          className="session-item__action-btn"
+                          onClick={() => duplicateSession(session.id)}
+                          title="Duplicate session"
+                          style={{ padding: "8px 10px", minWidth: "auto" }}
+                        >
+                          <Copy size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          className="session-item__action-btn"
+                          onClick={() => handleExportSession(session)}
+                          style={{ background: "var(--accent-cyan-tint-12)", color: "var(--text-primary)" }}
+                        >
+                          Export
+                        </button>
+                        <button
+                          type="button"
+                          className="session-item__action-btn session-item__action-btn--danger"
+                          onClick={() => handleDeleteSession(session.id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ResourcesScreen() {
+  const resources = [
+    {
+      title: "Getting Started",
+      description: "Learn how to use Divergence.AI to translate your thoughts into clear communication.",
+      items: [
+        "1. Type your thoughts in the composer",
+        "2. Click Translate & Ask to get AI feedback",
+        "3. Explore different directness and technique options",
+      ],
+    },
+    {
+      title: "Features",
+      description: "Core features of Divergence.AI",
+      items: [
+        "Sessions: Save and load conversation sessions",
+        "Templates: Create and reuse preset configurations",
+        "Search: Find sessions and templates quickly",
+      ],
+    },
+    {
+      title: "Tips",
+      description: "Best practices for getting better results",
+      items: [
+        "Use Directness to control response formality",
+        "Try different Techniques to explore various response styles",
+        "Save successful sessions as templates",
+      ],
+    },
+  ];
+
+  return (
+    <div className="screen screen-resources">
+      <div className="screen__header">
+        <h1>Resources</h1>
+      </div>
+      <div className="screen__content">
+        <div className="resources-grid">
+          {resources.map((resource) => (
+            <div key={resource.title} className="resource-card">
+              <h3 className="resource-card__title">{resource.title}</h3>
+              <p className="resource-card__description">{resource.description}</p>
+              <ul className="resource-card__list">
+                {resource.items.map((item) => (
+                  <li key={item} className="resource-card__item">
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ProjectsScreen() {
+  const sessions = useAccountStore((s) => s.sessions);
+
+  const projectsMap = new Map<string, typeof sessions>();
+  const defaultProject = "Unsorted";
+
+  sessions.forEach((session) => {
+    const projectName = session.tag ? session.tag.split(":")[0].trim() : defaultProject;
+    if (!projectsMap.has(projectName)) {
+      projectsMap.get(projectName) || projectsMap.set(projectName, []);
+    }
+    projectsMap.get(projectName)?.push(session);
+  });
+
+  const projects = Array.from(projectsMap.entries()).sort(([a], [b]) => {
+    if (a === defaultProject) return 1;
+    if (b === defaultProject) return -1;
+    return a.localeCompare(b);
+  });
+
+  if (projects.length === 0 || (projects.length === 1 && projects[0][0] === defaultProject && projects[0][1].length === 0)) {
+    return (
+      <div className="screen screen-projects">
+        <div className="screen__header">
+          <h1>Projects</h1>
+        </div>
+        <div className="screen__content">
+          <p>No projects yet. Sessions tagged with a project name will appear here. Use "Close Session → Archive Tagged" to tag sessions with a project name (e.g., "MyProject: Description").</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="screen screen-projects">
+      <div className="screen__header">
+        <h1>Projects</h1>
+      </div>
+      <div className="screen__content">
+        <div className="projects-list">
+          {projects.map(([projectName, projectSessions]) => (
+            <div key={projectName} className="project-group">
+              <h3 className="project-group__title">
+                {projectName}
+                <span className="project-group__count">{projectSessions.length}</span>
+              </h3>
+              <div className="project-sessions">
+                {projectSessions.map((session) => (
+                  <div key={session.id} className="project-session">
+                    <div className="project-session__info">
+                      <h4>{session.tag || `Session ${session.id.slice(0, 6)}`}</h4>
+                      <span className="project-session__date">
+                        {new Date(session.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function IntegrationsScreen() {
+  const integrations = [
+    {
+      name: "Email",
+      icon: "📧",
+      description: "Send translated thoughts directly to your inbox or email them to others",
+      status: "planned",
+    },
+    {
+      name: "Slack",
+      icon: "💬",
+      description: "Post translated messages to Slack channels and save them to your workspace",
+      status: "planned",
+    },
+    {
+      name: "Google Docs",
+      icon: "📄",
+      description: "Export translated conversations to Google Docs for further editing and sharing",
+      status: "planned",
+    },
+    {
+      name: "Notion",
+      icon: "📝",
+      description: "Save sessions and templates to your Notion workspace for centralized knowledge management",
+      status: "planned",
+    },
+    {
+      name: "GitHub",
+      icon: "🐙",
+      description: "Create GitHub issues with translated problem descriptions and technical details",
+      status: "planned",
+    },
+    {
+      name: "Discord",
+      icon: "🎮",
+      description: "Share translated messages with your Discord communities and servers",
+      status: "planned",
+    },
+  ];
+
+  return (
+    <div className="screen screen-integrations">
+      <div className="screen__header">
+        <h1>Integrations</h1>
+      </div>
+      <div className="screen__content">
+        <div className="integrations-intro">
+          <p>
+            Divergence.AI integrations let you send your translated thoughts to the tools you already use. Connect your favorite apps to streamline your workflow.
+          </p>
+          <p style={{ color: "var(--text-secondary)", fontSize: "13px" }}>
+            Integrations are planned for a future release. All features listed below are coming soon.
+          </p>
+        </div>
+        <div className="integrations-grid">
+          {integrations.map((integration) => (
+            <div key={integration.name} className="integration-card">
+              <div className="integration-card__icon">{integration.icon}</div>
+              <h3 className="integration-card__title">{integration.name}</h3>
+              <p className="integration-card__description">{integration.description}</p>
+              <div className="integration-card__status">
+                <span className="integration-card__badge integration-card__badge--planned">
+                  Coming Soon
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TasksScreen() {
+  const sessions = useAccountStore((s) => s.sessions);
+
+  const extractedTasks: Array<{
+    content: string;
+    sessionId: string;
+    sessionTag: string;
+    timestamp?: number;
+  }> = [];
+
+  const taskPatterns = [
+    /(?:^|\n)[-*]\s+(\[[ x]\]\s+)?(.+)/gm,
+    /(?:^|\n)(?:TODO|FIXME|NOTE)[\s:]+(.+)/gm,
+  ];
+
+  sessions.forEach((session) => {
+    session.conversation.forEach((msg) => {
+      if (msg.role === "assistant") {
+        taskPatterns.forEach((pattern) => {
+          let match;
+          while ((match = pattern.exec(msg.content)) !== null) {
+            const taskContent = match[2] || match[1];
+            if (taskContent && taskContent.length < 150) {
+              extractedTasks.push({
+                content: taskContent.trim(),
+                sessionId: session.id,
+                sessionTag: session.tag || `Session ${session.id.slice(0, 6)}`,
+                timestamp: msg.timestamp,
+              });
+            }
+          }
+        });
+      }
+    });
+  });
+
+  const uniqueTasks = Array.from(
+    new Map(extractedTasks.map((t) => [t.content, t])).values()
+  ).slice(0, 20);
+
+  if (uniqueTasks.length === 0) {
+    return (
+      <div className="screen screen-tasks">
+        <div className="screen__header">
+          <h1>Tasks</h1>
+        </div>
+        <div className="screen__content">
+          <p>No tasks found. Tasks are automatically extracted from AI responses that contain action items or bullet points.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="screen screen-tasks">
+      <div className="screen__header">
+        <h1>Tasks</h1>
+      </div>
+      <div className="screen__content">
+        <div className="tasks-list">
+          {uniqueTasks.map((task) => (
+            <div key={task.content} className="task-item">
+              <div className="task-item__checkbox" />
+              <div className="task-item__content">
+                <p className="task-item__text">{task.content}</p>
+                <span className="task-item__session">{task.sessionTag}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TemplatesScreen() {
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedTemplateIds, setSelectedTemplateIds] = useState<Set<string>>(new Set());
+  const [formData, setFormData] = useState({
+    title: "",
+    model: "auto" as "auto" | "claude-haiku-4-5" | "claude-sonnet-5" | "claude-opus-4-8",
+    directness: 2,
+    techniques: [] as string[],
+  });
+
+  const templates = useAccountStore((s) => s.templates);
+  const removeTemplate = useAccountStore((s) => s.removeTemplate);
+  const addTemplate = useAccountStore((s) => s.addTemplate);
+  const updateTemplate = useAccountStore((s) => s.updateTemplate);
+  const toggleTemplateStar = useAccountStore((s) => s.toggleTemplateStar);
+  const setModel = useSessionStore((s) => s.setModel);
+  const setDirectness = useSessionStore((s) => s.setDirectness);
+  const setTechniques = useSessionStore((s) => s.setTechniques);
+  const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
+
+  const allTemplates = templates.filter((t) => {
+    const searchLower = searchTerm.toLowerCase();
+    return t.title.toLowerCase().includes(searchLower);
+  });
+
+  const builtInTemplates = allTemplates.filter((t) => t.id.startsWith("template-"));
+  const customTemplates = allTemplates.filter((t) => !t.id.startsWith("template-"));
+
+  const allTechniques = ["auto-detect", "socratic", "chain-of-thought", "verify", "examples"];
+
+  const handleLoadTemplate = (template: typeof templates[0]) => {
+    setModel(template.model);
+    setDirectness(template.directness);
+    setTechniques(template.techniques);
+    setCurrentScreen("translate");
+  };
+
+  const handleDeleteTemplate = (templateId: string) => {
+    removeTemplate(templateId);
+  };
+
+  const handleCreateTemplate = () => {
+    if (formData.title.trim()) {
+      addTemplate({
+        id: `custom-${Date.now()}`,
+        title: formData.title,
+        model: formData.model,
+        directness: formData.directness as 1 | 2 | 3,
+        techniques: formData.techniques as any,
+      });
+      setFormData({ title: "", model: "auto", directness: 2, techniques: [] });
+      setShowCreateForm(false);
+    }
+  };
+
+  const handleEditTemplate = (template: typeof templates[0]) => {
+    setEditingId(template.id);
+    setFormData({
+      title: template.title,
+      model: template.model,
+      directness: template.directness,
+      techniques: template.techniques || [],
+    });
+  };
+
+  const handleSaveEdit = () => {
+    if (editingId && formData.title.trim()) {
+      updateTemplate(editingId, {
+        title: formData.title,
+        model: formData.model,
+        directness: formData.directness as 1 | 2 | 3,
+        techniques: formData.techniques as any,
+      });
+      setEditingId(null);
+      setFormData({ title: "", model: "auto", directness: 2, techniques: [] });
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setFormData({ title: "", model: "auto", directness: 2, techniques: [] });
+  };
+
+  const toggleTechnique = (technique: string) => {
+    setFormData((prev: typeof formData) => ({
+      ...prev,
+      techniques: prev.techniques.includes(technique)
+        ? prev.techniques.filter((t: string) => t !== technique)
+        : [...prev.techniques, technique],
+    }));
+  };
+
+  const toggleTemplateSelect = (templateId: string) => {
+    const newSelected = new Set(selectedTemplateIds);
+    if (newSelected.has(templateId)) {
+      newSelected.delete(templateId);
+    } else {
+      newSelected.add(templateId);
+    }
+    setSelectedTemplateIds(newSelected);
+  };
+
+  const toggleSelectAllTemplates = () => {
+    if (selectedTemplateIds.size === customTemplates.length) {
+      setSelectedTemplateIds(new Set());
+    } else {
+      setSelectedTemplateIds(new Set(customTemplates.map((t) => t.id)));
+    }
+  };
+
+  const handleBulkDeleteTemplates = () => {
+    if (confirm(`Delete ${selectedTemplateIds.size} template(s)?`)) {
+      selectedTemplateIds.forEach((id) => removeTemplate(id));
+      setSelectedTemplateIds(new Set());
+    }
+  };
+
+  return (
+    <div className="screen screen-templates">
+      <div className="screen__header">
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <h1>Templates</h1>
+          <button
+            type="button"
+            className="settings-btn"
+            onClick={() => setShowCreateForm(!showCreateForm)}
+            style={{ margin: 0 }}
+          >
+            {showCreateForm ? "Cancel" : "Create Template"}
+          </button>
+        </div>
+      </div>
+      <div className="screen__content">
+        {templates.length > 0 && (
+          <div style={{ marginBottom: "24px" }}>
+            <input
+              type="text"
+              placeholder="Search templates..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "10px 12px",
+                fontSize: "13px",
+                border: "1px solid var(--accent-cyan-tint-06)",
+                borderRadius: "4px",
+                background: "var(--surface-base)",
+                color: "var(--text-primary)",
+              }}
+            />
+          </div>
+        )}
+
+        {showCreateForm && (
+          <div className="template-form">
+            <div className="form-group">
+              <label className="form-group__label">Template Name</label>
+              <input
+                type="text"
+                className="form-group__input"
+                placeholder="e.g., Quick FAQ"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                autoFocus
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-group__label">Model</label>
+              <select
+                className="form-group__input"
+                value={formData.model}
+                onChange={(e) => setFormData({ ...formData, model: e.target.value as any })}
+              >
+                <option value="auto">Auto (Recommended)</option>
+                <option value="claude-haiku-4-5">Claude Haiku 4.5</option>
+                <option value="claude-sonnet-5">Claude Sonnet 5</option>
+                <option value="claude-opus-4-8">Claude Opus 4.8</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label className="form-group__label">Directness ({formData.directness})</label>
+              <input
+                type="range"
+                min="1"
+                max="5"
+                value={formData.directness}
+                onChange={(e) => setFormData({ ...formData, directness: parseInt(e.target.value) })}
+                className="form-group__slider"
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-group__label">Techniques</label>
+              <div className="form-group__techniques">
+                {allTechniques.map((tech) => (
+                  <label key={tech} className="form-group__checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={formData.techniques.includes(tech)}
+                      onChange={() => toggleTechnique(tech)}
+                    />
+                    {tech}
+                  </label>
+                ))}
+              </div>
+            </div>
+            <button
+              type="button"
+              className="settings-btn"
+              onClick={handleCreateTemplate}
+            >
+              Create
+            </button>
+          </div>
+        )}
+
+        {builtInTemplates.length > 0 && (
+          <div className="templates-section">
+            <h3 className="templates-section__title">Built-in Templates</h3>
+            <div className="template-list">
+              {builtInTemplates.map((template) => (
+                <div key={template.id} className="template-card">
+                  <div className="template-card__header">
+                    <h4>{template.title}</h4>
+                  </div>
+                  <div className="template-card__meta">
+                    <span className="template-card__badge">Model: {template.model}</span>
+                    <span className="template-card__badge">Directness: {template.directness}</span>
+                  </div>
+                  {template.techniques && template.techniques.length > 0 && (
+                    <div className="template-card__techniques">
+                      {template.techniques.map((t) => (
+                        <span key={t} className="template-card__technique">
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {template.starterQuestion && (
+                    <p className="template-card__description">{template.starterQuestion}</p>
+                  )}
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <button
+                      type="button"
+                      className="template-card__btn template-card__btn--primary"
+                      onClick={() => handleLoadTemplate(template)}
+                    >
+                      Use Template
+                    </button>
+                    <button
+                      type="button"
+                      className="template-card__btn"
+                      onClick={() => toggleTemplateStar(template.id)}
+                      title={template.starred ? "Remove from favorites" : "Add to favorites"}
+                      style={{ padding: "8px 10px", minWidth: "auto", color: template.starred ? "var(--accent-cyan)" : "var(--text-primary)" }}
+                    >
+                      <Star size={16} fill={template.starred ? "currentColor" : "none"} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {customTemplates.length > 0 && (
+          <div className="templates-section">
+            <h3 className="templates-section__title">Custom Templates</h3>
+            {selectedTemplateIds.size > 0 && (
+              <div
+                style={{
+                  display: "flex",
+                  gap: "12px",
+                  marginBottom: "16px",
+                  padding: "12px",
+                  background: "var(--accent-cyan-tint-12)",
+                  borderRadius: "4px",
+                  alignItems: "center",
+                }}
+              >
+                <span style={{ flex: 1, fontSize: "14px", fontWeight: "500" }}>
+                  {selectedTemplateIds.size} template{selectedTemplateIds.size !== 1 ? "s" : ""} selected
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedTemplateIds(new Set())}
+                  style={{
+                    padding: "8px 12px",
+                    fontSize: "13px",
+                    border: "1px solid var(--accent-cyan)",
+                    borderRadius: "4px",
+                    background: "transparent",
+                    color: "var(--text-primary)",
+                    cursor: "pointer",
+                  }}
+                >
+                  Clear
+                </button>
+                <button
+                  type="button"
+                  onClick={handleBulkDeleteTemplates}
+                  style={{
+                    padding: "8px 12px",
+                    fontSize: "13px",
+                    border: "none",
+                    borderRadius: "4px",
+                    background: "var(--accent-danger)",
+                    color: "white",
+                    cursor: "pointer",
+                  }}
+                >
+                  Delete Selected
+                </button>
+              </div>
+            )}
+            <div className="template-list">
+              {customTemplates.length > 0 && (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    marginBottom: "12px",
+                    paddingBottom: "12px",
+                    borderBottom: "1px solid var(--accent-cyan-tint-06)",
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedTemplateIds.size === customTemplates.length && customTemplates.length > 0}
+                    onChange={toggleSelectAllTemplates}
+                    style={{ marginRight: "12px", cursor: "pointer" }}
+                  />
+                  <span style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
+                    Select All
+                  </span>
+                </div>
+              )}
+              {customTemplates.map((template) => (
+                <div key={template.id} style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
+                  <input
+                    type="checkbox"
+                    checked={selectedTemplateIds.has(template.id)}
+                    onChange={() => toggleTemplateSelect(template.id)}
+                    style={{ marginTop: "12px", cursor: "pointer" }}
+                  />
+                  <div className="template-card" style={{ flex: 1 }}>
+                    {editingId === template.id ? (
+                    <>
+                      <div className="form-group">
+                        <label className="form-group__label">Template Name</label>
+                        <input
+                          type="text"
+                          className="form-group__input"
+                          value={formData.title}
+                          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                          autoFocus
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-group__label">Model</label>
+                        <select
+                          className="form-group__input"
+                          value={formData.model}
+                          onChange={(e) => setFormData({ ...formData, model: e.target.value as any })}
+                        >
+                          <option value="auto">Auto (Recommended)</option>
+                          <option value="claude-haiku-4-5">Claude Haiku 4.5</option>
+                          <option value="claude-sonnet-5">Claude Sonnet 5</option>
+                          <option value="claude-opus-4-8">Claude Opus 4.8</option>
+                        </select>
+                      </div>
+                      <div className="form-group">
+                        <label className="form-group__label">Directness ({formData.directness})</label>
+                        <input
+                          type="range"
+                          min="1"
+                          max="5"
+                          value={formData.directness}
+                          onChange={(e) => setFormData({ ...formData, directness: parseInt(e.target.value) })}
+                          className="form-group__slider"
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-group__label">Techniques</label>
+                        <div className="form-group__techniques">
+                          {allTechniques.map((tech) => (
+                            <label key={tech} className="form-group__checkbox-label">
+                              <input
+                                type="checkbox"
+                                checked={formData.techniques.includes(tech)}
+                                onChange={() => toggleTechnique(tech)}
+                              />
+                              {tech}
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                      <div style={{ display: "flex", gap: "8px" }}>
+                        <button
+                          type="button"
+                          className="settings-btn"
+                          onClick={handleSaveEdit}
+                        >
+                          Save
+                        </button>
+                        <button
+                          type="button"
+                          className="settings-btn"
+                          onClick={handleCancelEdit}
+                          style={{ background: "var(--surface-elevated)" }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="template-card__header">
+                        <h4>{template.title}</h4>
+                      </div>
+                      <div className="template-card__meta">
+                        <span className="template-card__badge">Model: {template.model}</span>
+                        <span className="template-card__badge">Directness: {template.directness}</span>
+                      </div>
+                      {template.techniques && template.techniques.length > 0 && (
+                        <div className="template-card__techniques">
+                          {template.techniques.map((t) => (
+                            <span key={t} className="template-card__technique">
+                              {t}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {template.starterQuestion && (
+                        <p className="template-card__description">{template.starterQuestion}</p>
+                      )}
+                      <div className="template-card__actions">
+                        <button
+                          type="button"
+                          className="template-card__btn template-card__btn--primary"
+                          onClick={() => handleLoadTemplate(template)}
+                        >
+                          Use Template
+                        </button>
+                        <button
+                          type="button"
+                          className="template-card__btn"
+                          onClick={() => handleEditTemplate(template)}
+                          title="Edit template"
+                          style={{ padding: "8px 10px", minWidth: "auto" }}
+                        >
+                          <Pencil size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          className="template-card__btn"
+                          onClick={() => toggleTemplateStar(template.id)}
+                          title={template.starred ? "Remove from favorites" : "Add to favorites"}
+                          style={{ padding: "8px 10px", minWidth: "auto", color: template.starred ? "var(--accent-cyan)" : "var(--text-primary)" }}
+                        >
+                          <Star size={16} fill={template.starred ? "currentColor" : "none"} />
+                        </button>
+                        <button
+                          type="button"
+                          className="template-card__btn template-card__btn--danger"
+                          onClick={() => handleDeleteTemplate(template.id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </>
+                  )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {templates.length === 0 && (
+          <p>No templates yet. Save a template from the Translate screen using "Close Session → Archive Tagged" or create one manually.</p>
+        )}
+
+        {templates.length > 0 && builtInTemplates.length === 0 && customTemplates.length === 0 && (
+          <p style={{ color: "var(--text-secondary)" }}>
+            No templates match your search. Try a different search term.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SavedPromptsScreen() {
+  const savedPrompts = useAccountStore((s) => s.savedPrompts);
+  const removeSavedPrompt = useAccountStore((s) => s.removeSavedPrompt);
+  const toggleSavedPromptStar = useAccountStore((s) => s.toggleSavedPromptStar);
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState<"recent" | "title">("recent");
+
+  const filteredPrompts = savedPrompts.filter((prompt) => {
+    const searchLower = searchTerm.toLowerCase();
+    return prompt.title.toLowerCase().includes(searchLower) || prompt.text.toLowerCase().includes(searchLower);
+  });
+
+  const sortedPrompts = [...filteredPrompts].sort((a, b) => {
+    switch (sortBy) {
+      case "title":
+        return a.title.localeCompare(b.title);
+      case "recent":
+      default:
+        return 0;
+    }
+  });
+
+  const starredPrompts = sortedPrompts.filter((p) => p.starred);
+  const regularPrompts = sortedPrompts.filter((p) => !p.starred);
+
+  return (
+    <div className="screen screen-saved-prompts">
+      <div className="screen__header">
+        <h1>Saved Prompts</h1>
+      </div>
+      <div className="screen__content">
+        {savedPrompts.length === 0 ? (
+          <p>No saved prompts yet. Save prompts from the Translate screen to reuse them later.</p>
+        ) : (
+          <>
+            <div style={{ display: "flex", gap: "12px", marginBottom: "24px" }}>
+              <input
+                type="text"
+                placeholder="Search prompts..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{
+                  flex: 1,
+                  padding: "10px 12px",
+                  fontSize: "13px",
+                  border: "1px solid var(--accent-cyan-tint-06)",
+                  borderRadius: "4px",
+                  background: "var(--surface-base)",
+                  color: "var(--text-primary)",
+                }}
+              />
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as "recent" | "title")}
+                style={{
+                  padding: "10px 12px",
+                  fontSize: "13px",
+                  border: "1px solid var(--accent-cyan-tint-06)",
+                  borderRadius: "4px",
+                  background: "var(--surface-base)",
+                  color: "var(--text-primary)",
+                }}
+              >
+                <option value="recent">Recent</option>
+                <option value="title">By Title</option>
+              </select>
+            </div>
+
+            {sortedPrompts.length === 0 ? (
+              <p style={{ color: "var(--text-secondary)" }}>
+                No prompts match your search.
+              </p>
+            ) : (
+              <>
+                {starredPrompts.length > 0 && (
+                  <div style={{ marginBottom: "32px" }}>
+                    <h3 style={{ fontSize: "14px", fontWeight: "600", marginBottom: "12px", color: "var(--text-secondary)" }}>⭐ Favorite Prompts</h3>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                      {starredPrompts.map((prompt) => (
+                        <div key={prompt.id} style={{
+                          padding: "12px",
+                          background: "var(--surface-tint-01)",
+                          border: "1px solid var(--accent-cyan-tint-06)",
+                          borderRadius: "6px",
+                        }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", gap: "12px" }}>
+                            <div style={{ flex: 1 }}>
+                              <h4 style={{ margin: "0 0 6px", fontSize: "14px", fontWeight: "500" }}>{prompt.title}</h4>
+                              <p style={{ margin: "0", fontSize: "13px", color: "var(--text-secondary)", lineHeight: "1.4" }}>
+                                {prompt.text}
+                              </p>
+                            </div>
+                            <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
+                              <button
+                                type="button"
+                                onClick={() => toggleSavedPromptStar(prompt.id)}
+                                title="Remove from favorites"
+                                style={{
+                                  padding: "6px",
+                                  background: "none",
+                                  border: "none",
+                                  cursor: "pointer",
+                                  color: "var(--accent-cyan)",
+                                }}
+                              >
+                                <Star size={16} fill="currentColor" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => removeSavedPrompt(prompt.id)}
+                                title="Delete prompt"
+                                style={{
+                                  padding: "6px",
+                                  background: "none",
+                                  border: "none",
+                                  cursor: "pointer",
+                                  color: "var(--text-secondary)",
+                                }}
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {regularPrompts.length > 0 && (
+                  <div>
+                    {starredPrompts.length > 0 && (
+                      <h3 style={{ fontSize: "14px", fontWeight: "600", marginBottom: "12px", marginTop: "24px", color: "var(--text-secondary)" }}>Other Prompts</h3>
+                    )}
+                    <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                      {regularPrompts.map((prompt) => (
+                        <div key={prompt.id} style={{
+                          padding: "12px",
+                          background: "var(--surface-tint-01)",
+                          border: "1px solid var(--accent-cyan-tint-06)",
+                          borderRadius: "6px",
+                        }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", gap: "12px" }}>
+                            <div style={{ flex: 1 }}>
+                              <h4 style={{ margin: "0 0 6px", fontSize: "14px", fontWeight: "500" }}>{prompt.title}</h4>
+                              <p style={{ margin: "0", fontSize: "13px", color: "var(--text-secondary)", lineHeight: "1.4" }}>
+                                {prompt.text}
+                              </p>
+                            </div>
+                            <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
+                              <button
+                                type="button"
+                                onClick={() => toggleSavedPromptStar(prompt.id)}
+                                title="Add to favorites"
+                                style={{
+                                  padding: "6px",
+                                  background: "none",
+                                  border: "none",
+                                  cursor: "pointer",
+                                  color: "var(--text-secondary)",
+                                }}
+                              >
+                                <Star size={16} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => removeSavedPrompt(prompt.id)}
+                                title="Delete prompt"
+                                style={{
+                                  padding: "6px",
+                                  background: "none",
+                                  border: "none",
+                                  cursor: "pointer",
+                                  color: "var(--text-secondary)",
+                                }}
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SettingsScreen() {
+  const plan = useAccountStore((s) => s.plan);
+  const sessions = useAccountStore((s) => s.sessions);
+  const trashed = useAccountStore((s) => s.trashed);
+
+  const totalSessions = sessions.length;
+  const totalTrashed = trashed.length;
+  const totalMessages = sessions.reduce((sum, s) => sum + s.conversation.length, 0);
+
+  const handleExportData = () => {
+    const accountData = {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      plan,
+      stats: {
+        totalSessions,
+        totalTrashed,
+        totalMessages,
+      },
+      // Note: Full data export would include all sessions, templates, etc.
+      // For now, just showing that the feature exists and could be built
+    };
+    const dataStr = JSON.stringify(accountData, null, 2);
+    const dataBlob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `divergence-ai-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    link.click();
+  };
+
+  return (
+    <div className="screen screen-settings">
+      <div className="screen__header">
+        <h1>Settings</h1>
+      </div>
+      <div className="screen__content">
+        <div className="settings-section">
+          <h3>Account</h3>
+          <div className="settings-item">
+            <div className="settings-item__label">Plan</div>
+            <div className="settings-item__value">{plan === "free" ? "Free" : "Pro"}</div>
+          </div>
+          <div className="settings-item">
+            <div className="settings-item__label">Email</div>
+            <div className="settings-item__value">user@example.com</div>
+          </div>
+        </div>
+
+        <div className="settings-section">
+          <h3>Storage & Sync</h3>
+          <div className="settings-item">
+            <div className="settings-item__label">Sessions Saved</div>
+            <div className="settings-item__value">{totalSessions}</div>
+          </div>
+          <div className="settings-item">
+            <div className="settings-item__label">Items in Trash</div>
+            <div className="settings-item__value">{totalTrashed}</div>
+          </div>
+          <div className="settings-item">
+            <div className="settings-item__label">Total Messages</div>
+            <div className="settings-item__value">{totalMessages}</div>
+          </div>
+          <button
+            type="button"
+            className="settings-btn"
+            onClick={handleExportData}
+          >
+            Export Data as JSON
+          </button>
+        </div>
+
+        <div className="settings-section">
+          <h3>Display</h3>
+          <p className="settings-section__note">
+            Theme, layout, and sidebar visibility are controlled via the Settings gear icon (⚙️) in the top bar.
+          </p>
+        </div>
+
+        <div className="settings-section">
+          <h3>About Divergence.AI</h3>
+          <div className="settings-item">
+            <div className="settings-item__label">Version</div>
+            <div className="settings-item__value">0.1.0</div>
+          </div>
+          <p className="settings-section__note">
+            Divergence.AI is an ADHD-friendly AI translator that helps you communicate your thoughts clearly.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CustomizeScreen() {
+  return (
+    <div className="screen screen-customize">
+      <div className="screen__header">
+        <h1>Customize</h1>
+      </div>
+      <div className="screen__content">
+        <p>Customize is a future feature planned for panel/widget layout configuration.</p>
+        <p>For now, use the Settings gear menu (top right) to control theme, layout, and sidebar visibility.</p>
+      </div>
+    </div>
+  );
+}
+
+function SessionsScreen() {
+  const sessions = useAccountStore((s) => s.sessions);
+  const loadSessionRecord = useSessionStore((s) => s.loadSessionRecord);
+  const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
+  const moveSessionToTrash = useAccountStore((s) => s.moveSessionToTrash);
+  const updateSessionTag = useAccountStore((s) => s.updateSessionTag);
+  const toggleSessionStar = useAccountStore((s) => s.toggleSessionStar);
+  const duplicateSession = useAccountStore((s) => s.duplicateSession);
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState<"recent" | "oldest" | "name">("recent");
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renamingText, setRenamingText] = useState("");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleLoadSession = (sessionId: string) => {
+    const session = sessions.find((s) => s.id === sessionId);
+    if (session) {
+      loadSessionRecord(session);
+      setCurrentScreen("translate");
+    }
+  };
+
+  const handleDeleteSession = (sessionId: string) => {
+    moveSessionToTrash(sessionId);
+  };
+
+  const handleRenameStart = (sessionId: string, currentTag: string) => {
+    setRenamingId(sessionId);
+    setRenamingText(currentTag);
+  };
+
+  const handleRenameSave = (sessionId: string) => {
+    if (renamingText.trim()) {
+      updateSessionTag(sessionId, renamingText.trim());
+    }
+    setRenamingId(null);
+    setRenamingText("");
+  };
+
+  const addSessionRecord = useAccountStore((s) => s.addSessionRecord);
+
+  const handleExportSession = (session: typeof sessions[0]) => {
+    const sessionData = JSON.stringify(session, null, 2);
+    const dataBlob = new Blob([sessionData], { type: "application/json" });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `divergence-session-${session.tag || session.id}-${new Date().toISOString().slice(0, 10)}.json`;
+    link.click();
+  };
+
+  const handleImportSession = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const sessionData = JSON.parse(e.target?.result as string);
+        if (sessionData.id && sessionData.conversation && sessionData.model) {
+          addSessionRecord(sessionData);
+        } else {
+          alert("Invalid session file format");
+        }
+      } catch {
+        alert("Error reading session file");
+      }
+    };
+    reader.readAsText(file);
+    event.target.value = "";
+  };
+
+  const toggleSessionSelect = (sessionId: string) => {
+    const newSelected = new Set(selectedIds);
+    if (newSelected.has(sessionId)) {
+      newSelected.delete(sessionId);
+    } else {
+      newSelected.add(sessionId);
+    }
+    setSelectedIds(newSelected);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === sortedSessions.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(sortedSessions.map((s) => s.id)));
+    }
+  };
+
+  const handleBulkDelete = () => {
+    if (confirm(`Delete ${selectedIds.size} session(s)?`)) {
+      selectedIds.forEach((id) => moveSessionToTrash(id));
+      setSelectedIds(new Set());
+    }
+  };
+
+  const filteredSessions = sessions.filter((session) => {
+    const searchLower = searchTerm.toLowerCase();
+    const tag = (session.tag || `Session ${session.id.slice(0, 6)}`).toLowerCase();
+    return tag.includes(searchLower) || session.id.includes(searchTerm);
+  });
+
+  const sortedSessions = [...filteredSessions].sort((a, b) => {
+    switch (sortBy) {
+      case "recent":
+        return b.createdAt - a.createdAt;
+      case "oldest":
+        return a.createdAt - b.createdAt;
+      case "name":
+        return ((a.tag || a.id) || "").localeCompare((b.tag || b.id) || "");
+      default:
+        return 0;
+    }
+  });
+
+  return (
+    <div className="screen screen-sessions">
+      <div className="screen__header">
+        <h1>Sessions</h1>
+      </div>
+      <div className="screen__content">
+        {sessions.length === 0 ? (
+          <p>No saved sessions yet. Create one in the Translate screen.</p>
+        ) : (
+          <>
+            <div style={{ display: "flex", gap: "12px", marginBottom: "24px" }}>
+              <input
+                type="text"
+                placeholder="Search sessions..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{
+                  flex: 1,
+                  padding: "10px 12px",
+                  fontSize: "13px",
+                  border: "1px solid var(--accent-cyan-tint-06)",
+                  borderRadius: "4px",
+                  background: "var(--surface-base)",
+                  color: "var(--text-primary)",
+                }}
+              />
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as "recent" | "oldest" | "name")}
+                style={{
+                  padding: "10px 12px",
+                  fontSize: "13px",
+                  border: "1px solid var(--accent-cyan-tint-06)",
+                  borderRadius: "4px",
+                  background: "var(--surface-base)",
+                  color: "var(--text-primary)",
+                }}
+              >
+                <option value="recent">Most Recent</option>
+                <option value="oldest">Oldest First</option>
+                <option value="name">By Name</option>
+              </select>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                style={{
+                  padding: "10px 16px",
+                  fontSize: "13px",
+                  border: "1px solid var(--accent-cyan-tint-06)",
+                  borderRadius: "4px",
+                  background: "var(--surface-base)",
+                  color: "var(--text-primary)",
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Import
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".json"
+                onChange={handleImportSession}
+                style={{ display: "none" }}
+              />
+            </div>
+
+            {selectedIds.size > 0 && (
+              <div
+                style={{
+                  display: "flex",
+                  gap: "12px",
+                  marginBottom: "24px",
+                  padding: "12px",
+                  background: "var(--accent-cyan-tint-12)",
+                  borderRadius: "4px",
+                  alignItems: "center",
+                }}
+              >
+                <span style={{ flex: 1, fontSize: "14px", fontWeight: "500" }}>
+                  {selectedIds.size} session{selectedIds.size !== 1 ? "s" : ""} selected
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedIds(new Set())}
+                  style={{
+                    padding: "8px 12px",
+                    fontSize: "13px",
+                    border: "1px solid var(--accent-cyan)",
+                    borderRadius: "4px",
+                    background: "transparent",
+                    color: "var(--text-primary)",
+                    cursor: "pointer",
+                  }}
+                >
+                  Clear
+                </button>
+                <button
+                  type="button"
+                  onClick={handleBulkDelete}
+                  style={{
+                    padding: "8px 12px",
+                    fontSize: "13px",
+                    border: "none",
+                    borderRadius: "4px",
+                    background: "var(--accent-danger)",
+                    color: "white",
+                    cursor: "pointer",
+                  }}
+                >
+                  Delete Selected
+                </button>
+              </div>
+            )}
+
+            {sortedSessions.length === 0 ? (
+              <p style={{ color: "var(--text-secondary)" }}>
+                No sessions match your search. Try adjusting your search term.
+              </p>
+            ) : (
+              <div className="session-list">
+                {sortedSessions.length > 0 && (
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      marginBottom: "12px",
+                      paddingBottom: "12px",
+                      borderBottom: "1px solid var(--accent-cyan-tint-06)",
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.size === sortedSessions.length && sortedSessions.length > 0}
+                      onChange={toggleSelectAll}
+                      style={{ marginRight: "12px", cursor: "pointer" }}
+                    />
+                    <span style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
+                      Select All
+                    </span>
+                  </div>
+                )}
+                {sortedSessions.map((session) => (
+                  <div key={session.id} className="session-item">
+                    <div style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(session.id)}
+                        onChange={() => toggleSessionSelect(session.id)}
+                        style={{ marginTop: "8px", cursor: "pointer" }}
+                      />
+                      <div style={{ flex: 1 }}>
+                        <div className="session-item__header">
+                          {renamingId === session.id ? (
+                            <div style={{ display: "flex", gap: "8px", alignItems: "center", flex: 1 }}>
+                              <input
+                                type="text"
+                                value={renamingText}
+                                onChange={(e) => setRenamingText(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") handleRenameSave(session.id);
+                                  if (e.key === "Escape") {
+                                    setRenamingId(null);
+                                    setRenamingText("");
+                                  }
+                                }}
+                                autoFocus
+                                style={{
+                                  flex: 1,
+                                  padding: "6px 8px",
+                                  fontSize: "14px",
+                                  border: "1px solid var(--accent-cyan)",
+                                  borderRadius: "4px",
+                                  background: "var(--surface-base)",
+                                  color: "var(--text-primary)",
+                                }}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleRenameSave(session.id)}
+                                style={{
+                                  padding: "6px 12px",
+                                  fontSize: "12px",
+                                  background: "var(--accent-cyan)",
+                                  color: "var(--text-on-accent)",
+                                  border: "none",
+                                  borderRadius: "4px",
+                                  cursor: "pointer",
+                                }}
+                              >
+                                Save
+                              </button>
+                            </div>
+                          ) : (
+                            <>
+                              <h3>{session.tag || `Session ${session.id.slice(0, 8)}`}</h3>
+                              <span className="session-item__date">
+                                {new Date(session.createdAt).toLocaleString()}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                        <p className="session-item__description">
+                          Model: {session.model} • Directness: {session.directness} •{" "}
+                          {session.conversation.length} messages
+                        </p>
+                        {renamingId !== session.id && (
+                          <div className="session-item__actions">
+                            <button
+                              type="button"
+                              className="session-item__action-btn session-item__action-btn--primary"
+                              onClick={() => handleLoadSession(session.id)}
+                            >
+                              Load
+                            </button>
+                            <button
+                              type="button"
+                              className="session-item__action-btn"
+                              onClick={() => toggleSessionStar(session.id)}
+                              title={session.starred ? "Remove from favorites" : "Add to favorites"}
+                              style={{ padding: "8px 10px", minWidth: "auto", color: session.starred ? "var(--accent-cyan)" : "var(--text-primary)" }}
+                            >
+                              <Star size={16} fill={session.starred ? "currentColor" : "none"} />
+                            </button>
+                            <button
+                              type="button"
+                              className="session-item__action-btn"
+                              onClick={() => handleRenameStart(session.id, session.tag || `Session ${session.id.slice(0, 8)}`)}
+                              title="Rename session"
+                              style={{ padding: "8px 10px", minWidth: "auto" }}
+                            >
+                              <Pencil size={16} />
+                            </button>
+                            <button
+                              type="button"
+                              className="session-item__action-btn"
+                              onClick={() => duplicateSession(session.id)}
+                              title="Duplicate session"
+                              style={{ padding: "8px 10px", minWidth: "auto" }}
+                            >
+                              <Copy size={16} />
+                            </button>
+                            <button
+                              type="button"
+                              className="session-item__action-btn"
+                              onClick={() => handleExportSession(session)}
+                              style={{ background: "var(--accent-cyan-tint-12)", color: "var(--text-primary)" }}
+                            >
+                              Export
+                            </button>
+                            <button
+                              type="button"
+                              className="session-item__action-btn session-item__action-btn--danger"
+                              onClick={() => handleDeleteSession(session.id)}
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function TrashScreen() {
+  const trashed = useAccountStore((s) => s.trashed);
+  const restoreSessionFromTrash = useAccountStore((s) => s.restoreSessionFromTrash);
+  const deleteSessionFromTrash = useAccountStore((s) => s.deleteSessionFromTrash);
+  const updateSessionTag = useAccountStore((s) => s.updateSessionTag);
+  const toggleSessionStar = useAccountStore((s) => s.toggleSessionStar);
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState<"recent" | "oldest" | "name">("recent");
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renamingText, setRenamingText] = useState("");
+
+  const handleRestoreSession = (sessionId: string) => {
+    restoreSessionFromTrash(sessionId);
+  };
+
+  const handlePermanentlyDelete = (sessionId: string) => {
+    deleteSessionFromTrash(sessionId);
+  };
+
+  const handleRenameStart = (sessionId: string, currentTag: string) => {
+    setRenamingId(sessionId);
+    setRenamingText(currentTag);
+  };
+
+  const handleRenameSave = (sessionId: string) => {
+    if (renamingText.trim()) {
+      updateSessionTag(sessionId, renamingText.trim());
+    }
+    setRenamingId(null);
+    setRenamingText("");
+  };
+
+  const filteredSessions = trashed.filter((session) => {
+    const searchLower = searchTerm.toLowerCase();
+    const tag = (session.tag || `Session ${session.id.slice(0, 6)}`).toLowerCase();
+    return tag.includes(searchLower) || session.id.includes(searchTerm);
+  });
+
+  const sortedSessions = [...filteredSessions].sort((a, b) => {
+    switch (sortBy) {
+      case "recent":
+        return b.createdAt - a.createdAt;
+      case "oldest":
+        return a.createdAt - b.createdAt;
+      case "name":
+        return ((a.tag || a.id) || "").localeCompare((b.tag || b.id) || "");
+      default:
+        return 0;
+    }
+  });
+
+  return (
+    <div className="screen screen-trash">
+      <div className="screen__header">
+        <h1>Trash</h1>
+      </div>
+      <div className="screen__content">
+        {trashed.length === 0 ? (
+          <p>No deleted sessions. Items you delete from Sessions will appear here.</p>
+        ) : (
+          <>
+            <div style={{ display: "flex", gap: "12px", marginBottom: "24px" }}>
+              <input
+                type="text"
+                placeholder="Search trash..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{
+                  flex: 1,
+                  padding: "10px 12px",
+                  fontSize: "13px",
+                  border: "1px solid var(--accent-cyan-tint-06)",
+                  borderRadius: "4px",
+                  background: "var(--surface-base)",
+                  color: "var(--text-primary)",
+                }}
+              />
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as "recent" | "oldest" | "name")}
+                style={{
+                  padding: "10px 12px",
+                  fontSize: "13px",
+                  border: "1px solid var(--accent-cyan-tint-06)",
+                  borderRadius: "4px",
+                  background: "var(--surface-base)",
+                  color: "var(--text-primary)",
+                }}
+              >
+                <option value="recent">Most Recent</option>
+                <option value="oldest">Oldest First</option>
+                <option value="name">By Name</option>
+              </select>
+            </div>
+
+            {sortedSessions.length === 0 ? (
+              <p style={{ color: "var(--text-secondary)" }}>
+                No deleted sessions match your search.
+              </p>
+            ) : (
+              <div className="trashed-list">
+                {sortedSessions.map((session) => (
+                  <div key={session.id} className="trashed-item">
+                    <div className="trashed-item__header">
+                      {renamingId === session.id ? (
+                        <div style={{ display: "flex", gap: "8px", alignItems: "center", flex: 1 }}>
+                          <input
+                            type="text"
+                            value={renamingText}
+                            onChange={(e) => setRenamingText(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") handleRenameSave(session.id);
+                              if (e.key === "Escape") {
+                                setRenamingId(null);
+                                setRenamingText("");
+                              }
+                            }}
+                            autoFocus
+                            style={{
+                              flex: 1,
+                              padding: "6px 8px",
+                              fontSize: "14px",
+                              border: "1px solid var(--accent-cyan)",
+                              borderRadius: "4px",
+                              background: "var(--surface-base)",
+                              color: "var(--text-primary)",
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleRenameSave(session.id)}
+                            style={{
+                              padding: "6px 12px",
+                              fontSize: "12px",
+                              background: "var(--accent-cyan)",
+                              color: "var(--text-on-accent)",
+                              border: "none",
+                              borderRadius: "4px",
+                              cursor: "pointer",
+                            }}
+                          >
+                            Save
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          <h3>{session.tag || `Session ${session.id.slice(0, 8)}`}</h3>
+                          <span className="trashed-item__date">
+                            {new Date(session.createdAt).toLocaleString()}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                    <p className="trashed-item__description">
+                      Model: {session.model} • Directness: {session.directness} •{" "}
+                      {session.conversation.length} messages
+                    </p>
+                    {renamingId !== session.id && (
+                      <div className="trashed-item__actions">
+                        <button
+                          type="button"
+                          className="trashed-item__action-btn trashed-item__action-btn--primary"
+                          onClick={() => handleRestoreSession(session.id)}
+                        >
+                          Restore
+                        </button>
+                        <button
+                          type="button"
+                          className="trashed-item__action-btn"
+                          onClick={() => toggleSessionStar(session.id)}
+                          title={session.starred ? "Remove from favorites" : "Add to favorites"}
+                          style={{ padding: "8px 10px", minWidth: "auto", color: session.starred ? "var(--accent-cyan)" : "var(--text-primary)" }}
+                        >
+                          <Star size={16} fill={session.starred ? "currentColor" : "none"} />
+                        </button>
+                        <button
+                          type="button"
+                          className="trashed-item__action-btn"
+                          onClick={() => handleRenameStart(session.id, session.tag || `Session ${session.id.slice(0, 8)}`)}
+                          title="Rename session"
+                          style={{ padding: "8px 10px", minWidth: "auto" }}
+                        >
+                          <Pencil size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          className="trashed-item__action-btn trashed-item__action-btn--danger"
+                          onClick={() => handlePermanentlyDelete(session.id)}
+                        >
+                          Delete Permanently
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export function ScreenRouter() {
+  const currentScreen = useSessionStore((s) => s.currentScreen);
+
+  switch (currentScreen) {
+    case "translate":
+      return <CenterColumn />;
+    case "home":
+      return <HomeScreen />;
+    case "dashboard":
+      return <DashboardScreen />;
+    case "messages":
+      return <MessagesScreen />;
+    case "archive":
+      return <ArchiveScreen />;
+    case "resources":
+      return <ResourcesScreen />;
+    case "projects":
+      return <ProjectsScreen />;
+    case "integrations":
+      return <IntegrationsScreen />;
+    case "tasks":
+      return <TasksScreen />;
+    case "customize":
+      return <CustomizeScreen />;
+    case "sessions":
+      return <SessionsScreen />;
+    case "templates":
+      return <TemplatesScreen />;
+    case "saved-prompts":
+      return <SavedPromptsScreen />;
+    case "settings":
+      return <SettingsScreen />;
+    case "trash":
+      return <TrashScreen />;
+    default:
+      const _exhaustive: never = currentScreen;
+      return _exhaustive;
+  }
+}

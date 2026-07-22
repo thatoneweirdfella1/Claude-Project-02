@@ -1,0 +1,97 @@
+/* visibility.css — the gear dropdown / Visibility Toggle (Step 9.4). Tokens
+   only. Same popover positioning conventions as composer.css's Attach
+   popover and session.css's More popover, anchored under the top bar. */
+
+.visibility-menu {
+  position: relative;
+}
+
+/* Material comes from the shared `surface-smoked-glass` class (TSX applies
+   both) — layout only, plus box-shadow (modal-weight, differs from that
+   class's own card-weight default). */
+.visibility-menu__popover {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 10;
+  margin-top: 6px;
+  width: min(260px, 90vw);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--space-card-padding);
+  box-shadow: var(--shadow-modal);
+}
+
+.visibility-menu__title {
+  margin: 0 0 4px;
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-section-header);
+  font-weight: var(--font-weight-section-header);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.visibility-menu__title:not(:first-child) {
+  margin-top: 10px;
+}
+
+.visibility-menu__theme-row {
+  display: flex;
+  gap: 4px;
+}
+
+.visibility-menu__theme-option {
+  flex: 1;
+  min-height: 32px;
+  border: 1px solid var(--surface-smoked-glass-border);
+  border-radius: var(--radius-button);
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-secondary);
+  font-weight: var(--font-weight-label-secondary);
+  cursor: pointer;
+}
+
+.visibility-menu__theme-option:hover {
+  border-color: var(--accent-cyan);
+}
+
+.visibility-menu__theme-option--active {
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+  background: var(--accent-cyan-tint-06);
+}
+
+.visibility-menu__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-secondary);
+  font-weight: var(--font-weight-label-secondary);
+  cursor: pointer;
+}
+
+.visibility-menu__reset {
+  margin-top: 6px;
+  min-height: 36px;
+  padding: 6px 14px;
+  border: 1px solid var(--surface-smoked-glass-border);
+  border-radius: var(--radius-button);
+  background: transparent;
+  color: var(--accent-cyan);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-secondary);
+  font-weight: var(--font-weight-label-secondary);
+  cursor: pointer;
+  text-align: center;
+}
+
+.visibility-menu__reset:hover {
+  background: var(--hover-tint);
+}

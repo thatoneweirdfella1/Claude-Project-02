@@ -1,4 +1,5 @@
 import type { ConversationMessage } from "../../stores/types";
+import { BrainMark } from "../layout/BrainMark";
 import { AnswerMeta } from "./AnswerMeta";
 import { RatingRow } from "./RatingRow";
 
@@ -6,7 +7,11 @@ import { RatingRow } from "./RatingRow";
    avatar-initial circle, a name, a right-aligned relative timestamp, then the
    message content. Assistant turns additionally show the confidence line +
    router honesty note (AnswerMeta) and the 5-star/download row (RatingRow)
-   once the answer is finished — never while still streaming. */
+   once the answer is finished — never while still streaming.
+
+   VISUAL-AUDIT (fixed alongside V4/V5/V11/V13 this session): V3's assistant
+   avatar is the BrainMark glyph, not "AI" text — same brand icon reused
+   everywhere else "the AI is doing the thinking." */
 
 export interface MessageBubbleProps {
   message: ConversationMessage;
@@ -15,6 +20,7 @@ export interface MessageBubbleProps {
       read from anywhere real. */
   userInitial?: string;
   onRate?: (rating: number) => void;
+  onRatingComment?: (comment: string) => void;
   onDownload?: () => void;
 }
 
@@ -27,14 +33,20 @@ function formatRelativeTime(timestamp: number): string {
   return `${hours}h ago`;
 }
 
-export function MessageBubble({ message, userInitial = "U", onRate, onDownload }: MessageBubbleProps) {
+export function MessageBubble({
+  message,
+  userInitial = "U",
+  onRate,
+  onRatingComment,
+  onDownload,
+}: MessageBubbleProps) {
   const isAssistant = message.role === "assistant";
 
   return (
     <div className={`message-bubble message-bubble--${message.role}`} data-testid="message-bubble">
       <div className="message-bubble__header">
         <span className={`message-bubble__avatar ${isAssistant ? "message-bubble__avatar--assistant" : ""}`}>
-          {isAssistant ? "AI" : userInitial}
+          {isAssistant ? <BrainMark size={18} /> : userInitial}
         </span>
         <span className="message-bubble__name">{isAssistant ? "Divergence.AI" : "You"}</span>
         <span className="message-bubble__time">{formatRelativeTime(message.timestamp)}</span>
@@ -47,7 +59,13 @@ export function MessageBubble({ message, userInitial = "U", onRate, onDownload }
       <p className="message-bubble__content">{message.content}</p>
 
       {isAssistant && typeof message.confidence === "number" && (
-        <RatingRow onRate={onRate} onDownload={onDownload} />
+        <RatingRow
+          stars={message.ratingStars}
+          comment={message.ratingComment}
+          onRate={onRate}
+          onCommentChange={onRatingComment}
+          onDownload={onDownload}
+        />
       )}
     </div>
   );

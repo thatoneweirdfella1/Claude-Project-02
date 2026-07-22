@@ -44,6 +44,10 @@ export interface TechniqueSelection {
   scores: TechniqueScore[];
   /** User-facing one-liner on why these were chosen. */
   reasoning: string;
+  /** Step 8.2: which dispatch path produced this selection — the
+      Transparency card's Confidence sub-card treats an explicit manual stack
+      as fully certain, distinct from the auto-detect scorer's best guess. */
+  mode: "manual" | "auto-detect";
 }
 
 interface Signal {
@@ -220,7 +224,7 @@ export function autoDetectTechniques(
   if (selected.length === 0) selected.push(DEFAULT_TECHNIQUE);
 
   const reasoning = buildReasoning(selected, scores);
-  return { selected, scores: ranked, reasoning };
+  return { selected, scores: ranked, reasoning, mode: "auto-detect" };
 }
 
 function buildReasoning(
@@ -250,5 +254,6 @@ export function selectTechniques(
     selected: [id],
     scores: [{ id, score: 1, reasons: ["manually selected"] }],
     reasoning: `Manually selected: ${getTechnique(id).label}.`,
+    mode: "manual",
   };
 }

@@ -3,7 +3,11 @@ import type {
   ContextItem,
   ConversationMessage,
   DirectnessLevel,
+  MethodologyPhase,
+  MethodologyType,
   ModelSelection,
+  ScreenId,
+  SessionRecord,
   SessionState,
   StatePills,
   TechniqueId,
@@ -29,6 +33,11 @@ export function createInitialSessionState(): SessionState {
     context: [],
     conversation: [],
     statePills: { emotion: null, rsd: null, interest: null, cognitive: null },
+    variables: {}, // Step 7.4: session-local variables, default empty
+    currentScreen: "translate", // Step 9.7: default to the main composer view
+    methodology: "standard", // 3-State Methodology: default to standard
+    methodologyPhase: "define", // Current phase when using 3-state
+    lockedProblemStatement: "", // Locked problem statement to prevent drift
   };
 }
 
@@ -42,6 +51,11 @@ export const SESSION_PERSISTED_KEYS: (keyof SessionState)[] = [
   "context",
   "conversation",
   "statePills",
+  "variables",
+  "currentScreen",
+  "methodology",
+  "methodologyPhase",
+  "lockedProblemStatement",
 ];
 
 interface SessionActions {
@@ -56,8 +70,55 @@ interface SessionActions {
   removeContextItem: (id: string) => void;
   addMessage: (message: ConversationMessage) => void;
   setStatePills: (statePills: StatePills) => void;
-  /** Clear to defaults — CANON "cleared when a session closes". */
+  /** Step 7.4 — create/update one session-local variable. Mirrors the
+      account store's existing setVariable (Step 1.7) so "explicitly save
+      to the account store" is a plain second call to that action, not a
+      different shape. */
+  setSessionVariable: (name: string, value: string) => void;
+  removeSessionVariable: (name: string) => void;
+  /** Step 8.1 — sets/updates the given message's denormalized rating fields
+      (ratingStars always; ratingComment only if provided, so re-rating with
+      just a star doesn't erase a previously-saved comment). A no-op if no
+      message with that id exists (defensive — a stale id should never
+      throw, same posture as every other store action taking an id). */
+  setMessageRating: (messageId: string, stars: number, comment?: string) => void;
+  /** Clear to defaults — CANON "cleared when a session closes". Its first
+      real caller is Close Session (Step 9.1): a closed session is done, not
+      just refreshed, so it resets model/directness/techniques too, unlike
+      newSession() below. */
   resetSession: () => void;
+  /** Step 9.1 — CANON Feature 11 "New Session (fresh conversation, keeps
+      settings, clears history and context)". Deliberately narrower than
+      resetSession(): model/directness/techniques are UNTOUCHED. "Context"
+      is read as covering both session.context and session.variables (both
+      are Feature 6 "Context Management" concepts); statePills and
+      draftInput are cleared too since they belong to the conversation
+      being cleared, not to "settings" — a documented reading, not stated
+      verbatim in CANON (see BUILD-LOG DECISIONS). */
+  newSession: () => void;
+  /** Step 9.7 — navigate to a different screen (Home, Dashboard, Messages, etc). */
+  setCurrentScreen: (screen: ScreenId) => void;
+  /** Step 9.3 — CANON Feature 11's "Import ... previous conversation": loads a
+      stored SessionRecord (accountStore.sessions, written by Step 9.1's
+      Duplicate/Close Session) back into the live session. This is the action
+      Step 9.1's own PARKED note predicted would be needed and deliberately
+      did not build ("if resuming turns out to be needed, it's a new
+      sessionStore action ... calling hydrate() with the record's fields").
+
+      Sets exactly the six fields a SessionRecord carries. draftInput and
+      statePills are CLEARED, not preserved: a record stores neither (an
+      unsent draft and a per-turn pill reading both belong to the moment, not
+      the archived session), so carrying the CURRENT session's values forward
+      would leave the user's half-typed thought and stale pills sitting above
+      a conversation they no longer belong to. currentScreen is deliberately
+      untouched — navigation is orthogonal to which session is loaded. */
+  loadSessionRecord: (record: SessionRecord) => void;
+  /** Set which methodology to use (standard or 3-state). */
+  setMethodology: (methodology: MethodologyType) => void;
+  /** Set the current phase when using 3-state methodology. */
+  setMethodologyPhase: (phase: MethodologyPhase) => void;
+  /** Lock the problem statement to prevent drift during 3-state execution. */
+  setLockedProblemStatement: (statement: string) => void;
   /** Replace persisted fields wholesale — used by autosave rehydrate (Step 1.8). */
   hydrate: (state: Partial<SessionState>) => void;
 }
@@ -76,6 +137,44 @@ export const useSessionStore = create<SessionStore>((set) => ({
     set((s) => ({ context: s.context.filter((c) => c.id !== id) })),
   addMessage: (message) => set((s) => ({ conversation: [...s.conversation, message] })),
   setStatePills: (statePills) => set({ statePills }),
+  setSessionVariable: (name, value) =>
+    set((s) => ({ variables: { ...s.variables, [name]: value } })),
+  removeSessionVariable: (name) =>
+    set((s) => {
+      const { [name]: _removed, ...rest } = s.variables;
+      return { variables: rest };
+    }),
+  setMessageRating: (messageId, stars, comment) =>
+    set((s) => ({
+      conversation: s.conversation.map((m) =>
+        m.id === messageId
+          ? { ...m, ratingStars: stars, ...(comment !== undefined ? { ratingComment: comment } : {}) }
+          : m,
+      ),
+    })),
   resetSession: () => set(createInitialSessionState()),
+  newSession: () =>
+    set({
+      draftInput: "",
+      conversation: [],
+      context: [],
+      variables: {},
+      statePills: { emotion: null, rsd: null, interest: null, cognitive: null },
+    }),
+  setCurrentScreen: (currentScreen) => set({ currentScreen }),
+  loadSessionRecord: (record) =>
+    set({
+      model: record.model,
+      directness: record.directness,
+      techniques: record.techniques,
+      context: record.context,
+      variables: record.variables,
+      conversation: record.conversation,
+      draftInput: "",
+      statePills: { emotion: null, rsd: null, interest: null, cognitive: null },
+    }),
+  setMethodology: (methodology) => set({ methodology }),
+  setMethodologyPhase: (methodologyPhase) => set({ methodologyPhase }),
+  setLockedProblemStatement: (lockedProblemStatement) => set({ lockedProblemStatement }),
   hydrate: (state) => set(state),
 }));

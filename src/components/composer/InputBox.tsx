@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef } from "react";
 import { useSessionStore } from "../../stores/sessionStore";
+import { BrainMark } from "../layout/BrainMark";
 
 /* The input box (Step 5.0) — CANON LAYOUT's "the input box ('What's on your
    mind?')". Bound directly to the session store's new `draftInput` field
@@ -31,7 +32,12 @@ export function InputBox() {
 
   return (
     <div className="input-box">
-      <p className="input-box__label">What&rsquo;s on your mind?</p>
+      {/* VISUAL-AUDIT V11 (fixed this session): V3 shows a small BrainMark
+          before this label, not bare text. */}
+      <p className="input-box__label">
+        <BrainMark size={18} />
+        What&rsquo;s on your mind?
+      </p>
       <textarea
         ref={textareaRef}
         className="input-box__textarea"

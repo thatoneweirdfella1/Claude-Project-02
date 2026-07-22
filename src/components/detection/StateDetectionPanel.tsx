@@ -167,7 +167,11 @@ export function StateDetectionPanel({
 
         <div className="state-detection-panel__footer">
           <p className="state-detection-panel__summary">{result.summary}</p>
-          <button type="button" className="state-detection-panel__adjust" onClick={handleAdjust}>
+          <button
+            type="button"
+            className="surface-smoked-glass state-detection-panel__adjust"
+            onClick={handleAdjust}
+          >
             Adjust
           </button>
         </div>

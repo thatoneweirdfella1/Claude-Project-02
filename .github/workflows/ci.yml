@@ -1,0 +1,50 @@
+name: CI
+
+# Step 12.1's own text: "unit tests ... wired into CI to run on every
+# change." Runs on every push and every PR, against every branch — this
+# build's own convention (CLAUDE.md) works exclusively on `build`, but a CI
+# gate that only watched one branch name would silently stop protecting the
+# moment that changed.
+on:
+  push:
+  pull_request:
+
+jobs:
+  unit:
+    name: Typecheck, lint, unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+      - run: npm ci
+      # tsc -b (typecheck, now covering src/, api/'s vite.config.ts, and
+      # e2e/) + vite build — same command CONVENTIONS.md documents as
+      # `npm run build`, so CI checks exactly what a local build does.
+      - run: npm run build
+      - run: npm run lint
+      - run: npm test
+
+  e2e:
+    name: Playwright E2E suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+      - run: npm ci
+      # playwright.config.ts falls back to Playwright's own managed browser
+      # (via executablePath left undefined) whenever the dev-sandbox's fixed
+      # Chromium path doesn't exist — this is that path, on a real runner.
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14

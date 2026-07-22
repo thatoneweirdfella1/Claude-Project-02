@@ -1,0 +1,236 @@
+/* multi-ai.css — Consensus and Synthesis views (Step 8.4) plus Debate mode's
+   two-column view, the partner picker, and the MULTI-AI ACTIONS control
+   (Step 8.3). Tokens only. */
+
+.multi-ai-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-row-margin);
+  flex: 1 1 260px;
+}
+
+.multi-ai-actions__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-list-item-margin);
+  width: 100%;
+}
+
+.multi-ai-actions__toggle-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--accent-cyan);
+  font-size: var(--font-size-section-header);
+  font-weight: var(--font-weight-section-header);
+  letter-spacing: 0.04em;
+}
+
+.multi-ai-actions__chevron {
+  color: var(--text-secondary);
+}
+
+.multi-ai-actions__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-row-margin);
+}
+
+.multi-ai-actions__row {
+  display: flex;
+  gap: var(--space-list-item-margin);
+  flex-wrap: wrap;
+}
+
+.multi-ai-actions__empty,
+.multi-ai-actions__note {
+  margin: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-secondary);
+  line-height: var(--line-height-body);
+}
+
+/* Partner picker — four roster options, label over role description. */
+.partner-picker {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.partner-picker__legend {
+  padding: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-section-header);
+  font-weight: var(--font-weight-section-header);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.partner-picker__options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-list-item-margin);
+  margin-top: 8px;
+}
+
+/* Material comes from the shared `surface-smoked-glass` class (TSX applies
+   both) — this rule is layout only, plus border-radius (button-weight, not
+   that class's own card-weight default). */
+.partner-picker__option {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--radius-button);
+  cursor: pointer;
+}
+
+.partner-picker:disabled .partner-picker__option {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.partner-picker__option-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.partner-picker__option-label {
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-body);
+}
+
+.partner-picker__option-role {
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-secondary);
+  line-height: var(--line-height-body);
+}
+
+/* The dual-stream debate view — two columns, one per side. Collapses to a
+   single column on narrow viewports: two ~40-char columns would violate
+   CANON's "no dense info walls" harder than stacking does. */
+.debate-view {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--space-row-margin);
+}
+
+.debate-view__column {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--surface-smoked-glass-border);
+  border-radius: var(--radius-card);
+  background: var(--surface-smoked-glass);
+}
+
+.debate-view__column-header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.debate-view__column-name {
+  margin: 0;
+  color: var(--accent-cyan);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-section-header);
+  font-weight: var(--font-weight-section-header);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.debate-view__column-stance {
+  margin: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-secondary);
+}
+
+.debate-view__text {
+  margin: 0;
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-body);
+  line-height: var(--line-height-body);
+  white-space: pre-wrap;
+}
+
+.debate-view__error {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.debate-view__error-text {
+  margin: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-secondary);
+  line-height: var(--line-height-body);
+}
+
+.debate-view__retry {
+  padding: 6px 12px;
+  border: 1px solid var(--surface-smoked-glass-border);
+  border-radius: var(--radius-button);
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-secondary);
+  cursor: pointer;
+}
+
+.debate-view__retry:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.consensus-view,
+.synthesis-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-row-margin);
+}
+
+.consensus-view__section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.consensus-view__title {
+  margin: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-section-header);
+  font-weight: var(--font-weight-section-header);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.consensus-view__text,
+.synthesis-view__text {
+  margin: 0;
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-body);
+  line-height: var(--line-height-body);
+}
+
+.synthesis-view__actions {
+  display: flex;
+  gap: var(--space-list-item-margin);
+  flex-wrap: wrap;
+}

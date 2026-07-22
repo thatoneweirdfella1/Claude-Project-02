@@ -1,7 +1,7 @@
 # DIVERGENCE.AI — STEP BY STEP BUILD PROMPTS
 **60 steps. Each step is one prompt for Claude Code, run with this repo folder open as the project. Copy the prompt block and paste it in — Claude Code reads the files it needs directly from the repo, nothing to attach. If a file the prompt needs isn't in the repo, the model stops and asks before doing anything.**
 
-> **Revision 5.** Changes are listed in CHANGELOG at the bottom, and the two questions still open are listed in OPEN QUESTIONS above it. Nothing in this file is blocked on those two — but question 1 must be answered before Phase 11, not before Phase 9.
+> **Revision 5.** Changes are listed in CHANGELOG at the bottom, and the one question still open is listed in OPEN QUESTIONS above it. Nothing in this file is blocked on it. (Question 1, left nav items and Quick Tools tiles, was resolved after this revision was written — see OPEN QUESTIONS and CANON.md's LEFT NAVIGATION section.)
 
 ---
 
@@ -2663,13 +2663,9 @@ Every design conflict from the old four files is resolved in CANON.md, MATERIALS
 
 # OPEN QUESTIONS
 
-Two decisions this file cannot make for you. Question 3 (should the build track its own progress) is answered and built — see the changelog.
+One decision this file cannot make for you. Question 3 (should the build track its own progress) is answered and built — see the changelog. Question 1 (left nav items and Quick Tools tiles) is also answered — CANON.md gained a new LEFT NAVIGATION section (after LAYOUT) defining all ten left-nav destinations, plus confirming the left-nav Dashboard item and the Quick Tools Dashboard tile are the same screen; Integrations is explicitly logged as not-yet-defined rather than invented. Full resolution record in BUILD-LOG.md DECISIONS.
 
-**Runnable right now without answering either:** step 0 through 2.3, all of Phases 3 to 8, and 9.1 to 9.5, plus Phase 10. That's 49 of the 60 steps, in order, skipping only 2.4, 9.6 and 9.7 on the way past.
-
-**1. What are the left nav items and the Quick Tools tiles?**
-Blocks: 9.6, 9.7 — and, less obviously, **all of Phase 11**. 11.1 audits the app view by view and 11.4 compares it against the screenshot; both are half-blind if the nav and Quick Tools are still empty labels. So this needs answering before Phase 11, not before Phase 9.
-The left nav has ten items (Home, Dashboard, Messages, Archive, Resources, Projects, Integrations, Tasks, Customize, Translate) and Quick Tools has six tiles (Router, Techniques, Prompt Library, Variables, Checkpoints, Dashboard). Steps 9.6 and 9.7 build them as labels and icons only. Nothing in CANON.md's 12 features says what any of them do when clicked, and Checkpoints and Dashboard appear nowhere else in the product at all. Either they're decorative for now and 9.6/9.7 should say so out loud, or some of them are real features that need their own steps. Right now the file quietly implies the first and reads like the second.
+**Runnable right now:** every step through 12.3 — Question 1 no longer blocks 9.6, 9.7, or Phase 11. (Question 2 below is unaffected by this update and untouched.)
 
 **2. Do you have 31_0_translation_test_cases.md?**
 Blocks: 2.4.

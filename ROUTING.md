@@ -35,6 +35,28 @@ The free/paid split is currently a flag in the routing layer, not real billing. 
 
 ---
 
+## DEBATE PARTNERS (Feature 9 — separate from primary routing)
+
+Debate mode calls 1 to 3 SECOND/THIRD/FOURTH providers alongside Claude (2-to-4-way total). This is a distinct code path from the Claude-only router above — it does not go through the MODELS table or the complexity scorer.
+
+Roster (api string : provider : role):
+- gpt-5.5 : OpenAI : agentic generalist
+- gemini-3.1-pro : Google : abstract reasoning, multimodal
+- grok-4.3 : xAI : real-time grounded, blunt counterpoint
+- deepseek-v4-pro : DeepSeek : low-cost near-frontier
+
+Each requires its own serverless proxy (api/proxy-<provider>.ts + a src/services/debate/<provider>Handler.ts), mirroring the existing api/proxy.ts pattern: server-side only call, own API key as its own env var, never exposed to the client, own timeout/error handling — one partner's API being down must not break the whole debate turn; fail that side gracefully with a visible retry, not a crash.
+
+SELECTION MODES:
+- **Manual:** the user checks 1 to 3 roster entries directly.
+- **Auto-select:** a scoring function matches the roster's stated role against the question's domain/complexity (reusing routing.js's existing dimension signals where practical, rather than inventing a second classifier) and picks the single best-fit partner by default, expanding to 2-3 partners only when complexity/scope signals are high. This logic is new and does not need to be identical to routing.js's model-tier scorer — a simpler heuristic is acceptable, documented as such if simplified.
+
+Each provider's API key is a separate secret (OPENAI_API_KEY, GOOGLE_API_KEY, XAI_API_KEY, DEEPSEEK_API_KEY), set at deploy time same as the existing Anthropic key. Not committed to the repo, ever.
+
+Default if the user does nothing: auto-select, single best-fit partner (2-way).
+
+---
+
 ## COMPLEXITY (how the scorer works, for reference)
 
 Complexity 1 to 10 is the reasoning load of a question: how many dependent inference steps a competent answerer must chain, under how many simultaneous constraints, before an answer exists. It is not length. Pure retrieval is 1. A design task that must satisfy interacting constraints and prove properties is 10.
