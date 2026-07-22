@@ -34,6 +34,9 @@ export function useKeyboardShortcuts(onShowHelp: () => void) {
         case "nav-messages":
           setCurrentScreen("messages");
           break;
+        case "nav-saved-prompts":
+          setCurrentScreen("saved-prompts");
+          break;
         case "nav-search":
           // Trigger search - would need to hook into TopBar's search
           break;

@@ -18,6 +18,7 @@ export const KEYBOARD_SHORTCUTS: KeyboardShortcut[] = [
   { id: "nav-sessions", key: "s", ctrl: true, description: "Go to Sessions", category: "Navigation" },
   { id: "nav-templates", key: "l", ctrl: true, description: "Go to Templates", category: "Navigation" },
   { id: "nav-messages", key: "m", ctrl: true, description: "Go to Messages", category: "Navigation" },
+  { id: "nav-saved-prompts", key: "p", ctrl: true, description: "Go to Saved Prompts", category: "Navigation" },
   { id: "nav-search", key: "k", ctrl: true, description: "Open Search", category: "Navigation" },
 
   // Actions
