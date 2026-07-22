@@ -151,14 +151,14 @@ function SessionsScreen() {
             {sessions.map((session) => (
               <div key={session.id} className="session-item">
                 <div className="session-item__header">
-                  <h3>{session.title}</h3>
+                  <h3>{session.tag || `Session ${session.id.slice(0, 8)}`}</h3>
                   <span className="session-item__date">
-                    {new Date(session.timestamp).toLocaleString()}
+                    {new Date(session.createdAt).toLocaleString()}
                   </span>
                 </div>
-                {session.description && (
-                  <p className="session-item__description">{session.description}</p>
-                )}
+                <p className="session-item__description">
+                  Model: {session.model} • Directness: {session.directness}
+                </p>
                 <div className="session-item__actions">
                   <button
                     type="button"
@@ -210,14 +210,14 @@ function TrashScreen() {
             {trashed.map((session) => (
               <div key={session.id} className="trashed-item">
                 <div className="trashed-item__header">
-                  <h3>{session.title}</h3>
+                  <h3>{session.tag || `Session ${session.id.slice(0, 8)}`}</h3>
                   <span className="trashed-item__date">
-                    {new Date(session.timestamp).toLocaleString()}
+                    {new Date(session.createdAt).toLocaleString()}
                   </span>
                 </div>
-                {session.description && (
-                  <p className="trashed-item__description">{session.description}</p>
-                )}
+                <p className="trashed-item__description">
+                  Model: {session.model} • Directness: {session.directness}
+                </p>
                 <div className="trashed-item__actions">
                   <button
                     type="button"
