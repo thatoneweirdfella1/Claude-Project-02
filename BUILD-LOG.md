@@ -1131,6 +1131,37 @@ Blocked: the proxy's live deploy + real streamed call (parked for Step 12.3, unc
 - V8/V14 VERIFIED HEADLESS, NOT UNDER A REAL GPU (operator-directed follow-up): this sandbox's Chromium runs without GPU compositing for backdrop-filter (confirmed back in Step 11.5 — getComputedStyle reports `backdropFilter: "none"`), so the Blue Marble button's glow layer and any blur-dependent interaction with the darkened texture beneath it are unverified under conditions closer to a real user's browser. The core fix (blend-mode, not blur) doesn't depend on backdrop-filter at all, so this is lower-risk than V9's blur-dependent finding, but a real-GPU spot-check at deploy time (Step 12.3) would still be worth doing before calling V8/V14 fully closed out. Same standing limitation as every other visual finding this build has logged.
 - SLAB/BUTTON DARKENING VALUES WERE HAND-TUNED AGAINST A FEW CROP REGIONS, NOT A FORMAL COLORIMETRIC MATCH (operator-directed follow-up): the comparison method (screenshot the app, screenshot the same crop from the V3 PNG, eyeball them side by side, adjust) is real evidence, not a guess, but it's not the same rigor as e.g. sampling average luminance in both images and matching numerically. If a future session has access to real image-analysis tooling (this sandbox has no PIL/ImageMagick — confirmed absent when this fix was built), a numeric luminance-histogram comparison between the rendered slab and V3's own background would be a stronger verification than the visual-only calibration this session used.
 
+## PENDING TASKS (Not Yet Started)
+
+The following three tasks have been identified from prior sessions and scattered analysis. These must be completed before claiming the app is feature-complete:
+
+### TASK 1: 3-State Methodology Validation & Integration
+- **Source**: Prior Claude Code session analyzing 824 conversations for ADHD workflow optimization
+- **What**: Problem-solving methodology (DEFINE → TEST → STABILIZE) with 9 ADHD constraints, 7 communication rules, 4 failure modes
+- **Status**: Not started
+- **Files to edit**: src/stores/types.ts, src/stores/accountStore.ts, src/stores/sessionStore.ts, ControlRow.tsx, methodologyEngine.ts (NEW), TransparencyCard.tsx, CLAUDE.md
+- **Assign to**: Claude session with "Decision_Record_Generation_From_Workflow" analysis
+- **See**: PENDING-INTEGRATIONS.md TASK 1 for full details, data to integrate, and acceptance criteria
+
+### TASK 2: Learnable Signal Patterns Verification & Integration
+- **Source**: Prior Claude Code session analyzing multi-signal feedback hierarchy from 8340 conversations
+- **What**: Learning system with three-tier signal hierarchy (primary/secondary/tertiary) with accuracy degradation (1.0 → 0.85 → 0.70)
+- **Status**: Not started
+- **Files to edit**: src/stores/types.ts, src/stores/accountStore.ts, RatingRow.tsx, learningEngine.ts (NEW), sessionStore.ts, SessionsScreen, learningAuditViewer.ts (NEW), CLAUDE.md
+- **Assign to**: Claude session with "Learnable_Signal_Patterns_Verification" analysis
+- **See**: PENDING-INTEGRATIONS.md TASK 2 for full details, signal hierarchy, degradation formula, and acceptance criteria
+
+### TASK 3: Fable 5 Model Recommendation & Prompt Translation
+- **Source**: User uploaded fabletranslator.ts, fable-translator-system-prompt.md, Fable 5 Prompting Guide
+- **What**: Model recommendation engine + prompt translator that reformats user input for each model's strengths (Fable gets 5-part structure: goal/reason/boundaries/verification/format)
+- **Status**: Not started
+- **Files to edit**: modelRecommendation.ts (NEW), promptTranslator.ts (NEW), ControlRow.tsx, TranslateAskButton.tsx, sessionStore.ts, CLAUDE.md
+- **See**: PENDING-INTEGRATIONS.md TASK 3 for full details, model selection heuristics, and acceptance criteria
+
+**Permanent record**: PENDING-INTEGRATIONS.md contains complete specifications. This section exists to flag them in BUILD-LOG.md so they're never forgotten.
+
+---
+
 ## STEPS
 - [x] STEP 0 — File inventory and manifest
 - [x] STEP 1.1 — Repo scaffold and stack lock
