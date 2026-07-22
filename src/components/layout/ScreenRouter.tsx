@@ -209,6 +209,9 @@ function ArchiveScreen() {
   const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
   const moveSessionToTrash = useAccountStore((s) => s.moveSessionToTrash);
 
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState<"recent" | "oldest" | "name" | "archived">("archived");
+
   const archivedSessions = sessions.filter((s) => s.archived);
 
   const handleLoadSession = (sessionId: string) => {
@@ -233,6 +236,27 @@ function ArchiveScreen() {
     link.click();
   };
 
+  const filteredSessions = archivedSessions.filter((session) => {
+    const searchLower = searchTerm.toLowerCase();
+    const tag = (session.tag || `Session ${session.id.slice(0, 6)}`).toLowerCase();
+    return tag.includes(searchLower) || session.id.includes(searchTerm);
+  });
+
+  const sortedSessions = [...filteredSessions].sort((a, b) => {
+    switch (sortBy) {
+      case "recent":
+        return b.createdAt - a.createdAt;
+      case "oldest":
+        return a.createdAt - b.createdAt;
+      case "name":
+        return ((a.tag || a.id) || "").localeCompare((b.tag || b.id) || "");
+      case "archived":
+        return (b.closedAt || 0) - (a.closedAt || 0);
+      default:
+        return 0;
+    }
+  });
+
   return (
     <div className="screen screen-archive">
       <div className="screen__header">
@@ -242,52 +266,96 @@ function ArchiveScreen() {
         {archivedSessions.length === 0 ? (
           <p>No archived sessions yet. Use "Close Session → Save and Archive" to archive conversations.</p>
         ) : (
-          <div className="session-list">
-            {archivedSessions.map((session) => (
-              <div key={session.id} className="session-item">
-                <div className="session-item__header">
-                  <div>
-                    <h3>{session.tag || `Session ${session.id.slice(0, 8)}`}</h3>
-                    {session.closedAt && (
-                      <span className="session-item__closed-date">
-                        Archived: {new Date(session.closedAt).toLocaleString()}
+          <>
+            <div style={{ display: "flex", gap: "12px", marginBottom: "24px" }}>
+              <input
+                type="text"
+                placeholder="Search archived sessions..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{
+                  flex: 1,
+                  padding: "10px 12px",
+                  fontSize: "13px",
+                  border: "1px solid var(--accent-cyan-tint-06)",
+                  borderRadius: "4px",
+                  background: "var(--surface-base)",
+                  color: "var(--text-primary)",
+                }}
+              />
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as "recent" | "oldest" | "name" | "archived")}
+                style={{
+                  padding: "10px 12px",
+                  fontSize: "13px",
+                  border: "1px solid var(--accent-cyan-tint-06)",
+                  borderRadius: "4px",
+                  background: "var(--surface-base)",
+                  color: "var(--text-primary)",
+                }}
+              >
+                <option value="archived">Most Recently Archived</option>
+                <option value="recent">Most Recently Created</option>
+                <option value="oldest">Oldest First</option>
+                <option value="name">By Name</option>
+              </select>
+            </div>
+
+            {sortedSessions.length === 0 ? (
+              <p style={{ color: "var(--text-secondary)" }}>
+                No archived sessions match your search.
+              </p>
+            ) : (
+              <div className="session-list">
+                {sortedSessions.map((session) => (
+                  <div key={session.id} className="session-item">
+                    <div className="session-item__header">
+                      <div>
+                        <h3>{session.tag || `Session ${session.id.slice(0, 8)}`}</h3>
+                        {session.closedAt && (
+                          <span className="session-item__closed-date">
+                            Archived: {new Date(session.closedAt).toLocaleString()}
+                          </span>
+                        )}
+                      </div>
+                      <span className="session-item__date">
+                        Created: {new Date(session.createdAt).toLocaleString()}
                       </span>
-                    )}
+                    </div>
+                    <p className="session-item__description">
+                      Model: {session.model} • Directness: {session.directness} •{" "}
+                      {session.conversation.length} messages
+                    </p>
+                    <div className="session-item__actions">
+                      <button
+                        type="button"
+                        className="session-item__action-btn session-item__action-btn--primary"
+                        onClick={() => handleLoadSession(session.id)}
+                      >
+                        Load
+                      </button>
+                      <button
+                        type="button"
+                        className="session-item__action-btn"
+                        onClick={() => handleExportSession(session)}
+                        style={{ background: "var(--accent-cyan-tint-12)", color: "var(--text-primary)" }}
+                      >
+                        Export
+                      </button>
+                      <button
+                        type="button"
+                        className="session-item__action-btn session-item__action-btn--danger"
+                        onClick={() => handleDeleteSession(session.id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
-                  <span className="session-item__date">
-                    {new Date(session.createdAt).toLocaleString()}
-                  </span>
-                </div>
-                <p className="session-item__description">
-                  Model: {session.model} • Directness: {session.directness}
-                </p>
-                <div className="session-item__actions">
-                  <button
-                    type="button"
-                    className="session-item__action-btn session-item__action-btn--primary"
-                    onClick={() => handleLoadSession(session.id)}
-                  >
-                    Load
-                  </button>
-                  <button
-                    type="button"
-                    className="session-item__action-btn"
-                    onClick={() => handleExportSession(session)}
-                    style={{ background: "var(--accent-cyan-tint-12)", color: "var(--text-primary)" }}
-                  >
-                    Export
-                  </button>
-                  <button
-                    type="button"
-                    className="session-item__action-btn session-item__action-btn--danger"
-                    onClick={() => handleDeleteSession(session.id)}
-                  >
-                    Delete
-                  </button>
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
+            )}
+          </>
         )}
       </div>
     </div>
