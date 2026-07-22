@@ -138,6 +138,8 @@ interface AccountActions {
   setRating: (rating: Rating) => void;
   addSavedPrompt: (prompt: SavedPrompt) => void;
   removeSavedPrompt: (id: string) => void;
+  /** Toggle a saved prompt's starred/favorite status. */
+  toggleSavedPromptStar: (id: string) => void;
   setVariable: (name: string, value: string) => void;
   removeVariable: (name: string) => void;
   /** Merge a partial visibility change (one or more of the seven checkboxes). */
@@ -209,6 +211,12 @@ export const useAccountStore = create<AccountStore>((set) => ({
   addSavedPrompt: (prompt) => set((s) => ({ savedPrompts: [...s.savedPrompts, prompt] })),
   removeSavedPrompt: (id) =>
     set((s) => ({ savedPrompts: s.savedPrompts.filter((p) => p.id !== id) })),
+  toggleSavedPromptStar: (id) =>
+    set((s) => ({
+      savedPrompts: s.savedPrompts.map((prompt) =>
+        prompt.id === id ? { ...prompt, starred: !prompt.starred } : prompt,
+      ),
+    })),
   setVariable: (name, value) =>
     set((s) => ({ variables: { ...s.variables, [name]: value } })),
   removeVariable: (name) =>

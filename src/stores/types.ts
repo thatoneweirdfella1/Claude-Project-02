@@ -183,6 +183,8 @@ export interface SavedPrompt {
   id: string;
   title: string;
   text: string;
+  /** True when user has starred/favorited this prompt for quick access. */
+  starred?: boolean;
 }
 
 /* Prompt template (CANON Feature 11: "Load Template — pre-populate settings
@@ -326,6 +328,7 @@ export type ScreenId =
   | "customize"
   | "sessions"
   | "templates"
+  | "saved-prompts"
   | "settings"
   | "trash";
 

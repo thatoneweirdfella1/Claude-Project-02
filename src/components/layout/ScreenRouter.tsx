@@ -1165,6 +1165,201 @@ function TemplatesScreen() {
   );
 }
 
+function SavedPromptsScreen() {
+  const savedPrompts = useAccountStore((s) => s.savedPrompts);
+  const removeSavedPrompt = useAccountStore((s) => s.removeSavedPrompt);
+  const toggleSavedPromptStar = useAccountStore((s) => s.toggleSavedPromptStar);
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState<"recent" | "title">("recent");
+
+  const filteredPrompts = savedPrompts.filter((prompt) => {
+    const searchLower = searchTerm.toLowerCase();
+    return prompt.title.toLowerCase().includes(searchLower) || prompt.text.toLowerCase().includes(searchLower);
+  });
+
+  const sortedPrompts = [...filteredPrompts].sort((a, b) => {
+    switch (sortBy) {
+      case "title":
+        return a.title.localeCompare(b.title);
+      case "recent":
+      default:
+        return 0;
+    }
+  });
+
+  const starredPrompts = sortedPrompts.filter((p) => p.starred);
+  const regularPrompts = sortedPrompts.filter((p) => !p.starred);
+
+  return (
+    <div className="screen screen-saved-prompts">
+      <div className="screen__header">
+        <h1>Saved Prompts</h1>
+      </div>
+      <div className="screen__content">
+        {savedPrompts.length === 0 ? (
+          <p>No saved prompts yet. Save prompts from the Translate screen to reuse them later.</p>
+        ) : (
+          <>
+            <div style={{ display: "flex", gap: "12px", marginBottom: "24px" }}>
+              <input
+                type="text"
+                placeholder="Search prompts..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{
+                  flex: 1,
+                  padding: "10px 12px",
+                  fontSize: "13px",
+                  border: "1px solid var(--accent-cyan-tint-06)",
+                  borderRadius: "4px",
+                  background: "var(--surface-base)",
+                  color: "var(--text-primary)",
+                }}
+              />
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as "recent" | "title")}
+                style={{
+                  padding: "10px 12px",
+                  fontSize: "13px",
+                  border: "1px solid var(--accent-cyan-tint-06)",
+                  borderRadius: "4px",
+                  background: "var(--surface-base)",
+                  color: "var(--text-primary)",
+                }}
+              >
+                <option value="recent">Recent</option>
+                <option value="title">By Title</option>
+              </select>
+            </div>
+
+            {sortedPrompts.length === 0 ? (
+              <p style={{ color: "var(--text-secondary)" }}>
+                No prompts match your search.
+              </p>
+            ) : (
+              <>
+                {starredPrompts.length > 0 && (
+                  <div style={{ marginBottom: "32px" }}>
+                    <h3 style={{ fontSize: "14px", fontWeight: "600", marginBottom: "12px", color: "var(--text-secondary)" }}>⭐ Favorite Prompts</h3>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                      {starredPrompts.map((prompt) => (
+                        <div key={prompt.id} style={{
+                          padding: "12px",
+                          background: "var(--surface-tint-01)",
+                          border: "1px solid var(--accent-cyan-tint-06)",
+                          borderRadius: "6px",
+                        }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", gap: "12px" }}>
+                            <div style={{ flex: 1 }}>
+                              <h4 style={{ margin: "0 0 6px", fontSize: "14px", fontWeight: "500" }}>{prompt.title}</h4>
+                              <p style={{ margin: "0", fontSize: "13px", color: "var(--text-secondary)", lineHeight: "1.4" }}>
+                                {prompt.text}
+                              </p>
+                            </div>
+                            <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
+                              <button
+                                type="button"
+                                onClick={() => toggleSavedPromptStar(prompt.id)}
+                                title="Remove from favorites"
+                                style={{
+                                  padding: "6px",
+                                  background: "none",
+                                  border: "none",
+                                  cursor: "pointer",
+                                  color: "var(--accent-cyan)",
+                                }}
+                              >
+                                <Star size={16} fill="currentColor" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => removeSavedPrompt(prompt.id)}
+                                title="Delete prompt"
+                                style={{
+                                  padding: "6px",
+                                  background: "none",
+                                  border: "none",
+                                  cursor: "pointer",
+                                  color: "var(--text-secondary)",
+                                }}
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {regularPrompts.length > 0 && (
+                  <div>
+                    {starredPrompts.length > 0 && (
+                      <h3 style={{ fontSize: "14px", fontWeight: "600", marginBottom: "12px", marginTop: "24px", color: "var(--text-secondary)" }}>Other Prompts</h3>
+                    )}
+                    <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                      {regularPrompts.map((prompt) => (
+                        <div key={prompt.id} style={{
+                          padding: "12px",
+                          background: "var(--surface-tint-01)",
+                          border: "1px solid var(--accent-cyan-tint-06)",
+                          borderRadius: "6px",
+                        }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", gap: "12px" }}>
+                            <div style={{ flex: 1 }}>
+                              <h4 style={{ margin: "0 0 6px", fontSize: "14px", fontWeight: "500" }}>{prompt.title}</h4>
+                              <p style={{ margin: "0", fontSize: "13px", color: "var(--text-secondary)", lineHeight: "1.4" }}>
+                                {prompt.text}
+                              </p>
+                            </div>
+                            <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
+                              <button
+                                type="button"
+                                onClick={() => toggleSavedPromptStar(prompt.id)}
+                                title="Add to favorites"
+                                style={{
+                                  padding: "6px",
+                                  background: "none",
+                                  border: "none",
+                                  cursor: "pointer",
+                                  color: "var(--text-secondary)",
+                                }}
+                              >
+                                <Star size={16} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => removeSavedPrompt(prompt.id)}
+                                title="Delete prompt"
+                                style={{
+                                  padding: "6px",
+                                  background: "none",
+                                  border: "none",
+                                  cursor: "pointer",
+                                  color: "var(--text-secondary)",
+                                }}
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function SettingsScreen() {
   const plan = useAccountStore((s) => s.plan);
   const sessions = useAccountStore((s) => s.sessions);
@@ -1781,6 +1976,8 @@ export function ScreenRouter() {
       return <SessionsScreen />;
     case "templates":
       return <TemplatesScreen />;
+    case "saved-prompts":
+      return <SavedPromptsScreen />;
     case "settings":
       return <SettingsScreen />;
     case "trash":
