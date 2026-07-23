@@ -2,6 +2,16 @@
 
 Instructions for any Claude Code session (local or cloud) working in this repo.
 
+## CRITICAL: Task Sequencing
+
+**Never ask which task to do first.** The order is deterministic:
+1. If tasks are independent, execute them in parallel or in any order.
+2. If Task B requires Task A to exist first, do A then B.
+3. If the dependency chain is unclear, trace it: A→B→C means do A, then B, then C.
+4. Just execute. Do not ask for prioritization.
+
+This applies to every prompt. Every AI reads this before starting work. If you find yourself about to ask "which should we tackle first," stop and figure out the dependency order instead.
+
 ## Branch
 
 Always work on the `build` branch:
