@@ -41,6 +41,62 @@ Each entry includes:
 
 ---
 
+### Transfer Details: 3-State Methodology
+
+**Project/Test Name:** 3-State Methodology (DEFINE → TEST → STABILIZE)
+
+**Purpose:**  
+Problem-solving framework optimized for ADHD users, discovered from friction analysis across 824 conversations. Provides phase-based structure with locked problem statements, self-critique generation, hallucination auditing, and ADHD communication rule compliance checking.
+
+**How It Benefits Main Project:**
+
+1. **Seven Proven ADHD Communication Rules**
+   - Directive-only statements (no "if you want to")
+   - Extreme brevity (max ~10 lines per response)
+   - No explanations unless explicitly requested
+   - Single chosen path (system decides, not user)
+   - Visible progress markers (✓, →, "Next:", etc)
+   - Locked problem statement (repeats to prevent drift)
+   - No optional statements (every statement required)
+
+2. **Prevents Nine ADHD Failure Modes**
+   - Zero procedural memory → system handles sequencing
+   - Cognitive shutdown → enforced brevity
+   - Working memory limits → locked problem prevents loops
+   - Pressure-induced failure → directive guidance
+   - Loop-without-closure → structured phase closure
+   - Dopamine/reward driven → visible progress markers
+   - Context loss → problem statement repeats
+   - Vague instruction sensitivity → directives eliminate ambiguity
+   - Multiple paths paralysis → single chosen path
+
+3. **Three-Phase Methodology**
+   - DEFINE: Lock problem statement, directive output only
+   - TEST: Validate with self-critique and hallucination audit
+   - STABILIZE: Deliver final audited result
+
+4. **Compliance Scoring & Auditing**
+   - Briefness score (line count vs. max 10)
+   - Directive score (proportion of imperative statements)
+   - Visibility score (progress markers detected)
+   - Hallucination audit with confidence scoring
+
+**Complete Implementation Status:** ✅ All features implemented and tested
+
+**Files Included:**
+- Type definitions (types.ts — MethodologyEntry, MethodologyPhase, HallucinationAudit)
+- Store actions (accountStore.ts — recordMethodology with 200-entry cap; sessionStore.ts — phase/statement setters)
+- UI components (MethodologyDropdown.tsx in new methodology/ folder; TransparencyCard.tsx for TEST phase display)
+- Core engine (methodologyEngine.ts — 300+ lines with ADHD rules, compliance analysis, phase detection, critique generation)
+- Updated CLAUDE.md documentation section
+- All persistence/contract tests updated and validated
+
+**Test Coverage:** ✅ 598 unit tests passing, all contract tests updated
+
+**Integration Note:** Ready for immediate use. Methodology defaults to "Standard" and is optional via UI dropdown. Fully type-safe, persisted across reloads, audited with bounded logging.
+
+---
+
 ## Backup Branches
 
 - backup-reference-do-not-touch — Frozen reference. Never modified.
