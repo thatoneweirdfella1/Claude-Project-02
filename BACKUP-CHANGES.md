@@ -19,16 +19,15 @@ Each entry includes:
 
 ## Backup Branches
 
-- `backup-reference-do-not-touch` — Frozen reference. Never modified.
-- `backup-snapshot-2026-07-23-000004` — Immutable snapshot. Never modified.
-- `backup-independent-1` — Independent copy. Modifications require authorization.
-- `backup-independent-2` — Independent copy. Modifications require authorization.
-- `safe-backup-1784764241` — Safe copy. Modifications require authorization.
-- `safe-backup-2-1784764254` — Safe copy. Modifications require authorization.
+- backup-reference-do-not-touch — Frozen reference. Never modified.
+- backup-snapshot-2024-07-23-090804 — Immutable snapshot. Never modified.
+- backup-independent-1 — Independent copy. Modifications require authorization.
+- backup-independent-2 — Independent copy. Modifications require authorization.
+- safe-backup-17647641341 — Safe copy. Modifications require authorization.
 
-## Before Any Modification
+## Rule: Snapshot Protection
 
-Before Claude modifies any backup, a new snapshot is created: `backup-snapshot-YYYY-MM-DD-HHMM`
+Before Claude modifies any backup, a new snapshot is created: backup-snapshot-YYYY-MM-DD-HHMM
 
 This snapshot preserves the exact state before the change, so you can always see:
 1. What existed before
