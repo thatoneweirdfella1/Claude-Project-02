@@ -1,7 +1,23 @@
 # DIVERGENCE.AI BUILD LOG
 
 ## WHERE YOU ARE
-Session completed 4 feature implementations continuing from prior work (Features #9-12 of custom feature set).
+**STEP 12.3 (Deploy) is next and ready.** Codebase is fully built, tested, and deployment-ready.
+
+This session verified and prepared the application for production deployment:
+- Merged latest remote changes with complete Step 8.3 (Debate mode) implementation and all custom Features #9-12
+- Installed missing dependencies (`lucide-react`, `@playwright/test`)
+- Verified TypeScript compilation: clean build
+- Verified all 598 unit tests pass
+- Confirmed full pipeline operability (all 60 build steps complete except deployment)
+- Application is ready for operator's Vercel setup and live deployment
+
+**What's Left (Step 12.3 — Operator Actions Required):**
+1. Import repo to Vercel, set production branch to `build`
+2. Add 6 environment variables: ANTHROPIC_API_KEY, OPENAI_API_KEY, XAI_API_KEY, DEEPSEEK_API_KEY, GOOGLE_API_KEY, APP_ACCESS_PASSWORD
+3. Deploy and verify end-to-end (translate, debate, detection, autosave)
+4. Record live URL in BUILD-LOG.md
+
+**Previous Session Summary — Features #9-12 and Step 12 Preparation:**
 
 **New Features Completed This Session:**
 
@@ -985,6 +1001,7 @@ Blocked: the proxy's live deploy + real streamed call (parked for Step 12.3, unc
   Gradient tokens re-sampled from the real icon (tokens.css): 6-band average across the icon's width, start≈#039ef7, ~66%≈#4241f9, end≈#af0ef5 — replaced `--logo-aurora-green/-purple/-pink` (old placeholder hex) with `--logo-gradient-start/-mid/-end`, renamed since "aurora green" no longer describes anything true. `Logo.tsx` and `BrainMark.tsx` (the small-size reuse of the same mark, four spots per VISUAL-AUDIT V11/V13) both switched from inline SVG to `<img src="/logo-mark.png">` — simpler than porting intricate geometric line art to hand-authored SVG paths, and removes BrainMark's earlier `useId()`-scoped-gradient complexity entirely (a raster `<img>` has no per-instance-uniqueness concern the way an inline SVG gradient did). Synapse-pulse animation dropped, not ported: the real asset is a static mark with no equivalent, nothing to animate or reduce-motion-guard.
   FOUND AND FIXED WHILE EDITING, NOT A SEPARATE BUG: a comment in the first draft of Logo.css contained the literal string "logo-synapse*/keyframes" — the `*/` inside prematurely closed the CSS comment block, breaking the build (`lightningcss minify: Invalid dangling combinator in selector`). Caught by the build itself failing, not missed — reworded the comment to avoid an accidental `*/` sequence.
   CANON.md THE LOGO section rewritten in place (old prose marked revised, not deleted) to describe the real asset. VISUAL-AUDIT.md V6 flipped to FIXED. Verified with real Playwright captures: the top-bar logo, composer label, and TRANSLATE & ASK button all render the new mark and wordmark correctly. Full verification: clean tsc -b, clean vite build, clean oxlint (same pre-existing unrelated warning), vitest 583/583, playwright e2e 4/4.
+- STEP 12.3 READINESS VERIFIED (This Session): Merged latest remote changes with 59 of 60 official build steps complete. Installed missing dependencies (lucide-react, @playwright/test). Verified full TypeScript compilation clean (tsc -b, vite build), all 598 unit tests pass (vitest), and all E2E tests pass (8/8 playwright). Codebase is deployment-ready; waiting only on operator's Vercel setup (import repo, set production branch to `build`, add 6 environment variables, deploy). Post-deploy verification checklist in DEPLOY.md: translate endpoint, debate endpoint, state detection, autosave recovery.
 
 ## PARKED
 - CSS CLASS / COMPONENT NAMES STILL SAY "BLUE MARBLE" / "SMOKED GLASS" AFTER THE GREY OVERRIDE: `surface-blue-marble`, `surface-smoked-glass` (marble.css, ~20 consuming files) and `BlueMarbleButton.tsx`/`GlassButton.tsx`/`GlassCard.tsx`/`GlassPanel.tsx` render Medium Gray Marble / Dark Grey Marble now but still carry their pre-override names. Comments at each site flag this; a future step should do the mechanical rename (class names + component filenames + imports) once there's headroom for a ~20-file diff that's pure rename, no behavior change.
