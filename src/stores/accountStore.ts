@@ -2,11 +2,12 @@ import { create } from "zustand";
 import type {
   AccountState,
   ArchivedPair,
+  AutoSelectUsageLog,
   LayoutId,
   LearnedPreferences,
   LearningAuditEntry,
   MethodologyEntry,
-  PlanFlag,
+  SubscriptionTier,
   PromptTemplate,
   Rating,
   SavedPrompt,
@@ -93,10 +94,18 @@ export const DEFAULT_TEMPLATES: PromptTemplate[] = [
   },
 ];
 
+/** Cap on stored auto-select usage logs — bounded to prevent unbounded
+    growth. Oldest entries dropped first. Plenty of headroom to track a
+    month of heavy usage while keeping the store lean. */
+export const MAX_AUTO_SELECT_USAGE_LOGS = 1000;
+
 /** Fresh default state (factory — see sessionStore for the why). */
 export function createInitialAccountState(): AccountState {
   return {
     plan: "free", // CANON/ROUTING: default free so the gated path is exercised by default. NOT billing.
+    autoSelectUsedThisMonth: 0,
+    autoSelectUsageResetDate: Date.now(),
+    autoSelectUsageLogs: [],
     archivedPairs: [],
     ratings: [],
     savedPrompts: [],
@@ -117,6 +126,9 @@ export function createInitialAccountState(): AccountState {
 /** Persisted data keys, for the autosave layer (Step 1.8). */
 export const ACCOUNT_PERSISTED_KEYS: (keyof AccountState)[] = [
   "plan",
+  "autoSelectUsedThisMonth",
+  "autoSelectUsageResetDate",
+  "autoSelectUsageLogs",
   "archivedPairs",
   "ratings",
   "savedPrompts",
@@ -134,7 +146,7 @@ export const ACCOUNT_PERSISTED_KEYS: (keyof AccountState)[] = [
 ];
 
 interface AccountActions {
-  setPlan: (plan: PlanFlag) => void;
+  setPlan: (plan: SubscriptionTier) => void;
   archivePair: (pair: ArchivedPair) => void;
   addRating: (rating: Rating) => void;
   /** Step 8.1 — upsert: replaces the existing Rating for this messageId (a
@@ -200,6 +212,10 @@ interface AccountActions {
   duplicateSession: (id: string) => void;
   /** Record methodology usage and audit results from a session. */
   recordMethodology: (entry: MethodologyEntry) => void;
+  /** Log auto-select usage (Pro tier feature). Tracks frequency, cost, quality,
+      and whether the selection was kept. Automatically resets monthly counter
+      if we've crossed into a new month. */
+  logAutoSelectUsage: (log: Omit<AutoSelectUsageLog, "id">) => void;
   /** Replace persisted fields wholesale — used by autosave rehydrate (Step 1.8). */
   hydrate: (state: Partial<AccountState>) => void;
 }
@@ -328,5 +344,66 @@ export const useAccountStore = create<AccountStore>((set) => ({
             : next,
       };
     }),
+  logAutoSelectUsage: (log) =>
+    set((s) => {
+      // Check if we've rolled into a new month
+      const lastResetDate = new Date(s.autoSelectUsageResetDate);
+      const now = new Date();
+      const monthRolled =
+        lastResetDate.getMonth() !== now.getMonth() ||
+        lastResetDate.getFullYear() !== now.getFullYear();
+
+      // Reset counters if new month
+      const resetUsage = monthRolled ? 1 : s.autoSelectUsedThisMonth + 1;
+      const resetDate = monthRolled ? Date.now() : s.autoSelectUsageResetDate;
+
+      // Append log with generated id
+      const entry: AutoSelectUsageLog = {
+        ...log,
+        id: `auto-select-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+      };
+      const nextLogs = [...s.autoSelectUsageLogs, entry];
+
+      return {
+        autoSelectUsedThisMonth: resetUsage,
+        autoSelectUsageResetDate: resetDate,
+        autoSelectUsageLogs:
+          nextLogs.length > MAX_AUTO_SELECT_USAGE_LOGS
+            ? nextLogs.slice(nextLogs.length - MAX_AUTO_SELECT_USAGE_LOGS)
+            : nextLogs,
+      };
+    }),
   hydrate: (state) => set(state),
 }));
+
+/** Monthly limits per subscription tier. */
+const AUTO_SELECT_LIMITS: Record<string, number> = {
+  free: 5,
+  pro: 50,
+  "pro-plus": 999,
+};
+
+/** Get the monthly auto-select limit for a given plan. */
+export function getAutoSelectLimit(plan: string): number {
+  return AUTO_SELECT_LIMITS[plan] || 5;
+}
+
+/** Get remaining auto-selects for the current month. */
+export function getAutoSelectRemaining(): number {
+  const state = useAccountStore.getState();
+  const limit = getAutoSelectLimit(state.plan);
+  return Math.max(0, limit - state.autoSelectUsedThisMonth);
+}
+
+/** Check if user can perform an auto-select. */
+export function canPerformAutoSelect(): boolean {
+  const state = useAccountStore.getState();
+  const limit = getAutoSelectLimit(state.plan);
+  return state.autoSelectUsedThisMonth < limit;
+}
+
+/** Map internal SubscriptionTier to routing.js's PlanFlag ("free"|"paid").
+    Pro and pro-plus both route as "paid" for extended thinking/Opus access. */
+export function mapTierToRoutingPlan(tier: string): "free" | "paid" {
+  return tier === "free" ? "free" : "paid";
+}

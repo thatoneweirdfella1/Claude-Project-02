@@ -150,8 +150,8 @@ describe("ACCOUNT_PERSISTED_KEYS", () => {
 
 describe("plain setters", () => {
   it("setPlan sets the plan flag", () => {
-    useAccountStore.getState().setPlan("paid");
-    expect(useAccountStore.getState().plan).toBe("paid");
+    useAccountStore.getState().setPlan("pro");
+    expect(useAccountStore.getState().plan).toBe("pro");
   });
 
   it("setLearnedPreferences replaces the whole value", () => {
@@ -336,7 +336,7 @@ describe("templates", () => {
 
 describe("hydrate", () => {
   it("replaces only the given fields, leaving the rest untouched", () => {
-    useAccountStore.getState().setPlan("paid");
+    useAccountStore.getState().setPlan("pro");
     useAccountStore.getState().hydrate({ plan: "free", variables: { restored: "1" } });
     const s = useAccountStore.getState();
     expect(s.plan).toBe("free");

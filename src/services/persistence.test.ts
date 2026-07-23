@@ -61,7 +61,7 @@ describe("persistence: kill and reload", () => {
       content: "what is the project codename",
       timestamp: 111,
     });
-    useAccountStore.getState().setPlan("paid");
+    useAccountStore.getState().setPlan("pro");
     useAccountStore.getState().setVariable("codename", "Zarquith");
     useAccountStore.getState().setVisibility({ quickTools: true });
     // Step 6.4: a state-pill correction must survive a reload too — the
@@ -100,7 +100,7 @@ describe("persistence: kill and reload", () => {
 
     // Account store returned exactly where it was.
     const account = useAccountStore.getState();
-    expect(account.plan).toBe("paid");
+    expect(account.plan).toBe("pro");
     expect(account.variables.codename).toBe("Zarquith");
     expect(account.visibility.quickTools).toBe(true);
     expect(account.visibility.recentSessions).toBe(true); // untouched default preserved
@@ -117,7 +117,7 @@ describe("persistence: kill and reload", () => {
   });
 
   it("last complete write wins across successive saves", async () => {
-    useAccountStore.getState().setPlan("paid");
+    useAccountStore.getState().setPlan("pro");
     await saveNow();
 
     useAccountStore.getState().setPlan("free");
@@ -150,10 +150,10 @@ describe("persistence: kill and reload", () => {
     const stop = startAutosave();
 
     // A page-hide flush must persist current state.
-    useAccountStore.getState().setPlan("paid");
+    useAccountStore.getState().setPlan("pro");
     window.dispatchEvent(new Event("pagehide"));
     await vi.waitFor(async () => {
-      expect(await rawAccountPlan()).toBe("paid");
+      expect(await rawAccountPlan()).toBe("pro");
     });
 
     // After stop(), a page-hide must NOT persist further changes.
@@ -161,7 +161,7 @@ describe("persistence: kill and reload", () => {
     useAccountStore.getState().setPlan("free");
     window.dispatchEvent(new Event("pagehide"));
     await new Promise((resolve) => setTimeout(resolve, 50));
-    expect(await rawAccountPlan()).toBe("paid"); // unchanged since stop()
+    expect(await rawAccountPlan()).toBe("pro"); // unchanged since stop()
   });
 
   it("persisted session state contains only data, no action functions", async () => {

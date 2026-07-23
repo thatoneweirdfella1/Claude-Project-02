@@ -9,6 +9,7 @@ import { useThemeEffect } from "./useThemeEffect";
 import { ScreenRouter } from "./ScreenRouter";
 import { KeyboardShortcutsModal } from "../KeyboardShortcutsModal";
 import { useKeyboardShortcuts } from "../../keyboard/useKeyboardShortcuts";
+import { DevAdminPanel } from "../settings/DevAdminPanel";
 
 /* AppShell — the structural frame from CANON.md "LAYOUT".
    Regions were empty by design at Step 1.1 (skeleton only), then held
@@ -84,6 +85,7 @@ export function AppShell() {
         </aside>
       </div>
       <KeyboardShortcutsModal open={showShortcuts} onClose={() => setShowShortcuts(false)} />
+      <DevAdminPanel />
     </>
   );
 }

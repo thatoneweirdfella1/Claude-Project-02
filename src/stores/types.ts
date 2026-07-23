@@ -37,9 +37,15 @@ export type TechniqueId =
   | "metaphor"
   | "auto-detect";
 
-/** Free/paid flag. NOT billing — there is no payment or account system
-    (ROUTING.md is explicit). It gates Opus + extended thinking in
-    routing.js. Lives in the account store, defaults "free". */
+/** Subscription tier — internal app tier system for Pro features.
+    Not a billing system — no payment or auth (ROUTING.md explicit).
+    Gates auto-select features and usage limits. Maps to routing's PlanFlag
+    for routing.js calls: free→"free", pro/"pro-plus"→"paid". */
+export type SubscriptionTier = "free" | "pro" | "pro-plus";
+
+/** routing.js's plan flag (ROUTING.md) — "free" is free tier, "paid" is any
+    paid tier (pro or pro-plus). This is the type for routing.js calls.
+    Convert SubscriptionTier via mapTierToRoutingPlan(). */
 export type PlanFlag = "free" | "paid";
 
 /* ── Session-store domain types ───────────────────────────────────────── */
@@ -312,6 +318,23 @@ export interface StateCorrection {
   timestamp: number;
 }
 
+/* Auto-select usage tracking (Step 12.3+ Pro tier). Records when user
+   triggers auto-select (discussion type or model selection), result
+   quality, and whether the selection was kept. Bounded array to prevent
+   unbounded growth. */
+export interface AutoSelectUsageLog {
+  id: string;
+  timestamp: number;
+  type: "discussion_type" | "models";
+  sessionId: string;
+  /** Estimated API cost for this auto-select call */
+  estimatedCost: number;
+  /** User's quality rating (1-5) after seeing the result, or null if not rated */
+  resultQuality?: number;
+  /** True if user kept/used the auto-selected value, false if they rejected it */
+  kept?: boolean;
+}
+
 /* 3-State Methodology tracking (DEFINE → TEST → STABILIZE). Records which
    problem-solving approach was used in a session, the phase it reached,
    and validation/audit results from the TEST phase. */
@@ -394,7 +417,13 @@ export interface SessionState {
 
 /** Account store — persists across browser closes (CANON). */
 export interface AccountState {
-  plan: PlanFlag;
+  plan: SubscriptionTier;
+  /** Auto-select usage tracking for this month. Resets on the 1st. */
+  autoSelectUsedThisMonth: number;
+  /** Last reset date (timestamp). Used to detect when we've rolled into a new month. */
+  autoSelectUsageResetDate: number;
+  /** Bounded log of auto-select usage for analytics. */
+  autoSelectUsageLogs: AutoSelectUsageLog[];
   archivedPairs: ArchivedPair[];
   ratings: Rating[];
   savedPrompts: SavedPrompt[];

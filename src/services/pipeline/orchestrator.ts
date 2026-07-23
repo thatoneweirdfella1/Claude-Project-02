@@ -35,8 +35,9 @@
    see resilience.ts), they just get the same catch-and-report boundary. */
 
 import type { TranslateAskRequest } from "../composer";
-import type { PlanFlag, TechniqueId } from "../../stores/types";
+import type { SubscriptionTier, TechniqueId } from "../../stores/types";
 import type { ProxyCompletionRequest } from "../proxyClient";
+import { mapTierToRoutingPlan } from "../../stores/accountStore";
 import {
   translate,
   gateTranslation,
@@ -65,8 +66,9 @@ export interface PipelineModelClient {
 
 export interface PipelineDeps {
   client: PipelineModelClient;
-  /** accountStore.plan — routing.js's free/paid gate (a flag, not billing). */
-  plan: PlanFlag;
+  /** accountStore.plan — the subscription tier (free/pro/pro-plus). Converted to
+      routing.js's free/paid gate via mapTierToRoutingPlan() before passing to routing. */
+  plan: SubscriptionTier;
   /** Cancels the in-flight model call when the user re-submits mid-run. */
   signal?: AbortSignal;
   /** Retry/timeout tuning (Step 5.3) — omit for the production defaults (3
@@ -197,7 +199,7 @@ export async function* runPipeline(
       prompt: result.translatedPrompt,
       confidence: result.confidence,
       gaps: result.detectedGaps,
-      plan: deps.plan,
+      plan: mapTierToRoutingPlan(deps.plan),
       override: overrideFromSelection(request.model),
     });
   } catch (error) {

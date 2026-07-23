@@ -206,7 +206,7 @@ describe("runPipeline — user choices are honored", () => {
     const events = await collect(
       runPipeline(request("how does quantum entanglement work?", { model: "claude-opus-4-8" }), {
         client: stubClient(),
-        plan: "paid",
+        plan: "pro",
       }),
     );
     expect(byKind(events, "route").result.model).toBe("opus");
