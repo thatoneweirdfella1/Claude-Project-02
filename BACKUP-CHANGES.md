@@ -13,7 +13,31 @@ Each entry includes:
 
 ## Entries
 
-(Changes will be logged here after authorization)
+### 2026-07-23 23:17 — Branch Consolidation: `claude/pensive-mayer-rm8qhf` → `build`
+
+**Backup Branch:** N/A (branch consolidation, not backup modification)
+
+**Files Changed:**
+- `CLAUDE.md` — Merged Backup protection system + 3-State Methodology sections
+- `src/stores/types.ts` — Methodology state type definitions
+- `src/stores/accountStore.ts` — Methodology logging (accountStore.methodologyLog)
+- `src/stores/sessionStore.ts` — Phase management (sessionStore.methodology)
+- `src/components/composer/ControlRow.tsx` — UI dropdown for methodology selector
+- `src/components/methodology/MethodologyDropdown.tsx` — NEW: Methodology selector component
+- `src/services/methodologyEngine.ts` — NEW: Core 3-State engine with ADHD rules
+- `src/components/streaming/TransparencyCard.tsx` — NEW: Transparency display for self-critique
+- `src/services/*.test.ts` (sessionStore, accountStore, persistence) — Contract fixes for new fields
+
+**Authorization:** User requested: "need all information and files transferred over" to preserve 2 test/projects from old conversation history that could benefit the main project but were left on wrong branch.
+
+**Snapshot Reference:** None (branch consolidation from orphaned feature branch to canonical build branch).
+
+**Commits Transferred:**
+- `e3942ac` — Implement 3-State Methodology with ADHD communication rules
+- `9db60f3` — Fix persistence key tests to reflect new methodology fields
+- `31baa44` — Fix persistence.test.ts to include new methodology fields
+
+**Status:** ✅ Transferred to `build`, tested, pushed. Ready for future incorporation.
 
 ---
 
