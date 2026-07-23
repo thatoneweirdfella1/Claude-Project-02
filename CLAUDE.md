@@ -103,3 +103,36 @@ reference for the things a layout actually is — accent color, texture/backgrou
 card/button chrome, spacing, typography feel — and leave CANON's existing structure (nav
 items, panel names, feature set, logo mark) untouched by default. Only change structure if
 the operator explicitly asks for it in words, separately from uploading the image.
+
+## Backup protection system
+
+**Critical rule:** Before modifying ANY backup branch, ask for explicit permission first.
+Do not infer, assume, or implement changes without authorization.
+
+### Backup branches and their purposes
+
+- `backup-reference-do-not-touch` — Frozen reference. Never touched. Ever. This is the unchangeable "before" state.
+- `backup-snapshot-YYYY-MM-DD-HHMM` — Immutable time-stamped snapshots. Created before every change, never modified.
+- `backup-independent-1`, `backup-independent-2` — Independent full copies. Require authorization before modification.
+- `safe-backup-*` — Safe copies. Require authorization before modification.
+
+### Authorization and change tracking
+
+**Every modification requires explicit written authorization.** Record it in `BACKUP-CHANGES.md`:
+- Date/time of change
+- Which backup was modified
+- What files changed (with before/after if possible)
+- Your explicit permission quote or reference
+- Snapshot created before the change (so the state is preserved)
+
+If a change happens without your authorization, the immutable snapshots prove it existed before
+and `BACKUP-CHANGES.md` will show no authorization entry — making the breach immediately visible.
+
+### The protection guarantee
+
+Even if the rule is broken and Claude modifies backups without asking:
+1. `backup-reference-do-not-touch` is frozen — it always reflects the true current state.
+2. Immutable snapshots preserve the exact state before each change.
+3. `BACKUP-CHANGES.md` creates an audit trail — authorized changes are logged, unauthorized changes are missing from the log.
+4. You can always compare any backup against the reference to see what changed.
+5. You can always point to a snapshot and say "good thing this exists — we know what was there before the change."
