@@ -3,6 +3,7 @@ import { ChevronDown, ChevronUp, Info } from "lucide-react";
 import { GlassButton, GlassCard } from "../primitives";
 import { createProxyClient } from "../../services/proxyClient";
 import { useSessionStore } from "../../stores/sessionStore";
+import { useAccountStore } from "../../stores/accountStore";
 import {
   createPartnerClient,
   runDebate,
@@ -22,6 +23,7 @@ import { PartnerPicker } from "./PartnerPicker";
 import { AutoSelectButton } from "./AutoSelectButton";
 import { ConsensusView } from "./ConsensusView";
 import { SynthesisView } from "./SynthesisView";
+import { ProTierSelector } from "./ProTierSelector";
 
 /* MULTI-AI ACTIONS (Step 8.3) — the composer-footer control from the
    screenshot, sitting beside TRANSPARENCY DETAILS in the `.composer__footer-row`
@@ -46,10 +48,14 @@ type Phase = "idle" | "debating" | "consensus" | "synthesis";
 
 export function MultiAiActions() {
   const conversation = useSessionStore((s) => s.conversation);
+  const logAutoSelectUsage = useAccountStore((s) => s.logAutoSelectUsage);
+  // Use conversation length as a session identifier for auto-select logging
+  const sessionId = `session-${conversation.length}`;
 
   const [expanded, setExpanded] = useState(false);
   const [partnerIds, setPartnerIds] = useState<DebatePartnerId[]>([]);
   const [useAutoSelect, setUseAutoSelect] = useState(true);
+  const [useAutoSelectFeature, setUseAutoSelectFeature] = useState(true);
   const [phase, setPhase] = useState<Phase>("idle");
   const [outcome, setOutcome] = useState<DebateOutcome | null>(null);
   const [retrying, setRetrying] = useState<number | null>(null);
@@ -83,6 +89,16 @@ export function MultiAiActions() {
       return;
     }
 
+    // Log auto-select usage if the feature is enabled and we're using auto-select
+    if (useAutoSelectFeature && useAutoSelect) {
+      logAutoSelectUsage({
+        timestamp: Date.now(),
+        type: "discussion_type",
+        sessionId: sessionId || "",
+        estimatedCost: 0.01, // Placeholder — actual cost calculated server-side
+      });
+    }
+
     const result = await runDebate(lastQuestion, {
       claudeClient: (req) => claudeClient.complete(req),
       partnerClient,
@@ -93,7 +109,7 @@ export function MultiAiActions() {
     if (controller.signal.aborted) return;
     setOutcome(result);
     setPhase("idle");
-  }, [lastQuestion, selectedPartnerIds]);
+  }, [lastQuestion, selectedPartnerIds, useAutoSelectFeature, useAutoSelect, sessionId, logAutoSelectUsage]);
 
   /* Re-runs ONE side by index. The other sides' existing text is kept as-is
      rather than re-fetched: they already succeeded, and re-asking would spend
@@ -197,6 +213,12 @@ export function MultiAiActions() {
             </p>
           ) : (
             <>
+              <ProTierSelector
+                useAutoSelect={useAutoSelectFeature}
+                onToggleAutoSelect={setUseAutoSelectFeature}
+                featureType="discussion_type"
+              />
+
               <div className="multi-ai-actions__selection">
                 <AutoSelectButton
                   question={lastQuestion}
@@ -204,15 +226,15 @@ export function MultiAiActions() {
                     setPartnerIds(ids);
                     setUseAutoSelect(false);
                   }}
-                  disabled={busy}
+                  disabled={busy || !useAutoSelectFeature}
                 />
                 <button
                   type="button"
                   className="multi-ai-actions__toggle-manual"
                   onClick={() => setUseAutoSelect(!useAutoSelect)}
-                  disabled={busy}
+                  disabled={busy || !useAutoSelectFeature}
                 >
-                  {useAutoSelect ? "Manual selection" : "Auto-select"}
+                  {useAutoSelect && useAutoSelectFeature ? "Manual selection" : "Auto-select"}
                 </button>
               </div>
 
