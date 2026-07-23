@@ -14,11 +14,16 @@ export const MODEL_DESCRIPTORS: Record<ModelId, string> = {
 };
 
 /** "Auto" (SessionState.model's default — CANON: free tier auto-routes) plus
-    the three models, in registry/tier order. */
+    the three models, in registry/tier order. Opus is marked as Pro since it's
+    a paid-tier model (CANON ROUTING.md). */
 export const MODEL_DROPDOWN_OPTIONS: DropdownOption[] = [
   { value: "auto", label: "Auto" },
-  ...MODEL_IDS.map((id) => ({
-    value: id,
-    label: `${getModel(id).label} — ${MODEL_DESCRIPTORS[id]}`,
-  })),
+  ...MODEL_IDS.map((id) => {
+    const model = getModel(id);
+    const isPro = model.plan === "paid";
+    return {
+      value: id,
+      label: `${model.label} — ${MODEL_DESCRIPTORS[id]}${isPro ? " (Pro)" : ""}`,
+    };
+  }),
 ];
