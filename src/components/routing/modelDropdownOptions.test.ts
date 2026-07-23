@@ -18,7 +18,7 @@ describe("MODEL_DROPDOWN_OPTIONS", () => {
 
   it("matches the screenshot's exact label for Opus", () => {
     const opus = MODEL_DROPDOWN_OPTIONS.find((o) => o.value === "claude-opus-4-8");
-    expect(opus?.label).toBe("Opus 4.8 — smartest");
+    expect(opus?.label).toBe("Opus 4.8 — smartest (Pro)");
   });
 
   it("labels every model option as '{label} — {descriptor}'", () => {

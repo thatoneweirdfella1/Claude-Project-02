@@ -15,9 +15,51 @@ import { isAuthorized, unauthorizedResponse } from "../src/services/appAccess.js
 
 export const config = { runtime: "edge" };
 
+/* Rate limiter — prevents runaway API spend. Tracks requests per minute
+   per client IP. If a single IP exceeds 100 requests/minute, return 429.
+   This is a safety valve: stops accidental loops, DoS attempts, or bugs
+   from burning your entire API budget in seconds. */
+
+const requestCounts = new Map<string, { count: number; resetAt: number }>();
+
+function getRateLimitKey(request: Request): string {
+  return request.headers.get("cf-connecting-ip") || // Cloudflare
+         request.headers.get("x-forwarded-for")?.split(",")[0] || // Nginx/Vercel
+         "unknown";
+}
+
+function checkRateLimit(key: string): boolean {
+  const now = Date.now();
+  const current = requestCounts.get(key);
+
+  if (!current || now > current.resetAt) {
+    // New window or expired
+    requestCounts.set(key, { count: 1, resetAt: now + 60000 });
+    return true; // Allowed
+  }
+
+  current.count++;
+  if (current.count > 100) {
+    return false; // Exceeded limit
+  }
+  return true; // Allowed
+}
+
 export default function handler(request: Request): Promise<Response> {
   if (!isAuthorized(request, process.env.APP_ACCESS_PASSWORD)) {
     return Promise.resolve(unauthorizedResponse());
   }
+
+  // Rate limit check
+  const limitKey = getRateLimitKey(request);
+  if (!checkRateLimit(limitKey)) {
+    return Promise.resolve(
+      new Response(JSON.stringify({ error: "Rate limit exceeded (100 req/min)" }), {
+        status: 429,
+        headers: { "content-type": "application/json" },
+      })
+    );
+  }
+
   return handleProxyRequest(request, process.env.ANTHROPIC_API_KEY);
 }

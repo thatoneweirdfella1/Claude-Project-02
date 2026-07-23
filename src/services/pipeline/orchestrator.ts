@@ -38,6 +38,7 @@ import type { TranslateAskRequest } from "../composer";
 import type { SubscriptionTier, TechniqueId } from "../../stores/types";
 import type { ProxyCompletionRequest } from "../proxyClient";
 import { mapTierToRoutingPlan } from "../../stores/accountStore";
+import { addTokenUsage } from "../costTracking";
 import {
   translate,
   gateTranslation,
@@ -253,6 +254,7 @@ export async function* runPipeline(
       input: composed.prompt,
       signal: deps.signal,
       extendedThinking: routeResult.thinkingApplied || undefined,
+      onUsage: (usage) => addTokenUsage(usage.inputTokens, usage.outputTokens),
     });
     for await (const state of streamAnswer(tokens, meta)) {
       if (state.kind === "streaming") {

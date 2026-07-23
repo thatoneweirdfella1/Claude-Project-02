@@ -125,7 +125,7 @@ describe("DEFAULT_VISIBILITY", () => {
 });
 
 describe("ACCOUNT_PERSISTED_KEYS", () => {
-  it("is exactly the fifteen documented fields", () => {
+  it("is exactly the eighteen documented fields", () => {
     expect([...ACCOUNT_PERSISTED_KEYS].sort()).toEqual(
       [
         "plan",
@@ -143,6 +143,9 @@ describe("ACCOUNT_PERSISTED_KEYS", () => {
         "templates",
         "learningAuditLog",
         "methodologyLog",
+        "autoSelectUsedThisMonth",
+        "autoSelectUsageResetDate",
+        "autoSelectUsageLogs",
       ].sort(),
     );
   });
