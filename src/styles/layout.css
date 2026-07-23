@@ -55,6 +55,19 @@ body {
   grid-area: center;
   min-width: 0; /* lets the flex/center track shrink instead of overflowing */
   overflow-y: auto;
+  /* Fix, this session: CenterColumn's children (ConversationArea, Composer,
+     QuickActionsRow) previously stacked in plain block flow with nothing
+     forcing ConversationArea to occupy space — an empty conversation
+     collapsed to its own padding, so the whole rest of the column showed
+     bare marble slab with no visible panel at all. Flex column here, with
+     ConversationArea taking the remaining space (see .conversation-area
+     flex-grow, streaming.css), keeps the CANON-specified top-to-bottom
+     order (conversation area, then composer, then quick actions) while
+     making the conversation panel always visibly present. Width/height of
+     this grid track itself is unchanged — CANON's LOCKED dimensions are
+     about the column's own size, not its children's internal layout. */
+  display: flex;
+  flex-direction: column;
 }
 
 .col-right {

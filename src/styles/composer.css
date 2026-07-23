@@ -16,6 +16,9 @@
 /* First real consumer of the section-header tokens (Step 1.2 built these,
    unused until now) — MATERIALS.md: cyan is used for "section headers". */
 .input-box__label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin: 0;
   color: var(--accent-cyan);
   font-family: var(--font-family-base);
@@ -59,9 +62,12 @@
   opacity: var(--text-metadata-opacity);
 }
 
-/* Informational only when over the soft target — never blocks typing. */
+/* Informational only when over the soft target — never blocks typing.
+   Step 11.5 (ADHD-AUDIT S1): was --state-cognitive, which collides with the
+   Cognitive Mode pill's own color one panel away — full-opacity
+   --text-secondary reads as "emphasized," not as a second state signal. */
 .input-box__counter--over {
-  color: var(--state-cognitive);
+  color: var(--text-secondary);
   opacity: 1;
 }
 
@@ -119,6 +125,10 @@
 /* Step 7.3 — the "Attach ▾" popover: a menu (Upload a file / Paste a URL)
    that swaps to an inline URL form, matching the technique-popover's own
    positioning/material conventions. */
+/* Material (background/blur/border/radius) comes from the shared
+   `surface-smoked-glass` class (TSX applies both) — this rule is layout
+   only, plus the one property that differs from that class's own default
+   (box-shadow: modal-weight, not card-weight, for a floating popover). */
 .attach-context-controls__popover {
   position: absolute;
   top: 100%;
@@ -130,11 +140,6 @@
   flex-direction: column;
   gap: 2px;
   padding: var(--space-card-padding);
-  background: var(--surface-smoked-glass);
-  backdrop-filter: blur(var(--blur-smoked-glass));
-  -webkit-backdrop-filter: blur(var(--blur-smoked-glass));
-  border: 1px solid var(--surface-smoked-glass-border);
-  border-radius: var(--radius-card);
   box-shadow: var(--shadow-modal);
 }
 
@@ -153,7 +158,7 @@
 }
 
 .attach-context-controls__popover-row:hover {
-  background: rgb(255 255 255 / 0.04);
+  background: var(--hover-tint);
 }
 
 .attach-context-controls__url-form {
@@ -260,6 +265,9 @@
   font-weight: var(--font-weight-metadata);
 }
 
+/* Material comes from the shared `surface-smoked-glass` class (TSX applies
+   both) — layout only here, plus box-shadow (modal-weight, differs from
+   that class's own card-weight default). */
 .attach-context-controls__rejections {
   position: absolute;
   top: 100%;
@@ -272,11 +280,6 @@
   flex-direction: column;
   gap: 6px;
   padding: 10px 32px 10px 10px;
-  background: var(--surface-smoked-glass);
-  backdrop-filter: blur(var(--blur-smoked-glass));
-  -webkit-backdrop-filter: blur(var(--blur-smoked-glass));
-  border: 1px solid var(--surface-smoked-glass-border);
-  border-radius: var(--radius-card);
   box-shadow: var(--shadow-modal);
 }
 
@@ -343,7 +346,7 @@
   margin: 0;
   padding: var(--space-input-padding);
   border-radius: var(--radius-button);
-  background: rgb(255 255 255 / 0.04);
+  background: var(--hover-tint);
   color: var(--text-primary);
   font-family: monospace;
   font-size: var(--font-size-metadata);

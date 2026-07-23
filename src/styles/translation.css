@@ -40,9 +40,9 @@
   margin: 0;
   padding: var(--space-input-padding);
   border-radius: var(--radius-button);
-  border: 1px solid var(--state-cognitive);
+  border: 1px solid var(--confidence-moderate);
   color: var(--text-primary);
-  background: rgb(255 255 255 / 0.04);
+  background: var(--hover-tint);
   font-family: var(--font-family-base);
   font-size: var(--font-size-label-secondary);
   font-weight: var(--font-weight-label-secondary);
@@ -79,11 +79,11 @@
 }
 
 .confidence-badge--proceed {
-  color: var(--status-online);
+  color: var(--confidence-high);
 }
 
 .confidence-badge--moderate {
-  color: var(--state-cognitive);
+  color: var(--confidence-moderate);
 }
 
 /* Clarify prompt — shown instead of an answer below 60. */

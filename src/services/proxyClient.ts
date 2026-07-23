@@ -8,6 +8,8 @@
    fetchImpl is injectable for tests; the sandbox has no network, so live calls
    are exercised only once the proxy is deployed (parked, BUILD-LOG.md). */
 
+import { appAccessHeaders } from "./appAccessClient";
+
 export interface ProxyMessage {
   role: "user" | "assistant";
   content: string;
@@ -81,7 +83,7 @@ export function createProxyClient(config: ProxyClientConfig = {}): ProxyClient {
   ): Promise<Response> {
     const res = await doFetch(endpoint, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", ...appAccessHeaders() },
       body: JSON.stringify({
         model: req.model,
         system: req.system,

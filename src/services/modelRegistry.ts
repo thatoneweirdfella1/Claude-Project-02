@@ -8,7 +8,7 @@
    ModelCallOptions.extendedThinking, applied to a call to any paid-tier model —
    never a fourth registry entry. */
 
-import type { ModelId, PlanFlag } from "../stores/types";
+import type { ModelId, PlanFlag } from "../stores/types.js";
 
 export type { ModelId } from "../stores/types";
 

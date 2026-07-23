@@ -1,15 +1,15 @@
 import { useEffect, useRef, useState } from "react";
+import { Paperclip, Target } from "lucide-react";
 import { GlassButton } from "../primitives";
 import { useDismissableLayer } from "../../keyboard";
 import { useAccountStore } from "../../stores/accountStore";
 import { useSessionStore } from "../../stores/sessionStore";
 import {
   FILE_INPUT_ACCEPT,
-  createTesseractOcrClient,
   fetchUrlContext,
+  getSharedOcrClient,
   isValidVariableName,
   uploadFiles,
-  type OcrClient,
   type RejectedFile,
 } from "../../services/context";
 
@@ -42,15 +42,6 @@ import {
 export interface AttachContextControlsProps {
   onAttach?: () => void;
   onContext?: () => void;
-}
-
-/** One tesseract worker for the whole app session, created on first use —
-    not per component instance, so remounting AttachContextControls (or
-    rendering it twice) never spins up a second worker. */
-let sharedOcrClient: OcrClient | null = null;
-function getOcrClient(): OcrClient {
-  sharedOcrClient ??= createTesseractOcrClient();
-  return sharedOcrClient;
 }
 
 type PopoverView = "menu" | "url" | "variable";
@@ -129,7 +120,7 @@ export function AttachContextControls({
     setUploading(true);
     try {
       const { accepted, rejected } = await uploadFiles(fileList, currentSessionBytes(), {
-        ocrClient: getOcrClient(),
+        ocrClient: getSharedOcrClient(),
       });
       for (const item of accepted) addContextItem(item);
       setRejections(rejected);
@@ -188,14 +179,20 @@ export function AttachContextControls({
         aria-expanded={open}
         disabled={uploading}
       >
+        <Paperclip size={16} aria-hidden="true" />
         Attach ▾
       </GlassButton>
       <GlassButton onClick={onContext} aria-haspopup="dialog">
+        <Target size={16} aria-hidden="true" />
         Context ›
       </GlassButton>
 
       {open && (
-        <div className="attach-context-controls__popover" role="menu" data-testid="attach-popover">
+        <div
+          className="surface-smoked-glass attach-context-controls__popover"
+          role="menu"
+          data-testid="attach-popover"
+        >
           {view === "menu" && (
             <>
               <button
@@ -347,7 +344,7 @@ export function AttachContextControls({
 
       {rejections.length > 0 && (
         <div
-          className="attach-context-controls__rejections"
+          className="surface-smoked-glass attach-context-controls__rejections"
           role="status"
           data-testid="attach-rejections"
         >

@@ -19,15 +19,23 @@ Three texture files were provided (2026-07-17) for MATERIALS.md's THE SLAB RULE:
 marble background, two greys. As delivered, their extensions did not all match their actual file
 type — checked by magic-byte inspection, not by trusting the filename.
 
-| Role | Source filename | Extension claimed | Actual type (magic bytes) | Saved as |
-|---|---|---|---|---|
-| Black Marble (background) | `Black Marble 03.jpg` | `.jpg` | PNG (`89 50 4E 47`) | `public/textures/black-marble.png` |
-| Grey 1 | `Light Gray Marble 01.png` | `.png` | PNG (`89 50 4E 47`) | `public/textures/grey-marble-1.png` |
-| Grey 2 | `Medium Gray Marble 02.png` | `.png` | PNG (`89 50 4E 47`) | `public/textures/grey-marble-2.png` |
+| Role | Source filename | Extension claimed | Actual type (magic bytes) | Saved as (Step 1.3) | Saved as (current) |
+|---|---|---|---|---|---|
+| Black Marble (background) | `Black Marble 03.jpg` | `.jpg` | PNG (`89 50 4E 47`) | `public/textures/black-marble.png` | unchanged |
+| Grey 1 | `Light Gray Marble 01.png` | `.png` | PNG (`89 50 4E 47`) | `public/textures/grey-marble-1.png` | `public/textures/medium-gray-marble.png` |
+| Grey 2 | `Medium Gray Marble 02.png` | `.png` | PNG (`89 50 4E 47`) | `public/textures/grey-marble-2.png` | `public/textures/dark-grey-marble.png` |
 
 `Black Marble 03.jpg` is a PNG despite the `.jpg` extension. Saved with a `.png` extension to
 match its real content, per instruction to name files by actual type rather than the source
 filename's claim.
+
+**Renamed, later session (operator-directed):** "Grey 1" and "Grey 2" were renamed from their
+Step 1.3 exposure-order names to names matching their actual measured darkness — real per-pixel
+sampling found Grey 1 (`Light Gray Marble 01.png`, source-labeled "light") is the LIGHTER of the
+two and Grey 2 (`Medium Gray Marble 02.png`, source-labeled "medium") is the DARKER of the two, an
+apparent conflict in the original source labels. Now used as Medium Gray Marble (Grey 1, lighter —
+interactive tier) and Dark Grey Marble (Grey 2, darker — content tier) per MATERIALS.md's
+operator-directed three-tone override. See BUILD-LOG.md DECISIONS for the full reasoning.
 
 ## KNOWN ISSUE — NOT A BLOCKER
 
@@ -51,14 +59,22 @@ Those pre-built supertiles were copied into this repo and are what the slab CSS 
 references as `background-image` — the raw files above are kept only as the canonical source of
 record, not loaded by any component.
 
-| Rendered role | Built from (raw file above) | Copied from | Saved as |
-|---|---|---|---|
-| Black Marble slab (dark, in-use) | `black-marble.png` | `marble-slab-dark-070706.jpg` | `public/textures/black-marble-slab.jpg` |
-| Grey slab 1 (light exposure, reserved) | `grey-marble-1.png` | `marble-slab-light-2D2C28.jpg` | `public/textures/grey-marble-slab-1.jpg` |
-| Grey slab 2 (mid exposure, reserved) | `grey-marble-2.png` | `marble-slab-mid-1A1917.jpg` | `public/textures/grey-marble-slab-2.jpg` |
+| Rendered role | Built from (raw file above) | Copied from | Saved as (Step 1.3) | Saved as (current) |
+|---|---|---|---|---|
+| Black Marble slab (dark, in-use) | `black-marble.png` | `marble-slab-dark-070706.jpg` | `public/textures/black-marble-slab.jpg` | unchanged |
+| Grey slab 1 (light exposure) | `grey-marble-1.png` | `marble-slab-light-2D2C28.jpg` | `public/textures/grey-marble-slab-1.jpg` | `public/textures/medium-gray-marble-slab.jpg` |
+| Grey slab 2 (mid exposure) | `grey-marble-2.png` | `marble-slab-mid-1A1917.jpg` | `public/textures/grey-marble-slab-2.jpg` | `public/textures/dark-grey-marble-slab.jpg` |
 
-Only `black-marble-slab.jpg` has an active consumer (the Black Marble background and Blue Marble
-buttons, per MATERIALS.md's THE SLAB RULE — buttons sample from the same slab coordinates as the
-background). The two grey slabs are reserved, unused by any component: CANON.md's three-surface
-system (Black Marble, Smoked Glass, Blue Marble) has no defined use for a fourth "grey marble"
-surface yet. See BUILD-LOG.md DECISIONS for the full reasoning and PARKED for the follow-up.
+The "light exposure" / "mid exposure" labels above, from the original Step 1.3 discovery, line up
+exactly with the later real per-pixel measurement (light ≈ #2D2C28 vs. this session's measured
+#2C2B27 median; mid ≈ #1A1917 vs. this session's #191816 median) — independent corroboration that
+Grey slab 1 really is the lighter of the two.
+
+`black-marble-slab.jpg` has an active `url()` consumer (the Black Marble background and Medium Gray
+Marble buttons, renamed from Blue Marble — per MATERIALS.md's THE SLAB RULE, buttons sample from
+the same slab coordinates as the background; this did not change with the grey override). The two
+grey slabs still have no `url()` consumer of their own — CANON's three-surface system still has no
+defined use for a fourth, separately-rendered "grey marble" surface — but as of the grey override
+they DO have an active use as a color-sampling source for the Medium Gray Marble and Dark Grey
+Marble tokens now in tokens.css. See BUILD-LOG.md DECISIONS for the full reasoning and PARKED for
+the naming-debt follow-up (surface-blue-marble/surface-smoked-glass class names not yet renamed).

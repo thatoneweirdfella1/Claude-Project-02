@@ -1,0 +1,185 @@
+/* accordion.css — the right-column revolving-door accordion stack
+   (Step 9.5, CANON Feature 12). Tokens only. */
+
+.accordion-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-list-item-margin);
+}
+
+.accordion-panel {
+  /* Overrides .primitive-glass-panel's height:100%/padding — this stack is
+     a list of independently-sized rows, not one full-height panel. */
+  height: auto;
+  padding: 0;
+  overflow: hidden;
+}
+
+.accordion-panel__header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: var(--space-card-padding);
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-section-header);
+  font-weight: var(--font-weight-section-header);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.accordion-panel__header:hover {
+  color: var(--text-primary);
+}
+
+.accordion-panel__chevron {
+  color: var(--accent-cyan);
+  flex-shrink: 0;
+}
+
+.accordion-panel__body {
+  padding: 0 var(--space-card-padding) var(--space-card-padding);
+}
+
+.accordion-panel__placeholder {
+  margin: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-secondary);
+  font-weight: var(--font-weight-label-secondary);
+  opacity: var(--text-metadata-opacity);
+}
+
+.accordion-panel__content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.accordion-panel__stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--accent-cyan-tint-06);
+}
+
+.accordion-panel__stat-row:last-of-type {
+  border-bottom: none;
+}
+
+.accordion-panel__stat-label {
+  font-size: var(--font-size-label-secondary);
+  font-weight: var(--font-weight-label-secondary);
+  color: var(--text-secondary);
+}
+
+.accordion-panel__stat-value {
+  font-family: var(--font-family-ui);
+  font-size: var(--font-size-label-secondary);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.accordion-panel__note {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.recent-session-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--accent-cyan-tint-06);
+}
+
+.recent-session-item:last-of-type {
+  border-bottom: none;
+}
+
+.recent-session-item__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.recent-session-item__title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.recent-session-item__date {
+  font-size: 11px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.recent-session-item__actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.recent-session-item__btn {
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.recent-session-item__btn--primary {
+  background: var(--accent-cyan);
+  color: var(--text-on-cyan);
+}
+
+.recent-session-item__btn--primary:hover {
+  background: var(--accent-cyan-tint-02);
+}
+
+.recent-session-item__btn--secondary {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--accent-cyan-tint-06);
+}
+
+.recent-session-item__btn--secondary:hover {
+  background: var(--accent-cyan-tint-12);
+  color: var(--text-primary);
+}
+
+.activity-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--accent-cyan-tint-06);
+}
+
+.activity-item:last-of-type {
+  border-bottom: none;
+}
+
+.activity-item__timestamp {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.activity-item__description {
+  font-size: 13px;
+  color: var(--text-primary);
+}

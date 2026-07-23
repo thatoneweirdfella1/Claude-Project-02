@@ -6,6 +6,7 @@ import type { StateDetectionResult } from "../../services/detection";
 import type { DirectnessLevel } from "../../stores/types";
 import { StateDetectionPanel, type PillDimension } from "../detection";
 import { TransparencyCard } from "../transparency";
+import { MultiAiActions } from "../multiAi";
 import { ControlRow } from "./ControlRow";
 import { InputBox } from "./InputBox";
 
@@ -31,9 +32,9 @@ import { InputBox } from "./InputBox";
    documented precedence.
 
    Step 8.2: TRANSPARENCY DETAILS sits below ControlRow, matching the
-   screenshot's composer-footer row (its sibling MULTI-AI ACTIONS control is
-   Step 8.3's own job — an OPUS step, not built here — so the row holds only
-   this one control for now; the wrapping div is the seam 8.3 slots into). */
+   screenshot's composer-footer row. Step 8.3 fills that row's other half with
+   MULTI-AI ACTIONS — the seam 8.2 left for it, used as intended, no
+   restructuring needed. */
 
 export interface ComposerProps {
   onSubmit: (request: TranslateAskRequest) => void;
@@ -42,6 +43,10 @@ export interface ComposerProps {
   /** The most recent detection result, or null before any has arrived / after
       the user dismissed it. Panel renders nothing when null. */
   detection?: StateDetectionResult | null;
+  /** Step 11.2 (latency): true while this turn's state classification is in
+      flight. Shows a quiet inline status in the panel's slot so the >1s wait
+      has an indicator (CANON 1-second rule) instead of a silent blank. */
+  detecting?: boolean;
   onCorrectState?: (dimension: PillDimension, value: string) => void;
   /** Step 6.5 directness consumer — non-null only when the state bus's
       recommendation differs from the current selection; the panel shows it
@@ -55,6 +60,7 @@ export function Composer({
   onAttach,
   onContext,
   detection,
+  detecting = false,
   onCorrectState,
   suggestedDirectness,
   onApplyDirectness,
@@ -83,6 +89,15 @@ export function Composer({
   return (
     <div className="composer" data-testid="composer">
       <InputBox />
+      {detecting && !detection && (
+        <p
+          className="state-detection-panel__detecting"
+          role="status"
+          data-testid="detection-detecting"
+        >
+          Reading your message…
+        </p>
+      )}
       {detection && (
         <StateDetectionPanel
           result={detection}
@@ -94,6 +109,7 @@ export function Composer({
       <ControlRow onAttach={onAttach} onContext={onContext} onTranslateAsk={handleTranslateAsk} />
       <div className="composer__footer-row">
         <TransparencyCard />
+        <MultiAiActions />
       </div>
     </div>
   );

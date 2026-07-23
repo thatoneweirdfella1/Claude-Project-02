@@ -25,6 +25,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 8px; /* VISUAL-AUDIT V4/V5/V13 (fixed this session): consistent icon-to-label spacing, every button that carries a leading lucide icon or BrainMark uses this same gap, no per-button margin hacks */
   min-height: 44px;
   padding: var(--space-button-vertical) var(--space-button-horizontal);
   color: var(--text-primary);
@@ -34,21 +35,25 @@
   cursor: pointer;
 }
 
+.primitive-glass-button svg {
+  flex-shrink: 0; /* icons never compress before button text wraps/truncates */
+}
+
 .primitive-dropdown {
   position: relative;
   display: inline-block;
 }
 
+/* Material comes from the shared `surface-smoked-glass` class (Dropdown.tsx
+   applies it to the <select> directly) — this rule is layout/typography,
+   plus border-radius (button-weight, not that class's own card-weight
+   default). */
 .primitive-dropdown select {
   appearance: none;
   -webkit-appearance: none;
   width: 100%;
   min-height: 44px;
   padding: var(--space-dropdown-padding) 32px var(--space-dropdown-padding) var(--space-dropdown-padding);
-  background: var(--surface-smoked-glass);
-  backdrop-filter: blur(var(--blur-smoked-glass));
-  -webkit-backdrop-filter: blur(var(--blur-smoked-glass));
-  border: 1px solid var(--surface-smoked-glass-border);
   border-radius: var(--radius-button);
   color: var(--text-primary);
   font-family: var(--font-family-base);
@@ -77,11 +82,25 @@
   padding: 6px 12px;
   border-radius: 999px;
   border: 1px solid var(--pill-color);
-  background: rgb(255 255 255 / 0.04);
+  background: var(--hover-tint);
   color: var(--pill-color);
   font-family: var(--font-family-base);
   font-size: var(--font-size-label-secondary);
   font-weight: var(--font-weight-label-secondary);
+}
+
+/* LIGHT THEME (this session): --hover-tint (a 4% WHITE overlay) is correct
+   on dark theme's near-black pill background but reads as nearly invisible
+   white-on-white here — real sampled reference
+   (Divergence_AI_Light_App_Screenshot_V2.png): each state pill gets a
+   visible pastel tint of its OWN color (light purple for Emotion, light
+   red for RSD, etc.), not a generic tint. color-mix keeps this to one rule
+   for all four pills — each already carries its own --pill-color custom
+   property (StatePill.tsx), so this derives the right pastel automatically
+   instead of naming four hardcoded light colors that would drift from
+   --pill-color if that token ever changed. */
+:root[data-theme="light"] .primitive-pill {
+  background: color-mix(in srgb, var(--pill-color) 14%, white);
 }
 
 /* Focus ring — every primitive, visible at every keyboard stop. */

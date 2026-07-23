@@ -1,8 +1,14 @@
-import { ContextSnapshotPanel } from "../context";
-import { CenterColumn } from "../pipeline";
-import { GlassPanel } from "../primitives";
+import { useState } from "react";
+import { QuickToolsGrid } from "../quicktools";
+import { useAccountStore } from "../../stores/accountStore";
+import { AccordionStack } from "./AccordionStack";
+import { useDesignLayoutEffect } from "./useDesignLayoutEffect";
 import { LeftNav } from "./LeftNav";
 import { TopBar } from "./TopBar";
+import { useThemeEffect } from "./useThemeEffect";
+import { ScreenRouter } from "./ScreenRouter";
+import { KeyboardShortcutsModal } from "../KeyboardShortcutsModal";
+import { useKeyboardShortcuts } from "../../keyboard/useKeyboardShortcuts";
 
 /* AppShell — the structural frame from CANON.md "LAYOUT".
    Regions were empty by design at Step 1.1 (skeleton only), then held
@@ -32,30 +38,52 @@ import { TopBar } from "./TopBar";
    GlassPanel's Context Snapshot portion with real content reading
    session.context/session.variables; the other five accordion names
    (Recent Sessions, Recent Activity, Token Usage, Model Status, Active
-   Session) stay as placeholder text, still Steps 9.4-9.6's job. */
+   Session) stay as placeholder text, still Steps 9.5/9.6's job.
+
+   Step 9.4: every right-column region was gated on accountStore.visibility
+   (CANON Feature 12's 7 checkboxes) — Quick Tools and Context Snapshot as
+   real, individually-visibility-gated regions; the still-combined
+   "remaining five" placeholder couldn't be gated per-item yet, so it
+   rendered whenever ANY of the five was ON (an honest interim gate, not
+   exact per-item control).
+
+   Step 9.6: QuickToolsGrid replaces the Quick Tools placeholder text with
+   the real 2x3 tile grid.
+
+   Step 9.5: AccordionStack replaces BOTH ContextSnapshotPanel and the
+   "remaining five" interim block with one revolving-door accordion
+   covering all six panels, each now individually visibility-gated for
+   real (Step 9.4's interim aggregate gate is gone, per that step's own
+   PARKED note). Quick Tools stays a separate sibling here, not part of
+   the accordion — CANON's LAYOUT lists it separately from "the accordion
+   stack." */
 
 export function AppShell() {
+  const visibility = useAccountStore((s) => s.visibility);
+  const [showShortcuts, setShowShortcuts] = useState(false);
+
+  useThemeEffect(); // CANON Feature 12 — resolves theme + Auto, writes documentElement's data-theme
+  useDesignLayoutEffect(); // CLAUDE.md "Design layouts" — writes documentElement's data-layout
+  useKeyboardShortcuts(() => setShowShortcuts(true));
+
   return (
-    <div className="app-shell app-layer">
-      <header className="topbar" aria-label="Top bar" data-testid="topbar">
-        <TopBar />
-      </header>
-      <nav className="col-left" aria-label="Primary navigation" data-testid="col-left">
-        <LeftNav />
-      </nav>
-      <main className="col-center" data-testid="col-center">
-        <CenterColumn />
-      </main>
-      <aside className="col-right" aria-label="Sidebar panels" data-testid="col-right">
-        <GlassPanel className="sidebar-placeholder">
-          Quick Tools placeholder — hidden by default per CANON.md, built in Steps 9.4/9.6.
-        </GlassPanel>
-        <ContextSnapshotPanel />
-        <GlassPanel className="sidebar-placeholder">
-          Remaining accordion placeholders (Recent Sessions, Recent Activity, Token Usage, Model
-          Status, Active Session) — built in Step 9.5.
-        </GlassPanel>
-      </aside>
-    </div>
+    <>
+      <div className="app-shell app-layer">
+        <header className="topbar" aria-label="Top bar" data-testid="topbar">
+          <TopBar />
+        </header>
+        <nav className="col-left" aria-label="Primary navigation" data-testid="col-left">
+          <LeftNav />
+        </nav>
+        <main className="col-center" data-testid="col-center">
+          <ScreenRouter />
+        </main>
+        <aside className="col-right" aria-label="Sidebar panels" data-testid="col-right">
+          {visibility.quickTools && <QuickToolsGrid />}
+          <AccordionStack />
+        </aside>
+      </div>
+      <KeyboardShortcutsModal open={showShortcuts} onClose={() => setShowShortcuts(false)} />
+    </>
   );
 }

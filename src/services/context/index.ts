@@ -22,7 +22,12 @@ export {
 } from "./fileValidation";
 export { readFileAsContextItem, type ReadFileOptions } from "./fileToContextItem";
 export { uploadFiles, type UploadFilesResult, type RejectedFile } from "./uploadFiles";
-export { createTesseractOcrClient, terminateOcrWorker, type OcrClient } from "./ocr";
+export {
+  createTesseractOcrClient,
+  getSharedOcrClient,
+  terminateOcrWorker,
+  type OcrClient,
+} from "./ocr";
 export {
   handleUrlFetchRequest,
   isBlockedUrl,

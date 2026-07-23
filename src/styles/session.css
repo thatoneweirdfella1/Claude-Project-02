@@ -1,0 +1,179 @@
+/* session.css — QUICK ACTIONS row (Step 9.1: New/Duplicate/Close Session;
+   Step 9.2 adds Load Template/Saved Prompts into the same row). Tokens only. */
+
+.quick-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-list-item-margin);
+}
+
+/* Step 11.5 (VISUAL-AUDIT V12): V3 shows a small cyan "QUICK ACTIONS" label
+   above the row; same header tokens as this app's other section titles
+   (e.g. transparency.css's toggle-label, quicktools.css's tile title). */
+.quick-actions__header {
+  margin: 0;
+  color: var(--accent-cyan);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-section-header);
+  font-weight: var(--font-weight-section-header);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.quick-actions-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-list-item-margin);
+}
+
+.quick-actions-row__more {
+  position: relative;
+}
+
+/* Material comes from the shared `surface-smoked-glass` class (TSX applies
+   both — QuickActionsRow/LoadTemplateMenu/SavedPromptsMenu all reuse this
+   one popover style) — layout only, plus box-shadow (modal-weight, differs
+   from that class's own card-weight default). */
+.quick-actions-row__popover {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  z-index: 10;
+  margin-bottom: 6px;
+  width: min(260px, 90vw);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-card-padding);
+  box-shadow: var(--shadow-modal);
+}
+
+.quick-actions-row__popover-title {
+  margin: 0 0 4px;
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-metadata);
+  font-weight: var(--font-weight-metadata);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.quick-actions-row__popover-row {
+  min-height: 44px;
+  padding: var(--space-button-vertical) var(--space-button-horizontal);
+  border: none;
+  border-radius: var(--radius-button);
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label);
+  font-weight: var(--font-weight-label);
+  text-align: left;
+  cursor: pointer;
+}
+
+.quick-actions-row__popover-row:hover {
+  background: var(--hover-tint);
+}
+
+.quick-actions-row__popover-row:disabled {
+  color: var(--text-secondary);
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.quick-actions-row__popover-empty {
+  margin: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-metadata);
+  font-weight: var(--font-weight-metadata);
+  opacity: var(--text-metadata-opacity);
+}
+
+.quick-actions-row__list-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.quick-actions-row__list-row .quick-actions-row__popover-row {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.quick-actions-row__list-remove {
+  flex-shrink: 0;
+  min-width: 24px;
+  min-height: 24px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.quick-actions-row__list-remove:hover {
+  color: var(--action-destructive);
+}
+
+.quick-actions-row__popover-row--destructive {
+  color: var(--action-destructive);
+}
+
+.quick-actions-row__tag-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.quick-actions-row__tag-input {
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 1px solid var(--surface-smoked-glass-border);
+  border-radius: var(--radius-button);
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-secondary);
+}
+
+.quick-actions-row__tag-input:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
+
+.quick-actions-row__tag-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.quick-actions-row__tag-back,
+.quick-actions-row__tag-archive {
+  min-height: 36px;
+  padding: 6px 14px;
+  border: 1px solid var(--surface-smoked-glass-border);
+  border-radius: var(--radius-button);
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-secondary);
+  font-weight: var(--font-weight-label-secondary);
+  cursor: pointer;
+}
+
+.quick-actions-row__tag-archive {
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+
+.quick-actions-row__tag-archive:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

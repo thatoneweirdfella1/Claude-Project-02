@@ -23,7 +23,7 @@ export interface PillCorrectorProps {
 export function PillCorrector({ config, currentValue, onSelect }: PillCorrectorProps) {
   return (
     <div
-      className="pill-corrector"
+      className="surface-smoked-glass pill-corrector"
       role="menu"
       aria-label={`Correct ${config.label}`}
       data-testid={`pill-corrector-${config.dimension}`}

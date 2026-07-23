@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ChevronDown, ChevronUp, Info } from "lucide-react";
 import { GlassButton, GlassCard } from "../primitives";
 import { deriveConfidenceBreakdown } from "../../services/telemetry";
 import { useLatestTelemetry } from "./useLatestTelemetry";
@@ -30,10 +31,11 @@ export function TransparencyCard() {
         onClick={() => setExpanded((prev) => !prev)}
       >
         <span className="transparency-card__toggle-label">
-          <span aria-hidden="true">ⓘ</span> TRANSPARENCY DETAILS
+          <Info size={16} aria-hidden="true" />
+          TRANSPARENCY DETAILS
         </span>
         <span aria-hidden="true" className="transparency-card__chevron">
-          {expanded ? "︿" : "⌄"}
+          {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
         </span>
       </GlassButton>
 

@@ -1,23 +1,7 @@
-/* context-snapshot.css — the Context Snapshot panel (Step 7.5). Sits in the
-   right column's accordion-stack area, spaced like its sibling
-   .sidebar-placeholder panels (shell.css). Tokens only. */
-
-.context-snapshot-panel {
-  margin: var(--space-row-margin);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-list-item-margin);
-}
-
-.context-snapshot-panel__title {
-  margin: 0;
-  color: var(--text-secondary);
-  font-family: var(--font-family-base);
-  font-size: var(--font-size-section-header);
-  font-weight: var(--font-weight-section-header);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
+/* context-snapshot.css — Context Snapshot's list content (Step 7.5). Since
+   Step 9.5, the outer panel/header shell lives in AccordionStack
+   (accordion.css's accordion-panel styles); only the list/row/empty-state
+   rules below still apply. Tokens only. */
 
 .context-snapshot-panel__empty {
   margin: 0;

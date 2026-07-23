@@ -39,7 +39,26 @@ Cleared on session close. Default produced by `createInitialSessionState()`.
 
 Actions: `setDraftInput`, `setModel`, `setDirectness`, `setTechniques`, `addContextItem`,
 `removeContextItem`, `addMessage`, `setStatePills`, `setSessionVariable`, `removeSessionVariable`,
-`setMessageRating`, `resetSession`, `hydrate`.
+`setMessageRating`, `resetSession`, `newSession`, `setCurrentScreen`, `loadSessionRecord`,
+`hydrate`.
+
+**`loadSessionRecord` (Step 9.3):** loads a stored `SessionRecord` (`accountStore.sessions`) back
+into the live session — CANON Feature 11's "Import ... previous conversation". Sets exactly the six
+fields a record carries (`model`/`directness`/`techniques`/`context`/`variables`/`conversation`),
+**clears** `draftInput` and `statePills` (a record stores neither, so keeping the current session's
+values would strand an unsent draft and stale pills above a conversation they don't belong to), and
+leaves `currentScreen` **untouched** (navigation is orthogonal to which session is loaded). This is
+the action Step 9.1's PARKED note predicted would eventually be needed; Recent Sessions (Step 9.5)
+and the Archive screen can call it to make a row clickable.
+
+**`resetSession` vs `newSession` (Step 9.1):** `resetSession()` (Step 1.7, unused until now) resets
+EVERY field to `createInitialSessionState()`, including `model`/`directness`/`techniques` — Close
+Session's job, a harder stop. `newSession()` (Step 9.1) is narrower: CANON Feature 11's "New Session
+(fresh conversation, keeps settings, clears history and context)" — `model`/`directness`/`techniques`
+untouched; `conversation`/`context`/`variables`/`statePills`/`draftInput` cleared. "Context" is read
+as covering both `context` and `variables` (both Feature 6 concepts); `statePills`/`draftInput`
+cleared as belonging to the conversation being cleared, not to "settings" — documented reading, not
+verbatim CANON text.
 
 **`techniques` field-type change (Step 4.5):** Step 1.7 originally typed this field as a single
 `TechniqueId` (`"socratic"` default). Step 4.5's own spec explicitly requires manual selection to
@@ -62,17 +81,26 @@ Persists across browser closes. Default produced by `createInitialAccountState()
 | Field | Type | Default | Owning step for full detail |
 |---|---|---|---|
 | `plan` | `PlanFlag` = `"free" \| "paid"` | `"free"` | Routing gate: routing.js (wired in a later Phase-3 step). See note below. |
-| `archivedPairs` | `ArchivedPair[]` | `[]` | Session lifecycle/archive: **Steps 9.1–9.2**. Shape provisional. |
+| `archivedPairs` | `ArchivedPair[]` | `[]` | Session lifecycle/archive: **Steps 9.1–9.2**. Shape provisional — Step 9.1 confirmed this per-pair shape doesn't fit Feature 11's session-granularity needs; left unused, see `sessions` below. |
+| `sessions` | `SessionRecord[]` (`id`, `createdAt`, `closedAt?`, `archived`, `tag?`, `model`, `directness`, `techniques`, `context`, `variables`, `conversation`) | `[]` | Session lifecycle: **Step 9.1**. Duplicate Session appends one with `archived: false`; Close Session's "save and archive"/"archive tagged" append one with `archived: true` (+`tag` when given); "discard" appends nothing. Feeds Recent Sessions (Step 9.5) and the Archive screen (Step 9.7), both filtering this same list by `archived`. |
 | `ratings` | `Rating[]` | `[]` | Feedback + learning loop: **Steps 8.1 / 7.2 / 10.x**. Stored shape settled; Step 8.1 wires the real save path via `setRating` (upsert by `messageId`), leaving `addRating` (Step 1.7, pure-append) unused/untouched. |
 | `savedPrompts` | `SavedPrompt[]` | `[]` | Saved prompts: **Step 9.2**. |
 | `variables` | `SavedVariables` = `Record<string,string>` | `{}` | Variables: **Step 7.4**. |
 | `visibility` | `VisibilitySettings` (7 booleans) | `DEFAULT_VISIBILITY` | Visibility toggle: **Step 9.4**. Defaults fully specified by CANON Feature 12. |
-| `learnedPreferences` | `LearnedPreferences` (`routing` + `technique` records) | `{ routing:{}, technique:{} }` | Pattern analysis / rule refinement: **Steps 10.1–10.2**. Shape provisional. |
+| `learnedPreferences` | `LearnedPreferences` (`routing: Record<string,unknown>` + `technique: Record<string, TechniquePreference>`) | `{ routing:{}, technique:{} }` | Pattern analysis / rule refinement: **Steps 10.1–10.2**. `technique` shape settled at Step 10.2 (`TechniquePreference` = `weight`/`lastAdjustedAt`/`totalAdjustments`); `routing` stays an open `Record<string, unknown>` — the analyzer never emits a routing-targeted proposal, nothing to shape yet. |
 | `stateCorrections` | `StateCorrection[]` (`dimension`, `from`, `to`, `timestamp`) | `[]` | State-detection correction learning: **Step 6.4**. See note below — deliberately NOT `learnedPreferences`. |
+| `learningAuditLog` | `LearningAuditEntry[]` (`id`, `timestamp`, `proposalType`, `target`, `adjustment`, `previousWeight`, `newWeight`, `confidence`, `reasoning`, `affectedRunCount`) | `[]` | Rule refinement audit trail: **Step 10.2**. PIPELINE.md LEARNING LOOP: "An applier writes accepted refinements to the account store with an audit log." Bounded at `MAX_LEARNING_AUDIT_ENTRIES` (500, oldest dropped first). |
 
 Actions: `setPlan`, `archivePair`, `addRating`, `setRating`, `addSavedPrompt`, `removeSavedPrompt`,
 `setVariable`, `removeVariable`, `setVisibility`, `setLearnedPreferences`,
-`recordStateCorrection`, `hydrate`.
+`recordStateCorrection`, `addSessionRecord`, `hydrate`.
+
+**`applyLearningRefinements` (Step 10.2):** a second, more specific write path alongside the
+pre-existing `setLearnedPreferences` (wholesale replace, Step 1.7, left untouched). Takes the
+already-computed result of `services/learningLoop/applier.ts`'s pure `applyRefinements()` — the
+store itself never imports from `services/` (no store action does) — and sets `learnedPreferences`
+AND appends to `learningAuditLog` in one atomic `set()` call, so the two fields can never be
+observed out of sync with each other.
 
 Persisted keys for autosave: `ACCOUNT_PERSISTED_KEYS`.
 

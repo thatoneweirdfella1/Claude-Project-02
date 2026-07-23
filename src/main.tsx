@@ -1,5 +1,6 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { AppAccessGate } from "./components/layout/AppAccessGate";
 import { AppShell } from "./components/layout/AppShell";
 import { MarbleSlab } from "./components/layout/MarbleSlab";
 import { loadPersistedState, startAutosave } from "./services/persistence";
@@ -20,6 +21,12 @@ import "./styles/context-snapshot.css";
 import "./styles/transparency.css";
 import "./styles/multi-ai.css";
 import "./styles/export.css";
+import "./styles/import.css";
+import "./styles/session.css";
+import "./styles/visibility.css";
+import "./styles/quicktools.css";
+import "./styles/accordion.css";
+import "./styles/access-gate.css";
 
 /* Restore persisted state before first paint so the user returns exactly
    where they were (no default-then-restored flicker), then mount and
@@ -38,7 +45,9 @@ async function bootstrap() {
   createRoot(document.getElementById("root")!).render(
     <StrictMode>
       <MarbleSlab />
-      <AppShell />
+      <AppAccessGate>
+        <AppShell />
+      </AppAccessGate>
     </StrictMode>,
   );
 

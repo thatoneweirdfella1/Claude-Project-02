@@ -174,7 +174,7 @@ describe("persistence: kill and reload", () => {
     const hasFunction = Object.values(raw).some((v) => typeof v === "function");
     expect(hasFunction).toBe(false);
     expect(Object.keys(raw).sort()).toEqual(
-      ["context", "conversation", "directness", "draftInput", "model", "statePills", "techniques", "variables"].sort(),
+      ["context", "conversation", "currentScreen", "directness", "draftInput", "lockedProblemStatement", "methodology", "methodologyPhase", "model", "statePills", "techniques", "variables"].sort(),
     );
   });
 });

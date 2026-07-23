@@ -13,6 +13,7 @@
    provides one for free. */
 
 import type { ContextItem, ContextItemKind } from "../../stores/types";
+import { appAccessHeaders } from "../appAccessClient";
 import { MAX_FILE_BYTES, MAX_SESSION_BYTES, formatBytes } from "./fileValidation";
 import type { UrlFetchResponseBody } from "./urlFetchHandler";
 
@@ -90,7 +91,7 @@ export async function fetchUrlContext(
   try {
     res = await doFetch(FETCH_URL_ENDPOINT, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", ...appAccessHeaders() },
       body: JSON.stringify({ url }),
     });
   } catch {

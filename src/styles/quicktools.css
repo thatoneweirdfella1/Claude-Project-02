@@ -1,0 +1,259 @@
+/* quicktools.css — QUICK TOOLS grid (Step 9.6). Tokens only. */
+
+.quick-tools {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-list-item-margin);
+}
+
+/* Step 11.5 (VISUAL-AUDIT V3): header row above the grid, matching V3's
+   cyan "QUICK TOOLS" label + gear. Same header tokens as .quick-actions__header
+   (session.css) and .quick-tools-tile__title, for one consistent section-label
+   look across the sidebar. */
+.quick-tools__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.quick-tools__header-label {
+  margin: 0;
+  color: var(--accent-cyan);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-section-header);
+  font-weight: var(--font-weight-section-header);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.quick-tools__header-gear {
+  color: var(--accent-cyan);
+  font-size: 14px;
+}
+
+/* Step 11.5 (VISUAL-AUDIT V1): 3 columns, matching V3's 3x2 layout
+   (was repeat(2, 1fr) — CANON's "2x3 grid" wording was ambiguous; the
+   screenshot resolves it). Tile DOM order (Router/Techniques/Prompt Library,
+   then Variables/Checkpoints/Dashboard) already matches V3's row order. */
+.quick-tools-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-list-item-margin);
+}
+
+.quick-tools-tile {
+  position: relative;
+  /* Fix, this session (found once Quick Tools became visible by default —
+     latent since Step 9.6/11.5, never actually rendered until now): grid
+     items default to min-width: auto, which lets a tile's own content
+     (e.g. "Prompt Library" or "Checkpoints") force it wider than its 1fr
+     track's fair-share width rather than wrap/shrink to fit — the third
+     column was overflowing col-right's 300px boundary by ~25px, confirmed
+     with real getBoundingClientRect() measurements (tile right edge at
+     ~1550px against a 1525px viewport). min-width: 0 is the standard fix:
+     it lets the tile actually respect the grid track instead of growing
+     past it. */
+  min-width: 0;
+}
+
+/* Material comes from the shared `surface-smoked-glass` class (TSX applies
+   both) — this rule is layout/typography only, no overrides needed since
+   the tile's own radius already matches that class's card-weight default. */
+.quick-tools-tile__button {
+  width: 100%;
+  min-height: 72px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: var(--space-card-padding);
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  cursor: pointer;
+}
+
+.quick-tools-tile__button:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
+
+.quick-tools-tile__icon {
+  color: var(--accent-cyan);
+  font-size: 20px;
+  line-height: 1;
+}
+
+/* Step 11.5 (VISUAL-AUDIT V2): per-tile icon colors, matching V3 (Router
+   green, Techniques purple, Prompt Library orange, Checkpoints red,
+   Dashboard blue). Variables stays the base --accent-cyan above — V3's own
+   color for it. Existing state/action tokens reused where the meaning
+   aligns; Prompt Library's orange has no existing token (--tile-prompt-library,
+   tokens.css). */
+.quick-tools-tile__icon--router {
+  color: var(--state-interest);
+}
+
+.quick-tools-tile__icon--techniques {
+  color: var(--accent-purple);
+}
+
+.quick-tools-tile__icon--library {
+  color: var(--tile-prompt-library);
+}
+
+.quick-tools-tile__icon--checkpoints {
+  color: var(--action-destructive);
+}
+
+.quick-tools-tile__icon--dashboard {
+  color: var(--state-cognitive);
+}
+
+.quick-tools-tile__label {
+  font-size: var(--font-size-metadata);
+  font-weight: var(--font-weight-metadata);
+  text-align: center;
+}
+
+/* Material comes from the shared `surface-smoked-glass` class — layout
+   only, plus box-shadow (modal-weight, differs from that class's own
+   card-weight default).
+
+   `right: 0` (was `left: 0`, operator-reported): every Quick Tools tile
+   sits inside col-right, a 300px column flush against the viewport's own
+   right edge — a popover opening RIGHTWARD from a tile there has nowhere
+   to go but off-screen, which is exactly what got reported (a popover
+   "half off screen, can't make it out"). Anchoring the popover's right
+   edge to the tile's right edge instead opens it LEFTWARD, into the
+   sidebar/center-column space that's actually available, regardless of
+   which of the grid's 3 columns the tile is in — real screenshot confirmed
+   the cutoff (Prompt Library tile, 3rd/rightmost column, is where it's
+   worst, but 2nd-column tiles were at real risk of the same thing at
+   narrower widths, not just the 3rd). */
+.quick-tools-tile__popover {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 10;
+  margin-top: 6px;
+  width: max(220px, 100%);
+  max-width: 90vw;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: var(--space-card-padding);
+  box-shadow: var(--shadow-modal);
+}
+
+.quick-tools-tile__title {
+  margin: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-section-header);
+  font-weight: var(--font-weight-section-header);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.quick-tools-tile__empty {
+  margin: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-secondary);
+  font-weight: var(--font-weight-label-secondary);
+  opacity: var(--text-metadata-opacity);
+}
+
+.quick-tools-tile__row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.quick-tools-tile__row-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-secondary);
+  font-weight: var(--font-weight-label-secondary);
+}
+
+.quick-tools-tile__row-remove {
+  flex-shrink: 0;
+  min-width: 24px;
+  min-height: 24px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.quick-tools-tile__row-remove:hover {
+  color: var(--action-destructive);
+}
+
+.quick-tools-tile__add-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.quick-tools-tile__add-input {
+  min-height: 36px;
+  padding: 6px 8px;
+  border: 1px solid var(--surface-smoked-glass-border);
+  border-radius: var(--radius-button);
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-secondary);
+}
+
+.quick-tools-tile__add-input:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
+
+.quick-tools-tile__add-button {
+  min-height: 36px;
+  padding: 6px 14px;
+  border: 1px solid var(--accent-cyan);
+  border-radius: var(--radius-button);
+  background: transparent;
+  color: var(--accent-cyan);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-secondary);
+  font-weight: var(--font-weight-label-secondary);
+  cursor: pointer;
+}
+
+.quick-tools-tile__add-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* PromptLibraryTile reuses LoadTemplateMenu (Step 9.2) wholesale — its
+   popover is styled as `.quick-actions-row__popover` (session.css),
+   anchored `bottom: 100%; left: 0` for the composer footer. Nested inside a
+   grid tile in the sidebar, "pop up above the trigger" is the wrong
+   direction (a tile could be in any row) — flip it to match every other
+   tile here. `left: auto; right: 0` (operator-reported, real screenshot):
+   same col-right-flush-against-the-viewport-edge overflow as
+   .quick-tools-tile__popover just above — this is in fact the exact
+   popover the report showed cut off (Prompt Library tile). */
+.quick-tools-tile .quick-actions-row__popover {
+  bottom: auto;
+  top: 100%;
+  left: auto;
+  right: 0;
+  margin-bottom: 0;
+  margin-top: 6px;
+}

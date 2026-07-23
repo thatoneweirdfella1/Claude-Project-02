@@ -128,12 +128,45 @@ export interface ContextItem {
 /* ── Account-store domain types ───────────────────────────────────────── */
 
 /* Archived question/answer pair. Provisional — archive/session lifecycle
-   is Steps 9.1–9.2; minimal here. */
+   is Steps 9.1–9.2; minimal here. Step 9.1 confirmed this per-PAIR shape
+   doesn't fit Feature 11's actual needs (Duplicate/Close Session and the
+   Recent Sessions/Archive screens all operate on a whole SESSION —
+   conversation + context + settings — not one Q/A pair at a time), so it's
+   left exactly as-is here: unused, not repurposed, not deleted. See
+   SessionRecord below and the Step 9.1 DECISIONS entry. */
 export interface ArchivedPair {
   id: string;
   question: string;
   answer: string;
   timestamp: number;
+}
+
+/* A whole session snapshot (CANON Feature 11: Duplicate Session "copy
+   conversation, context, and settings"; Close Session "save and archive,
+   discard, or archive tagged"; LEFT NAVIGATION's Archive screen; the Recent
+   Sessions accordion, Step 9.5). Duplicating writes one of these with
+   `archived: false` (a filed-away copy, live session keeps running
+   untouched) — closed-and-saved sessions write one with `archived: true`
+   (optionally `tag`ged); a *discarded* close writes nothing here at all,
+   by design ("discard" means don't keep it). */
+export interface SessionRecord {
+  id: string;
+  createdAt: number;
+  /** Set only when archived via Close Session; undefined for a duplicated,
+      still-conceptually-open copy. */
+  closedAt?: number;
+  archived: boolean;
+  /** User-entered label from "archive tagged" — absent for a plain "save
+      and archive". */
+  tag?: string;
+  /** True when user has starred/favorited this session for quick access. */
+  starred?: boolean;
+  model: ModelSelection;
+  directness: DirectnessLevel;
+  techniques: TechniqueId[];
+  context: ContextItem[];
+  variables: SavedVariables;
+  conversation: ConversationMessage[];
 }
 
 /* Feedback rating (CANON Feature 7). Full rating UI + learning loop is
@@ -145,16 +178,53 @@ export interface Rating {
   timestamp: number;
 }
 
-/* Saved prompt (CANON Feature 11). */
+/* Saved prompt (CANON Feature 11: "reuse previous questions"). */
 export interface SavedPrompt {
   id: string;
   title: string;
   text: string;
+  /** True when user has starred/favorited this prompt for quick access. */
+  starred?: boolean;
+}
+
+/* Prompt template (CANON Feature 11: "Load Template — pre-populate settings
+   and a starter question"; Feature 12's Prompt Library tile is "save/load
+   prompt templates" — the same list, a fuller management view over it,
+   Step 9.6). `context`/`starterQuestion` are optional per CANON's own
+   wording ("optional context and starter question"); model/directness/
+   techniques are always set since CANON lists them as the template's actual
+   settings, not optional extras. */
+export interface PromptTemplate {
+  id: string;
+  title: string;
+  model: ModelSelection;
+  directness: DirectnessLevel;
+  techniques: TechniqueId[];
+  context?: ContextItem[];
+  starterQuestion?: string;
+  /** True when user has starred/favorited this template for quick access. */
+  starred?: boolean;
 }
 
 /* Explicitly-saved variables ($name -> value), CANON Feature 6/11.
    Record, not Map, so it serializes straight to IndexedDB. */
 export type SavedVariables = Record<string, string>;
+
+/* Theme preference (CANON Feature 12: "gear dropdown... with theme toggle
+   (Light / Dark / Auto)"). Built this session, alongside the actual light
+   token set (MATERIALS.md/tokens.css) — CANON named this feature back at
+   Step 10.1-adjacent but nothing implemented it until now (VISUAL-AUDIT
+   V16). "auto" resolves against prefers-color-scheme at render time, not
+   stored as a resolved value — see useThemeEffect.ts. */
+export type ThemePreference = "light" | "dark" | "auto";
+
+/* Layout — a complete visual re-skin (accent color, marble textures, logo
+   treatment, card/button styling), independent of ThemePreference above:
+   every layout works in both light and dark. See CLAUDE.md "Design
+   layouts" for the standing rule this exists to serve — new operator-
+   uploaded designs become new LayoutId values here, added alongside
+   "original", never replacing it. */
+export type LayoutId = "original" | "gold";
 
 /* Visibility settings (CANON Feature 12) — the seven sidebar checkboxes.
    Fully specified by CANON now, including exact defaults below. */
@@ -168,16 +238,61 @@ export interface VisibilitySettings {
   activeSession: boolean;
 }
 
-/* Learned routing and technique preferences. Provisional — the pattern
-   analysis and rule refinement engines are Steps 10.1/10.2. Shape kept
-   open (Record) until then. (State-DETECTION correction learning is a
-   separate concept — see StateCorrection/AccountState.stateCorrections,
-   Step 6.4 — not stored here: this Record pair is specifically the
-   ratings-driven routing/technique rule refinement PIPELINE.md's LEARNING
-   LOOP describes, e.g. "low ratings + 'too verbose' reduce Detailed".) */
+/* Learned routing and technique preferences (CANON "STORES AND
+   PERSISTENCE": "learned routing and technique preferences"). Written by
+   Step 10.2's applier from Step 10.1's analyzer proposals. (State-
+   DETECTION correction learning is a separate concept — see
+   StateCorrection/AccountState.stateCorrections, Step 6.4 — not stored
+   here: this pair is specifically the ratings-driven routing/technique
+   rule refinement PIPELINE.md's LEARNING LOOP describes, e.g. "low
+   ratings + 'too verbose' reduce Detailed".)
+
+   `routing` stays an open Record — Step 10.1's analyzer computes routing/
+   complexity patterns but never actually emits a routing-targeted
+   RefinementProposal (only "technique-weight" proposals are produced),
+   so there is nothing yet to give this a firmer shape. A future step
+   that adds routing proposals should shape this the same way `technique`
+   is shaped below, not invent a second convention. */
 export interface LearnedPreferences {
   routing: Record<string, unknown>;
-  technique: Record<string, unknown>;
+  technique: Record<string, TechniquePreference>;
+}
+
+/* One technique's learned weight (Step 10.2). `weight` is a small signed
+   integer nudge (not a percentage or multiplier) — +1 per applied
+   "increase" proposal, -1 per "decrease", clamped to
+   [MIN_TECHNIQUE_WEIGHT, MAX_TECHNIQUE_WEIGHT] (services/learningLoop/
+   applier.ts) so repeated learning-loop runs over an account's lifetime
+   can't drift a technique's standing without bound. A negative weight
+   deprioritizes a technique in auto-detect scoring; it never fully
+   suppresses one (CANON "never a black box" — no technique silently
+   vanishes from the registry). Consuming this weight in the actual
+   auto-detect scorer (services/techniques/autoDetect.ts) is NOT wired by
+   Step 10.2 — this is the seam, a future step is the consumer, same
+   "seam ready, owning step consumes it" pattern as Step 6.5's
+   deriveStateFeeds().transparency sitting unconsumed until Step 8.2. */
+export interface TechniquePreference {
+  weight: number;
+  lastAdjustedAt: number;
+  totalAdjustments: number;
+}
+
+/* One audit entry for a learning-loop refinement actually applied to
+   learnedPreferences (Step 10.2, PIPELINE.md LEARNING LOOP: "An applier
+   writes accepted refinements to the account store with an audit log").
+   One entry per proposal applied, in the same batch a background
+   analysis run produces (services/learningLoop/backgroundJob.ts). */
+export interface LearningAuditEntry {
+  id: string;
+  timestamp: number;
+  proposalType: "technique-weight" | "detection-threshold";
+  target: string;
+  adjustment: "increase" | "decrease";
+  previousWeight: number;
+  newWeight: number;
+  confidence: number;
+  reasoning: string;
+  affectedRunCount: number;
 }
 
 /* One state-pill correction (CANON Feature 5 / PIPELINE.md STATE DETECTION,
@@ -197,9 +312,50 @@ export interface StateCorrection {
   timestamp: number;
 }
 
+/* 3-State Methodology tracking (DEFINE → TEST → STABILIZE). Records which
+   problem-solving approach was used in a session, the phase it reached,
+   and validation/audit results from the TEST phase. */
+export type MethodologyType = "standard" | "3-state";
+export type MethodologyPhase = "define" | "test" | "stabilize";
+
+export interface HallucinationAudit {
+  claimId: string;
+  text: string;
+  confidence: number;
+  verified: boolean;
+  notes: string;
+}
+
+export interface MethodologyEntry {
+  id: string;
+  sessionId: string;
+  methodology: MethodologyType;
+  phase: MethodologyPhase;
+  lockedProblemStatement: string;
+  hallucinations: HallucinationAudit[];
+  timestamp: number;
+}
+
 /* ── The two store state shapes (top-level: authoritative at Step 1.7) ── */
 
 /** Session store — cleared when a session closes (CANON). */
+export type ScreenId =
+  | "translate"
+  | "home"
+  | "dashboard"
+  | "messages"
+  | "archive"
+  | "resources"
+  | "projects"
+  | "integrations"
+  | "tasks"
+  | "customize"
+  | "sessions"
+  | "templates"
+  | "saved-prompts"
+  | "settings"
+  | "trash";
+
 export interface SessionState {
   /** The composer's in-progress, not-yet-submitted text (Step 5.0). Lives here
       (not local component state) so autosave (Step 1.8) covers it — CANON's
@@ -224,6 +380,16 @@ export interface SessionState {
       sessions — same `SavedVariables` shape (Record<string,string>, keys are
       the bare name without the "$"), reused rather than redeclared. */
   variables: SavedVariables;
+  /** Step 9.7 ADD — Current screen for left-nav routing. Determines which
+      screen's content is shown in the center column. Defaults to "translate"
+      (the composer view). */
+  currentScreen: ScreenId;
+  /** 3-State Methodology selection. Defaults to "standard". */
+  methodology: MethodologyType;
+  /** Current phase in 3-State Methodology (if active). */
+  methodologyPhase: MethodologyPhase;
+  /** Locked problem statement for DEFINE phase. Prevents drift. */
+  lockedProblemStatement: string;
 }
 
 /** Account store — persists across browser closes (CANON). */
@@ -234,6 +400,14 @@ export interface AccountState {
   savedPrompts: SavedPrompt[];
   variables: SavedVariables;
   visibility: VisibilitySettings;
+  /** CANON Feature 12's theme toggle. Default "dark" — matches every prior
+      session's only rendered theme; this field didn't exist before, so a
+      default that changes nothing for existing users is correct. */
+  theme: ThemePreference;
+  /** Design layout (CLAUDE.md "Design layouts") — default "original" for
+      the same reason theme defaults to "dark": changes nothing for
+      existing users until they explicitly pick something else. */
+  layout: LayoutId;
   learnedPreferences: LearnedPreferences;
   /** Step 6.4 ADD: every state-pill correction the user has made, across all
       sessions (this store persists across browser closes — corrections must
@@ -241,4 +415,25 @@ export interface AccountState {
       Bounded (see accountStore.ts) so a very long-lived account can't grow
       this unboundedly. */
   stateCorrections: StateCorrection[];
+  /** Step 9.1 ADD — CANON Feature 11: every duplicated or closed-and-archived
+      session (a plain "discard" close writes nothing here). Feeds the
+      Recent Sessions accordion (Step 9.5) and the Archive screen (LEFT
+      NAVIGATION, Step 9.7) — both read this same list, filtered by
+      `archived`. */
+  sessions: SessionRecord[];
+  /** Deleted sessions moved to trash (not permanently deleted). Can be
+      restored or permanently deleted from here. */
+  trashed: SessionRecord[];
+  /** Step 9.2 ADD — CANON Feature 11 "Load Template" / Feature 12's Prompt
+      Library tile ("save/load prompt templates") — the same list. Seeded
+      with a few built-in presets (accountStore.ts) so the feature is
+      immediately usable before any user has saved one of their own. */
+  templates: PromptTemplate[];
+  /** Step 10.2 ADD — PIPELINE.md LEARNING LOOP: "An applier writes accepted
+      refinements to the account store with an audit log." One entry per
+      refinement actually applied to learnedPreferences. Bounded (see
+      accountStore.ts) — same reasoning as stateCorrections/telemetry. */
+  learningAuditLog: LearningAuditEntry[];
+  /** 3-State Methodology tracking across sessions. Bounded to prevent unbounded growth. */
+  methodologyLog: MethodologyEntry[];
 }
