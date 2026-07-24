@@ -3,7 +3,7 @@ MASTER PROMPT FOR CLAUDE CODE
 
 INSTRUCTION: Read this entire prompt first. Then execute Phase 0 and Phase 1 Pilot.
 
-YOU ARE IMPLEMENTING: Divergence.AI Training Dataset Extraction - 5-phase pattern analysis system for ADHD communication friction and app improvement patterns.
+YOU ARE IMPLEMENTING: Divergence.AI Training Dataset Extraction - 5-phase pattern analysis system for ADHD communication friction.
 
 CRITICAL: All methodology is frozen. You are implementing what has been designed, not redesigning.
 
@@ -158,16 +158,14 @@ PATTERN DEFINITIONS QUICK REFERENCE
 
 See DIVERGENCE_DATASET_METHODOLOGY.md for complete definitions.
 
-1. TRANSLATION_MISMATCH: What you asked ≠ what you meant (markers: clarifications, frustration about misunderstanding) + ADHD communication factors
-2. ESCALATION_PATTERN: Observable emotional escalation (caps, curse words, tone, punctuation) + ADHD trigger types & recovery patterns
-3. DE_ESCALATION_OPPORTUNITY: Moments escalation could have been prevented (AI's response failed, better approach exists) + ADHD-specific interventions
-4. MOOD_SIGNAL: Detectable pattern indicating mood (caps patterns, sentence length, curse frequency, specific phrases) + ADHD state correlation & abandonment risk
-5. BLUNTNESS_PREFERENCE: When you preferred direct/harsh vs. softened answers (context-dependent) + emotional state & complexity trade-offs
-6. FRICTION_POINT: Recurring pattern causing misunderstanding (vague language, assumptions, redundant questions) + ADHD friction categories & impact severity
+1. TRANSLATION_MISMATCH: What you asked ≠ what you meant (markers: clarifications, frustration about misunderstanding)
+2. ESCALATION_PATTERN: Observable emotional escalation (caps, curse words, tone, punctuation)
+3. DE_ESCALATION_OPPORTUNITY: Moments escalation could have been prevented (AI's response failed, better approach exists)
+4. MOOD_SIGNAL: Detectable pattern indicating mood (caps patterns, sentence length, curse frequency, specific phrases)
+5. BLUNTNESS_PREFERENCE: When you preferred direct/harsh vs. softened answers (context-dependent)
+6. FRICTION_POINT: Recurring pattern causing misunderstanding (vague language, assumptions, redundant questions)
 
 DEFAULT CONFIDENCE: DIRECT_OBSERVATION (use INFERENCE_* only if judgment required)
-
-ADHD EXTRACTION FOCUS: Each pattern now captures ADHD-specific context to identify friction points that impact app design, communication, and user retention.
 
 ---
 
