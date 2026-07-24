@@ -50,10 +50,18 @@ What you ASKED ≠ what you MEANT.
 - Turns to clarify (how many before intent was clear)
 - Emotional intensity when realizing misunderstanding (calm/frustrated/escalated)
 
+**ADHD-Specific Extraction:**
+- `adhd_communication_factor`: Root cause in ADHD context — (a) vague language (executive function gap), (b) emotional phrasing complicating literal request, (c) layered/compound question, (d) missing context assumed, (e) scope ambiguity?
+- `cognitive_load_indicator`: Was the mismatch preceded by high-volume input or multiple topics in one turn? (affects interpretation difficulty)
+- `clarification_patience`: How many turns to clarify? Was user frustrated by back-and-forth or patient? (affects if friction is "need better parsing" vs. "user phrased badly")
+- `success_communication`: What clarification worked? (e.g., "asking me to choose one topic at a time" vs. "splitting the buried question")
+
 **Confidence Ceilings:**
 - Mechanical facts (question + clarification text): 95%
 - Intent inference: 60%
 - Root cause of friction: 50%
+- ADHD communication factor: 65%
+- Success pattern effectiveness: 70%
 
 ---
 
@@ -76,10 +84,18 @@ Observable escalation in your emotional state. Markers: caps, curse words, tone 
 - How it resolved (did AI response de-escalate? Was it conversation-ender?)
 - Was de-escalation attempted? Effective?
 
+**ADHD-Specific Extraction:**
+- `escalation_trigger_type`: Root cause — (a) feeling misunderstood, (b) tedious back-and-forth, (c) perceived judgment/hedging, (d) cognitive overload from answer complexity, (e) derailed conversation (AI went off-topic), (f) time pressure (user rushed)?
+- `escalation_recovery`: Did user return to conversation after escalation? What brought them back? (indicates if friction is recoverable or permanent)
+- `recovery_intervention`: What AI response/pattern led to de-escalation? (direct answer, acknowledgment, silence/space, simplification, etc.)
+- `abandonment_signal`: Did escalation lead to task/conversation abandonment? Observable sign: conversation ended, new topic started, session closed?
+
 **Confidence Ceilings:**
 - Mechanical markers (caps %, curse count): 95%
 - Escalation level assignment: 75%
 - Root cause of escalation: 60%
+- Escalation trigger type: 70%
+- Recovery intervention effectiveness: 75%
 - What would have prevented it: 30%
 
 ---
@@ -102,10 +118,19 @@ Moment where escalation COULD have been prevented. Identifies what worked vs. di
 - Confidence in this assessment
 - Did you explicitly state what would have worked? (highest confidence if yes)
 
+**ADHD-Specific Extraction:**
+- `adhd_intervention_failure`: Did AI fail to recognize ADHD communication style? (a) didn't parse scattered input, (b) asked too many clarifying questions (overload), (c) hedged when directness needed, (d) ignored stated preferences, (e) went too complex/detailed?
+- `intervention_that_worked`: If de-escalation happened, what did AI say/do? (exact quote or behavior pattern)
+- `directness_match`: Did the response match user's directness preference at that moment? (Level 1 supportive vs. Level 3 blunt mismatch?)
+- `time_sensitivity_factor`: Was escalation driven by time pressure? Did slowness (too many clarifications) cause it?
+- `context_reuse_failure`: Did AI ignore previously-loaded context or ask for info already provided? (common friction point)
+
 **Confidence Ceilings:**
 - Mechanical facts (what was said): 95%
 - Why AI's response failed: 60%
 - What would have worked: 50%
+- ADHD intervention identification: 70%
+- Directness preference match: 75%
 - Counterfactual effectiveness: 0% (OFF-LIMITS - don't claim)
 
 ---
@@ -130,10 +155,20 @@ Detectable pattern indicating your actual mood/emotional state.
 - Common triggers for this mood (what tends to cause it?)
 - Reliability score (how consistently does this signal predict mood?)
 
+**ADHD-Specific Extraction:**
+- `mood_state_raw`: Detected mood (frustrated/overwhelmed/scattered/bored/engaged/urgent/stuck).
+- `adhd_state_correlation`: Does the mood correlate with observable ADHD state? (scattered typing + topic-jump = executive dysfunction; short clipped sentences + curse = overwhelmed/shutdown risk)
+- `trigger_context`: What preceded this mood? (cognitive overload, time pressure, repeated clarification, off-topic answer, etc.)
+- `recovery_signal`: Does mood shift later in conversation? What changed? (success experience, direction clarified, answer simplified)
+- `state_persistence`: Does mood stay consistent across multiple turns or is it momentary? (affects if it's conversation friction or just one frustration)
+- `abandonment_risk`: Is this mood a precursor to task abandonment? (overwhelmed + shutdown risk often leads to conversation end)
+
 **Confidence Ceilings:**
 - Mechanical markers present: 95%
 - Mood label assignment: 75%
+- ADHD state correlation: 70%
 - Reliability of this signal: 60%
+- Abandonment risk prediction: 65%
 - What caused the mood: 50%
 
 ---
@@ -157,11 +192,22 @@ When you preferred direct/harsh truth vs. softened/hedged answers.
 - Bluntness markers you preferred (examples of effective directness)
 - When hedging was rejected vs. accepted
 
+**ADHD-Specific Extraction:**
+- `context_type`: Technical, personal, meta (about the conversation), or mixed?
+- `emotional_state_at_preference`: Was user calm, frustrated, rushed, overwhelmed when this preference showed?
+- `consistency_pattern`: Does user always prefer bluntness in this context, or does it vary by mood/time/complexity?
+- `hedging_rejection_signal`: When user rejected hedging, how did they signal it? (explicit complaint, silence, topic switch, escalation?)
+- `success_example`: What exact phrasing worked? (captures successful direct language pattern)
+- `failure_example`: What hedging failed? (captures unsuccessful softening pattern)
+- `directness_with_complexity_tradeoff`: When answer was complex, did user still prefer directness or want scaffolding? (Level 3 blunt vs. Level 1 supportive trade-off)
+
 **Confidence Ceilings:**
 - Mechanical facts (what language was present): 95%
 - Context assessment (why this context): 75%
 - Bluntness preference in this context: 80%
+- Emotional state at preference: 75%
 - Generalization to other contexts: 60%
+- Directness-complexity trade-off pattern: 70%
 
 ---
 
@@ -184,10 +230,20 @@ Recurring pattern causing misunderstanding or frustration.
 - Solution that worked (what prevented this friction)
 - Effectiveness of solution (always works, usually works, sometimes works)
 
+**ADHD-Specific Extraction:**
+- `friction_category_adhd`: Root cause in ADHD context — (a) AI doesn't parse ADHD communication style, (b) response too long/complex (cognitive overload), (c) too many clarifying questions (executive overload), (d) hedging when directness needed, (e) ignores context/previous info, (f) derails from user's intent, (g) response speed too slow, (h) judgment/tone perceived as critical?
+- `frequency_same_conversation`: How many times in one conversation? (indicates if one-off or systematic friction)
+- `frequency_dataset_estimate`: Rough estimate across 900 conversations—rare/occasional/common/very common.
+- `abandonment_correlation`: Does this friction type correlate with conversation ending/task abandonment?
+- `solution_effectiveness_adhd`: If user provided workaround or AI adapted, how well did it work? Did it transfer to future conversations?
+- `impact_severity_adhd`: Slows interaction, causes escalation, causes misunderstanding, causes abandonment, causes task failure?
+
 **Confidence Ceilings:**
 - Mechanical facts (friction occurred): 95%
 - Root cause identification: 75%
+- Friction category ADHD: 75%
 - Frequency count: 90%
+- Abandonment correlation: 70%
 - Solution effectiveness: 70%
 
 ---
@@ -218,12 +274,19 @@ Recurring pattern causing misunderstanding or frustration.
     },
     "emotional_intensity": "high",
     "was_de_escalated": true,
-    "de_escalation_strategy_used": "direct_answer_without_questions"
+    "de_escalation_strategy_used": "direct_answer_without_questions",
+    
+    "adhd_context": {
+      "escalation_trigger_type": "tedious_back_and_forth",
+      "escalation_recovery": true,
+      "recovery_intervention": "direct_answer_without_questions",
+      "abandonment_signal": false
+    }
   },
   
   "edge_case_encountered": false,
   "edge_case_notes": "",
-  "decision_log": "Clear escalation marker: caps, curse word, frustration explicit. Trigger: redundant question.",
+  "decision_log": "Clear escalation marker: caps, curse word, frustration explicit. Trigger: redundant question. ADHD factor: repeated clarification overload.",
   "extraction_timestamp": "2025-07-24T14:30:00Z"
 }
 ```
