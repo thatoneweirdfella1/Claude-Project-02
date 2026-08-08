@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "name": "Universal ADHD-Low-Burden Governance Gate",
+  "maxSnapshotFiles": 100000,
+  "maxHashBytesPerFile": 20971520,
+  "maxBaselineFileBytes": 1048576,
+  "maxBaselineTotalBytes": 33554432,
+  "maxEvidenceChangedFiles": 500,
+  "maxChangedFilesWithoutDecision": 100,
+  "testTimeoutSeconds": 600,
+  "ignoreDirectoryNames": [
+    ".git",
+    "node_modules",
+    ".venv",
+    "venv",
+    "__pycache__",
+    ".pytest_cache",
+    ".mypy_cache",
+    ".ruff_cache",
+    ".next",
+    ".nuxt",
+    ".cache",
+    ".tox",
+    ".idea",
+    ".vscode"
+  ],
+  "protectedGatePaths": [
+    ".claude/settings.json",
+    ".claude/universal-gate-policy.json",
+    ".claude/universal-gate-verifier.md",
+    ".claude/hooks/universal-governance-gate.cjs",
+    ".codex/hooks.json",
+    ".codex/hooks/universal-governance-codex.cjs",
+    ".codex/universal-gate-verifier.md"
+  ],
+  "requiredGovernanceFiles": [
+    "DECISION_LOG.txt",
+    "CURRENT_STATE.txt"
+  ],
+  "authorityFileNames": [
+    "DECISION_LOG.txt",
+    "CURRENT_STATE.txt",
+    "GROUND-TRUTH.txt",
+    "CLAUDE.md",
+    "AGENTS.md",
+    "SPEC.md",
+    "SPEC.txt",
+    "REQUIREMENTS.md",
+    "REQUIREMENTS.txt",
+    "ARCHITECTURE.md",
+    "ARCHITECTURE.txt",
+    "DECISIONS.md",
+    "ROADMAP.md",
+    "CURRENT_STATE.md",
+    "UNKNOWNS.md"
+  ],
+  "authorityNamePatterns": [
+    "(?:^|[-_ .])(ground.?truth|requirements?|spec(?:ification)?|architecture|methodology|design|decision(?:s|.?log)?|governance|execution.?plan|implementation.?plan|roadmap|current.?state|unknowns?|constraints?|acceptance.?criteria|itinerary)(?:[-_ .(]|$)"
+  ],
+  "additionalAuthorityFiles": [],
+  "mutableStateFiles": [
+    "CURRENT_STATE.txt",
+    "CURRENT_STATE.md"
+  ],
+  "appendOnlyDecisionFiles": [
+    "DECISION_LOG.txt"
+  ],
+  "protectDiscoveredAuthorityFiles": true,
+  "testCommands": [],
+  "autoDetectTests": true
+}

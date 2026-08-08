@@ -1,0 +1,136 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact|fork",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/.claude/hooks/universal-governance-gate.cjs",
+              "context"
+            ],
+            "timeout": 30,
+            "statusMessage": "Restoring the governed task context"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/.claude/hooks/universal-governance-gate.cjs",
+              "capture"
+            ],
+            "timeout": 60,
+            "statusMessage": "Freezing the user's exact request"
+          }
+        ]
+      }
+    ],
+    "TaskCreated": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/.claude/hooks/universal-governance-gate.cjs",
+              "contract-check"
+            ],
+            "timeout": 30,
+            "statusMessage": "Checking the task contract"
+          },
+          {
+            "type": "agent",
+            "model": "haiku",
+            "timeout": 180,
+            "statusMessage": "Checking scope before work begins",
+            "prompt": "CONTRACT REVIEW. Read .claude/universal-gate-verifier.md and follow its CONTRACT REVIEW procedure exactly. Do not modify project files. Hook input: $ARGUMENTS"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "^(Edit|Write|NotebookEdit|Bash|PowerShell|mcp__.*__(?:write|create|update|delete|remove|move|rename).*)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/.claude/hooks/universal-governance-gate.cjs",
+              "guard-tool"
+            ],
+            "timeout": 30,
+            "statusMessage": "Enforcing the approved task boundary"
+          }
+        ]
+      }
+    ],
+    "TaskCompleted": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/.claude/hooks/universal-governance-gate.cjs",
+              "verify"
+            ],
+            "timeout": 900,
+            "statusMessage": "Checking actual files, governance, and tests"
+          },
+          {
+            "type": "agent",
+            "model": "sonnet",
+            "timeout": 1200,
+            "statusMessage": "Comparing the result with the original request",
+            "prompt": "COMPLETION REVIEW. Read .claude/universal-gate-verifier.md and follow its COMPLETION REVIEW procedure exactly. You are independent and read-only: do not repair files. Hook input: $ARGUMENTS"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/.claude/hooks/universal-governance-gate.cjs",
+              "finalize"
+            ],
+            "timeout": 900,
+            "statusMessage": "Confirming the completion gate passed"
+          }
+        ]
+      }
+    ],
+    "ConfigChange": [
+      {
+        "matcher": "project_settings|skills",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/.claude/hooks/universal-governance-gate.cjs",
+              "protect-config"
+            ],
+            "timeout": 30,
+            "statusMessage": "Protecting the gate configuration"
+          }
+        ]
+      }
+    ]
+  },
+  "env": {
+    "CLAUDE_CODE_STOP_HOOK_BLOCK_CAP": "12"
+  }
+}

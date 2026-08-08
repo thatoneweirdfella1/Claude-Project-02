@@ -1,0 +1,121 @@
+UNIVERSAL GOVERNANCE — DECISION LOG
+
+This is the single governance entry point. Read RULES first. The RULES section may
+change only after a DECISIONS entry records and authorizes the change. The
+DECISIONS section is append-only: no existing entry may be edited or removed.
+
+===============================================================================
+RULES
+===============================================================================
+
+CR1 — PRE-DELIVERY GATE [EXPANDED]
+Before presenting output, confirm it solves exactly what was requested, nothing
+beyond it without a recorded approval, is minimal, and that every addition (not
+just the output as a whole) cites a current, existing need rather than a
+hypothetical one.
+Covers: RC1, S1, SB1, SB8, S3, SB3, SB7, SB9
+
+CR2 — ASK, DON'T INVENT
+Unstated parameters are resolved by asking, never assumed.
+Covers: S2
+
+CR4 — SMALL-BATCH DELIVERY
+Default to short work/review cycles ending in a usable artifact, not long
+uninterrupted phases.
+Covers: RC2, LP2, C3
+
+CR5 — VERIFY-BEFORE-STATING
+A specific factual claim is checked before being presented as fact; uncertainty
+is stated as uncertainty.
+Covers: RC3, S6
+
+CR6 — JUSTIFICATION REQUIREMENT [EXPANDED]
+Every decision records the alternatives considered and rejected and why; this
+includes evaluating an existing option before custom implementation (build-vs-
+adopt is one instance of "alternatives considered," not a separate rule), and
+includes the decision to do more work vs. stop, which is itself a decision with
+two alternatives that must be justified the same way.
+Covers: RC6, S9, S10, S11, SB5, S12
+
+CR9 — PHASE-GATE REQUIREMENT
+A phase's defined output must be recorded before the next phase starts.
+Covers: S8
+
+CR10 — SCOPE-BOUNDARY REQUIREMENT
+Scope is closed or extended only via a recorded decision; these rules themselves
+may only change the same way (self-governance).
+Covers: SB2, SB10
+
+CR12 — ACTIVE-THREAD RE-CHECK
+Instructions already given in the current conversation are re-confirmed before
+acting, not just at conversation start.
+Covers: RC5
+
+===============================================================================
+DECISIONS
+===============================================================================
+
+Every entry must contain all four fields:
+DL1: What was decided
+DL2: Alternatives considered and explicitly rejected, with reasons
+DL3: Evidence status — VERIFIED or UNVERIFIED
+DL4: For stop-condition decisions, what further work would have changed; N/A for
+     decisions that are not stop-condition decisions
+
+-------------------------------------------------------------------------------
+ENTRY D-001 — OPERATIVE GOVERNANCE
+DL1: Implement Methodology Architecture v2 as the permanent document-based
+     governance system.
+DL2: Redesigning the approved structure was rejected because it would silently
+     replace the approved design. Implementing only part of it was rejected
+     because the protections depend on the complete rule and state structure.
+     Deferring governance was rejected because work would continue without the
+     protections the user requested.
+DL3: VERIFIED — the user supplied and approved Methodology Architecture v2.
+DL4: N/A — this is not a stop-condition decision.
+
+-------------------------------------------------------------------------------
+ENTRY D-002 — EXECUTABLE ENFORCEMENT LAYER
+DL1: Add a reusable executable gate beside the two-document governance system for
+     projects built through Claude Code CLI or Claude Code Web. The gate is
+     enforcement infrastructure and does not become a third operative governance
+     document.
+DL2: Document-only self-enforcement was rejected because repeated audits showed
+     that the same AI could claim PASS without checking actual work. A gate tied
+     only to the original governance-creation handoff was rejected because the
+     user explicitly requires reuse across different system projects. Manual
+     cross-AI auditing and message relay were rejected because they recreate the
+     cognitive burden the governance system exists to remove.
+DL3: VERIFIED — the user explicitly requested a universal governance and gate;
+     the supplied conversations contain the documented false-PASS failures.
+DL4: N/A — this is not a stop-condition decision.
+
+-------------------------------------------------------------------------------
+ENTRY D-003 — OPERATING SCALE
+DL1: Optimize the governance system for one user coordinating Claude Code and
+     other AIs on personal system-building projects; do not assume an enterprise
+     team, administrators, or a human programmer reviewing every step.
+DL2: Enterprise workflow assumptions were rejected because they add roles,
+     approvals, and management overhead the user does not have. Requiring the
+     user to act as programmer, auditor, or project manager was rejected because
+     it contradicts the system's purpose.
+DL3: VERIFIED — this scale and burden constraint are stated in the user's Ground
+     Truth and conversations.
+DL4: N/A — this is not a stop-condition decision.
+
+-------------------------------------------------------------------------------
+ENTRY D-004 — CODEX-NATIVE ENFORCEMENT
+DL1: Extend the same two-document governance system to Codex with repository-level
+     AGENTS.md instructions, native .codex lifecycle hooks, and fresh read-only
+     verifier subagents for contract and completion approval. Keep the Claude Code
+     installation active beside it and keep all governance out of the website.
+DL2: Installing only the Claude hooks was rejected because the user explicitly
+     wants Codex governed and Claude-specific TaskCreated/TaskCompleted hooks do
+     not run in Codex. Adding governance to the website was rejected because it
+     is development enforcement, not a product feature. Manual self-enforcement
+     without native hooks was rejected because it would permit unchecked edits
+     and false completion. Replacing the Claude installation was rejected because
+     the user also uses Claude Code and the two adapters can share one gate state.
+DL3: VERIFIED — the user explicitly clarified that the system is for Codex to use,
+     approved the Codex adaptation, and did not authorize a website feature.
+DL4: N/A — this is not a stop-condition decision.
