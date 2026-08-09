@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { SessionRecord } from "../../stores/types";
+import type { ProxyCompletionRequest } from "../proxyClient";
 import { runPersonalOptimizationWithAi } from "./personalOptimizationRunner";
 
 const sessions: SessionRecord[] = [{
@@ -21,7 +22,7 @@ const sessions: SessionRecord[] = [{
 
 describe("AI-validated personal optimization", () => {
   it("sends only compact evidence and applies only AI-accepted targets", async () => {
-    const complete = vi.fn(async () => JSON.stringify({
+    const complete = vi.fn(async (_request: ProxyCompletionRequest) => JSON.stringify({
       decisions: [
         { target: "simplify", accept: true, confidence: 0.9, reason: "Three distinct overload signals." },
         { target: "step-by-step", accept: false, confidence: 0.4, reason: "Not specific enough." },
