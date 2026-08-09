@@ -61,7 +61,7 @@ test("Session History: save, load, delete, restore", async ({ page }) => {
   expect(countAfterDelete).toBeLessThan(itemCount);
 
   // Navigate to Trash screen
-  const trashNavItem = leftNav.locator("text=Trash");
+  const trashNavItem = page.getByRole("button", { name: "Trash", exact: true });
   await trashNavItem.click();
   await page.waitForLoadState("networkidle");
 
