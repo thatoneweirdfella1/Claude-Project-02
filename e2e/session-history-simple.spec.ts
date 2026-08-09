@@ -1,6 +1,8 @@
 import { test, expect } from "@playwright/test";
+import { allowLocalAccess } from "./credit-helpers";
 
 test("Sessions screen displays and loads", async ({ page }) => {
+  await allowLocalAccess(page);
   await page.goto("/");
   await page.waitForLoadState("networkidle");
 
@@ -33,6 +35,7 @@ test("Sessions screen displays and loads", async ({ page }) => {
 });
 
 test("Trash screen displays", async ({ page }) => {
+  await allowLocalAccess(page);
   await page.goto("/");
   await page.waitForLoadState("networkidle");
 

@@ -1,7 +1,9 @@
 import { test, expect } from "@playwright/test";
+import { allowLocalAccess } from "./credit-helpers";
 
 test("Session History: save, load, delete, restore", async ({ page }) => {
   // Navigate to app
+  await allowLocalAccess(page);
   await page.goto("/");
   await page.waitForLoadState("networkidle");
 

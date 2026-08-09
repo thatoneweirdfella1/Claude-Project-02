@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { installModelMocks } from "./mocks";
-import { clickWithCostConfirmation, useDeveloperMode } from "./credit-helpers";
+import { clickWithCostConfirmation, enableDeveloperMode } from "./credit-helpers";
 
 /* e2e/core-flow.spec.ts (Step 12.2) — SPOT CHECK: the core flow named by this
    step's own text, verbatim: "type a question, hit TRANSLATE & ASK, see
@@ -26,7 +26,7 @@ const ANSWER_TEXT =
 test("core flow: type, translate & ask, pills, streamed answer, rate, autosave restore", async ({ page }) => {
   await installModelMocks(page, { answerText: ANSWER_TEXT });
   await page.goto("/");
-  await useDeveloperMode(page);
+  await enableDeveloperMode(page);
 
   const input = page.getByLabel("What's on your mind?");
   await expect(input).toBeVisible();

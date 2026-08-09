@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { clickWithCostConfirmation, useDeveloperMode } from "./credit-helpers";
+import { clickWithCostConfirmation, enableDeveloperMode } from "./credit-helpers";
 
 /* e2e/access-gate.spec.ts — AppAccessGate (operator-directed, post-12.3).
    The unit tests (appAccess.test.ts/appAccessClient.test.ts) cover the pure
@@ -66,7 +66,7 @@ test("access gate: the stored password rides along on the app's own API calls", 
   await page.getByLabel("Access password").fill(REQUIRED_PASSWORD);
   await page.getByRole("button", { name: "Unlock" }).click();
   await expect(page.getByLabel("Settings")).toBeVisible();
-  await useDeveloperMode(page);
+  await enableDeveloperMode(page);
 
   await page.getByLabel("What's on your mind?").fill("does this carry the header");
   await clickWithCostConfirmation(
