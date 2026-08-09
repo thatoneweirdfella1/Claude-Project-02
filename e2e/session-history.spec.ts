@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 
 test("Session History: save, load, delete, restore", async ({ page }) => {
   // Navigate to app
-  await page.goto("http://localhost:5173");
+  await page.goto("/");
   await page.waitForLoadState("networkidle");
 
   // Go to Translate screen and create a session by duplicating

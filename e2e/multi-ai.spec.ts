@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { installModelMocks } from "./mocks";
+import { clickWithCostConfirmation, useDeveloperMode } from "./credit-helpers";
 
 /* e2e/multi-ai.spec.ts (Step 12.2) — Feature 9 (Debate/Consensus/Synthesis,
    Step 8.3/8.4), the app's core differentiator per this step's explicit
@@ -23,8 +24,12 @@ const ANSWER_TEXT =
   "Water boils at 100 degrees Celsius, which is 212 degrees Fahrenheit, at sea level under standard atmospheric pressure.";
 
 async function askAndAnswer(page: import("@playwright/test").Page): Promise<void> {
+  await useDeveloperMode(page);
   await page.getByLabel("What's on your mind?").fill(QUESTION);
-  await page.getByRole("button", { name: /TRANSLATE.*ASK/i }).click();
+  await clickWithCostConfirmation(
+    page,
+    page.getByRole("button", { name: /TRANSLATE.*ASK/i }),
+  );
   await expect(page.locator(".message-bubble--assistant").first()).toBeVisible({ timeout: 10_000 });
 }
 
@@ -46,7 +51,10 @@ test("multi-AI: debate, then consensus, then synthesis", async ({ page }) => {
   await partnerPicker.getByRole("checkbox", { name: /GPT-5\.5/ }).check();
 
   // Start the debate.
-  await body.getByRole("button", { name: "Start debate" }).click();
+  await clickWithCostConfirmation(
+    page,
+    body.getByRole("button", { name: "Start debate" }),
+  );
 
   const debateView = page.locator('[data-testid="debate-view"]');
   await expect(debateView).toBeVisible({ timeout: 10_000 });
@@ -59,7 +67,7 @@ test("multi-AI: debate, then consensus, then synthesis", async ({ page }) => {
   // Consensus becomes available only once a complete transcript exists.
   const consensusButton = body.getByRole("button", { name: "Consensus" });
   await expect(consensusButton).toBeEnabled();
-  await consensusButton.click();
+  await clickWithCostConfirmation(page, consensusButton);
 
   const consensusView = page.locator('[data-testid="consensus-view"]');
   await expect(consensusView).toBeVisible({ timeout: 10_000 });
@@ -68,7 +76,7 @@ test("multi-AI: debate, then consensus, then synthesis", async ({ page }) => {
   // Synthesis reads the same transcript, independent of Consensus having run.
   const synthesisButton = body.getByRole("button", { name: "Synthesis" });
   await expect(synthesisButton).toBeEnabled();
-  await synthesisButton.click();
+  await clickWithCostConfirmation(page, synthesisButton);
 
   const synthesisView = page.locator('[data-testid="synthesis-view"]');
   await expect(synthesisView).toBeVisible({ timeout: 10_000 });

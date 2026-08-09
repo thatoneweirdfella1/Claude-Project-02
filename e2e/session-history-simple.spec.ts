@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 test("Sessions screen displays and loads", async ({ page }) => {
-  await page.goto("http://localhost:5173");
+  await page.goto("/");
   await page.waitForLoadState("networkidle");
 
   // Wait for root element to have content
@@ -33,7 +33,7 @@ test("Sessions screen displays and loads", async ({ page }) => {
 });
 
 test("Trash screen displays", async ({ page }) => {
-  await page.goto("http://localhost:5173");
+  await page.goto("/");
   await page.waitForLoadState("networkidle");
 
   // Wait for root element to have content
