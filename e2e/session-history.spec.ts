@@ -42,7 +42,7 @@ test("Session History: save, load, delete, restore", async ({ page }) => {
   await page.waitForLoadState("networkidle");
 
   // Verify we're back on Translate screen
-  const centerColumn = page.locator(".center-column");
+  const centerColumn = page.getByTestId("col-center");
   await expect(centerColumn).toBeVisible();
 
   // Go back to Sessions screen
