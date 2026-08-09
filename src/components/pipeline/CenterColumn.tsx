@@ -19,6 +19,7 @@ import { QuickActionsRow } from "../session";
 import { ConversationArea, TranslationCard } from "../translation";
 import { StreamingAnswer } from "../streaming";
 import { usePipelineRun, type ActivePipelineRun } from "./usePipelineRun";
+import { SCREENS } from "../../screens";
 
 /* CenterColumn (Step 5.2) — the live center column: the real ConversationArea
    over the real Composer, joined by the pipeline orchestrator. This replaces
@@ -63,6 +64,7 @@ export function CenterColumn() {
   const plan = useAccountStore((s) => s.plan);
   const currentDirectness = useSessionStore((s) => s.directness);
   const setDirectness = useSessionStore((s) => s.setDirectness);
+  const currentScreen = useAccountStore((s) => s.currentScreen);
 
   const [run, setRun] = useState<ActivePipelineRun | null>(null);
   const [detection, setDetection] = useState<StateDetectionResult | null>(null);
@@ -241,6 +243,13 @@ export function CenterColumn() {
       ? directnessSuggestion
       : null;
 
+  // Non-home screens render their dedicated screen component
+  if (currentScreen !== "home") {
+    const Screen = SCREENS[currentScreen];
+    return <Screen />;
+  }
+
+  // Home screen is the main conversation interface
   return (
     <>
       <ConversationArea>
