@@ -46,6 +46,10 @@ jobs:
         run: npm ci --prefix desktop
       - name: Test desktop database
         run: npm run test:desktop
+      - name: Build renderer
+        run: npm run build
+      - name: Launch-test Electron renderer
+        run: npm --prefix desktop run test:app
       - name: Build NSIS installer
         run: npm run desktop:package
       - name: Add installation note
@@ -62,7 +66,7 @@ jobs:
       - name: Upload installer ZIP
         uses: actions/upload-artifact@v4
         with:
-          name: Divergence-AI-Windows-Installer-0.1.0
+          name: Divergence-AI-Windows-Installer-0.1.1
           path: |
             desktop/dist/*.exe
             WINDOWS-INSTALL.txt

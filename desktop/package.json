@@ -1,11 +1,12 @@
 {
   "name": "divergence-ai-desktop",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Standalone Divergence.AI desktop test program",
   "main": "main.cjs",
   "scripts": {
     "test": "node --test db.test.cjs",
+    "test:app": "node --test app-smoke.test.cjs",
     "start": "electron .",
     "start:dev": "electron . --dev-url=http://localhost:5173",
     "package": "npm --prefix .. run build && electron-builder",
