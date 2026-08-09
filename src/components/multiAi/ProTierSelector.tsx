@@ -16,7 +16,7 @@ export function ProTierSelector({ useAutoSelect, onToggleAutoSelect, featureType
   const canAutoSelect = canPerformAutoSelect();
   const limit = getAutoSelectLimit(plan);
 
-  const isPro = plan === "pro" || plan === "pro-plus";
+  const isPaid = plan !== "free";
   const featureLabel = featureType === "discussion_type" ? "Discussion Type" : "AI Models";
 
   return (
@@ -38,50 +38,50 @@ export function ProTierSelector({ useAutoSelect, onToggleAutoSelect, featureType
       </div>
 
       <div>
-        <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: !isPro ? "not-allowed" : "pointer" }}>
+        <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: !isPaid ? "not-allowed" : "pointer" }}>
           <input
             type="radio"
             checked={useAutoSelect}
             onChange={() => {
-              if (isPro || canAutoSelect) onToggleAutoSelect(true);
+              if (isPaid || canAutoSelect) onToggleAutoSelect(true);
             }}
-            disabled={!isPro && !canAutoSelect}
-            style={{ cursor: !isPro && !canAutoSelect ? "not-allowed" : "pointer" }}
+            disabled={!isPaid && !canAutoSelect}
+            style={{ cursor: !isPaid && !canAutoSelect ? "not-allowed" : "pointer" }}
           />
-          <span style={!isPro && !canAutoSelect ? { color: "var(--text-secondary)" } : { color: "var(--accent-cyan)" }}>
+          <span style={!isPaid && !canAutoSelect ? { color: "var(--text-secondary)" } : { color: "var(--accent-cyan)" }}>
             Auto-Select {featureLabel}
           </span>
           <span
             style={{
               fontSize: "0.85em",
-              color: isPro ? "var(--text-secondary)" : "var(--accent-cyan)",
-              fontWeight: isPro ? "normal" : "bold",
+              color: isPaid ? "var(--text-secondary)" : "var(--accent-cyan)",
+              fontWeight: isPaid ? "normal" : "bold",
             }}
           >
-            {isPro ? "(Included)" : "(Pro)"}
+            {isPaid ? "(Included)" : "(Plus)"}
           </span>
-          {!isPro && <span style={{ fontSize: "0.8em", color: "#0d9" }}>✨</span>}
+          {!isPaid && <span style={{ fontSize: "0.8em", color: "#0d9" }}>✨</span>}
         </label>
 
-        {!isPro && !canAutoSelect && (
+        {!isPaid && !canAutoSelect && (
           <p style={{ margin: "0.5rem 0 0 1.5rem", fontSize: "0.85em", color: "var(--accent-cyan)" }}>
             You've used your {limit} free auto-selects this month.{" "}
             <a href="#" style={{ color: "var(--accent-cyan)", textDecoration: "underline" }}>
-              Upgrade to Pro
+              Upgrade to Plus
             </a>{" "}
             for unlimited.
           </p>
         )}
 
-        {!isPro && canAutoSelect && (
+        {!isPaid && canAutoSelect && (
           <p style={{ margin: "0.25rem 0 0 1.5rem", fontSize: "0.9em", color: "var(--text-secondary)" }}>
             AI automatically chooses the best {featureLabel.toLowerCase()} · {remaining} left this month
           </p>
         )}
 
-        {isPro && (
+        {isPaid && (
           <p style={{ margin: "0.25rem 0 0 1.5rem", fontSize: "0.9em", color: "var(--text-secondary)" }}>
-            AI automatically chooses the best {featureLabel.toLowerCase()} · {remaining} / {limit} used this month
+            AI automatically chooses the best {featureLabel.toLowerCase()} · {remaining} remaining this month
           </p>
         )}
       </div>

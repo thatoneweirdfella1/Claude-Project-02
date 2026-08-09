@@ -19,7 +19,8 @@ import { QuickActionsRow } from "../session";
 import { ConversationArea, TranslationCard } from "../translation";
 import { StreamingAnswer } from "../streaming";
 import { usePipelineRun, type ActivePipelineRun } from "./usePipelineRun";
-import { SCREENS } from "../../screens";
+import { authorizeEstimatedCost } from "../../services/creditAuthorization";
+import { addTokenUsage, getEstimatedCostForPipeline } from "../../services/costTracking";
 
 /* CenterColumn (Step 5.2) — the live center column: the real ConversationArea
    over the real Composer, joined by the pipeline orchestrator. This replaces
@@ -64,7 +65,6 @@ export function CenterColumn() {
   const plan = useAccountStore((s) => s.plan);
   const currentDirectness = useSessionStore((s) => s.directness);
   const setDirectness = useSessionStore((s) => s.setDirectness);
-  const currentScreen = useAccountStore((s) => s.currentScreen);
 
   const [run, setRun] = useState<ActivePipelineRun | null>(null);
   const [detection, setDetection] = useState<StateDetectionResult | null>(null);
@@ -114,7 +114,11 @@ export function CenterColumn() {
       setDetecting(true); // show the in-flight indicator until this call resolves (or is superseded)
       const adaptationNote = buildAdaptationNote(useAccountStore.getState().stateCorrections);
       void detectState(request.rawInput, {
-        client: (req) => client.complete(req),
+        client: (req) =>
+          client.complete({
+            ...req,
+            onUsage: (usage) => addTokenUsage(usage.inputTokens, usage.outputTokens, req.model),
+          }),
         signal: controller.signal,
         adaptationNote,
       }).then((outcome) => {
@@ -129,7 +133,14 @@ export function CenterColumn() {
     [plan],
   );
 
-  function handleSubmit(request: TranslateAskRequest) {
+  async function handleSubmit(request: TranslateAskRequest): Promise<boolean> {
+    const selectedModel = request.model === "auto" ? "claude-haiku-4-5" : request.model;
+    const estimate = getEstimatedCostForPipeline(request.rawInput, selectedModel);
+    const authorization = await authorizeEstimatedCost(
+      estimate,
+      "Translate, personalize, and answer",
+    );
+    if (!authorization.authorized) return false;
     // An empty submit still runs (translate() owns empty-handling, Step 5.0
     // decision) but adds no empty bubble to the conversation.
     if (request.rawInput.trim().length > 0) {
@@ -141,9 +152,10 @@ export function CenterColumn() {
       });
     }
     startRun(request);
+    return true;
   }
 
-  function handleRefine(refinedInput: string) {
+  async function handleRefine(refinedInput: string): Promise<void> {
     // Step 7.4: substitute the NEWLY typed addition only — lastRawRef.current
     // is the original submission's text, which Composer already substituted
     // before this run ever started, so re-running substitution on it would
@@ -155,6 +167,14 @@ export function CenterColumn() {
       refinedInput,
       mergeVariables(useAccountStore.getState().variables, s.variables),
     );
+    const combinedInput = `${lastRawRef.current}\n\n${substitutedAddition}`;
+    const selectedModel = s.model === "auto" ? "claude-haiku-4-5" : s.model;
+    const estimate = getEstimatedCostForPipeline(combinedInput, selectedModel);
+    const authorization = await authorizeEstimatedCost(
+      estimate,
+      "Refine and rerun the answer",
+    );
+    if (!authorization.authorized) return;
     addMessage({
       id: newMessageId(),
       role: "user",
@@ -166,7 +186,7 @@ export function CenterColumn() {
     // startRun also re-fires detection on this same combined text.
     startRun(
       buildTranslateAskRequest(
-        `${lastRawRef.current}\n\n${substitutedAddition}`,
+        combinedInput,
         { model: s.model, directness: s.directness, techniques: s.techniques },
         s.context,
       ),
@@ -243,19 +263,8 @@ export function CenterColumn() {
       ? directnessSuggestion
       : null;
 
-  // Non-home screens render their dedicated screen component
-  if (currentScreen !== "home") {
-    const Screen = SCREENS[currentScreen];
-    return <Screen />;
-  }
-
-  // Home screen is the main conversation interface
   return (
     <>
-      <ConversationArea>
-        {gated && <TranslationCard gated={gated} onRefine={handleRefine} />}
-        {display && <StreamingAnswer state={display} />}
-      </ConversationArea>
       <Composer
         onSubmit={handleSubmit}
         detection={detection}
@@ -265,6 +274,12 @@ export function CenterColumn() {
         onApplyDirectness={() => setDirectness(suggestedDirectness!)}
       />
       <QuickActionsRow />
+      <ConversationArea>
+        {gated && (
+          <TranslationCard gated={gated} onRefine={(value) => void handleRefine(value)} />
+        )}
+        {display && <StreamingAnswer state={display} />}
+      </ConversationArea>
     </>
   );
 }

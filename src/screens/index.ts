@@ -27,7 +27,10 @@ import { SettingsScreen } from "./SettingsScreen";
 import { SessionsScreen } from "./SessionsScreen";
 import { TranslateScreen } from "./TranslateScreen";
 
-export const SCREENS: Record<ScreenId, React.FC> = {
+/** Legacy screen registry retained for feature modules that import individual
+    screens. AppShell now routes through ScreenRouter; saved-prompts and trash
+    live there, so this secondary registry is intentionally partial. */
+export const SCREENS: Partial<Record<ScreenId, React.FC>> = {
   home: HomeScreen,
   dashboard: DashboardScreen,
   messages: MessagesScreen,

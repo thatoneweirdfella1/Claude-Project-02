@@ -9,6 +9,7 @@
    are exercised only once the proxy is deployed (parked, BUILD-LOG.md). */
 
 import { appAccessHeaders } from "./appAccessClient";
+import { desktopBridge } from "./desktopBridge";
 
 export interface ProxyMessage {
   role: "user" | "assistant";
@@ -103,6 +104,16 @@ export function createProxyClient(config: ProxyClientConfig = {}): ProxyClient {
   }
 
   async function complete(req: ProxyCompletionRequest): Promise<string> {
+    const desktop = desktopBridge();
+    if (desktop) {
+      const result = await desktop.ai.complete({
+        model: req.model,
+        system: req.system,
+        messages: buildMessages(req),
+      });
+      req.onUsage?.(result.usage);
+      return result.text;
+    }
     const res = await post(req, false);
     const data = (await res.json()) as AnthropicMessageResponse;
     reportUsage(req.onUsage, data.usage);
@@ -115,6 +126,19 @@ export function createProxyClient(config: ProxyClientConfig = {}): ProxyClient {
   async function* stream(
     req: ProxyCompletionRequest,
   ): AsyncGenerator<string> {
+    const desktop = desktopBridge();
+    if (desktop) {
+      const result = await desktop.ai.complete({
+        model: req.model,
+        system: req.system,
+        messages: buildMessages(req),
+      });
+      req.onUsage?.(result.usage);
+      // IPC returns one complete response. Yield natural text chunks so the
+      // existing progressive-answer UI still behaves consistently.
+      for (const chunk of result.text.match(/\S+\s*/g) ?? []) yield chunk;
+      return;
+    }
     const res = await post(req, true);
     if (!res.body) return;
     const reader = res.body.getReader();

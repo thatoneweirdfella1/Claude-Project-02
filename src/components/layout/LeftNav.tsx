@@ -20,6 +20,7 @@ import { GlassButton } from "../primitives";
 import { useDismissableLayer } from "../../keyboard";
 import { BrainMark } from "./BrainMark";
 import type { ScreenId } from "../../stores/types";
+import { logOutCurrentAccount } from "../../services/accountSession";
 
 /* Left nav, 200px, per CANON.md "LAYOUT" and the LOCKED DECISIONS
    logout placement ("logout button bottom-left under System Status").
@@ -109,7 +110,7 @@ export function LeftNav() {
   const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
 
   function handleLogout() {
-    window.location.href = "/logout";
+    void logOutCurrentAccount();
   }
 
   return (

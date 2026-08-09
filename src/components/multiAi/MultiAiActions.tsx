@@ -24,6 +24,8 @@ import { AutoSelectButton } from "./AutoSelectButton";
 import { ConsensusView } from "./ConsensusView";
 import { SynthesisView } from "./SynthesisView";
 import { ProTierSelector } from "./ProTierSelector";
+import { authorizeEstimatedCost } from "../../services/creditAuthorization";
+import { addTokenUsage, getEstimatedCostForCall } from "../../services/costTracking";
 
 /* MULTI-AI ACTIONS (Step 8.3) — the composer-footer control from the
    screenshot, sitting beside TRANSPARENCY DETAILS in the `.composer__footer-row`
@@ -43,6 +45,13 @@ import { ProTierSelector } from "./ProTierSelector";
 
 const claudeClient = createProxyClient();
 const partnerClient = createPartnerClient();
+
+function completeTracked(request: Parameters<typeof claudeClient.complete>[0]): Promise<string> {
+  return claudeClient.complete({
+    ...request,
+    onUsage: (usage) => addTokenUsage(usage.inputTokens, usage.outputTokens, request.model),
+  });
+}
 
 type Phase = "idle" | "debating" | "consensus" | "synthesis";
 
@@ -73,6 +82,18 @@ export function MultiAiActions() {
   const selectedPartnerIds = useAutoSelect ? autoSelectPartners(lastQuestion) : partnerIds;
 
   const startDebate = useCallback(async () => {
+    if (selectedPartnerIds.length === 0) {
+      setActionError("Select at least one debate partner or use Auto-select.");
+      return;
+    }
+    const inputTokens = Math.ceil(lastQuestion.length / 4) + 600;
+    const perSide = getEstimatedCostForCall({ model: "claude-opus-4-8", inputTokens, maxOutputTokens: 1_200 });
+    const authorization = await authorizeEstimatedCost(
+      perSide * (selectedPartnerIds.length + 1),
+      `Multi-AI debate with ${selectedPartnerIds.length + 1} participants`,
+    );
+    if (!authorization.authorized) return;
+
     controllerRef.current?.abort();
     const controller = new AbortController();
     controllerRef.current = controller;
@@ -82,12 +103,6 @@ export function MultiAiActions() {
     setConsensus(null);
     setSynthesis(null);
     setActionError(null);
-
-    if (selectedPartnerIds.length === 0) {
-      setActionError("Select at least one debate partner or use Auto-select.");
-      setPhase("idle");
-      return;
-    }
 
     // Log auto-select usage if the feature is enabled and we're using auto-select
     if (useAutoSelectFeature && useAutoSelect) {
@@ -100,7 +115,7 @@ export function MultiAiActions() {
     }
 
     const result = await runDebate(lastQuestion, {
-      claudeClient: (req) => claudeClient.complete(req),
+      claudeClient: (req) => completeTracked(req),
       partnerClient,
       partnerIds: selectedPartnerIds,
       signal: controller.signal,
@@ -118,11 +133,18 @@ export function MultiAiActions() {
   const retrySide = useCallback(
     async (sideIndex: number) => {
       if (!outcome || outcome.status === "empty-question") return;
+      const estimate = getEstimatedCostForCall({
+        model: "claude-opus-4-8",
+        inputTokens: Math.ceil(lastQuestion.length / 4) + 600,
+        maxOutputTokens: 1_200,
+      }) * (selectedPartnerIds.length + 1);
+      const authorization = await authorizeEstimatedCost(estimate, "Retry debate participant");
+      if (!authorization.authorized) return;
       setRetrying(sideIndex);
       setActionError(null);
 
       const rerun = await runDebate(lastQuestion, {
-        claudeClient: (req) => claudeClient.complete(req),
+        claudeClient: (req) => completeTracked(req),
         partnerClient,
         partnerIds: selectedPartnerIds,
         // Keep Claude on the stance it already had, so a retry doesn't
@@ -164,10 +186,17 @@ export function MultiAiActions() {
 
   const doConsensus = useCallback(async () => {
     if (!transcript) return;
+    const estimate = getEstimatedCostForCall({
+      model: "claude-opus-4-8",
+      inputTokens: Math.ceil((transcript.claudeText.length + transcript.partnerText.length) / 4) + 700,
+      maxOutputTokens: 1_300,
+    });
+    const authorization = await authorizeEstimatedCost(estimate, "Multi-AI consensus");
+    if (!authorization.authorized) return;
     setPhase("consensus");
     setActionError(null);
     const result = await runConsensus(transcript, {
-      client: (req) => claudeClient.complete(req),
+      client: (req) => completeTracked(req),
     });
     setPhase("idle");
     if (result.status === "ok") setConsensus(result.result);
@@ -176,10 +205,17 @@ export function MultiAiActions() {
 
   const doSynthesis = useCallback(async () => {
     if (!transcript) return;
+    const estimate = getEstimatedCostForCall({
+      model: "claude-opus-4-8",
+      inputTokens: Math.ceil((transcript.claudeText.length + transcript.partnerText.length) / 4) + 700,
+      maxOutputTokens: 1_600,
+    });
+    const authorization = await authorizeEstimatedCost(estimate, "Multi-AI synthesis");
+    if (!authorization.authorized) return;
     setPhase("synthesis");
     setActionError(null);
     const result = await runSynthesis(transcript, {
-      client: (req) => claudeClient.complete(req),
+      client: (req) => completeTracked(req),
     });
     setPhase("idle");
     if (result.status === "ok") setSynthesis(result.result);

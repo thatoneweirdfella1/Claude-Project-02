@@ -1,15 +1,32 @@
-/* Cost tracking — shows users how much their API calls are costing in real-time.
-   Prices based on Claude Haiku (the cheapest model used in the app).
-   Users need to know BEFORE they hit limits, not after their bill arrives. */
+/* Central cost estimation and usage tracking. Values are dollar-denominated
+   API cost; subscription markup is handled by the credit allocation, not by
+   inflating each call a second time. */
 
-const HAIKU_INPUT_PRICE = 0.003; // $0.003 per 1K input tokens
-const HAIKU_OUTPUT_PRICE = 0.015; // $0.015 per 1K output tokens
+export interface ModelPrice {
+  inputPerMillion: number;
+  outputPerMillion: number;
+}
+
+/** First-party Claude API list prices current for the model ids used here.
+    Keep this table explicit and version-controlled so price changes are
+    reviewable instead of silently arriving from a remote configuration. */
+export const MODEL_PRICES: Record<string, ModelPrice> = {
+  "claude-haiku-4-5": { inputPerMillion: 1, outputPerMillion: 5 },
+  "claude-sonnet-5": { inputPerMillion: 3, outputPerMillion: 15 },
+  "claude-opus-4-8": { inputPerMillion: 5, outputPerMillion: 25 },
+};
 
 export interface SessionCost {
   totalTokens: number;
   inputTokens: number;
   outputTokens: number;
-  estimatedCost: number; // In dollars
+  estimatedCost: number;
+}
+
+export interface CostEstimateInput {
+  model: string;
+  inputTokens: number;
+  maxOutputTokens: number;
 }
 
 const sessionCost: SessionCost = {
@@ -19,19 +36,82 @@ const sessionCost: SessionCost = {
   estimatedCost: 0,
 };
 
-export function addTokenUsage(inputTokens: number, outputTokens: number): void {
+function roundDollars(value: number): number {
+  return Math.round((value + Number.EPSILON) * 1_000_000) / 1_000_000;
+}
+
+function priceFor(model: string): ModelPrice {
+  if (MODEL_PRICES[model]) return MODEL_PRICES[model];
+  if (model.includes("opus")) return MODEL_PRICES["claude-opus-4-8"];
+  if (model.includes("sonnet")) return MODEL_PRICES["claude-sonnet-5"];
+  return MODEL_PRICES["claude-haiku-4-5"];
+}
+
+export function calculateUsageCost(
+  inputTokens: number,
+  outputTokens: number,
+  model = "claude-haiku-4-5",
+): number {
+  if (inputTokens < 0 || outputTokens < 0) return 0;
+  const price = priceFor(model);
+  return roundDollars(
+    (inputTokens / 1_000_000) * price.inputPerMillion +
+      (outputTokens / 1_000_000) * price.outputPerMillion,
+  );
+}
+
+/** Conservative pre-call estimate used by the confirmation dialog. */
+export function getEstimatedCostForCall(input: CostEstimateInput): number {
+  return calculateUsageCost(input.inputTokens, input.maxOutputTokens, input.model);
+}
+
+/** Estimate one complete Translate action: prompt normalization, state
+    detection, and answer generation. The input repeats across those calls,
+    which is intentionally reflected here so the user sees the whole action's
+    likely cost before any network request starts. */
+export function getEstimatedCostForPipeline(
+  rawInput: string,
+  answerModel = "claude-haiku-4-5",
+): number {
+  const messageTokens = Math.max(1, Math.ceil(rawInput.length / 4));
+  const scaffoldTokens = 650;
+  const normalizedInput = messageTokens + scaffoldTokens;
+  const translation = getEstimatedCostForCall({
+    model: "claude-sonnet-5",
+    inputTokens: normalizedInput,
+    maxOutputTokens: 450,
+  });
+  const stateDetection = getEstimatedCostForCall({
+    model: "claude-haiku-4-5",
+    inputTokens: messageTokens + 350,
+    maxOutputTokens: 180,
+  });
+  const answer = getEstimatedCostForCall({
+    model: answerModel,
+    inputTokens: normalizedInput + 600,
+    maxOutputTokens: 1_400,
+  });
+  return roundDollars(translation + stateDetection + answer);
+}
+
+export function addTokenUsage(
+  inputTokens: number,
+  outputTokens: number,
+  model = "claude-haiku-4-5",
+): number {
+  const callCost = calculateUsageCost(inputTokens, outputTokens, model);
   sessionCost.inputTokens += inputTokens;
   sessionCost.outputTokens += outputTokens;
   sessionCost.totalTokens += inputTokens + outputTokens;
+  sessionCost.estimatedCost = roundDollars(sessionCost.estimatedCost + callCost);
 
-  // Calculate cost based on token usage
-  const inputCost = (inputTokens / 1000) * HAIKU_INPUT_PRICE;
-  const outputCost = (outputTokens / 1000) * HAIKU_OUTPUT_PRICE;
-  sessionCost.estimatedCost += inputCost + outputCost;
+  window.dispatchEvent(new CustomEvent("costUpdated", { detail: getSessionCost() }));
+  return callCost;
+}
 
-  // Notify listeners
+export function emitCreditDeducted(amount: number, referenceId?: string): void {
   window.dispatchEvent(
-    new CustomEvent("costUpdated", { detail: sessionCost })
+    new CustomEvent("creditDeducted", { detail: { amount, referenceId } }),
   );
 }
 
@@ -44,12 +124,9 @@ export function resetSessionCost(): void {
   sessionCost.inputTokens = 0;
   sessionCost.outputTokens = 0;
   sessionCost.estimatedCost = 0;
-
-  window.dispatchEvent(
-    new CustomEvent("costUpdated", { detail: sessionCost })
-  );
+  window.dispatchEvent(new CustomEvent("costUpdated", { detail: getSessionCost() }));
 }
 
-export function isApproachingLimit(threshold: number = 5.0): boolean {
+export function isApproachingLimit(threshold = 5): boolean {
   return sessionCost.estimatedCost >= threshold;
 }

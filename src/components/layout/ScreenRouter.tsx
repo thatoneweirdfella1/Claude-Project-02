@@ -3,6 +3,9 @@ import { Pencil, Star, Copy } from "lucide-react";
 import { useSessionStore } from "../../stores/sessionStore";
 import { useAccountStore } from "../../stores/accountStore";
 import { CenterColumn } from "../pipeline";
+import { SubscriptionUI } from "../credits";
+import { PersonalOptimization } from "../optimization";
+import { DesktopProviderSettings } from "../settings/DesktopProviderSettings";
 
 function HomeScreen() {
   const sessions = useAccountStore((s) => s.sessions);
@@ -1706,13 +1709,21 @@ function SettingsScreen() {
           <h3>Account</h3>
           <div className="settings-item">
             <div className="settings-item__label">Plan</div>
-            <div className="settings-item__value">{plan === "free" ? "Free" : "Pro"}</div>
+            <div className="settings-item__value" style={{ textTransform: "capitalize" }}>
+              {plan === "pro-plus" ? "Insane" : plan}
+            </div>
           </div>
           <div className="settings-item">
             <div className="settings-item__label">Email</div>
             <div className="settings-item__value">user@example.com</div>
           </div>
         </div>
+
+        <SubscriptionUI />
+
+        <PersonalOptimization />
+
+        <DesktopProviderSettings />
 
         <div className="settings-section">
           <h3>Storage & Sync</h3>

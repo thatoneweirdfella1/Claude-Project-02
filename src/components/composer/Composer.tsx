@@ -37,7 +37,7 @@ import { InputBox } from "./InputBox";
    restructuring needed. */
 
 export interface ComposerProps {
-  onSubmit: (request: TranslateAskRequest) => void;
+  onSubmit: (request: TranslateAskRequest) => void | boolean | Promise<void | boolean>;
   onAttach?: () => void;
   onContext?: () => void;
   /** The most recent detection result, or null before any has arrived / after
@@ -74,12 +74,15 @@ export function Composer({
   const sessionVariables = useSessionStore((s) => s.variables);
   const accountVariables = useAccountStore((s) => s.variables);
 
-  function handleTranslateAsk() {
+  async function handleTranslateAsk() {
     const substituted = substituteVariables(
       draftInput,
       mergeVariables(accountVariables, sessionVariables),
     );
-    onSubmit(buildTranslateAskRequest(substituted, { model, directness, techniques }, context));
+    const accepted = await onSubmit(
+      buildTranslateAskRequest(substituted, { model, directness, techniques }, context),
+    );
+    if (accepted === false) return;
     // Clears immediately — matches the screenshot's pattern (empty box, ready
     // for the next thought, conversation history holds what was asked) and
     // gives instant visual feedback with no wait on anything downstream.
@@ -106,7 +109,11 @@ export function Composer({
           onApplyDirectness={onApplyDirectness}
         />
       )}
-      <ControlRow onAttach={onAttach} onContext={onContext} onTranslateAsk={handleTranslateAsk} />
+      <ControlRow
+        onAttach={onAttach}
+        onContext={onContext}
+        onTranslateAsk={() => void handleTranslateAsk()}
+      />
       <div className="composer__footer-row">
         <TransparencyCard />
         <MultiAiActions />

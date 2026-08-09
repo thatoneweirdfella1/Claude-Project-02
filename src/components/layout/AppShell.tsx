@@ -11,6 +11,7 @@ import { KeyboardShortcutsModal } from "../KeyboardShortcutsModal";
 import { useKeyboardShortcuts } from "../../keyboard/useKeyboardShortcuts";
 import { DevAdminPanel } from "../settings/DevAdminPanel";
 import { CostWarningBanner } from "../CostWarningBanner";
+import { CostConfirm, WorkspaceModeBar } from "../credits";
 
 /* AppShell — the structural frame from CANON.md "LAYOUT".
    Regions were empty by design at Step 1.1 (skeleton only), then held
@@ -78,6 +79,7 @@ export function AppShell() {
           <LeftNav />
         </nav>
         <main className="col-center" data-testid="col-center">
+          <WorkspaceModeBar />
           <ScreenRouter />
         </main>
         <aside className="col-right" aria-label="Sidebar panels" data-testid="col-right">
@@ -88,6 +90,7 @@ export function AppShell() {
       <KeyboardShortcutsModal open={showShortcuts} onClose={() => setShowShortcuts(false)} />
       <DevAdminPanel />
       <CostWarningBanner />
+      <CostConfirm />
     </>
   );
 }

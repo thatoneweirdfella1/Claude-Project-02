@@ -2,6 +2,7 @@ import { openDB, type IDBPDatabase } from "idb";
 import { useAccountStore, ACCOUNT_PERSISTED_KEYS } from "../stores/accountStore";
 import { useSessionStore, SESSION_PERSISTED_KEYS } from "../stores/sessionStore";
 import type { AccountState, SessionState } from "../stores/types";
+import { desktopBridge } from "./desktopBridge";
 
 /* persistence.ts — autosave and restore (CANON "STORES AND PERSISTENCE":
    "Autosave writes both to IndexedDB every 5 seconds. On load, both
@@ -45,9 +46,19 @@ function pick<T>(state: T, keys: (keyof T)[]): Partial<T> {
     call concurrently with a refresh: the transaction commits fully or not
     at all, so the last complete write always wins. */
 export async function saveNow(): Promise<void> {
-  const db = await getDB();
   const sessionData = pick(useSessionStore.getState(), SESSION_PERSISTED_KEYS);
   const accountData = pick(useAccountStore.getState(), ACCOUNT_PERSISTED_KEYS);
+
+  const desktop = desktopBridge();
+  if (desktop) {
+    await desktop.state.save({
+      session: sessionData as Record<string, unknown>,
+      account: accountData as Record<string, unknown>,
+    });
+    return;
+  }
+
+  const db = await getDB();
 
   const tx = db.transaction(STORE, "readwrite");
   tx.store.put(sessionData, SESSION_KEY);
@@ -62,6 +73,36 @@ export async function loadPersistedState(): Promise<{
   hadSession: boolean;
   hadAccount: boolean;
 }> {
+  const desktop = desktopBridge();
+  if (desktop) {
+    const desktopData = await desktop.state.load();
+    if (desktopData?.session) {
+      useSessionStore.getState().hydrate(desktopData.session as Partial<SessionState>);
+    }
+    if (desktopData?.account) {
+      useAccountStore.getState().hydrate(desktopData.account as Partial<AccountState>);
+    }
+    if (desktopData) {
+      return {
+        hadSession: Boolean(desktopData.session),
+        hadAccount: Boolean(desktopData.account),
+      };
+    }
+
+    // One-time migration path: an existing browser profile opened inside the
+    // desktop shell may still have its last IndexedDB snapshot. Import it
+    // once, then future reads/writes use SQLite through the bridge.
+    const db = await getDB();
+    const [legacySession, legacyAccount] = await Promise.all([
+      db.get(STORE, SESSION_KEY) as Promise<Partial<SessionState> | undefined>,
+      db.get(STORE, ACCOUNT_KEY) as Promise<Partial<AccountState> | undefined>,
+    ]);
+    if (legacySession) useSessionStore.getState().hydrate(legacySession);
+    if (legacyAccount) useAccountStore.getState().hydrate(legacyAccount);
+    if (legacySession || legacyAccount) await saveNow();
+    return { hadSession: Boolean(legacySession), hadAccount: Boolean(legacyAccount) };
+  }
+
   const db = await getDB();
   const [sessionData, accountData] = await Promise.all([
     db.get(STORE, SESSION_KEY) as Promise<Partial<SessionState> | undefined>,

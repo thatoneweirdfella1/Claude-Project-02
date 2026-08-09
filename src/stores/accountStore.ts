@@ -1,12 +1,17 @@
 import { create } from "zustand";
 import type {
   AccountState,
+  AppMode,
   ArchivedPair,
   AutoSelectUsageLog,
+  CreditLedgerEntry,
   LayoutId,
   LearnedPreferences,
   LearningAuditEntry,
+  ManualPaymentRequest,
   MethodologyEntry,
+  OptimizationGoalId,
+  OptimizationRun,
   SubscriptionTier,
   PromptTemplate,
   Rating,
@@ -63,6 +68,25 @@ export const MAX_LEARNING_AUDIT_ENTRIES = 500;
 /** Cap on stored methodology entries — bounded to prevent unbounded growth. */
 export const MAX_METHODOLOGY_ENTRIES = 200;
 
+/** Billing/optimization audit trails stay bounded just like every other
+    long-lived account log in this store. */
+export const MAX_CREDIT_LEDGER_ENTRIES = 1000;
+export const MAX_OPTIMIZATION_RUNS = 200;
+
+function roundCredits(value: number): number {
+  return Math.round((value + Number.EPSILON) * 1_000_000) / 1_000_000;
+}
+
+function ledgerEntry(
+  entry: Omit<CreditLedgerEntry, "id" | "timestamp">,
+): CreditLedgerEntry {
+  return {
+    ...entry,
+    id: `credit-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+    timestamp: Date.now(),
+  };
+}
+
 /** Step 9.2 — a few built-in presets so Load Template is immediately usable
     before any user has saved one of their own (CANON names the feature but
     not what should ship in it). Fixed string ids, not generated, so they
@@ -103,6 +127,18 @@ export const MAX_AUTO_SELECT_USAGE_LOGS = 1000;
 export function createInitialAccountState(): AccountState {
   return {
     plan: "free", // CANON/ROUTING: default free so the gated path is exercised by default. NOT billing.
+    creditBalance: 0,
+    billingDate: 0,
+    appMode: "user",
+    creditLedger: [],
+    manualPaymentRequests: [],
+    optimizationProfile: {
+      enabled: false,
+      selectedGoals: [],
+      minimumEvidence: 3,
+      lastRunAt: null,
+    },
+    optimizationRuns: [],
     autoSelectUsedThisMonth: 0,
     autoSelectUsageResetDate: Date.now(),
     autoSelectUsageLogs: [],
@@ -126,6 +162,13 @@ export function createInitialAccountState(): AccountState {
 /** Persisted data keys, for the autosave layer (Step 1.8). */
 export const ACCOUNT_PERSISTED_KEYS: (keyof AccountState)[] = [
   "plan",
+  "creditBalance",
+  "billingDate",
+  "appMode",
+  "creditLedger",
+  "manualPaymentRequests",
+  "optimizationProfile",
+  "optimizationRuns",
   "autoSelectUsedThisMonth",
   "autoSelectUsageResetDate",
   "autoSelectUsageLogs",
@@ -147,6 +190,27 @@ export const ACCOUNT_PERSISTED_KEYS: (keyof AccountState)[] = [
 
 interface AccountActions {
   setPlan: (plan: SubscriptionTier) => void;
+  setBillingDate: (billingDate: number) => void;
+  setAppMode: (mode: AppMode) => void;
+  /** Add dollar-denominated credits and append an auditable ledger row. */
+  addCredits: (
+    amount: number,
+    note?: string,
+    kind?: CreditLedgerEntry["kind"],
+    referenceId?: string,
+  ) => boolean;
+  /** Atomically spend credits. Developer mode succeeds without changing
+      balance; User mode fails closed when the balance is insufficient. */
+  deductCredits: (amount: number, note?: string, referenceId?: string) => boolean;
+  requestManualPayment: (
+    request: Omit<ManualPaymentRequest, "id" | "createdAt" | "status">,
+  ) => string;
+  resolveManualPayment: (id: string, approved: boolean) => boolean;
+  setOptimizationEnabled: (enabled: boolean) => void;
+  setOptimizationGoals: (goals: OptimizationGoalId[]) => void;
+  recordOptimizationRun: (run: OptimizationRun) => void;
+  markOptimizationRunBad: (id: string) => void;
+  rollbackOptimizationRun: (id: string) => boolean;
   archivePair: (pair: ArchivedPair) => void;
   addRating: (rating: Rating) => void;
   /** Step 8.1 — upsert: replaces the existing Rating for this messageId (a
@@ -222,10 +286,135 @@ interface AccountActions {
 
 export type AccountStore = AccountState & AccountActions;
 
-export const useAccountStore = create<AccountStore>((set) => ({
+export const useAccountStore = create<AccountStore>((set, get) => ({
   ...createInitialAccountState(),
 
   setPlan: (plan) => set({ plan }),
+  setBillingDate: (billingDate) => set({ billingDate }),
+  setAppMode: (appMode) => set({ appMode }),
+  addCredits: (amount, note = "Credits added", kind = "admin-adjustment", referenceId) => {
+    if (!Number.isFinite(amount) || amount <= 0) return false;
+    const nextBalance = roundCredits(get().creditBalance + amount);
+    const entry = ledgerEntry({
+      kind,
+      amount: roundCredits(amount),
+      balanceAfter: nextBalance,
+      note,
+      referenceId,
+    });
+    set((state) => ({
+      creditBalance: nextBalance,
+      creditLedger: [...state.creditLedger, entry].slice(-MAX_CREDIT_LEDGER_ENTRIES),
+    }));
+    return true;
+  },
+  deductCredits: (amount, note = "AI usage", referenceId) => {
+    if (!Number.isFinite(amount) || amount <= 0) return false;
+    const state = get();
+    if (state.appMode === "developer") return true;
+    if (state.plan === "free") return false;
+    if (state.creditBalance + Number.EPSILON < amount) return false;
+    const nextBalance = roundCredits(Math.max(0, state.creditBalance - amount));
+    const entry = ledgerEntry({
+      kind: "api-call",
+      amount: -roundCredits(amount),
+      balanceAfter: nextBalance,
+      note,
+      referenceId,
+    });
+    set({
+      creditBalance: nextBalance,
+      creditLedger: [...state.creditLedger, entry].slice(-MAX_CREDIT_LEDGER_ENTRIES),
+    });
+    return true;
+  },
+  requestManualPayment: (request) => {
+    const id = `payment-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    const entry: ManualPaymentRequest = {
+      ...request,
+      id,
+      createdAt: Date.now(),
+      status: "pending",
+    };
+    set((state) => ({
+      manualPaymentRequests: [...state.manualPaymentRequests, entry].slice(-200),
+    }));
+    return id;
+  },
+  resolveManualPayment: (id, approved) => {
+    const state = get();
+    const request = state.manualPaymentRequests.find(
+      (entry) => entry.id === id && entry.status === "pending",
+    );
+    if (!request) return false;
+    const resolvedAt = Date.now();
+    const nextRequests = state.manualPaymentRequests.map((entry) =>
+      entry.id === id
+        ? { ...entry, status: approved ? ("approved" as const) : ("rejected" as const), resolvedAt }
+        : entry,
+    );
+    if (!approved) {
+      set({ manualPaymentRequests: nextRequests });
+      return true;
+    }
+    const nextBalance = roundCredits(state.creditBalance + request.creditAmount);
+    const entry = ledgerEntry({
+      kind: request.kind,
+      amount: request.creditAmount,
+      balanceAfter: nextBalance,
+      note: request.kind === "subscription" ? `${request.tier} subscription activated` : "Manual top-up approved",
+      referenceId: request.id,
+    });
+    const nextBillingDate =
+      request.kind === "subscription" ? Date.now() + 30 * 24 * 60 * 60 * 1000 : state.billingDate;
+    set({
+      manualPaymentRequests: nextRequests,
+      creditBalance: nextBalance,
+      creditLedger: [...state.creditLedger, entry].slice(-MAX_CREDIT_LEDGER_ENTRIES),
+      plan: request.tier ?? state.plan,
+      billingDate: nextBillingDate,
+    });
+    return true;
+  },
+  setOptimizationEnabled: (enabled) =>
+    set((state) => ({
+      optimizationProfile: { ...state.optimizationProfile, enabled },
+    })),
+  setOptimizationGoals: (selectedGoals) =>
+    set((state) => ({
+      optimizationProfile: {
+        ...state.optimizationProfile,
+        selectedGoals: [...new Set(selectedGoals)],
+      },
+    })),
+  recordOptimizationRun: (run) =>
+    set((state) => ({
+      optimizationProfile: {
+        ...state.optimizationProfile,
+        lastRunAt: run.timestamp,
+      },
+      optimizationRuns: [...state.optimizationRuns, run].slice(-MAX_OPTIMIZATION_RUNS),
+      learnedPreferences:
+        run.status === "applied" ? run.afterPreferences : state.learnedPreferences,
+    })),
+  markOptimizationRunBad: (id) =>
+    set((state) => ({
+      optimizationRuns: state.optimizationRuns.map((run) =>
+        run.id === id ? { ...run, status: "bad" as const } : run,
+      ),
+    })),
+  rollbackOptimizationRun: (id) => {
+    const state = get();
+    const run = state.optimizationRuns.find((entry) => entry.id === id);
+    if (!run || run.status !== "applied") return false;
+    set({
+      learnedPreferences: run.beforePreferences,
+      optimizationRuns: state.optimizationRuns.map((entry) =>
+        entry.id === id ? { ...entry, status: "rolled-back" as const } : entry,
+      ),
+    });
+    return true;
+  },
   archivePair: (pair) => set((s) => ({ archivedPairs: [...s.archivedPairs, pair] })),
   addRating: (rating) => set((s) => ({ ratings: [...s.ratings, rating] })),
   setRating: (rating) =>
@@ -379,9 +568,25 @@ export const useAccountStore = create<AccountStore>((set) => ({
 /** Monthly limits per subscription tier. */
 const AUTO_SELECT_LIMITS: Record<string, number> = {
   free: 5,
+  plus: 50,
   pro: 50,
+  insane: 999,
   "pro-plus": 999,
 };
+
+/** Remaining usable API credit. Developer mode is intentionally unlimited. */
+export function getCreditsRemaining(): number {
+  const state = useAccountStore.getState();
+  return state.appMode === "developer" ? Number.POSITIVE_INFINITY : state.creditBalance;
+}
+
+export function canAffordCredits(amount: number): boolean {
+  if (!Number.isFinite(amount) || amount <= 0) return false;
+  const state = useAccountStore.getState();
+  if (state.appMode !== "developer" && state.plan === "free") return false;
+  const remaining = getCreditsRemaining();
+  return remaining === Number.POSITIVE_INFINITY || remaining + Number.EPSILON >= amount;
+}
 
 /** Get the monthly auto-select limit for a given plan. */
 export function getAutoSelectLimit(plan: string): number {

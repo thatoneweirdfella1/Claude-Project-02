@@ -7,6 +7,10 @@ import { useDismissableLayer } from "../../keyboard";
 import { useAccountStore } from "../../stores/accountStore";
 import { useSessionStore } from "../../stores/sessionStore";
 import { Logo } from "./Logo";
+import { CreditCounter } from "../credits";
+import { logOutCurrentAccount } from "../../services/accountSession";
+import { desktopBridge, type DesktopUser } from "../../services/desktopBridge";
+import { WindowControls } from "./WindowControls";
 import "./TopBar.css";
 
 /* Top bar, 60px, per CANON.md "LAYOUT": logo slot, Search/Templates/
@@ -192,21 +196,33 @@ function HelpPopover({ open, setOpen, rootRef }: { open: boolean; setOpen: (v: b
 }
 
 function UserMenu({ open, setOpen, rootRef }: { open: boolean; setOpen: (v: boolean) => void; rootRef: React.RefObject<HTMLDivElement | null> }) {
+  const [desktopUser, setDesktopUser] = useState<DesktopUser | null>(null);
+  useEffect(() => {
+    const desktop = desktopBridge();
+    if (desktop) void desktop.auth.current().then(setDesktopUser);
+  }, []);
+
   function handleLogout() {
-    window.location.href = "/logout";
+    void logOutCurrentAccount();
   }
 
   return (
     <div ref={rootRef} className="topbar-popover-wrapper">
       <GlassButton className="user-chip" onClick={() => setOpen(!open)}>
         <span className="user-chip__avatar" aria-hidden="true">
-          D
+          {(desktopUser?.displayName ?? "Profile").slice(0, 1).toUpperCase()}
         </span>
-        Devan
+        {desktopUser?.displayName ?? "Profile"}
         <ChevronDown size={14} aria-hidden="true" />
       </GlassButton>
       {open && (
         <div className="surface-smoked-glass topbar-popover topbar-popover--right" role="menu" aria-label="User menu">
+          {desktopUser && (
+            <div className="topbar-popover__account-summary">
+              <strong>{desktopUser.email}</strong>
+              <span>{desktopUser.role}</span>
+            </div>
+          )}
           <button
             type="button"
             className="topbar-popover__menu-item"
@@ -296,6 +312,7 @@ export function TopBar() {
         <Logo />
       </div>
       <div className="topbar-center">
+        <QuickReferencePopover open={refOpen} setOpen={setRefOpen} rootRef={refRef} />
         <SearchPopover open={searchOpen} setOpen={setSearchOpen} rootRef={searchRef} />
         <LoadTemplateMenu
           renderTrigger={({ open, onClick }) => (
@@ -305,13 +322,14 @@ export function TopBar() {
             </GlassButton>
           )}
         />
-        <QuickReferencePopover open={refOpen} setOpen={setRefOpen} rootRef={refRef} />
       </div>
       <div className="topbar-right">
-        <VisibilityMenu />
         <NotificationsPopover open={notifOpen} setOpen={setNotifOpen} rootRef={notifRef} />
         <HelpPopover open={helpOpen} setOpen={setHelpOpen} rootRef={helpRef} />
+        <VisibilityMenu />
+        <CreditCounter />
         <UserMenu open={userOpen} setOpen={setUserOpen} rootRef={userRef} />
+        <WindowControls />
       </div>
     </div>
   );

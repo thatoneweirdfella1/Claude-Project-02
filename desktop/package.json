@@ -1,0 +1,40 @@
+{
+  "name": "divergence-ai-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Standalone Divergence.AI desktop test program",
+  "main": "main.cjs",
+  "scripts": {
+    "test": "node --test db.test.cjs",
+    "start": "electron .",
+    "start:dev": "electron . --dev-url=http://localhost:5173",
+    "package": "npm --prefix .. run build && electron-builder",
+    "package:dir": "npm --prefix .. run build && electron-builder --dir"
+  },
+  "devDependencies": {
+    "electron": "^43.3.0",
+    "electron-builder": "^26.15.3"
+  },
+  "build": {
+    "appId": "ai.divergence.desktop",
+    "productName": "Divergence.AI",
+    "asar": true,
+    "files": [
+      "main.cjs",
+      "preload.cjs",
+      "db.cjs",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "../dist",
+        "to": "renderer",
+        "filter": ["**/*"]
+      }
+    ],
+    "win": { "target": ["nsis"] },
+    "mac": { "target": ["dmg"], "category": "public.app-category.productivity" },
+    "linux": { "target": ["AppImage"], "category": "Utility" },
+    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true }
+  }
+}

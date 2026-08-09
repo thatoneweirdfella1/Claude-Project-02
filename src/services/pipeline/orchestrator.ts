@@ -170,7 +170,11 @@ export async function* runPipeline(
   let gated: GatedTranslation;
   try {
     const outcome = await translate(request.rawInput, {
-      client: (req) => client.complete(req),
+      client: (req) =>
+        client.complete({
+          ...req,
+          onUsage: (usage) => addTokenUsage(usage.inputTokens, usage.outputTokens, req.model),
+        }),
       signal: deps.signal,
     });
     gated = gateTranslation(outcome);
@@ -254,7 +258,8 @@ export async function* runPipeline(
       input: composed.prompt,
       signal: deps.signal,
       extendedThinking: routeResult.thinkingApplied || undefined,
-      onUsage: (usage) => addTokenUsage(usage.inputTokens, usage.outputTokens),
+      onUsage: (usage) =>
+        addTokenUsage(usage.inputTokens, usage.outputTokens, routeResult.apiString),
     });
     for await (const state of streamAnswer(tokens, meta)) {
       if (state.kind === "streaming") {

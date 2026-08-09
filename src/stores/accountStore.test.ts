@@ -77,6 +77,13 @@ describe("createInitialAccountState", () => {
   it("matches CANON's documented defaults", () => {
     const state = createInitialAccountState();
     expect(state.plan).toBe("free");
+    expect(state.creditBalance).toBe(0);
+    expect(state.billingDate).toBe(0);
+    expect(state.appMode).toBe("user");
+    expect(state.creditLedger).toEqual([]);
+    expect(state.manualPaymentRequests).toEqual([]);
+    expect(state.optimizationProfile.selectedGoals).toEqual([]);
+    expect(state.optimizationRuns).toEqual([]);
     expect(state.archivedPairs).toEqual([]);
     expect(state.ratings).toEqual([]);
     expect(state.savedPrompts).toEqual([]);
@@ -125,10 +132,17 @@ describe("DEFAULT_VISIBILITY", () => {
 });
 
 describe("ACCOUNT_PERSISTED_KEYS", () => {
-  it("is exactly the eighteen documented fields", () => {
+  it("includes the complete durable account, credit, and optimization state", () => {
     expect([...ACCOUNT_PERSISTED_KEYS].sort()).toEqual(
       [
         "plan",
+        "creditBalance",
+        "billingDate",
+        "appMode",
+        "creditLedger",
+        "manualPaymentRequests",
+        "optimizationProfile",
+        "optimizationRuns",
         "archivedPairs",
         "ratings",
         "savedPrompts",
@@ -160,6 +174,45 @@ describe("plain setters", () => {
   it("setLearnedPreferences replaces the whole value", () => {
     useAccountStore.getState().setLearnedPreferences({ routing: { x: 1 }, technique: {} });
     expect(useAccountStore.getState().learnedPreferences).toEqual({ routing: { x: 1 }, technique: {} });
+  });
+});
+
+describe("credits and manual payments", () => {
+  it("adds and deducts credits without allowing a negative balance", () => {
+    useAccountStore.getState().setPlan("plus");
+    expect(useAccountStore.getState().addCredits(2, "seed")).toBe(true);
+    expect(useAccountStore.getState().deductCredits(0.75, "test call")).toBe(true);
+    expect(useAccountStore.getState().creditBalance).toBe(1.25);
+    expect(useAccountStore.getState().deductCredits(2, "too expensive")).toBe(false);
+    expect(useAccountStore.getState().creditBalance).toBe(1.25);
+    expect(useAccountStore.getState().creditLedger).toHaveLength(2);
+  });
+
+  it("keeps the Free tier UI-only even if a balance exists", () => {
+    useAccountStore.getState().addCredits(5, "carried balance");
+    expect(useAccountStore.getState().deductCredits(1, "blocked call")).toBe(false);
+    expect(useAccountStore.getState().creditBalance).toBe(5);
+  });
+
+  it("keeps Developer Mode unlimited without mutating the stored balance", () => {
+    useAccountStore.getState().setAppMode("developer");
+    expect(useAccountStore.getState().deductCredits(500, "dev test")).toBe(true);
+    expect(useAccountStore.getState().creditBalance).toBe(0);
+  });
+
+  it("requires operator resolution before a manual purchase adds credits", () => {
+    const id = useAccountStore.getState().requestManualPayment({
+      kind: "subscription",
+      paidAmount: 15,
+      creditAmount: 10.5,
+      tier: "plus",
+    });
+    expect(useAccountStore.getState().creditBalance).toBe(0);
+    expect(useAccountStore.getState().resolveManualPayment(id, true)).toBe(true);
+    const state = useAccountStore.getState();
+    expect(state.creditBalance).toBe(10.5);
+    expect(state.plan).toBe("plus");
+    expect(state.billingDate).toBeGreaterThan(Date.now());
   });
 });
 

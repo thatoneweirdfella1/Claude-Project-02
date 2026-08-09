@@ -41,7 +41,91 @@ export type TechniqueId =
     Not a billing system — no payment or auth (ROUTING.md explicit).
     Gates auto-select features and usage limits. Maps to routing's PlanFlag
     for routing.js calls: free→"free", pro/"pro-plus"→"paid". */
-export type SubscriptionTier = "free" | "pro" | "pro-plus";
+export type SubscriptionTier = "free" | "plus" | "pro" | "insane" | "pro-plus";
+
+/** The desktop build has two deliberately different experiences. User mode
+    is the sellable, credit-limited product. Developer mode is an operator
+    testing surface with unlimited calls and diagnostic controls. */
+export type AppMode = "user" | "developer";
+
+export type CreditLedgerKind =
+  | "subscription"
+  | "top-up"
+  | "api-call"
+  | "refund"
+  | "admin-adjustment"
+  | "migration";
+
+export interface CreditLedgerEntry {
+  id: string;
+  timestamp: number;
+  kind: CreditLedgerKind;
+  /** Positive adds credit; negative spends it. Dollar-denominated credits. */
+  amount: number;
+  balanceAfter: number;
+  note: string;
+  referenceId?: string;
+}
+
+export interface ManualPaymentRequest {
+  id: string;
+  createdAt: number;
+  resolvedAt?: number;
+  kind: "subscription" | "top-up";
+  paidAmount: number;
+  creditAmount: number;
+  tier?: Exclude<SubscriptionTier, "pro-plus">;
+  status: "pending" | "approved" | "rejected";
+}
+
+/** User-facing personalization choices. Conversation selection is
+    intentionally absent: the optimizer evaluates all eligible saved
+    conversations and lets the user choose only the outcome to improve. */
+export type OptimizationGoalId =
+  | "reduce-overwhelm"
+  | "recover-frustration"
+  | "increase-clarity"
+  | "right-size-detail"
+  | "support-completion";
+
+export interface OptimizationProfile {
+  enabled: boolean;
+  selectedGoals: OptimizationGoalId[];
+  minimumEvidence: number;
+  lastRunAt: number | null;
+}
+
+export interface OptimizationEvidenceRef {
+  sessionId: string;
+  messageId: string;
+  timestamp: number;
+  excerpt: string;
+  signal: string;
+}
+
+export interface OptimizationChange {
+  target: string;
+  before: string;
+  after: string;
+  reason: string;
+  confidence: number;
+  evidenceCount: number;
+}
+
+export type OptimizationRunStatus = "preview" | "applied" | "failed" | "bad" | "rolled-back";
+
+export interface OptimizationRun {
+  id: string;
+  timestamp: number;
+  goals: OptimizationGoalId[];
+  status: OptimizationRunStatus;
+  scannedSessions: number;
+  evidence: OptimizationEvidenceRef[];
+  changes: OptimizationChange[];
+  beforePreferences: LearnedPreferences;
+  afterPreferences: LearnedPreferences;
+  summary: string;
+}
 
 /** routing.js's plan flag (ROUTING.md) — "free" is free tier, "paid" is any
     paid tier (pro or pro-plus). This is the type for routing.js calls.
@@ -418,6 +502,15 @@ export interface SessionState {
 /** Account store — persists across browser closes (CANON). */
 export interface AccountState {
   plan: SubscriptionTier;
+  /** Dollar-denominated usable API credits. Never allowed below zero. */
+  creditBalance: number;
+  /** Next renewal timestamp; 0 means no active renewal. */
+  billingDate: number;
+  appMode: AppMode;
+  creditLedger: CreditLedgerEntry[];
+  manualPaymentRequests: ManualPaymentRequest[];
+  optimizationProfile: OptimizationProfile;
+  optimizationRuns: OptimizationRun[];
   /** Auto-select usage tracking for this month. Resets on the 1st. */
   autoSelectUsedThisMonth: number;
   /** Last reset date (timestamp). Used to detect when we've rolled into a new month. */

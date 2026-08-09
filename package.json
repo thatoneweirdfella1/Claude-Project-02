@@ -9,7 +9,11 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:desktop": "npm --prefix desktop test",
+    "desktop:install": "npm --prefix desktop install",
+    "desktop:start": "npm run build && npm --prefix desktop start",
+    "desktop:package": "npm --prefix desktop run package"
   },
   "dependencies": {
     "idb": "^8.0.3",
