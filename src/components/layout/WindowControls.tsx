@@ -1,8 +1,21 @@
+import { useEffect } from "react";
 import { Minus, Square, X } from "lucide-react";
 import { desktopBridge } from "../../services/desktopBridge";
 
 export function WindowControls({ floating = false }: { floating?: boolean }) {
   const desktop = desktopBridge();
+
+  useEffect(() => {
+    if (!desktop) return undefined;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      void desktop.app.close();
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [desktop]);
+
   if (!desktop) return null;
   return (
     <div className={`window-controls ${floating ? "window-controls--floating" : ""}`} aria-label="Window controls">

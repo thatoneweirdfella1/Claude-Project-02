@@ -164,7 +164,7 @@ function createWindow() {
   mainWindow.on("will-resize", (event) => event.preventDefault());
   mainWindow.on("will-move", () => undefined);
   mainWindow.webContents.on("before-input-event", (event, input) => {
-    if (input.type === "keyDown" && input.key === "Escape") {
+    if (input.type === "keyDown" && (input.key === "Escape" || input.key === "Esc")) {
       event.preventDefault();
       mainWindow?.close();
     }
