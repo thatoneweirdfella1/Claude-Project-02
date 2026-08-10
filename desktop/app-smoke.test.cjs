@@ -67,6 +67,26 @@ test("desktop shell survives every navigation route, restores safely, and stays 
     }
 
     await window.locator('[data-screen="translate"]').click();
+    const accordionHeaders = window.locator(".accordion-panel__header");
+    assert.equal(await accordionHeaders.count(), 6);
+    for (let index = 0; index < await accordionHeaders.count(); index += 1) {
+      const header = accordionHeaders.nth(index);
+      await header.click();
+      await window.waitForTimeout(70);
+      assert.equal(await window.locator(".app-recovery").count(), 0, `accordion failed for ${await header.innerText()}`);
+      await header.click();
+    }
+
+    const quickTools = window.locator(".quick-tools-tile__button");
+    assert.equal(await quickTools.count(), 6);
+    for (let index = 0; index < await quickTools.count(); index += 1) {
+      const button = quickTools.nth(index);
+      await button.click();
+      await window.waitForTimeout(70);
+      assert.equal(await window.locator(".app-recovery").count(), 0, `quick tool failed for ${await button.innerText()}`);
+      await button.click();
+    }
+
     const topbar = window.getByTestId("topbar");
     for (const name of ["Quick Reference", "Search", "Templates", "Notifications", "Help", "Profile"]) {
       const button = topbar.getByRole("button", { name, exact: name !== "Profile" }).first();

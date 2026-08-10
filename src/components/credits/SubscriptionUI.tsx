@@ -12,9 +12,8 @@ import {
 export function SubscriptionUI() {
   const plan = useAccountStore((state) => state.plan);
   const billingDate = useAccountStore((state) => state.billingDate);
-  const pending = useAccountStore((state) =>
-    state.manualPaymentRequests.filter((request) => request.status === "pending"),
-  );
+  const paymentRequests = useAccountStore((state) => state.manualPaymentRequests);
+  const pending = paymentRequests.filter((request) => request.status === "pending");
   const [message, setMessage] = useState("");
 
   const requestTier = async (tier: Parameters<typeof requestSubscriptionPurchase>[0]) => {

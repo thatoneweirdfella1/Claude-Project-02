@@ -49,7 +49,7 @@ export const DEFAULT_VISIBILITY: VisibilitySettings = {
   tokenUsage: true,
   modelStatus: true,
   quickTools: true,
-  activeSession: false,
+  activeSession: true,
 };
 
 /** Cap on stored corrections (Step 6.4) — bounded so a very long-lived
@@ -562,7 +562,28 @@ export const useAccountStore = create<AccountStore>((set, get) => ({
             : nextLogs,
       };
     }),
-  hydrate: (state) => set(state),
+  hydrate: (state) => {
+    const defaults = createInitialAccountState();
+    set({
+      ...defaults,
+      ...state,
+      layout: "gold",
+      visibility: { ...DEFAULT_VISIBILITY },
+      optimizationProfile: {
+        ...defaults.optimizationProfile,
+        ...(state.optimizationProfile ?? {}),
+        selectedGoals: Array.isArray(state.optimizationProfile?.selectedGoals)
+          ? state.optimizationProfile.selectedGoals
+          : defaults.optimizationProfile.selectedGoals,
+      },
+      creditLedger: Array.isArray(state.creditLedger) ? state.creditLedger : defaults.creditLedger,
+      manualPaymentRequests: Array.isArray(state.manualPaymentRequests) ? state.manualPaymentRequests : defaults.manualPaymentRequests,
+      optimizationRuns: Array.isArray(state.optimizationRuns) ? state.optimizationRuns : defaults.optimizationRuns,
+      sessions: Array.isArray(state.sessions) ? state.sessions : defaults.sessions,
+      trashed: Array.isArray(state.trashed) ? state.trashed : defaults.trashed,
+      templates: Array.isArray(state.templates) ? state.templates : defaults.templates,
+    });
+  },
 }));
 
 /** Monthly limits per subscription tier. */

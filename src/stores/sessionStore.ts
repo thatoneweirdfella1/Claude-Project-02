@@ -182,10 +182,17 @@ export const useSessionStore = create<SessionStore>((set) => ({
   setMethodology: (methodology) => set({ methodology }),
   setMethodologyPhase: (methodologyPhase) => set({ methodologyPhase }),
   setLockedProblemStatement: (lockedProblemStatement) => set({ lockedProblemStatement }),
-  hydrate: (state) => set({
-    ...state,
-    currentScreen: state.currentScreen && VALID_SCREENS.has(state.currentScreen)
-      ? state.currentScreen
-      : "translate",
-  }),
+  hydrate: (state) => {
+    const defaults = createInitialSessionState();
+    set({
+      ...defaults,
+      ...state,
+      context: Array.isArray(state.context) ? state.context : defaults.context,
+      conversation: Array.isArray(state.conversation) ? state.conversation : defaults.conversation,
+      techniques: Array.isArray(state.techniques) ? state.techniques : defaults.techniques,
+      currentScreen: state.currentScreen && VALID_SCREENS.has(state.currentScreen)
+        ? state.currentScreen
+        : "translate",
+    });
+  },
 }));

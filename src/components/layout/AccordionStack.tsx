@@ -146,9 +146,8 @@ function RecentActivityContent() {
 }
 
 function TokenUsageContent() {
-  const conversations = useAccountStore((s) =>
-    s.sessions.flatMap((session) => session.conversation)
-  );
+  const sessions = useAccountStore((s) => s.sessions);
+  const conversations = sessions.flatMap((session) => session.conversation);
 
   const messageCount = conversations.length;
   const estimatedTokensPerMessage = 50;
