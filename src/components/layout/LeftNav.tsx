@@ -1,24 +1,44 @@
 import { GlassButton } from "../primitives";
 import { useAccountStore } from "../../stores/accountStore";
 import type { ScreenId } from "../../stores/types";
+import {
+  Home,
+  LayoutGrid,
+  MessageSquare,
+  Archive,
+  Lightbulb,
+  Folder,
+  Code2,
+  ListChecks,
+  SlidersHorizontal,
+  BrainVertical,
+  Trash2,
+  LogOut,
+} from "lucide-react";
 
-/* Left nav, 200px, per CANON.md "LAYOUT". Navigates to 13 destination screens
+/* Left nav, 240px, per CANON.md "LAYOUT". Navigates to 13 destination screens
    via setCurrentScreen. */
 
-const NAV_ITEMS: Array<{ label: string; screenId: ScreenId }> = [
-  { label: "Home", screenId: "home" },
-  { label: "Dashboard", screenId: "dashboard" },
-  { label: "Messages", screenId: "messages" },
-  { label: "Archive", screenId: "archive" },
-  { label: "Resources", screenId: "resources" },
-  { label: "Projects", screenId: "projects" },
-  { label: "Integrations", screenId: "integrations" },
-  { label: "Tasks", screenId: "tasks" },
-  { label: "Templates", screenId: "templates" },
-  { label: "Customize", screenId: "customize" },
-  { label: "Settings", screenId: "settings" },
-  { label: "Sessions", screenId: "sessions" },
-  { label: "Translate", screenId: "translate" },
+interface NavItem {
+  label: string;
+  screenId: ScreenId;
+  Icon: React.ComponentType<{ size: number; className?: string }>;
+}
+
+const NAV_ITEMS: NavItem[] = [
+  { label: "Home", screenId: "home", Icon: Home },
+  { label: "Dashboard", screenId: "dashboard", Icon: LayoutGrid },
+  { label: "Messages", screenId: "messages", Icon: MessageSquare },
+  { label: "Archive", screenId: "archive", Icon: Archive },
+  { label: "Resources", screenId: "resources", Icon: Lightbulb },
+  { label: "Projects", screenId: "projects", Icon: Folder },
+  { label: "Integrations", screenId: "integrations", Icon: Code2 },
+  { label: "Tasks", screenId: "tasks", Icon: ListChecks },
+  { label: "Templates", screenId: "templates", Icon: Archive },
+  { label: "Customize", screenId: "customize", Icon: SlidersHorizontal },
+  { label: "Settings", screenId: "settings", Icon: Lightbulb },
+  { label: "Sessions", screenId: "sessions", Icon: MessageSquare },
+  { label: "Translate", screenId: "translate", Icon: BrainVertical },
 ];
 
 export function LeftNav() {
@@ -35,20 +55,23 @@ export function LeftNav() {
             onClick={() => setCurrentScreen(item.screenId)}
             data-testid={`nav-${item.screenId}`}
           >
-            {item.label}
+            <item.Icon size={18} className="leftnav-icon" />
+            <span>{item.label}</span>
           </GlassButton>
         ))}
       </div>
       <div className="leftnav-bottom">
         <GlassButton className="leftnav-item" data-testid="nav-trash">
-          Trash
+          <Trash2 size={18} className="leftnav-icon" />
+          <span>Trash</span>
         </GlassButton>
         <div className="system-status" data-testid="system-status">
           <span className="system-status-dot" aria-hidden="true" />
           System Status
         </div>
         <GlassButton className="leftnav-item" data-testid="logout-button">
-          Logout
+          <LogOut size={18} className="leftnav-icon" />
+          <span>Logout</span>
         </GlassButton>
       </div>
     </div>
