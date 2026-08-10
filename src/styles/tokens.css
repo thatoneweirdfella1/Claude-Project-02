@@ -68,6 +68,9 @@
 
   --status-online: #22c55e; /* System Status dot. Same value as --state-interest — MATERIALS.md defines only one green in the palette — but a separate token, since the two concepts (system health vs. detected interest level) are unrelated and could diverge later. */
 
+  /* Quick Tools tile colors */
+  --tile-prompt-library: #f97316; /* orange, Prompt Library tile — standard Tailwind orange-500 */
+
   /* ---------------------------------------------------------------------
      TEXT — monochrome base, 85% of the interface (MATERIALS.md "COLOR")
      --------------------------------------------------------------------- */

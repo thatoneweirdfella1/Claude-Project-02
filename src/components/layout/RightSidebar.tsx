@@ -1,4 +1,4 @@
-import { Plus, Star, Wand2 } from "lucide-react";
+import { Plus, Star, Wand2, Wifi, Sparkles, BookOpen, Code2, CheckCircle, BarChart3 } from "lucide-react";
 import { GlassButton, GlassPanel } from "../primitives";
 
 /* Right sidebar, 300px: state detection pills, quick actions, quick tools grid, accordion stack. */
@@ -6,26 +6,6 @@ import { GlassButton, GlassPanel } from "../primitives";
 export function RightSidebar() {
   return (
     <div className="rightsidebar-content">
-      {/* State Detection Panels */}
-      <div className="state-detection-section">
-        <div className="state-pill">
-          <span className="state-label">Emotion</span>
-          <span className="state-value">● Calm</span>
-        </div>
-        <div className="state-pill">
-          <span className="state-label">RSD Level</span>
-          <span className="state-value">Medium ▓▓░</span>
-        </div>
-        <div className="state-pill">
-          <span className="state-label">Interest</span>
-          <span className="state-value">High ▓▓▓</span>
-        </div>
-        <div className="state-pill">
-          <span className="state-label">Cognitive Mode</span>
-          <span className="state-value">● Analytical</span>
-        </div>
-      </div>
-
       {/* Quick Actions */}
       <div className="quick-actions-section">
         <div className="quick-actions__header">QUICK ACTIONS</div>
@@ -49,12 +29,12 @@ export function RightSidebar() {
       <div className="quick-tools-section">
         <div className="quick-tools__header">QUICK TOOLS</div>
         <div className="quick-tools-grid">
-          <QuickToolsTile title="Router" icon="🔀" />
-          <QuickToolsTile title="Techniques" icon="⚙" />
-          <QuickToolsTile title="Prompt Library" icon="📚" />
-          <QuickToolsTile title="Variables" icon="x" />
-          <QuickToolsTile title="Checkpoints" icon="✓" />
-          <QuickToolsTile title="Dashboard" icon="📊" />
+          <QuickToolsTile title="Router" Icon={Wifi} colorClass="tile-green" />
+          <QuickToolsTile title="Techniques" Icon={Sparkles} colorClass="tile-purple" />
+          <QuickToolsTile title="Prompt Library" Icon={BookOpen} colorClass="tile-orange" />
+          <QuickToolsTile title="Variables" Icon={Code2} colorClass="tile-cyan" />
+          <QuickToolsTile title="Checkpoints" Icon={CheckCircle} colorClass="tile-red" />
+          <QuickToolsTile title="Dashboard" Icon={BarChart3} colorClass="tile-blue" />
         </div>
       </div>
 
@@ -97,13 +77,16 @@ export function RightSidebar() {
 
 interface QuickToolsTileProps {
   title: string;
-  icon: string;
+  Icon: React.ComponentType<{ size: number; className?: string }>;
+  colorClass: string;
 }
 
-function QuickToolsTile({ title, icon }: QuickToolsTileProps) {
+function QuickToolsTile({ title, Icon, colorClass }: QuickToolsTileProps) {
   return (
     <GlassPanel className="quick-tools-tile">
-      <div className="quick-tools-tile-icon">{icon}</div>
+      <div className={`quick-tools-tile-icon ${colorClass}`}>
+        <Icon size={24} />
+      </div>
       <div className="quick-tools-tile__title">{title}</div>
       <div className="quick-tools-tile-status">Coming soon</div>
     </GlassPanel>

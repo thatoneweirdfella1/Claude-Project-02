@@ -102,8 +102,35 @@
 }
 
 .quick-tools-tile-icon {
-  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-cyan);
   line-height: 1;
+}
+
+.tile-green {
+  color: var(--state-interest);
+}
+
+.tile-purple {
+  color: var(--accent-purple);
+}
+
+.tile-orange {
+  color: var(--tile-prompt-library);
+}
+
+.tile-cyan {
+  color: var(--accent-cyan);
+}
+
+.tile-red {
+  color: var(--action-destructive);
+}
+
+.tile-blue {
+  color: var(--state-cognitive);
 }
 
 .quick-tools-tile__title {
