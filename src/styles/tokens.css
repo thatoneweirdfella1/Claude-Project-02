@@ -293,6 +293,10 @@
   --text-primary: #16151a;
   --text-secondary: #55565f;
 
+  /* Surfaces flip to light in light theme — sidebar backgrounds now light/cream */
+  --surface-smoked-glass: rgba(245, 245, 245, 0.95);
+  --surface-smoked-glass-border: rgba(200, 200, 200, 0.5);
+
   /* Black Marble (background) — real sampled base from the reference
      (multiple non-veined sample points, #f3f3f3-#fcfcfc): used only as the
      flat-color fallback if the texture image fails, same convention as
