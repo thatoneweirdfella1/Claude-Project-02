@@ -1,12 +1,35 @@
 "use strict";
 
-const { app, BrowserWindow, ipcMain, safeStorage, shell } = require("electron");
+const { app, BrowserWindow, dialog, ipcMain, safeStorage, screen, shell } = require("electron");
 const path = require("node:path");
 const fs = require("node:fs");
 const { createDesktopDatabase } = require("./db.cjs");
 
 let database;
 let mainWindow;
+
+const REFERENCE_WIDTH = 1545;
+const REFERENCE_HEIGHT = 1024;
+const BACKGROUND_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".webp"]);
+const BACKGROUND_MAX_BYTES = 25 * 1024 * 1024;
+
+function backgroundMime(extension) {
+  if (extension === ".png") return "image/png";
+  if (extension === ".webp") return "image/webp";
+  return "image/jpeg";
+}
+
+function readCustomBackground() {
+  const filename = database.getSetting("custom_background_path");
+  if (!filename || !fs.existsSync(filename)) return { dataUrl: null, name: null };
+  const extension = path.extname(filename).toLowerCase();
+  if (!BACKGROUND_EXTENSIONS.has(extension)) return { dataUrl: null, name: null };
+  const bytes = fs.readFileSync(filename);
+  return {
+    dataUrl: `data:${backgroundMime(extension)};base64,${bytes.toString("base64")}`,
+    name: database.getSetting("custom_background_name") || path.basename(filename),
+  };
+}
 
 function writeCrashLog(error) {
   try {
@@ -72,23 +95,59 @@ function registerIpc() {
   ipcMain.handle("ai:complete", (_event, request) => completeWithAnthropic(request));
   ipcMain.handle("app:version", () => app.getVersion());
   ipcMain.handle("app:open-data-folder", () => shell.openPath(app.getPath("userData")));
-  ipcMain.handle("window:minimize", () => mainWindow?.minimize());
-  ipcMain.handle("window:toggle-maximize", () => {
-    if (!mainWindow) return;
-    if (mainWindow.isMaximized()) mainWindow.unmaximize(); else mainWindow.maximize();
+  ipcMain.handle("appearance:get-background", () => readCustomBackground());
+  ipcMain.handle("appearance:choose-background", async () => {
+    const result = await dialog.showOpenDialog(mainWindow, {
+      title: "Choose a Divergence.AI background",
+      properties: ["openFile"],
+      filters: [{ name: "Background images", extensions: ["jpg", "jpeg", "png", "webp"] }],
+    });
+    if (result.canceled || result.filePaths.length === 0) return { canceled: true, ...readCustomBackground() };
+
+    const source = result.filePaths[0];
+    const extension = path.extname(source).toLowerCase();
+    if (!BACKGROUND_EXTENSIONS.has(extension)) throw new Error("Choose a JPG, PNG, or WebP image.");
+    if (fs.statSync(source).size > BACKGROUND_MAX_BYTES) throw new Error("Background images must be 25 MB or smaller.");
+
+    const destination = path.join(app.getPath("userData"), `custom-background${extension}`);
+    for (const candidateExtension of BACKGROUND_EXTENSIONS) {
+      const candidate = path.join(app.getPath("userData"), `custom-background${candidateExtension}`);
+      if (candidate !== destination && fs.existsSync(candidate)) fs.unlinkSync(candidate);
+    }
+    fs.copyFileSync(source, destination);
+    database.setSetting("custom_background_path", destination);
+    database.setSetting("custom_background_name", path.basename(source));
+    return { canceled: false, ...readCustomBackground() };
   });
+  ipcMain.handle("appearance:clear-background", () => {
+    const filename = database.getSetting("custom_background_path");
+    if (filename && path.dirname(filename) === app.getPath("userData") && fs.existsSync(filename)) fs.unlinkSync(filename);
+    database.deleteSetting("custom_background_path");
+    database.deleteSetting("custom_background_name");
+    return { dataUrl: null, name: null };
+  });
+  ipcMain.handle("window:minimize", () => mainWindow?.minimize());
+  ipcMain.handle("window:toggle-maximize", () => undefined);
   ipcMain.handle("window:close", () => mainWindow?.close());
 }
 
 function createWindow() {
+  const workArea = screen.getPrimaryDisplay().workAreaSize;
+  const scale = Math.min(
+    (workArea.width * 0.94) / REFERENCE_WIDTH,
+    (workArea.height * 0.92) / REFERENCE_HEIGHT,
+    1.2,
+  );
   mainWindow = new BrowserWindow({
-    width: 1545,
-    height: 1024,
-    minWidth: 1180,
-    minHeight: 760,
+    width: Math.round(REFERENCE_WIDTH * scale),
+    height: Math.round(REFERENCE_HEIGHT * scale),
     backgroundColor: "#050606",
     frame: false,
     show: false,
+    center: true,
+    resizable: false,
+    maximizable: false,
+    fullscreenable: false,
     autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, "preload.cjs"),
@@ -97,7 +156,25 @@ function createWindow() {
       sandbox: true,
     },
   });
+  mainWindow.setResizable(false);
+  mainWindow.setMaximizable(false);
+  mainWindow.setFullScreenable(false);
+  mainWindow.webContents.setZoomFactor(scale);
   mainWindow.once("ready-to-show", () => mainWindow.show());
+  mainWindow.on("will-resize", (event) => event.preventDefault());
+  mainWindow.on("will-move", () => undefined);
+  mainWindow.webContents.on("before-input-event", (event, input) => {
+    if (input.type === "keyDown" && input.key === "Escape") {
+      event.preventDefault();
+      mainWindow?.close();
+    }
+  });
+  mainWindow.webContents.on("render-process-gone", (_event, details) => {
+    writeCrashLog(new Error(`Renderer stopped: ${details.reason} (${details.exitCode})`));
+  });
+  mainWindow.webContents.on("console-message", (_event, level, message, line, sourceId) => {
+    if (level >= 3) writeCrashLog(new Error(`Renderer console: ${message} (${sourceId}:${line})`));
+  });
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     if (/^https:\/\//i.test(url)) void shell.openExternal(url);
     return { action: "deny" };

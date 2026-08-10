@@ -12,6 +12,8 @@ import { useKeyboardShortcuts } from "../../keyboard/useKeyboardShortcuts";
 import { DevAdminPanel } from "../settings/DevAdminPanel";
 import { CostWarningBanner } from "../CostWarningBanner";
 import { CostConfirm, WorkspaceModeBar } from "../credits";
+import { useSessionStore } from "../../stores/sessionStore";
+import { AppErrorBoundary } from "./AppErrorBoundary";
 
 /* AppShell — the structural frame from CANON.md "LAYOUT".
    Regions were empty by design at Step 1.1 (skeleton only), then held
@@ -63,6 +65,7 @@ import { CostConfirm, WorkspaceModeBar } from "../credits";
 
 export function AppShell() {
   const visibility = useAccountStore((s) => s.visibility);
+  const currentScreen = useSessionStore((s) => s.currentScreen);
   const [showShortcuts, setShowShortcuts] = useState(false);
 
   useThemeEffect(); // CANON Feature 12 — resolves theme + Auto, writes documentElement's data-theme
@@ -80,7 +83,9 @@ export function AppShell() {
         </nav>
         <main className="col-center" data-testid="col-center">
           <WorkspaceModeBar />
-          <ScreenRouter />
+          <AppErrorBoundary resetKey={currentScreen}>
+            <ScreenRouter />
+          </AppErrorBoundary>
         </main>
         <aside className="col-right" aria-label="Sidebar panels" data-testid="col-right">
           {visibility.quickTools && <QuickToolsGrid />}

@@ -1,18 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import {
   BookOpen,
-  Code2,
-  Folder,
-  Home,
+  BarChart3,
+  Braces,
+  CheckSquare,
   LayoutGrid,
-  Lightbulb,
-  ListChecks,
-  MessageSquare,
   Archive as ArchiveIcon,
   Settings,
-  SlidersHorizontal,
   Trash2,
-  LogOut,
+  WandSparkles,
   type LucideIcon,
 } from "lucide-react";
 import { useSessionStore } from "../../stores/sessionStore";
@@ -20,7 +16,6 @@ import { GlassButton } from "../primitives";
 import { useDismissableLayer } from "../../keyboard";
 import { BrainMark } from "./BrainMark";
 import type { ScreenId } from "../../stores/types";
-import { logOutCurrentAccount } from "../../services/accountSession";
 
 /* Left nav, 200px, per CANON.md "LAYOUT" and the LOCKED DECISIONS
    logout placement ("logout button bottom-left under System Status").
@@ -48,19 +43,15 @@ import { logOutCurrentAccount } from "../../services/accountSession";
    1-10 render into," CANON's own words for why it's the primary view). */
 
 const NAV_ITEMS: Array<{ label: string; screen: ScreenId; Icon: LucideIcon | null }> = [
-  { label: "Home", screen: "home", Icon: Home },
   { label: "Dashboard", screen: "dashboard", Icon: LayoutGrid },
-  { label: "Messages", screen: "messages", Icon: MessageSquare },
-  { label: "Archive", screen: "archive", Icon: ArchiveIcon },
-  { label: "Resources", screen: "resources", Icon: Lightbulb },
-  { label: "Projects", screen: "projects", Icon: Folder },
-  { label: "Integrations", screen: "integrations", Icon: Code2 },
-  { label: "Tasks", screen: "tasks", Icon: ListChecks },
-  { label: "Templates", screen: "templates", Icon: BookOpen },
-  { label: "Customize", screen: "customize", Icon: SlidersHorizontal },
-  { label: "Settings", screen: "settings", Icon: Settings },
-  { label: "Sessions", screen: "sessions", Icon: ArchiveIcon },
   { label: "Translate", screen: "translate", Icon: null }, // BrainMark, not a lucide icon — see comment above
+  { label: "Sessions", screen: "sessions", Icon: ArchiveIcon },
+  { label: "Templates", screen: "templates", Icon: BookOpen },
+  { label: "Techniques", screen: "resources", Icon: WandSparkles },
+  { label: "Variables", screen: "customize", Icon: Braces },
+  { label: "Checkpoints", screen: "projects", Icon: CheckSquare },
+  { label: "Analytics", screen: "tasks", Icon: BarChart3 },
+  { label: "Settings", screen: "settings", Icon: Settings },
 ];
 
 function SystemStatusPopover() {
@@ -109,16 +100,13 @@ export function LeftNav() {
   const currentScreen = useSessionStore((s) => s.currentScreen);
   const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
 
-  function handleLogout() {
-    void logOutCurrentAccount();
-  }
-
   return (
     <div className="leftnav-content">
       <div className="leftnav-items">
         {NAV_ITEMS.map(({ label, screen, Icon }) => (
           <GlassButton
             key={screen}
+            data-screen={screen}
             className={`leftnav-item ${currentScreen === screen ? "leftnav-item--active" : ""}`}
             onClick={() => setCurrentScreen(screen)}
           >
@@ -129,6 +117,7 @@ export function LeftNav() {
       </div>
       <div className="leftnav-bottom">
         <GlassButton
+          data-screen="trash"
           className="leftnav-item"
           onClick={() => setCurrentScreen("trash")}
         >
@@ -136,10 +125,6 @@ export function LeftNav() {
           Trash
         </GlassButton>
         <SystemStatusPopover />
-        <GlassButton className="leftnav-item" onClick={handleLogout}>
-          <LogOut size={16} aria-hidden="true" />
-          Logout
-        </GlassButton>
       </div>
     </div>
   );

@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { Bell, BookOpen, ChevronDown, HelpCircle, Search, LogOut } from "lucide-react";
+import { Bell, BookOpen, ChevronDown, HelpCircle, Search, LogOut, Settings, Sparkles } from "lucide-react";
 import { GlassButton } from "../primitives";
-import { VisibilityMenu } from "../visibility";
 import { LoadTemplateMenu } from "../session";
 import { useDismissableLayer } from "../../keyboard";
 import { useAccountStore } from "../../stores/accountStore";
@@ -10,7 +9,6 @@ import { Logo } from "./Logo";
 import { CreditCounter } from "../credits";
 import { logOutCurrentAccount } from "../../services/accountSession";
 import { desktopBridge, type DesktopUser } from "../../services/desktopBridge";
-import { WindowControls } from "./WindowControls";
 import "./TopBar.css";
 
 /* Top bar, 60px, per CANON.md "LAYOUT": logo slot, Search/Templates/
@@ -136,7 +134,7 @@ function QuickReferencePopover({ open, setOpen, rootRef }: { open: boolean; setO
   return (
     <div ref={rootRef} className="topbar-popover-wrapper">
       <GlassButton aria-label="Quick Reference" onClick={() => setOpen(!open)}>
-        <BookOpen size={16} aria-hidden="true" />
+        <Sparkles size={16} aria-hidden="true" />
         Quick Reference
       </GlassButton>
       {open && (
@@ -165,6 +163,7 @@ function NotificationsPopover({ open, setOpen, rootRef }: { open: boolean; setOp
     <div ref={rootRef} className="topbar-popover-wrapper">
       <GlassButton aria-label="Notifications" onClick={() => setOpen(!open)}>
         <Bell size={16} aria-hidden="true" />
+        Notifications
       </GlassButton>
       {open && (
         <div className="surface-smoked-glass topbar-popover" role="region" aria-label="Notifications">
@@ -238,6 +237,7 @@ function UserMenu({ open, setOpen, rootRef }: { open: boolean; setOpen: (v: bool
 }
 
 export function TopBar() {
+  const setCurrentScreen = useSessionStore((state) => state.setCurrentScreen);
   const [searchOpen, setSearchOpen] = useState(false);
   const [refOpen, setRefOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -326,10 +326,12 @@ export function TopBar() {
       <div className="topbar-right">
         <NotificationsPopover open={notifOpen} setOpen={setNotifOpen} rootRef={notifRef} />
         <HelpPopover open={helpOpen} setOpen={setHelpOpen} rootRef={helpRef} />
-        <VisibilityMenu />
+        <GlassButton aria-label="Settings" onClick={() => setCurrentScreen("settings")}>
+          <Settings size={16} aria-hidden="true" />
+          Settings
+        </GlassButton>
         <CreditCounter />
         <UserMenu open={userOpen} setOpen={setUserOpen} rootRef={userRef} />
-        <WindowControls />
       </div>
     </div>
   );

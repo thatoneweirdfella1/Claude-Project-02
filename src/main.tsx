@@ -3,6 +3,9 @@ import { createRoot } from "react-dom/client";
 import { AccountGate } from "./components/layout/AccountGate";
 import { AppShell } from "./components/layout/AppShell";
 import { MarbleSlab } from "./components/layout/MarbleSlab";
+import { AppErrorBoundary } from "./components/layout/AppErrorBoundary";
+import { WindowControls } from "./components/layout/WindowControls";
+import { CustomBackgroundController } from "./services/customBackground";
 import { loadPersistedState, startAutosave } from "./services/persistence";
 import "./styles/tokens.css";
 import "./styles/layout.css";
@@ -46,9 +49,13 @@ async function bootstrap() {
   createRoot(document.getElementById("root")!).render(
     <StrictMode>
       <MarbleSlab />
-      <AccountGate>
-        <AppShell />
-      </AccountGate>
+      <CustomBackgroundController />
+      <WindowControls />
+      <AppErrorBoundary resetKey="application">
+        <AccountGate>
+          <AppShell />
+        </AccountGate>
+      </AppErrorBoundary>
     </StrictMode>,
   );
 

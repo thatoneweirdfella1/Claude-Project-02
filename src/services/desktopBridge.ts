@@ -22,6 +22,12 @@ export interface DesktopPersistedState {
   account?: Record<string, unknown>;
 }
 
+export interface DesktopBackgroundResult {
+  canceled?: boolean;
+  dataUrl: string | null;
+  name: string | null;
+}
+
 export interface DivergenceDesktopBridge {
   platform: string;
   state: {
@@ -52,6 +58,11 @@ export interface DivergenceDesktopBridge {
       messages: Array<{ role: "user" | "assistant"; content: string }>;
       maxTokens?: number;
     }): Promise<{ text: string; usage: { inputTokens: number; outputTokens: number } }>;
+  };
+  appearance: {
+    getBackground(): Promise<DesktopBackgroundResult>;
+    chooseBackground(): Promise<DesktopBackgroundResult>;
+    clearBackground(): Promise<DesktopBackgroundResult>;
   };
   app: {
     version(): Promise<string>;

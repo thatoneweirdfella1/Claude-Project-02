@@ -125,6 +125,12 @@ interface SessionActions {
 
 export type SessionStore = SessionState & SessionActions;
 
+const VALID_SCREENS = new Set<ScreenId>([
+  "translate", "home", "dashboard", "messages", "archive", "resources",
+  "projects", "integrations", "tasks", "customize", "sessions", "templates",
+  "saved-prompts", "settings", "trash",
+]);
+
 export const useSessionStore = create<SessionStore>((set) => ({
   ...createInitialSessionState(),
 
@@ -176,5 +182,10 @@ export const useSessionStore = create<SessionStore>((set) => ({
   setMethodology: (methodology) => set({ methodology }),
   setMethodologyPhase: (methodologyPhase) => set({ methodologyPhase }),
   setLockedProblemStatement: (lockedProblemStatement) => set({ lockedProblemStatement }),
-  hydrate: (state) => set(state),
+  hydrate: (state) => set({
+    ...state,
+    currentScreen: state.currentScreen && VALID_SCREENS.has(state.currentScreen)
+      ? state.currentScreen
+      : "translate",
+  }),
 }));

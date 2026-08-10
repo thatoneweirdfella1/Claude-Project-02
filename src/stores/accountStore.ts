@@ -148,7 +148,7 @@ export function createInitialAccountState(): AccountState {
     variables: {},
     visibility: { ...DEFAULT_VISIBILITY },
     theme: "dark", // CANON Feature 12 — default unchanged from every prior session's only theme
-    layout: "original", // CLAUDE.md "Design layouts" — default unchanged from every prior session's only layout
+    layout: "gold", // The attached frozen Divergence layout is the product layout.
     learnedPreferences: { routing: {}, technique: {} },
     stateCorrections: [], // Step 6.4
     sessions: [], // Step 9.1

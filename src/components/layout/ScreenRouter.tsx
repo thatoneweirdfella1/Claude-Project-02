@@ -6,6 +6,7 @@ import { CenterColumn } from "../pipeline";
 import { SubscriptionUI } from "../credits";
 import { PersonalOptimization } from "../optimization";
 import { DesktopProviderSettings } from "../settings/DesktopProviderSettings";
+import { AppearanceSettings } from "../settings/AppearanceSettings";
 
 function HomeScreen() {
   const sessions = useAccountStore((s) => s.sessions);
@@ -1725,6 +1726,8 @@ function SettingsScreen() {
 
         <DesktopProviderSettings />
 
+        <AppearanceSettings />
+
         <div className="settings-section">
           <h3>Storage & Sync</h3>
           <div className="settings-item">
@@ -1749,17 +1752,10 @@ function SettingsScreen() {
         </div>
 
         <div className="settings-section">
-          <h3>Display</h3>
-          <p className="settings-section__note">
-            Theme, layout, and sidebar visibility are controlled via the Settings gear icon (⚙️) in the top bar.
-          </p>
-        </div>
-
-        <div className="settings-section">
           <h3>About Divergence.AI</h3>
           <div className="settings-item">
             <div className="settings-item__label">Version</div>
-            <div className="settings-item__value">0.1.0</div>
+            <div className="settings-item__value">0.1.2</div>
           </div>
           <p className="settings-section__note">
             Divergence.AI is an ADHD-friendly AI translator that helps you communicate your thoughts clearly.
@@ -2414,7 +2410,6 @@ export function ScreenRouter() {
     case "trash":
       return <TrashScreen />;
     default:
-      const _exhaustive: never = currentScreen;
-      return _exhaustive;
+      return <CenterColumn />;
   }
 }

@@ -66,7 +66,7 @@ jobs:
       - name: Upload installer ZIP
         uses: actions/upload-artifact@v4
         with:
-          name: Divergence-AI-Windows-Installer-0.1.1
+          name: Divergence-AI-Windows-Installer-0.1.2
           path: |
             desktop/dist/*.exe
             WINDOWS-INSTALL.txt

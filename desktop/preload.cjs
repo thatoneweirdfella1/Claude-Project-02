@@ -28,6 +28,11 @@ contextBridge.exposeInMainWorld("divergenceDesktop", {
   ai: {
     complete: (request) => ipcRenderer.invoke("ai:complete", request),
   },
+  appearance: {
+    getBackground: () => ipcRenderer.invoke("appearance:get-background"),
+    chooseBackground: () => ipcRenderer.invoke("appearance:choose-background"),
+    clearBackground: () => ipcRenderer.invoke("appearance:clear-background"),
+  },
   app: {
     version: () => ipcRenderer.invoke("app:version"),
     openDataFolder: () => ipcRenderer.invoke("app:open-data-folder"),
