@@ -107,7 +107,7 @@
 .desktop-account-gate__icon { display: grid; place-items: center; width: 52px; height: 52px; border: 1px solid var(--accent-cyan); border-radius: 50%; color: var(--accent-gold, #e6bf68); }
 .desktop-account-gate h1 { margin-bottom: 5px; }
 .desktop-account-gate p { color: var(--text-secondary); line-height: 1.45; }
-.desktop-account-gate label { display: flex; flex-direction: column; gap: 5px; margin-top: 12px; }
+.desktop-account-gate label { display: flex; flex-direction: column; gap: 5px; margin-top: 12px; color: var(--text-primary); }
 .desktop-account-gate input { min-height: 40px; padding: 8px 10px; border: 1px solid var(--surface-smoked-glass-border); border-radius: 5px; background: var(--surface-base); color: var(--text-primary); }
 .desktop-account-gate button { width: 100%; margin-top: 14px; min-height: 40px; border: 1px solid var(--accent-cyan); border-radius: 5px; background: var(--accent-cyan-tint-06); color: var(--text-primary); cursor: pointer; }
 .desktop-account-gate button.desktop-account-gate__switch { border-color: transparent; background: transparent; color: var(--text-secondary); }
