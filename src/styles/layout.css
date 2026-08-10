@@ -7,8 +7,8 @@
 :root {
   /* Fixed dimensions per CANON.md "LAYOUT" and design mockups */
   --topbar-height: 60px;
-  --left-col-width: 240px;
-  --right-col-width: 300px;
+  --left-col-width: 280px;
+  --right-col-width: 380px;
   --shell-column-gap: 0;
 }
 
