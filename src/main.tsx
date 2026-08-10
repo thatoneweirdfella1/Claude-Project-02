@@ -30,6 +30,7 @@ import "./styles/quicktools.css";
 import "./styles/accordion.css";
 import "./styles/access-gate.css";
 import "./styles/desktop-product.css";
+import "./styles/frozen-reference.css";
 
 /* Restore persisted state before first paint so the user returns exactly
    where they were (no default-then-restored flicker), then mount and
