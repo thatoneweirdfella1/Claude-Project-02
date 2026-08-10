@@ -4,7 +4,6 @@ import { AccountGate } from "./components/layout/AccountGate";
 import { AppShell } from "./components/layout/AppShell";
 import { MarbleSlab } from "./components/layout/MarbleSlab";
 import { AppErrorBoundary } from "./components/layout/AppErrorBoundary";
-import { WindowControls } from "./components/layout/WindowControls";
 import { CustomBackgroundController } from "./services/customBackground";
 import { loadPersistedState, startAutosave } from "./services/persistence";
 import "./styles/tokens.css";
@@ -51,7 +50,6 @@ async function bootstrap() {
     <StrictMode>
       <MarbleSlab />
       <CustomBackgroundController />
-      <WindowControls />
       <AppErrorBoundary resetKey="application">
         <AccountGate>
           <AppShell />

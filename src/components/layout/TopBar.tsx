@@ -10,6 +10,7 @@ import { Logo } from "./Logo";
 import { CreditCounter } from "../credits";
 import { logOutCurrentAccount } from "../../services/accountSession";
 import { desktopBridge, type DesktopUser } from "../../services/desktopBridge";
+import { WindowControls } from "./WindowControls";
 import "./TopBar.css";
 
 /* Top bar, 60px, per CANON.md "LAYOUT": logo slot, Search/Templates/
@@ -336,6 +337,7 @@ export function TopBar() {
         ) : <VisibilityMenu />}
         <CreditCounter />
         <UserMenu open={userOpen} setOpen={setUserOpen} rootRef={userRef} />
+        <WindowControls />
       </div>
     </div>
   );

@@ -11,7 +11,8 @@
 }
 .topbar { -webkit-app-region: drag; }
 .topbar button, .topbar input, .topbar [role="menu"], .topbar [role="region"] { -webkit-app-region: no-drag; }
-.window-controls { position: fixed; top: 12px; right: 14px; z-index: 20000; display: flex; gap: 7px; -webkit-app-region: no-drag; }
+.window-controls { display: flex; flex: 0 0 auto; gap: 7px; -webkit-app-region: no-drag; }
+.window-controls--floating { position: fixed; top: 12px; right: 14px; z-index: 20000; }
 .window-controls button { display: grid; place-items: center; width: 31px; height: 31px; padding: 0; border: 1px solid var(--surface-smoked-glass-border); border-radius: 6px; background: var(--surface-smoked-glass); color: var(--accent-gold, #e6bf68); cursor: pointer; }
 .window-controls button:hover { border-color: var(--accent-cyan); color: var(--accent-cyan); }
 .window-controls button.window-controls__close:hover { border-color: #ef6b64; color: #ef6b64; }
