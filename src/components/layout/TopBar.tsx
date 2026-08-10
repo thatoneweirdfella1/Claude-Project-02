@@ -212,7 +212,7 @@ function UserMenu({ open, setOpen, rootRef }: { open: boolean; setOpen: (v: bool
         <span className="user-chip__avatar" aria-hidden="true">
           {(desktopUser?.displayName ?? "Profile").slice(0, 1).toUpperCase()}
         </span>
-        {desktopUser?.displayName ?? "Profile"}
+        <span className="user-chip__label">{desktopUser?.displayName ?? "Profile"}</span>
         <ChevronDown size={14} aria-hidden="true" />
       </GlassButton>
       {open && (

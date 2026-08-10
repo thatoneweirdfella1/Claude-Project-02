@@ -1,4 +1,5 @@
 import { useAccountStore } from "../../stores/accountStore";
+import { isDesktopApp } from "../../services/desktopBridge";
 import "./Logo.css";
 
 /* Divergence.AI logo, top-left of the top bar.
@@ -43,7 +44,7 @@ import "./Logo.css";
 
 export function Logo() {
   const layout = useAccountStore((s) => s.layout);
-  const markSrc = layout === "gold" ? "/logo-mark-gold.png" : "/logo-mark.png";
+  const markSrc = (isDesktopApp() || layout === "gold") ? "/logo-mark-gold.png" : "/logo-mark.png";
 
   return (
     <span className="logo" data-testid="logo">

@@ -10,7 +10,7 @@
   align-items: center;
   justify-content: space-between;
   height: 100%;
-  padding: 0 118px 0 18px;
+  padding: 0 150px 0 18px;
   gap: 10px;
 }
 
@@ -32,6 +32,10 @@
 .topbar-center { flex: 1 1 auto; justify-content: center; }
 .topbar-right { flex: 0 1 auto; min-width: 0; }
 .topbar-content .primitive-glass-button { min-height: 40px; padding-inline: 12px; white-space: nowrap; }
+.topbar-right .primitive-glass-button { padding-inline: 8px; font-size: 12px; gap: 5px; }
+.topbar-right .credit-counter { padding-inline: 8px; }
+.topbar-right .credit-counter__label { display: none; }
+.user-chip__label { display: block; max-width: 72px; overflow: hidden; text-overflow: ellipsis; }
 
 /* VISUAL-AUDIT V5 (fixed this session): avatar circle + chevron on the user
    chip, matching V3. Reuses --accent-purple — the same purple already used
