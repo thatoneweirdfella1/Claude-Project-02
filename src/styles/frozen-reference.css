@@ -171,7 +171,7 @@ body {
   height: 55px;
   flex: 0 0 55px;
   object-fit: contain;
-  filter: none;
+  filter: saturate(1.35) brightness(1.08);
 }
 
 .logo-copy { display: flex; flex-direction: column; min-width: 0; }
@@ -361,6 +361,8 @@ body {
   border-radius: 8px;
   background: var(--frozen-control);
   box-shadow: var(--frozen-shadow);
+  width: 320px;
+  margin-right: -40px;
 }
 
 .workspace-mode-toggle button {
@@ -375,6 +377,9 @@ body {
   color: var(--frozen-text);
   font: 500 13px/1 var(--font-family-base);
   cursor: pointer;
+  flex: 1 1 0;
+  justify-content: center;
+  white-space: nowrap;
 }
 
 .workspace-mode-toggle button.is-active {
@@ -755,7 +760,7 @@ input:focus-visible {
   outline-offset: 2px;
 }
 
-@media (max-width: 1260px) {
+@media (max-width: 1400px) {
   :root {
     --frozen-left-track: 198px;
     --frozen-left-gap: 28px;
@@ -766,6 +771,8 @@ input:focus-visible {
   .leftnav-content { width: 188px; margin-left: 10px; }
   .topbar-logo { flex-basis: 260px; }
   .topbar-content .primitive-glass-button { padding-inline: 13px; }
+  .workspace-mode-toggle { width: 242px; margin-right: 0; }
+  .workspace-mode-toggle button { white-space: normal; }
   .frozen-composer__controls { grid-template-columns: 150px 175px 1fr; }
   .quick-actions-row .primitive-glass-button { padding-inline: 7px; font-size: 10px; }
 }
