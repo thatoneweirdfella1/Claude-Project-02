@@ -5,12 +5,11 @@
    Marble/glass styling lives in marble.css (Step 1.3) — keep this file structural. */
 
 :root {
-  /* Percentage equivalents of the supplied 1545×1024 frozen composition. */
-  --topbar-height: 6.8359375vh;
-  --shell-left-padding: 1.2944984vw;
-  --left-col-width: 14.2394822vw;
-  --right-col-width: 20.7119741vw;
-  --shell-column-gap: 3.5598706vw;
+  /* Fixed dimensions per CANON.md "LAYOUT" and design mockups */
+  --topbar-height: 60px;
+  --left-col-width: 240px;
+  --right-col-width: 300px;
+  --shell-column-gap: 0;
 }
 
 * {
@@ -42,7 +41,7 @@ body {
   column-gap: var(--shell-column-gap);
   width: 100vw;
   height: 100vh;
-  padding: 0 0 8px var(--shell-left-padding);
+  padding: 0;
   overflow: hidden;
 }
 
