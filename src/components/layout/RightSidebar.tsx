@@ -1,4 +1,4 @@
-import { Plus, Star, Wand2, Copy, MoreHorizontal, Paperclip, Target } from "lucide-react";
+import { Plus, Star, Wand2 } from "lucide-react";
 import { GlassButton, GlassPanel } from "../primitives";
 
 /* Right sidebar, 300px: state detection pills, quick actions, quick tools grid, accordion stack. */

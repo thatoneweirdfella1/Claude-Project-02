@@ -11,7 +11,7 @@ import {
   Code2,
   ListChecks,
   SlidersHorizontal,
-  BrainVertical,
+  Brain,
   Trash2,
   LogOut,
 } from "lucide-react";
@@ -38,7 +38,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Customize", screenId: "customize", Icon: SlidersHorizontal },
   { label: "Settings", screenId: "settings", Icon: Lightbulb },
   { label: "Sessions", screenId: "sessions", Icon: MessageSquare },
-  { label: "Translate", screenId: "translate", Icon: BrainVertical },
+  { label: "Translate", screenId: "translate", Icon: Brain },
 ];
 
 export function LeftNav() {
