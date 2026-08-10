@@ -37,6 +37,14 @@
 .topbar-right .credit-counter__label { display: none; }
 .user-chip__label { display: block; max-width: 72px; overflow: hidden; text-overflow: ellipsis; }
 
+:root[data-desktop-app="true"] .topbar-content { padding-right: 300px; }
+:root[data-desktop-app="true"] .topbar-user-menu {
+  position: fixed;
+  top: 14px;
+  right: 130px;
+  z-index: 19000;
+}
+
 /* VISUAL-AUDIT V5 (fixed this session): avatar circle + chevron on the user
    chip, matching V3. Reuses --accent-purple — the same purple already used
    for the logo's "AI" text and the Emotion state pill, not a new one-off

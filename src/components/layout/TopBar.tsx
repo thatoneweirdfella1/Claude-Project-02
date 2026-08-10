@@ -207,7 +207,7 @@ function UserMenu({ open, setOpen, rootRef }: { open: boolean; setOpen: (v: bool
   }
 
   return (
-    <div ref={rootRef} className="topbar-popover-wrapper">
+    <div ref={rootRef} className="topbar-popover-wrapper topbar-user-menu">
       <GlassButton className="user-chip" onClick={() => setOpen(!open)}>
         <span className="user-chip__avatar" aria-hidden="true">
           {(desktopUser?.displayName ?? "Profile").slice(0, 1).toUpperCase()}
