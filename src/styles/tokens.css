@@ -417,4 +417,6 @@
   --accent-cyan-tint-06: color-mix(in srgb, #a08246 6%, transparent);
   --accent-cyan-tint-12: color-mix(in srgb, #a08246 12%, transparent);
   --accent-cyan-tint-25: color-mix(in srgb, #a08246 25%, transparent);
+  --text-primary: #2a2520;
+  --text-secondary: #6b6259;
 }
