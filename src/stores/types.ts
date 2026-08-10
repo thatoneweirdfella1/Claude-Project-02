@@ -9,6 +9,23 @@
 
 /* ── Small fixed enums (settled by CANON/ROUTING, won't change) ───────── */
 
+/** Navigation: 13 destination screens (CANON "LAYOUT").
+    Determines what renders in CenterColumn. */
+export type ScreenId =
+  | "home"
+  | "dashboard"
+  | "messages"
+  | "archive"
+  | "resources"
+  | "projects"
+  | "integrations"
+  | "tasks"
+  | "templates"
+  | "customize"
+  | "settings"
+  | "sessions"
+  | "translate";
+
 /** The three model ids, fixed by CANON "LOCKED DECISIONS" and ROUTING.md.
     Full model registry (labels, tiers, capabilities) is Step 1.10. */
 export type ModelId = "claude-haiku-4-5" | "claude-sonnet-5" | "claude-opus-4-8";
@@ -195,6 +212,7 @@ export interface SessionState {
 /** Account store — persists across browser closes (CANON). */
 export interface AccountState {
   plan: PlanFlag;
+  currentScreen: ScreenId;
   archivedPairs: ArchivedPair[];
   ratings: Rating[];
   savedPrompts: SavedPrompt[];

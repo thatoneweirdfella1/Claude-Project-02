@@ -1,0 +1,178 @@
+/* sidebar.css — Right sidebar layout and components (state pills, quick actions, quick tools, accordion) */
+
+.rightsidebar-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: var(--space-row-margin);
+  gap: var(--space-section-margin);
+  overflow-y: auto;
+}
+
+/* State Detection Panels */
+.state-detection-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.state-pill {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--surface-smoked-glass);
+  border: 1px solid var(--surface-smoked-glass-border);
+  border-radius: 6px;
+  font-size: var(--font-size-label-secondary);
+  font-weight: var(--font-weight-label-secondary);
+}
+
+.state-label {
+  color: var(--text-secondary);
+}
+
+.state-value {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* Quick Actions Section */
+.quick-actions-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.quick-actions__header {
+  font-size: var(--font-size-section-header);
+  font-weight: var(--font-weight-section-header);
+  color: var(--accent-cyan);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.quick-actions-row {
+  display: flex;
+  gap: 6px;
+}
+
+.quick-action-button {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  padding: 8px;
+}
+
+/* Quick Tools Section */
+.quick-tools-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.quick-tools__header {
+  font-size: var(--font-size-section-header);
+  font-weight: var(--font-weight-section-header);
+  color: var(--accent-cyan);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.quick-tools-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.quick-tools-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 8px;
+  min-height: 80px;
+  gap: 4px;
+  text-align: center;
+}
+
+.quick-tools-tile-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-cyan);
+  line-height: 1;
+}
+
+.tile-green {
+  color: var(--state-interest);
+}
+
+.tile-purple {
+  color: var(--accent-purple);
+}
+
+.tile-orange {
+  color: var(--tile-prompt-library);
+}
+
+.tile-cyan {
+  color: var(--accent-cyan);
+}
+
+.tile-red {
+  color: var(--action-destructive);
+}
+
+.tile-blue {
+  color: var(--state-cognitive);
+}
+
+.quick-tools-tile__title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-primary);
+  word-break: break-word;
+}
+
+.quick-tools-tile-status {
+  font-size: 9px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* Accordion Section */
+.accordion-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.accordion-panel {
+  padding: 0;
+}
+
+.accordion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  cursor: pointer;
+  user-select: none;
+  font-size: var(--font-size-body);
+  font-weight: 500;
+}
+
+.accordion-chevron {
+  transition: transform 0.2s ease;
+  color: var(--text-secondary);
+}
+
+.accordion-panel[aria-expanded="true"] .accordion-chevron {
+  transform: rotate(90deg);
+}

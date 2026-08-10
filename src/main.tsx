@@ -8,6 +8,7 @@ import "./styles/layout.css";
 import "./styles/marble.css";
 import "./styles/primitives.css";
 import "./styles/shell.css";
+import "./styles/sidebar.css";
 import "./styles/keyboard.css";
 import "./styles/translation.css";
 import "./styles/routing.css";
