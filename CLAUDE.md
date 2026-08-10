@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> **FROZEN LAYOUT OVERRIDE — 2026-08-10:** Before any visual or shell work, read `FROZEN-LAYOUT.md`. Its two reference images are the sole visual authority and supersede every older screenshot, layout, material rule, visual audit, and implementation instruction wherever they disagree. Do not restore an older shell.
+
 # CLAUDE.md
 
 Instructions for any Claude Code session (local or cloud) working in this repo.
