@@ -8,7 +8,7 @@ import { useDesignLayoutEffect } from "./useDesignLayoutEffect";
 import { ScreenRouter } from "./ScreenRouter";
 import { KeyboardShortcutsModal } from "../KeyboardShortcutsModal";
 import { useKeyboardShortcuts } from "../../keyboard/useKeyboardShortcuts";
-import { WorkspaceModeBar } from "../credits";
+import { CostConfirm, WorkspaceModeBar } from "../credits";
 import { useSessionStore } from "../../stores/sessionStore";
 import { AppErrorBoundary } from "./AppErrorBoundary";
 
@@ -68,6 +68,7 @@ export function AppShell() {
         <FrozenReferenceConnectors />
       </div>
       <KeyboardShortcutsModal open={showShortcuts} onClose={() => setShowShortcuts(false)} />
+      <CostConfirm />
     </>
   );
 }
