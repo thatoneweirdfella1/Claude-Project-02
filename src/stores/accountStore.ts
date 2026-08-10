@@ -147,7 +147,7 @@ export function createInitialAccountState(): AccountState {
     savedPrompts: [],
     variables: {},
     visibility: { ...DEFAULT_VISIBILITY },
-    theme: "dark", // CANON Feature 12 — default unchanged from every prior session's only theme
+    theme: "light", // Gold layout uses light theme to display cream marble per design mockup
     layout: "gold", // The desktop shell overrides this visually with the frozen supplied layout.
     learnedPreferences: { routing: {}, technique: {} },
     stateCorrections: [], // Step 6.4
