@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { QuickToolsGrid } from "../quicktools";
 import { useAccountStore } from "../../stores/accountStore";
 import { AccordionStack } from "./AccordionStack";
@@ -66,11 +66,19 @@ import { AppErrorBoundary } from "./AppErrorBoundary";
 export function AppShell() {
   const visibility = useAccountStore((s) => s.visibility);
   const currentScreen = useSessionStore((s) => s.currentScreen);
+  const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
   const [showShortcuts, setShowShortcuts] = useState(false);
 
   useThemeEffect(); // CANON Feature 12 — resolves theme + Auto, writes documentElement's data-theme
   useDesignLayoutEffect(); // CLAUDE.md "Design layouts" — writes documentElement's data-layout
   useKeyboardShortcuts(() => setShowShortcuts(true));
+
+  // Ensure the app always starts on the translate screen
+  useEffect(() => {
+    if (currentScreen !== "translate") {
+      setCurrentScreen("translate");
+    }
+  }, [currentScreen, setCurrentScreen]);
 
   return (
     <>
