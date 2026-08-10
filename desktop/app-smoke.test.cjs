@@ -60,7 +60,8 @@ test("desktop shell survives every navigation route, restores safely, and stays 
       assert.equal(await window.locator(".app-shell").isVisible(), true);
       const recoveryCount = await window.locator(".app-recovery").count();
       if (recoveryCount > 0) {
-        throw new Error(`navigation failed for ${await button.innerText()}: ${await window.locator(".app-recovery").innerText()} | renderer errors: ${rendererErrors.join(" || ")}`);
+        const technicalDetail = await window.locator(".app-recovery code").textContent();
+        throw new Error(`navigation failed for ${await button.innerText()}: ${technicalDetail} | renderer errors: ${rendererErrors.join(" || ")}`);
       }
       assert.ok((await window.locator("#root").innerText()).trim().length > 20);
     }
