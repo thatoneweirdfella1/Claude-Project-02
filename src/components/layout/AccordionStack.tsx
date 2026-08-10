@@ -4,6 +4,7 @@ import { ContextSnapshotContent } from "../context";
 import { useAccountStore } from "../../stores/accountStore";
 import { useSessionStore } from "../../stores/sessionStore";
 import type { VisibilitySettings } from "../../stores/types";
+import { isDesktopApp } from "../../services/desktopBridge";
 
 /* AccordionStack (Step 9.5) — CANON Feature 12: "Sidebar accordions are
    revolving-door: only one panel expanded at a time." Wraps the six
@@ -243,7 +244,7 @@ export function AccordionStack() {
     },
   ];
 
-  const visiblePanels = panels.filter((panel) => visibility[panel.key]);
+  const visiblePanels = panels.filter((panel) => isDesktopApp() || visibility[panel.key]);
   if (visiblePanels.length === 0) return null;
 
   // Derived, not stored: if the expanded panel's visibility was just turned

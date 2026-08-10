@@ -88,13 +88,17 @@ test("desktop shell survives every navigation route, restores safely, and stays 
     }
 
     const topbar = window.getByTestId("topbar");
-    for (const name of ["Quick Reference", "Search", "Templates", "Notifications", "Help", "Profile"]) {
-      const button = topbar.getByRole("button", { name, exact: name !== "Profile" }).first();
+    for (const name of ["Quick Reference", "Search", "Templates", "Notifications", "Help"]) {
+      const button = topbar.getByRole("button", { name, exact: true }).first();
       await button.click();
       await window.waitForTimeout(80);
       assert.equal(await window.locator(".app-shell").isVisible(), true, `${name} hid the shell`);
       await button.click();
     }
+    const profileButton = topbar.locator(".user-chip");
+    await profileButton.click();
+    assert.equal(await window.locator(".app-shell").isVisible(), true);
+    await profileButton.click();
     await topbar.getByRole("button", { name: "Settings", exact: true }).click();
     assert.equal(await window.locator(".screen-settings").isVisible(), true);
 

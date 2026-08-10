@@ -40,6 +40,7 @@ import "./styles/desktop-product.css";
    costs perceptible startup time, switch to render-then-hydrate with a
    hydrating flag (BUILD-LOG.md PARKED). */
 async function bootstrap() {
+  if (window.divergenceDesktop) document.documentElement.dataset.desktopApp = "true";
   try {
     await loadPersistedState();
   } catch (error) {

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Bell, BookOpen, ChevronDown, HelpCircle, Search, LogOut, Settings, Sparkles } from "lucide-react";
 import { GlassButton } from "../primitives";
+import { VisibilityMenu } from "../visibility";
 import { LoadTemplateMenu } from "../session";
 import { useDismissableLayer } from "../../keyboard";
 import { useAccountStore } from "../../stores/accountStore";
@@ -238,6 +239,7 @@ function UserMenu({ open, setOpen, rootRef }: { open: boolean; setOpen: (v: bool
 
 export function TopBar() {
   const setCurrentScreen = useSessionStore((state) => state.setCurrentScreen);
+  const desktop = desktopBridge();
   const [searchOpen, setSearchOpen] = useState(false);
   const [refOpen, setRefOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -326,10 +328,12 @@ export function TopBar() {
       <div className="topbar-right">
         <NotificationsPopover open={notifOpen} setOpen={setNotifOpen} rootRef={notifRef} />
         <HelpPopover open={helpOpen} setOpen={setHelpOpen} rootRef={helpRef} />
-        <GlassButton aria-label="Settings" onClick={() => setCurrentScreen("settings")}>
-          <Settings size={16} aria-hidden="true" />
-          Settings
-        </GlassButton>
+        {desktop ? (
+          <GlassButton aria-label="Settings" onClick={() => setCurrentScreen("settings")}>
+            <Settings size={16} aria-hidden="true" />
+            Settings
+          </GlassButton>
+        ) : <VisibilityMenu />}
         <CreditCounter />
         <UserMenu open={userOpen} setOpen={setUserOpen} rootRef={userRef} />
       </div>

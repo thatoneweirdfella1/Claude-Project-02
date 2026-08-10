@@ -49,7 +49,7 @@ export const DEFAULT_VISIBILITY: VisibilitySettings = {
   tokenUsage: true,
   modelStatus: true,
   quickTools: true,
-  activeSession: true,
+  activeSession: false,
 };
 
 /** Cap on stored corrections (Step 6.4) — bounded so a very long-lived
@@ -148,7 +148,7 @@ export function createInitialAccountState(): AccountState {
     variables: {},
     visibility: { ...DEFAULT_VISIBILITY },
     theme: "dark", // CANON Feature 12 — default unchanged from every prior session's only theme
-    layout: "gold", // The attached frozen Divergence layout is the product layout.
+    layout: "original", // The desktop shell overrides this visually with the frozen supplied layout.
     learnedPreferences: { routing: {}, technique: {} },
     stateCorrections: [], // Step 6.4
     sessions: [], // Step 9.1
@@ -562,28 +562,35 @@ export const useAccountStore = create<AccountStore>((set, get) => ({
             : nextLogs,
       };
     }),
-  hydrate: (state) => {
-    const defaults = createInitialAccountState();
-    set({
-      ...defaults,
-      ...state,
-      layout: "gold",
-      visibility: { ...DEFAULT_VISIBILITY },
-      optimizationProfile: {
-        ...defaults.optimizationProfile,
-        ...(state.optimizationProfile ?? {}),
-        selectedGoals: Array.isArray(state.optimizationProfile?.selectedGoals)
-          ? state.optimizationProfile.selectedGoals
-          : defaults.optimizationProfile.selectedGoals,
-      },
-      creditLedger: Array.isArray(state.creditLedger) ? state.creditLedger : defaults.creditLedger,
-      manualPaymentRequests: Array.isArray(state.manualPaymentRequests) ? state.manualPaymentRequests : defaults.manualPaymentRequests,
-      optimizationRuns: Array.isArray(state.optimizationRuns) ? state.optimizationRuns : defaults.optimizationRuns,
-      sessions: Array.isArray(state.sessions) ? state.sessions : defaults.sessions,
-      trashed: Array.isArray(state.trashed) ? state.trashed : defaults.trashed,
-      templates: Array.isArray(state.templates) ? state.templates : defaults.templates,
-    });
-  },
+  hydrate: (state) => set((current) => ({
+    ...state,
+    ...(state.visibility !== undefined
+      ? { visibility: { ...DEFAULT_VISIBILITY, ...state.visibility } }
+      : {}),
+    ...(state.optimizationProfile !== undefined
+      ? {
+          optimizationProfile: {
+            ...current.optimizationProfile,
+            ...state.optimizationProfile,
+            selectedGoals: Array.isArray(state.optimizationProfile.selectedGoals)
+              ? state.optimizationProfile.selectedGoals
+              : current.optimizationProfile.selectedGoals,
+          },
+        }
+      : {}),
+    ...(state.creditLedger !== undefined
+      ? { creditLedger: Array.isArray(state.creditLedger) ? state.creditLedger : current.creditLedger }
+      : {}),
+    ...(state.manualPaymentRequests !== undefined
+      ? { manualPaymentRequests: Array.isArray(state.manualPaymentRequests) ? state.manualPaymentRequests : current.manualPaymentRequests }
+      : {}),
+    ...(state.optimizationRuns !== undefined
+      ? { optimizationRuns: Array.isArray(state.optimizationRuns) ? state.optimizationRuns : current.optimizationRuns }
+      : {}),
+    ...(state.sessions !== undefined ? { sessions: Array.isArray(state.sessions) ? state.sessions : current.sessions } : {}),
+    ...(state.trashed !== undefined ? { trashed: Array.isArray(state.trashed) ? state.trashed : current.trashed } : {}),
+    ...(state.templates !== undefined ? { templates: Array.isArray(state.templates) ? state.templates : current.templates } : {}),
+  })),
 }));
 
 /** Monthly limits per subscription tier. */
