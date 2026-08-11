@@ -849,13 +849,13 @@ input:focus-visible {
   padding: 0 !important;
 }
 
-.frozen-center-stack {
-  position: absolute;
-  inset: auto;
-  top: 0;
-  right: 2px;
-  bottom: 12px;
-  left: 18px;
+:root[data-layout="gold"] .col-center > .frozen-center-stack {
+  position: absolute !important;
+  inset: auto !important;
+  top: 0 !important;
+  right: 2px !important;
+  bottom: 12px !important;
+  left: 18px !important;
   display: flex;
   flex-direction: column;
   min-width: 0;
