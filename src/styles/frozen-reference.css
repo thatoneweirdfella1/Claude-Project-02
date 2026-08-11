@@ -846,7 +846,16 @@ input:focus-visible {
    every pre-frozen component rule so inherited experiments cannot move or
    repaint the approved composition. */
 :root[data-layout="gold"] .col-center {
-  padding: 0 2px 12px 18px !important;
+  padding: 0 !important;
+}
+
+.frozen-center-stack {
+  position: absolute;
+  inset: 0 2px 12px 18px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
 }
 
 :root[data-layout="gold"] .workspace-mode-bar {
@@ -859,10 +868,10 @@ input:focus-visible {
 }
 
 :root[data-layout="gold"] .workspace-mode-bar,
-:root[data-layout="gold"] .col-center > .frozen-composer,
-:root[data-layout="gold"] .col-center > .quick-actions,
-:root[data-layout="gold"] .col-center > .conversation-area {
-  align-self: flex-end !important;
+:root[data-layout="gold"] .frozen-center-stack > .frozen-composer,
+:root[data-layout="gold"] .frozen-center-stack > .quick-actions,
+:root[data-layout="gold"] .frozen-center-stack > .conversation-area {
+  align-self: stretch !important;
   position: relative !important;
   left: 0 !important;
   transform: none !important;
@@ -873,9 +882,9 @@ input:focus-visible {
   margin-left: 0 !important;
 }
 
-:root[data-layout="gold"] .col-center > .frozen-composer,
-:root[data-layout="gold"] .col-center > .quick-actions,
-:root[data-layout="gold"] .col-center > .conversation-area {
+:root[data-layout="gold"] .frozen-center-stack > .frozen-composer,
+:root[data-layout="gold"] .frozen-center-stack > .quick-actions,
+:root[data-layout="gold"] .frozen-center-stack > .conversation-area {
   width: 100% !important;
   margin-right: 0 !important;
   margin-left: 0 !important;
