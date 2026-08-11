@@ -10,7 +10,7 @@
   font-family: "Divergence Condensed";
   src: url("/fonts/roboto-condensed-500.woff2") format("woff2");
   font-style: normal;
-  font-weight: 500 700;
+  font-weight: 500;
   font-display: swap;
 }
 
@@ -201,7 +201,7 @@ body {
 }
 
 .logo-copy { display: flex; flex-direction: column; min-width: 0; }
-.logo-wordmark { display: flex; align-items: baseline; white-space: nowrap; font-size: 29px; line-height: 0.98; letter-spacing: 0.01em; }
+.logo-wordmark { display: flex; align-items: baseline; white-space: nowrap; font-family: "Segoe UI", Arial, sans-serif; font-size: 29px; line-height: 0.98; letter-spacing: 0.01em; }
 .logo-word-divergence { color: var(--frozen-text); font-weight: 500; }
 .logo-word-ai { color: #eba916; font-weight: 400; }
 .logo-tagline { margin-top: 4px; color: var(--frozen-text); font-size: 15px; line-height: 1; letter-spacing: 0.01em; }
