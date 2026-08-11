@@ -10,7 +10,9 @@ import { clickWithCostConfirmation, enableDeveloperMode } from "./credit-helpers
    carries it — proven here via the header on the /api/proxy request the
    subsequent flow triggers, not just the gate's own verify call). */
 
-// The application access gate is intentionally disabled in the current product build.\n// Keep these scenarios documented, but do not run them until the gate is restored.\nconst REQUIRED_PASSWORD = "hunter2";
+// The application access gate is intentionally disabled in the current product build.
+// Keep these scenarios documented, but do not run them until the gate is restored.
+const REQUIRED_PASSWORD = "hunter2";
 
 async function mockVerifyAccess(
   page: import("@playwright/test").Page,
