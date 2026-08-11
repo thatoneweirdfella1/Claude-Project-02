@@ -13,7 +13,7 @@ test("the frozen shell switches between its approved light and dark themes", asy
   await expect(page.locator("html")).toHaveAttribute("data-layout", "gold");
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
 
-  await page.getByRole("button", { name: "Settings", exact: true }).click();
+  await page.locator(".leftnav-content").getByRole("button", { name: "Settings", exact: true }).click();
   const appearance = page.locator(".appearance-settings");
   await expect(appearance).toBeVisible();
 
@@ -29,7 +29,7 @@ test("the frozen shell switches between its approved light and dark themes", asy
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   await expect(page.locator("html")).toHaveAttribute("data-layout", "gold");
 
-  await page.getByRole("button", { name: "Settings", exact: true }).click();
+  await page.locator(".leftnav-content").getByRole("button", { name: "Settings", exact: true }).click();
   await page.locator(".appearance-settings").getByRole("button", { name: "System", exact: true }).click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", /^(light|dark)$/);
   await expect(page.locator("html")).toHaveAttribute("data-layout", "gold");
