@@ -20,7 +20,7 @@ test("the approved frozen layout supersedes every obsolete layout choice", async
     "/logo-mark-gold.png",
   );
 
-  await page.getByRole("button", { name: "Settings", exact: true }).click();
+  await page.locator(".leftnav-content").getByRole("button", { name: "Settings", exact: true }).click();
   await expect(page.locator(".screen-settings")).toBeVisible();
   await expect(page.getByRole("button", { name: "Original", exact: true })).toHaveCount(0);
 
