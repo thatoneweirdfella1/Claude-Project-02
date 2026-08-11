@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Paperclip, Target } from "lucide-react";
+import { ChevronDown, Paperclip } from "lucide-react";
 import { GlassButton } from "../primitives";
 import { useDismissableLayer } from "../../keyboard";
 import { useAccountStore } from "../../stores/accountStore";
@@ -174,17 +174,24 @@ export function AttachContextControls({
         }}
       />
       <GlassButton
+        onClick={() => {
+          onAttach();
+          chooseUpload();
+        }}
+        disabled={uploading}
+      >
+        <Paperclip size={16} aria-hidden="true" />
+        Attach
+      </GlassButton>
+      <GlassButton
+        className="attach-menu-toggle"
+        aria-label="Attachment options"
         onClick={togglePopover}
         aria-haspopup="menu"
         aria-expanded={open}
         disabled={uploading}
       >
-        <Paperclip size={16} aria-hidden="true" />
-        Attach ▾
-      </GlassButton>
-      <GlassButton onClick={onContext} aria-haspopup="dialog">
-        <Target size={16} aria-hidden="true" />
-        Context ›
+        <ChevronDown size={16} aria-hidden="true" />
       </GlassButton>
 
       {open && (
@@ -218,6 +225,17 @@ export function AttachContextControls({
                 onClick={() => setView("variable")}
               >
                 Create a variable
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                className="attach-context-controls__popover-row"
+                onClick={() => {
+                  onContext();
+                  closePopover();
+                }}
+              >
+                Open context
               </button>
             </>
           )}
