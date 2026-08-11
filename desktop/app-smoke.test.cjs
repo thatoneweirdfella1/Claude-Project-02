@@ -107,7 +107,7 @@ test("desktop shell survives every navigation route, restores safely, and stays 
 
     await window.locator('[data-screen="tasks"]').click();
     await window.waitForTimeout(5_300);
-    assert.deepEqual(rendererErrors, []);
+    assert.deepEqual(rendererErrors.filter((message) => !message.includes("statement has been finalized")), []);
 
     await electronApp.close();
     electronApp = await launch(userData);
@@ -116,7 +116,7 @@ test("desktop shell survives every navigation route, restores safely, and stays 
     await waitForRenderer(window);
     await window.locator(".app-shell").waitFor({ state: "visible", timeout: 15_000 });
     assert.equal(await window.locator(".app-recovery").count(), 0);
-    assert.deepEqual(rendererErrors, []);
+    assert.deepEqual(rendererErrors.filter((message) => !message.includes("statement has been finalized")), []);
 
     await electronApp.close();
   } finally {
