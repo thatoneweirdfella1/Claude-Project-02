@@ -34,7 +34,7 @@ test("core flow: type, translate & ask, pills, streamed answer, rate, autosave r
 
   await clickWithCostConfirmation(
     page,
-    page.getByRole("button", { name: /^TRANSLATE$/i }),
+    page.locator(".translate-ask-button"),
   );
 
   // The user's raw message lands in the conversation immediately.
