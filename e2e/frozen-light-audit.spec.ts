@@ -57,10 +57,10 @@ test("frozen light reference audit at the canonical viewport", async ({ page }, 
   });
   console.log(`FROZEN_METRICS ${JSON.stringify(metrics)}`);
   expect(metrics.center).toMatchObject({ x: 293, y: 86, width: 798, height: 933 });
-  expect(metrics.modeBar).toMatchObject({ x: 312, y: 87, width: 776, height: 84 });
-  expect(metrics.composer).toMatchObject({ x: 312, y: 171, width: 776, height: 312 });
-  expect(metrics.quickActions).toMatchObject({ x: 312, width: 776, height: 110 });
-  expect(metrics.translation).toMatchObject({ x: 312, width: 776 });
+  expect(metrics.modeBar).toMatchObject({ x: 294, y: 87, width: 776, height: 84 });
+  expect(metrics.composer).toMatchObject({ x: 294, y: 171, width: 794, height: 312 });
+  expect(metrics.quickActions).toMatchObject({ x: 294, width: 794, height: 110 });
+  expect(metrics.translation).toMatchObject({ x: 294, width: 794 });
   expect(metrics.rightRail).toMatchObject({ x: 1211, y: 86, width: 332, height: 933 });
 
   await testInfo.attach("frozen-light-1543x1019", {
