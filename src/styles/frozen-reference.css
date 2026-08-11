@@ -299,8 +299,8 @@ body {
 
 /* Left rail */
 .leftnav-content {
-  display: flex;
-  flex-direction: column;
+  display: flex !important;
+  flex-direction: column !important;
   width: 203px;
   height: calc(100vh - 86px);
   margin: 0 0 0 13px;
@@ -856,8 +856,8 @@ input:focus-visible {
   right: 2px !important;
   bottom: 12px !important;
   left: 18px !important;
-  display: flex;
-  flex-direction: column;
+  display: flex !important;
+  flex-direction: column !important;
   min-width: 0;
   min-height: 0;
 }
