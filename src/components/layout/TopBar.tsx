@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   Bell,
-  BookOpenText,
+  ClipboardList,
   ChevronDown,
   CircleHelp,
   LogOut,
@@ -174,7 +174,7 @@ export function TopBar() {
         <QuickReferencePopover open={referenceOpen} setOpen={setReferenceOpen} rootRef={referenceRef} />
         <SearchPopover open={searchOpen} setOpen={setSearchOpen} rootRef={searchRef} />
         <LoadTemplateMenu renderTrigger={({ open, onClick }) => (
-          <GlassButton onClick={onClick} aria-expanded={open}><BookOpenText size={20} /> Templates</GlassButton>
+          <GlassButton onClick={onClick} aria-expanded={open}><ClipboardList size={20} /> Templates</GlassButton>
         )} />
       </div>
       <div className="topbar-right">
