@@ -865,6 +865,23 @@ input:focus-visible {
   margin-bottom: 8px !important;
 }
 
+.frozen-post-submit-tools {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 8px);
+  right: 0;
+  left: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--frozen-border);
+  border-radius: 8px;
+  background: var(--frozen-panel-strong);
+  box-shadow: var(--frozen-shadow);
+  backdrop-filter: blur(10px);
+}
+
 :root[data-layout="gold"] .quick-actions {
   margin-top: 24px !important;
   padding: 16px !important;
@@ -937,6 +954,15 @@ input:focus-visible {
   .app-shell { padding-left: 10px; }
   .leftnav-content { width: 188px; margin: 0 0 0 10px; }
   .topbar-logo { flex-basis: 260px; }
+  .topbar-center { flex: 0 0 420px; gap: 0; }
+  .topbar-center > :nth-child(1) { width: 150px; margin-right: 8px; }
+  .topbar-center > :nth-child(2) { width: 155px; margin-right: 8px; }
+  .topbar-center > :nth-child(3) { width: 99px; }
+  .topbar-right { gap: 6px; }
+  .topbar-right > :nth-child(1) > .primitive-glass-button { width: 135px; }
+  .topbar-right > :nth-child(2) > .primitive-glass-button { width: 80px; }
+  .topbar-right > .primitive-glass-button { width: 105px; }
+  .topbar-right .user-chip { width: 110px; }
   .topbar-content .primitive-glass-button { padding-inline: 13px; }
   .workspace-mode-toggle { width: 242px; margin-right: 0; }
   .workspace-mode-toggle button { white-space: normal; }
