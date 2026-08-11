@@ -863,7 +863,7 @@ input:focus-visible {
 
 :root[data-layout="gold"] .workspace-mode-bar {
   margin: 0 !important;
-  padding: 12px 2px 10px !important;
+  padding: 12px 2px 10px 20px !important;
 }
 
 :root[data-layout="gold"] .workspace-mode-toggle {
@@ -888,15 +888,16 @@ input:focus-visible {
 :root[data-layout="gold"] .frozen-center-stack > .frozen-composer,
 :root[data-layout="gold"] .frozen-center-stack > .quick-actions,
 :root[data-layout="gold"] .frozen-center-stack > .conversation-area {
-  width: 100% !important;
+  width: calc(100% + 18px) !important;
   margin-right: 0 !important;
   margin-left: 0 !important;
   box-sizing: border-box !important;
+  clip-path: inset(0 0 0 18px round 9px);
 }
 
 :root[data-layout="gold"] .frozen-composer {
   z-index: 4;
-  padding: 0 20px 14px !important;
+  padding: 0 20px 14px 38px !important;
   background: var(--frozen-panel) !important;
   backdrop-filter: blur(2px) saturate(0.9) !important;
 }
@@ -934,14 +935,14 @@ input:focus-visible {
 
 :root[data-layout="gold"] .quick-actions {
   margin-top: 24px !important;
-  padding: 16px 20px !important;
+  padding: 16px 20px 16px 38px !important;
   background: var(--frozen-panel) !important;
   backdrop-filter: blur(2px) saturate(0.9) !important;
 }
 
 :root[data-layout="gold"] .conversation-area {
   margin-top: 24px !important;
-  padding: 0 20px 12px !important;
+  padding: 0 20px 12px 38px !important;
   background: var(--frozen-panel) !important;
   backdrop-filter: blur(2px) saturate(0.9) !important;
 }
