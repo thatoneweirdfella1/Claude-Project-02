@@ -1,0 +1,35 @@
+import { test, expect } from "@playwright/test";
+
+test("frozen light reference audit at the canonical viewport", async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 1543, height: 1019 });
+  await page.route("**/api/verify-access", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ requiresPassword: false, ok: true }),
+    });
+  });
+
+  await page.goto("/");
+  await expect(page.locator("html")).toHaveAttribute("data-layout", "gold");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  await expect(page.locator(".app-shell")).toHaveAttribute(
+    "data-layout-authority",
+    "frozen-reference-2026-08-10",
+  );
+
+  const developerMode = page.getByRole("button", { name: /Developer Mode/ });
+  if (await developerMode.isEnabled()) await developerMode.click();
+
+  await expect(page.locator("[data-screen='translate']")).toHaveClass(/leftnav-item--active/);
+  await expect(page.locator(".quick-tools-tile__button")).toHaveCount(6);
+  await expect(page.locator(".accordion-panel.is-open")).toHaveCount(3);
+  await expect(page.getByText("12,847", { exact: true })).toBeVisible();
+  await expect(page.getByText("TS-2024-001247", { exact: true })).toBeVisible();
+  await expect(page.locator(".frozen-connectors circle")).toHaveCount(4);
+
+  await testInfo.attach("frozen-light-1543x1019", {
+    body: await page.screenshot({ animations: "disabled" }),
+    contentType: "image/png",
+  });
+});
