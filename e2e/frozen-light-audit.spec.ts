@@ -28,6 +28,35 @@ test("frozen light reference audit at the canonical viewport", async ({ page }, 
   await expect(page.getByText("TS-2024-001247", { exact: true })).toBeVisible();
   await expect(page.locator(".frozen-connectors circle")).toHaveCount(4);
 
+  const metrics = await page.evaluate(() => {
+    const measure = (selector: string) => {
+      const element = document.querySelector<HTMLElement>(selector);
+      if (!element) return null;
+      const box = element.getBoundingClientRect();
+      const style = getComputedStyle(element);
+      return {
+        x: box.x,
+        y: box.y,
+        width: box.width,
+        height: box.height,
+        padding: style.padding,
+        margin: style.margin,
+        left: style.left,
+        transform: style.transform,
+      };
+    };
+    return {
+      center: measure(".col-center"),
+      modeBar: measure(".workspace-mode-bar"),
+      composer: measure(".frozen-composer"),
+      quickActions: measure(".quick-actions"),
+      translation: measure(".conversation-area"),
+      rightRail: measure(".col-right"),
+      firstAccordion: measure(".accordion-panel"),
+    };
+  });
+  console.log(`FROZEN_METRICS ${JSON.stringify(metrics)}`);
+
   await testInfo.attach("frozen-light-1543x1019", {
     body: await page.screenshot({ animations: "disabled" }),
     contentType: "image/png",
