@@ -36,9 +36,9 @@
   --frozen-cyan: #0d9df5;
   --frozen-cyan-soft: rgb(13 157 245 / 0.12);
   --frozen-node-fill: #edf7ff;
-  --frozen-panel: rgb(238 238 235 / 0.43);
-  --frozen-panel-strong: rgb(236 236 233 / 0.58);
-  --frozen-control: rgb(246 246 244 / 0.42);
+  --frozen-panel: rgb(205 203 199 / 0.38);
+  --frozen-panel-strong: rgb(198 196 192 / 0.5);
+  --frozen-control: rgb(225 223 219 / 0.48);
   --frozen-border: rgb(255 255 255 / 0.82);
   --frozen-line: rgb(151 142 128 / 0.36);
   --frozen-text: #151719;
@@ -95,7 +95,7 @@ body {
 /* Use the supplied gold marble slabs without color filters or replacement fills. */
 :root[data-layout="gold"] .marble-slab {
   background-image:
-    linear-gradient(rgb(205 203 197 / 0.16), rgb(205 203 197 / 0.16)),
+    linear-gradient(rgb(165 162 157 / 0.38), rgb(165 162 157 / 0.38)),
     url("/textures/gold-marble-light-slab.png");
   background-position: center top, center top;
   background-repeat: repeat, repeat;
@@ -190,6 +190,7 @@ body {
   min-width: 0;
   color: var(--frozen-text);
   margin: 0;
+  padding: 0;
 }
 
 .logo-mark {
@@ -210,12 +211,21 @@ body {
 .topbar-right {
   display: flex;
   align-items: center;
-  gap: 12px;
   min-width: 0;
+  margin: 0;
+  padding: 0;
 }
 
-.topbar-center { flex: 1 1 auto; }
-.topbar-right { flex: 0 1 auto; }
+.topbar-center { flex: 0 0 666px; gap: 0; }
+.topbar-center > :nth-child(1) { width: 213px; margin-right: 23px; }
+.topbar-center > :nth-child(2) { width: 253px; margin-right: 3px; }
+.topbar-center > :nth-child(3) { width: 174px; }
+.topbar-center > * > .primitive-glass-button,
+.topbar-center > .primitive-glass-button { width: 100%; }
+.topbar-right { flex: 0 0 auto; gap: 9px; }
+.topbar-right > :nth-child(1) > .primitive-glass-button { width: 167px; }
+.topbar-right > :nth-child(2) > .primitive-glass-button { width: 107px; }
+.topbar-right > .primitive-glass-button { width: 134px; }
 .topbar-popover-wrapper { position: relative; flex: 0 0 auto; min-width: 0; }
 .topbar-search { flex: 1 1 245px; }
 
@@ -579,7 +589,7 @@ body {
 
 .quick-actions-row .primitive-glass-button {
   min-width: 0;
-  min-height: 45px;
+  min-height: 41px;
   height: 45px;
   padding: 0 11px;
   border: 1px solid var(--frozen-border);
@@ -778,8 +788,8 @@ body {
 .accordion-panel__body { padding: 2px 14px 12px; }
 .accordion-panel__placeholder { margin: 0; color: var(--frozen-muted); font-size: 11px; }
 .accordion-panel__content { display: flex; flex-direction: column; gap: 5px; }
-.accordion-stats > div { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 25px; color: var(--frozen-muted); font-size: 11px; }
-.accordion-panel:last-child .accordion-stats > div { min-height: 27px; }
+.accordion-stats > div { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 21px; color: var(--frozen-muted); font-size: 11px; }
+.accordion-panel:last-child .accordion-stats > div { min-height: 21px; }
 .accordion-stats strong { color: #0875cc; font-weight: 500; text-align: right; }
 :root[data-theme="dark"] .accordion-stats strong { color: #70cfff; }
 .accordion-session-link { display: flex; justify-content: space-between; gap: 8px; padding: 4px 0; border: 0; background: transparent; color: var(--frozen-text); font: inherit; cursor: pointer; }
@@ -810,6 +820,111 @@ textarea:focus-visible,
 input:focus-visible {
   outline: 2px solid var(--frozen-cyan);
   outline-offset: 2px;
+}
+
+/* Canonical 1543×1019 precision locks. These selectors intentionally outrank
+   every pre-frozen component rule so inherited experiments cannot move or
+   repaint the approved composition. */
+:root[data-layout="gold"] .col-center {
+  padding: 0 2px 12px 18px !important;
+}
+
+:root[data-layout="gold"] .workspace-mode-bar {
+  margin: 0 !important;
+  padding: 12px 2px 10px !important;
+}
+
+:root[data-layout="gold"] .workspace-mode-toggle {
+  margin-right: -26px !important;
+}
+
+:root[data-layout="gold"] .col-center > .frozen-composer,
+:root[data-layout="gold"] .col-center > .quick-actions,
+:root[data-layout="gold"] .col-center > .conversation-area {
+  width: 100% !important;
+  margin-right: 0 !important;
+  margin-left: 0 !important;
+  box-sizing: border-box !important;
+}
+
+:root[data-layout="gold"] .frozen-composer {
+  padding: 0 16px 14px !important;
+  background: var(--frozen-panel) !important;
+}
+
+:root[data-layout="gold"] .frozen-composer .input-box__textarea {
+  padding: 20px 14px !important;
+  background: rgb(205 203 199 / 0.34) !important;
+}
+
+:root[data-layout="gold"] .frozen-composer__controls {
+  padding-top: 15px !important;
+}
+
+:root[data-layout="gold"] .translate-ask-button {
+  margin-bottom: 8px !important;
+}
+
+:root[data-layout="gold"] .quick-actions {
+  margin-top: 24px !important;
+  padding: 16px !important;
+  background: var(--frozen-panel) !important;
+}
+
+:root[data-layout="gold"] .conversation-area {
+  margin-top: 24px !important;
+  padding: 0 16px 12px !important;
+  background: var(--frozen-panel) !important;
+}
+
+:root[data-layout="gold"] .reference-response {
+  padding: 16px !important;
+  background: rgb(205 203 199 / 0.3) !important;
+}
+
+:root[data-layout="gold"] .reference-quality {
+  padding: 14px 16px !important;
+  background: rgb(205 203 199 / 0.24) !important;
+}
+
+:root[data-layout="gold"] .leftnav-content,
+:root[data-layout="gold"] .col-right {
+  background: rgb(198 196 192 / 0.48) !important;
+}
+
+:root[data-layout="gold"] .quick-tools__header {
+  justify-content: flex-start !important;
+}
+
+:root[data-layout="gold"] .accordion-panel__header {
+  min-height: 41px !important;
+  padding: 0 11px !important;
+}
+
+:root[data-layout="gold"] .accordion-panel__body {
+  padding: 2px 14px 12px !important;
+}
+
+:root[data-layout="gold"] .accordion-stats > div,
+:root[data-layout="gold"] .accordion-panel:last-child .accordion-stats > div {
+  min-height: 21px !important;
+}
+
+:root[data-layout="gold"][data-theme="dark"] .frozen-composer .input-box__textarea {
+  background: rgb(2 4 5 / 0.72) !important;
+}
+
+:root[data-layout="gold"][data-theme="dark"] .reference-response {
+  background: rgb(3 5 6 / 0.56) !important;
+}
+
+:root[data-layout="gold"][data-theme="dark"] .reference-quality {
+  background: rgb(3 5 6 / 0.44) !important;
+}
+
+:root[data-layout="gold"][data-theme="dark"] .leftnav-content,
+:root[data-layout="gold"][data-theme="dark"] .col-right {
+  background: var(--frozen-panel) !important;
 }
 
 @media (max-width: 1400px) {
