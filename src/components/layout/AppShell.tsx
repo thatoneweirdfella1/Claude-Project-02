@@ -56,10 +56,12 @@ export function AppShell() {
           <LeftNav />
         </nav>
         <main className="col-center" data-testid="col-center">
-          <WorkspaceModeBar />
-          <AppErrorBoundary resetKey={currentScreen}>
-            <ScreenRouter />
-          </AppErrorBoundary>
+          <div className="frozen-center-stack">
+            <WorkspaceModeBar />
+            <AppErrorBoundary resetKey={currentScreen}>
+              <ScreenRouter />
+            </AppErrorBoundary>
+          </div>
         </main>
         <aside className="col-right" aria-label="Sidebar panels" data-testid="col-right">
           <QuickToolsGrid />
