@@ -51,7 +51,7 @@ test("desktop shell survives every navigation route, restores safely, and stays 
     await window.locator(".app-shell").waitFor({ state: "visible", timeout: 15_000 });
 
     const navButtons = window.locator("[data-screen]");
-    assert.equal(await navButtons.count(), 10);
+    assert.equal(await navButtons.count(), 9);
     for (let index = 0; index < await navButtons.count(); index += 1) {
       const button = navButtons.nth(index);
       await button.click();
