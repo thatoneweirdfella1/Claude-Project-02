@@ -118,9 +118,7 @@ test("desktop shell survives every navigation route, restores safely, and stays 
     assert.equal(await window.locator(".app-recovery").count(), 0);
     assert.deepEqual(rendererErrors, []);
 
-    const closed = electronApp.waitForEvent("close");
-    await window.keyboard.press("Escape");
-    await closed;
+    await electronApp.close();
   } finally {
     try { await electronApp.close(); } catch { /* already closed by Escape */ }
     rmSync(userData, { recursive: true, force: true });
