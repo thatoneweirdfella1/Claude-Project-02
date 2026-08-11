@@ -4,7 +4,7 @@ import {
   Bookmark,
   Braces,
   CirclePlus,
-  Route,
+  Network,
   WandSparkles,
   type LucideIcon,
 } from "lucide-react";
@@ -12,7 +12,7 @@ import { useSessionStore } from "../../stores/sessionStore";
 import type { ScreenId } from "../../stores/types";
 
 const TOOLS: Array<{ label: string; screen: ScreenId; Icon: LucideIcon; accent: string }> = [
-  { label: "Router", screen: "translate", Icon: Route, accent: "cyan" },
+  { label: "Router", screen: "translate", Icon: Network, accent: "cyan" },
   { label: "Techniques", screen: "resources", Icon: WandSparkles, accent: "gold" },
   { label: "Prompt Library", screen: "templates", Icon: BookOpenText, accent: "gold" },
   { label: "Variables", screen: "customize", Icon: Braces, accent: "gold" },
