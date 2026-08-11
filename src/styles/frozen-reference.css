@@ -1,3 +1,19 @@
+@font-face {
+  font-family: "Divergence Condensed";
+  src: url("/fonts/roboto-condensed-400.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Divergence Condensed";
+  src: url("/fonts/roboto-condensed-500.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 500 700;
+  font-display: swap;
+}
+
 /*
  * FROZEN DIVERGENCE.AI REFERENCE LAYOUT — 2026-08-10
  *
@@ -10,9 +26,9 @@
  */
 
 :root {
-  --topbar-height: 84px;
+  --topbar-height: 86px;
   --frozen-left-track: 220px;
-  --frozen-left-gap: 55px;
+  --frozen-left-gap: 53px;
   --frozen-right-gap: 120px;
   --frozen-right-track: 332px;
   --frozen-gold: #c5993d;
@@ -28,7 +44,7 @@
   --frozen-text: #151719;
   --frozen-muted: #52565b;
   --frozen-shadow: 0 1px 2px rgb(55 48 39 / 0.24), inset 0 1px 0 rgb(255 255 255 / 0.84);
-  --font-family-base: "Arial Narrow", "Bahnschrift Condensed", "Roboto Condensed", "Segoe UI", sans-serif;
+  --font-family-base: "Divergence Condensed", "Arial Narrow", "Bahnschrift Condensed", sans-serif;
   --radius-card: 9px;
   --radius-button: 7px;
   --surface-smoked-glass: var(--frozen-panel);
@@ -78,9 +94,18 @@ body {
 
 /* Use the supplied gold marble slabs without color filters or replacement fills. */
 :root[data-layout="gold"] .marble-slab {
+  background-image:
+    linear-gradient(rgb(205 203 197 / 0.16), rgb(205 203 197 / 0.16)),
+    url("/textures/gold-marble-light-slab.png");
+  background-position: center top, center top;
+  background-repeat: repeat, repeat;
+  background-size: 1536px 1024px;
+}
+
+:root[data-layout="gold"][data-theme="dark"] .marble-slab {
+  background-image: url("/textures/gold-marble-dark-slab.png");
   background-position: center top;
   background-repeat: repeat;
-  background-size: 1536px 1024px;
 }
 
 :root[data-layout="gold"] .surface-smoked-glass,
@@ -148,13 +173,13 @@ body {
   width: 100%;
   height: 100%;
   gap: 12px;
-  padding: 0 12px 0 20px;
+  padding: 0 12px 0 36px;
 }
 
 .topbar-logo {
   display: flex;
   align-items: center;
-  flex: 0 0 292px;
+  flex: 0 0 296px;
   min-width: 0;
 }
 
@@ -164,6 +189,7 @@ body {
   gap: 12px;
   min-width: 0;
   color: var(--frozen-text);
+  margin: 0;
 }
 
 .logo-mark {
@@ -190,7 +216,7 @@ body {
 
 .topbar-center { flex: 1 1 auto; }
 .topbar-right { flex: 0 1 auto; }
-.topbar-popover-wrapper { position: relative; min-width: 0; }
+.topbar-popover-wrapper { position: relative; flex: 0 0 auto; min-width: 0; }
 .topbar-search { flex: 1 1 245px; }
 
 .topbar-content .primitive-glass-button {
@@ -245,9 +271,9 @@ body {
 .leftnav-content {
   display: flex;
   flex-direction: column;
-  width: 200px;
+  width: 203px;
   height: calc(100vh - 86px);
-  margin-left: 20px;
+  margin: 0 0 0 13px;
   padding: 11px 0 13px;
   border: 1px solid var(--frozen-border);
   border-radius: 11px;
@@ -327,7 +353,7 @@ body {
   display: flex;
   flex-direction: column;
   height: calc(100vh - 86px);
-  padding: 0 18px 12px;
+  padding: 0 2px 12px 18px;
   border: 1px solid var(--frozen-border);
   border-radius: 10px;
   background: rgb(238 238 235 / 0.18);
@@ -429,7 +455,6 @@ body {
 
 .frozen-composer__heading-actions { display: flex; align-items: center; gap: 8px; }
 .frozen-composer__heading-actions .attach-context-controls { display: flex; gap: 0; }
-.frozen-composer__heading-actions .attach-context-controls > .primitive-glass-button:nth-of-type(2) { display: none; }
 .frozen-composer__heading-actions .primitive-glass-button,
 .frozen-clear {
   min-height: 38px;
@@ -444,6 +469,18 @@ body {
   font: 500 12px/1 var(--font-family-base);
   text-transform: uppercase;
   cursor: pointer;
+}
+
+.frozen-composer__heading-actions .attach-context-controls > .primitive-glass-button:first-of-type {
+  border-radius: 6px 0 0 6px;
+}
+
+.frozen-composer__heading-actions .attach-context-controls > .attach-menu-toggle {
+  width: 39px;
+  min-width: 39px;
+  padding: 0;
+  border-left: 0;
+  border-radius: 0 6px 6px 0;
 }
 
 .frozen-composer .input-box { display: block; flex: 1 1 auto; min-height: 0; }
@@ -614,6 +651,19 @@ body {
   box-shadow: 0 0 15px rgb(0 140 255 / 0.25), inset 0 0 13px rgb(0 140 255 / 0.18);
 }
 
+.reference-response__orb svg { display: none; }
+.reference-response__orb::before {
+  width: 48px;
+  height: 48px;
+  content: "";
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at center, #eaf8ff 0 12%, transparent 13%),
+    repeating-conic-gradient(from 13deg, #0d8fff 0deg 15deg, #5bc7ff 16deg 28deg, transparent 29deg 45deg);
+  filter: drop-shadow(0 0 4px rgb(0 132 255 / 0.7));
+  mask: radial-gradient(circle, transparent 0 18%, #000 20% 68%, transparent 70%);
+}
+
 .reference-response__summary h3 { margin: 0 0 8px; color: var(--frozen-text); font: 500 19px/1 var(--font-family-base); text-transform: uppercase; }
 .reference-response__summary p { margin: 0; color: var(--frozen-text); font-size: 13px; line-height: 1.45; }
 .reference-quality { padding: 14px 16px; border: 1px solid var(--frozen-border); border-radius: 7px; background: rgb(238 238 235 / 0.18); }
@@ -649,7 +699,8 @@ body {
   flex-direction: column;
   gap: 13px;
   height: calc(100vh - 86px);
-  padding: 14px 13px 11px;
+  margin: 0;
+  padding: 20px 0 11px 18px;
   border: 1px solid var(--frozen-border);
   border-radius: 10px 0 0 10px;
   background: var(--frozen-panel);
@@ -659,7 +710,7 @@ body {
   overflow: hidden;
 }
 
-.quick-tools { display: flex; flex: 0 0 231px; flex-direction: column; gap: 10px; }
+.quick-tools { display: flex; flex: 0 0 231px; flex-direction: column; gap: 10px; padding-right: 0; }
 .quick-tools__header { display: flex; align-items: center; gap: 9px; min-height: 29px; color: var(--frozen-text); }
 .quick-tools__header-label { margin: 0; color: inherit; font: 500 14px/1 var(--font-family-base); text-transform: uppercase; }
 :root[data-theme="dark"] .quick-tools__header { color: var(--frozen-gold-bright); }
@@ -687,7 +738,7 @@ body {
 :root[data-theme="dark"] .quick-tools-tile__icon.is-cyan { color: #71d7ff; }
 .quick-tools-tile__label { color: var(--frozen-text); font: 500 10px/1.15 var(--font-family-base); text-align: center; text-transform: uppercase; }
 
-.accordion-stack { display: flex; flex: 1 1 auto; flex-direction: column; gap: 9px; min-height: 0; overflow: hidden; }
+.accordion-stack { display: flex; flex: 1 1 auto; flex-direction: column; gap: 9px; min-height: 0; margin-left: -5px; overflow: hidden; }
 .accordion-panel {
   flex: 0 0 auto;
   overflow: hidden;
@@ -724,10 +775,11 @@ body {
 :root[data-theme="dark"] .accordion-panel.is-open .accordion-panel__icon,
 :root[data-theme="dark"] .accordion-panel.is-open .accordion-panel__chevron,
 :root[data-theme="dark"] .accordion-panel.is-open .accordion-panel__label { color: #66c9f7; }
-.accordion-panel__body { padding: 0 14px 12px; }
+.accordion-panel__body { padding: 2px 14px 12px; }
 .accordion-panel__placeholder { margin: 0; color: var(--frozen-muted); font-size: 11px; }
 .accordion-panel__content { display: flex; flex-direction: column; gap: 5px; }
-.accordion-stats > div { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 20px; color: var(--frozen-muted); font-size: 11px; }
+.accordion-stats > div { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 25px; color: var(--frozen-muted); font-size: 11px; }
+.accordion-panel:last-child .accordion-stats > div { min-height: 27px; }
 .accordion-stats strong { color: #0875cc; font-weight: 500; text-align: right; }
 :root[data-theme="dark"] .accordion-stats strong { color: #70cfff; }
 .accordion-session-link { display: flex; justify-content: space-between; gap: 8px; padding: 4px 0; border: 0; background: transparent; color: var(--frozen-text); font: inherit; cursor: pointer; }
@@ -768,7 +820,7 @@ input:focus-visible {
     --frozen-right-track: 300px;
   }
   .app-shell { padding-left: 10px; }
-  .leftnav-content { width: 188px; margin-left: 10px; }
+  .leftnav-content { width: 188px; margin: 0 0 0 10px; }
   .topbar-logo { flex-basis: 260px; }
   .topbar-content .primitive-glass-button { padding-inline: 13px; }
   .workspace-mode-toggle { width: 242px; margin-right: 0; }
