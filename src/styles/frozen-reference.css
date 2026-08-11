@@ -241,7 +241,10 @@ body {
 
 @media (min-width: 1401px) {
   .topbar-center,
-  .topbar-right { transform: translateX(-19px); }
+  .topbar-right {
+    position: relative;
+    left: -19px;
+  }
 }
 .topbar-popover-wrapper { position: relative; flex: 0 0 auto; min-width: 0; }
 .topbar-search { flex: 1 1 245px; }
@@ -859,7 +862,9 @@ input:focus-visible {
 :root[data-layout="gold"] .col-center > .frozen-composer,
 :root[data-layout="gold"] .col-center > .quick-actions,
 :root[data-layout="gold"] .col-center > .conversation-area {
-  transform: translateX(36px) !important;
+  position: relative !important;
+  left: 18px !important;
+  transform: none !important;
 }
 
 :root[data-layout="gold"] .col-center > .frozen-composer,
@@ -991,6 +996,8 @@ input:focus-visible {
   .leftnav-content { width: 188px; margin: 0 0 0 10px; }
   .topbar-logo { flex-basis: 260px; }
   .topbar-center { flex: 0 0 420px; gap: 0; }
+  .topbar-center,
+  .topbar-right { left: 0; }
   .topbar-center > :nth-child(1) { width: 150px; margin-right: 8px; }
   .topbar-center > :nth-child(2) { width: 155px; margin-right: 8px; }
   .topbar-center > :nth-child(3) { width: 99px; }
