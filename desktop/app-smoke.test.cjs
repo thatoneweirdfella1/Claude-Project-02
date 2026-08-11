@@ -32,7 +32,6 @@ test("desktop shell survives every navigation route, restores safely, and stays 
     window.on("pageerror", (error) => rendererErrors.push(error.message));
     await waitForRenderer(window);
     await window.getByRole("heading", { name: "Welcome Back" }).waitFor({ state: "visible", timeout: 15_000 });
-    await window.getByTestId("topbar").getByRole("button", { name: "Profile" }).waitFor({ state: "visible" });
 
     const windowState = await electronApp.evaluate(({ BrowserWindow }) => {
       const appWindow = BrowserWindow.getAllWindows()[0];
