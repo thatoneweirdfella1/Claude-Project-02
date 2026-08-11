@@ -1,14 +1,14 @@
 import {
   AudioWaveform,
+  Archive,
   BarChart3,
-  BookOpenText,
   Braces,
-  CheckSquare,
+  ClipboardList,
   LayoutGrid,
-  Library,
   Settings,
-  SlidersHorizontal,
+  ShieldCheck,
   Trash2,
+  Workflow,
   type LucideIcon,
 } from "lucide-react";
 import { useSessionStore } from "../../stores/sessionStore";
@@ -17,11 +17,11 @@ import type { ScreenId } from "../../stores/types";
 const NAV_ITEMS: Array<{ label: string; screen: ScreenId; Icon: LucideIcon }> = [
   { label: "Dashboard", screen: "dashboard", Icon: LayoutGrid },
   { label: "Translate", screen: "translate", Icon: AudioWaveform },
-  { label: "Sessions", screen: "sessions", Icon: Library },
-  { label: "Templates", screen: "templates", Icon: BookOpenText },
-  { label: "Techniques", screen: "resources", Icon: SlidersHorizontal },
+  { label: "Sessions", screen: "sessions", Icon: Archive },
+  { label: "Templates", screen: "templates", Icon: ClipboardList },
+  { label: "Techniques", screen: "resources", Icon: Workflow },
   { label: "Variables", screen: "customize", Icon: Braces },
-  { label: "Checkpoints", screen: "projects", Icon: CheckSquare },
+  { label: "Checkpoints", screen: "projects", Icon: ShieldCheck },
   { label: "Analytics", screen: "tasks", Icon: BarChart3 },
   { label: "Settings", screen: "settings", Icon: Settings },
 ];
