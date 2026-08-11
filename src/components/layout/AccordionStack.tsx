@@ -78,7 +78,7 @@ function ActiveSessionContent() {
 }
 
 function ReferenceContextSnapshot() {
-  const hasContext = useSessionStore((s) => Boolean(s.context.trim()) || s.variables.length > 0);
+  const hasContext = useSessionStore((s) => s.context.length > 0 || Object.keys(s.variables).length > 0);
   if (hasContext) return <ContextSnapshotContent />;
   return (
     <div className="accordion-panel__content accordion-stats">
