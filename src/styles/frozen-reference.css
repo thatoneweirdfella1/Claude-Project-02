@@ -851,7 +851,6 @@ input:focus-visible {
 
 :root[data-layout="gold"] .col-center > .frozen-center-stack {
   position: absolute !important;
-  inset: auto !important;
   top: 0 !important;
   right: 2px !important;
   bottom: 12px !important;
