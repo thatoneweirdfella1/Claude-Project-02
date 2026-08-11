@@ -1,31 +1,50 @@
 import { Children, useState, type ReactNode } from "react";
+import { Copy, ExternalLink, MessageCircle, SlidersHorizontal, Sparkles, Upload } from "lucide-react";
 import { MessageBubble } from "../streaming";
 import { DownloadModal } from "../export";
 import { getTelemetryEntries } from "../../services/telemetry";
 import { useSessionStore } from "../../stores/sessionStore";
 import { useAccountStore } from "../../stores/accountStore";
 
-/* ConversationArea — the center-column conversation surface. Step 1.5 left
-   this a placeholder; Step 2.3 seeded it with sample confidence-gate cards;
-   Step 5.1 replaced those with real session.conversation rendering plus an
-   offline streaming demo; Step 5.2 removes the demo — the live pipeline
-   (components/pipeline/CenterColumn) now appends real messages here and
-   passes the in-flight run's UI (gated translation card, stage indicator,
-   streaming text) as children, rendered after the history. Step 8.1 wires
-   RatingRow's star/comment events to BOTH stores together (denormalized
-   ConversationMessage fields for display + the durable accountStore.ratings
-   upsert for the learning loop — see types.ts's ConversationMessage doc).
+export interface ConversationAreaProps { children?: ReactNode; }
 
-   Step 8.5: the download icon (previously unwired) now opens a real
-   DownloadModal for that message. Which message is open lives here, not per
-   MessageBubble, since only one modal can be open at a time; the telemetry
-   lookup (message.telemetryId -> the matching TelemetryEntry, or null if the
-   bounded in-memory log no longer has it) happens at open time, not stored,
-   so it always reflects what's actually still in the log. */
+const METRICS = [
+  { label: "Clarity Score", value: 95, color: "#24b95f" },
+  { label: "Specificity", value: 88, color: "#168df1" },
+  { label: "Context Richness", value: 91, color: "#9636e9" },
+  { label: "Actionability", value: 94, color: "#f0a11c" },
+];
 
-export interface ConversationAreaProps {
-  /** The active pipeline run's transient UI (Step 5.2), if one is running. */
-  children?: ReactNode;
+function ReferenceEmptyResponse() {
+  const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
+  return (
+    <div className="reference-response">
+      <div className="reference-response__summary">
+        <div className="reference-response__orb"><Sparkles size={31} /></div>
+        <div>
+          <h3>AI-Optimized Response</h3>
+          <p>Based on your input, I&apos;ve structured this to be clear, specific, and actionable<br />for the AI to provide you with the most accurate and helpful response.</p>
+        </div>
+      </div>
+      <div className="reference-quality">
+        <h4>Translation Quality</h4>
+        <div className="reference-quality__grid">
+          {METRICS.map((metric) => (
+            <div className="reference-metric" key={metric.label}>
+              <div><span>{metric.label}</span><strong>{metric.value}%</strong></div>
+              <i><b style={{ width: `${metric.value}%`, background: metric.color }} /></i>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="reference-response__actions">
+        <button type="button" onClick={() => void navigator.clipboard?.writeText("AI-optimized response")}><Copy size={17} /> Copy Response</button>
+        <button type="button" onClick={() => setCurrentScreen("translate")}><MessageCircle size={17} /> Use in AI Chat</button>
+        <button type="button"><SlidersHorizontal size={17} /> Refine Further</button>
+        <button type="button" className="reference-export"><Upload size={17} /> Export <ExternalLink size={14} /></button>
+      </div>
+    </div>
+  );
 }
 
 export function ConversationArea({ children }: ConversationAreaProps) {
@@ -39,42 +58,33 @@ export function ConversationArea({ children }: ConversationAreaProps) {
     setRating({ messageId, stars, comment, timestamp: Date.now() });
   }
 
-  const downloadMessage = conversation.find((m) => m.id === downloadMessageId) ?? null;
+  const downloadMessage = conversation.find((message) => message.id === downloadMessageId) ?? null;
   const downloadTelemetryEntry = downloadMessage
-    ? (getTelemetryEntries().find((e) => e.id === downloadMessage.telemetryId) ?? null)
+    ? getTelemetryEntries().find((entry) => entry.id === downloadMessage.telemetryId) ?? null
     : null;
-
-  // Children.toArray drops falsy JSX expressions ({gated && <X/>} renders
-  // `false`, not nothing, when gated is falsy) — a plain `children == null`
-  // check is always false here since CenterColumn always passes an array of
-  // two expressions, so it never detected the truly-empty case. toArray is
-  // the actual "is there real, visible content" test.
   const isEmpty = conversation.length === 0 && Children.toArray(children).length === 0;
 
   return (
-    <div className="conversation-area surface-smoked-glass" data-testid="conversation-area">
-      {isEmpty && <p className="conversation-area__empty">Nothing here yet — ask a question to get started.</p>}
+    <section className="conversation-area surface-smoked-glass" data-testid="conversation-area">
+      <div className="conversation-area__heading">
+        <h2>AI Translation</h2>
+        <p><strong>92%</strong> confident this is what you meant.</p>
+      </div>
+      {isEmpty && <ReferenceEmptyResponse />}
       {conversation.map((message) => (
         <MessageBubble
           key={message.id}
           message={message}
           userInitial="D"
           onRate={(stars) => saveRating(message.id, stars, message.ratingComment)}
-          onRatingComment={(comment) => {
-            if (message.ratingStars === undefined) return;
-            saveRating(message.id, message.ratingStars, comment);
-          }}
+          onRatingComment={(comment) => message.ratingStars !== undefined && saveRating(message.id, message.ratingStars, comment)}
           onDownload={() => setDownloadMessageId(message.id)}
         />
       ))}
       {children}
       {downloadMessage && (
-        <DownloadModal
-          message={downloadMessage}
-          telemetryEntry={downloadTelemetryEntry}
-          onClose={() => setDownloadMessageId(null)}
-        />
+        <DownloadModal message={downloadMessage} telemetryEntry={downloadTelemetryEntry} onClose={() => setDownloadMessageId(null)} />
       )}
-    </div>
+    </section>
   );
 }

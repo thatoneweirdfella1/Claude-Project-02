@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> **FROZEN LAYOUT OVERRIDE — 2026-08-10:** Before any visual or shell work, read `FROZEN-LAYOUT.md`. Its two reference images are the sole visual authority and supersede every older screenshot, layout, material rule, visual audit, and implementation instruction wherever they disagree. Do not restore an older shell.
+
 # DIVERGENCE.AI — CANON
 **The single source of product truth. This file replaces CANONICAL-AUTHORITY.md, DIVERGENCE-APP-REQUIREMENTS.md, and the product half of MASTER-REFERENCE.md. Those files contained contradictions and are retired. Where anything ever disagrees with this file, this file wins. Where this file disagrees with the V3 screenshot, the screenshot wins.**
 

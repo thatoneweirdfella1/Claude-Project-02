@@ -28,7 +28,7 @@ async function askAndAnswer(page: import("@playwright/test").Page): Promise<void
   await page.getByLabel("What's on your mind?").fill(QUESTION);
   await clickWithCostConfirmation(
     page,
-    page.getByRole("button", { name: /TRANSLATE.*ASK/i }),
+    page.locator(".translate-ask-button"),
   );
   await expect(page.locator(".message-bubble--assistant").first()).toBeVisible({ timeout: 10_000 });
 }

@@ -14,10 +14,7 @@
  * Deterministic on purpose: same input, same route, every run. The audit
  * trail (signals) shows every point of the score.
  */
-(function (root, factory) {
-  if (typeof module === "object" && module.exports) module.exports = factory();
-  else root.RoutingEngine = factory();
-})(typeof self !== "undefined" ? self : this, function () {
+export default (function () {
   "use strict";
 
   var MODELS = {
@@ -209,4 +206,4 @@
   }
 
   return { route: route, scoreComplexity: scoreComplexity, MODELS: MODELS, FREE_MODELS: FREE_MODELS };
-});
+})();

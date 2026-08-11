@@ -17,7 +17,7 @@ export const MODEL_DESCRIPTORS: Record<ModelId, string> = {
     the three models, in registry/tier order. Opus is marked as Pro since it's
     a paid-tier model (CANON ROUTING.md). */
 export const MODEL_DROPDOWN_OPTIONS: DropdownOption[] = [
-  { value: "auto", label: "Auto" },
+  { value: "auto", label: "Auto-select optimal" },
   ...MODEL_IDS.map((id) => {
     const model = getModel(id);
     const isPro = model.plan === "paid";
