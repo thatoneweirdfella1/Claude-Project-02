@@ -933,6 +933,10 @@ input:focus-visible {
   backdrop-filter: blur(10px);
 }
 
+:root[data-layout="gold"] .frozen-composer:has(.frozen-post-submit-tools) {
+  clip-path: none;
+}
+
 :root[data-layout="gold"] .quick-actions {
   margin-top: 24px !important;
   padding: 16px 20px 16px 38px !important;
