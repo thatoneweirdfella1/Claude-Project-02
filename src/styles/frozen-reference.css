@@ -238,6 +238,11 @@ body {
 .topbar-right > :nth-child(1) > .primitive-glass-button { width: 167px; }
 .topbar-right > :nth-child(2) > .primitive-glass-button { width: 107px; }
 .topbar-right > .primitive-glass-button { width: 134px; }
+
+@media (min-width: 1401px) {
+  .topbar-center,
+  .topbar-right { transform: translateX(-19px); }
+}
 .topbar-popover-wrapper { position: relative; flex: 0 0 auto; min-width: 0; }
 .topbar-search { flex: 1 1 245px; }
 
@@ -854,7 +859,7 @@ input:focus-visible {
 :root[data-layout="gold"] .col-center > .frozen-composer,
 :root[data-layout="gold"] .col-center > .quick-actions,
 :root[data-layout="gold"] .col-center > .conversation-area {
-  transform: translateX(18px) !important;
+  transform: translateX(36px) !important;
 }
 
 :root[data-layout="gold"] .col-center > .frozen-composer,
@@ -867,13 +872,16 @@ input:focus-visible {
 }
 
 :root[data-layout="gold"] .frozen-composer {
-  padding: 0 16px 14px !important;
+  z-index: 4;
+  padding: 0 20px 14px !important;
   background: var(--frozen-panel) !important;
+  backdrop-filter: blur(2px) saturate(0.9) !important;
 }
 
 :root[data-layout="gold"] .frozen-composer .input-box__textarea {
   padding: 20px 14px !important;
   background: rgb(205 203 199 / 0.34) !important;
+  backdrop-filter: blur(2px) saturate(0.9) !important;
 }
 
 :root[data-layout="gold"] .frozen-composer__controls {
@@ -903,14 +911,16 @@ input:focus-visible {
 
 :root[data-layout="gold"] .quick-actions {
   margin-top: 24px !important;
-  padding: 16px !important;
+  padding: 16px 20px !important;
   background: var(--frozen-panel) !important;
+  backdrop-filter: blur(2px) saturate(0.9) !important;
 }
 
 :root[data-layout="gold"] .conversation-area {
   margin-top: 24px !important;
-  padding: 0 16px 12px !important;
+  padding: 0 20px 12px !important;
   background: var(--frozen-panel) !important;
+  backdrop-filter: blur(2px) saturate(0.9) !important;
 }
 
 :root[data-layout="gold"] .reference-response {
@@ -926,6 +936,10 @@ input:focus-visible {
 :root[data-layout="gold"] .leftnav-content,
 :root[data-layout="gold"] .col-right {
   background: rgb(198 196 192 / 0.48) !important;
+}
+
+:root[data-layout="gold"] .col-right {
+  backdrop-filter: blur(2px) saturate(0.9) !important;
 }
 
 :root[data-layout="gold"] .quick-tools__header {
@@ -946,10 +960,8 @@ input:focus-visible {
   padding: 2px 14px 12px !important;
 }
 
-:root[data-layout="gold"] .accordion-stats > div,
-:root[data-layout="gold"] .accordion-panel:last-child .accordion-stats > div {
-  min-height: 26px !important;
-}
+:root[data-layout="gold"] .accordion-stats > div { min-height: 21px !important; }
+:root[data-layout="gold"] .accordion-panel:last-child .accordion-stats > div { min-height: 26px !important; }
 
 :root[data-layout="gold"][data-theme="dark"] .frozen-composer .input-box__textarea {
   background: rgb(2 4 5 / 0.72) !important;
