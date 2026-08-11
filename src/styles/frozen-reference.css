@@ -862,22 +862,23 @@ input:focus-visible {
 :root[data-layout="gold"] .col-center > .frozen-composer,
 :root[data-layout="gold"] .col-center > .quick-actions,
 :root[data-layout="gold"] .col-center > .conversation-area {
+  align-self: flex-end !important;
   position: relative !important;
   left: 0 !important;
   transform: none !important;
 }
 
 :root[data-layout="gold"] .workspace-mode-bar {
-  margin-right: -18px !important;
-  margin-left: 18px !important;
+  margin-right: 0 !important;
+  margin-left: 0 !important;
 }
 
 :root[data-layout="gold"] .col-center > .frozen-composer,
 :root[data-layout="gold"] .col-center > .quick-actions,
 :root[data-layout="gold"] .col-center > .conversation-area {
   width: 100% !important;
-  margin-right: -18px !important;
-  margin-left: 18px !important;
+  margin-right: 0 !important;
+  margin-left: 0 !important;
   box-sizing: border-box !important;
 }
 
