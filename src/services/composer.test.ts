@@ -20,6 +20,9 @@ describe("buildTranslateAskRequest", () => {
       model: "auto",
       directness: 2,
       techniques: ["auto-detect"],
+      destination: { providerId: "universal", modelId: "universal" },
+      translatorEngine: "local-rules",
+      reviewBeforeSend: true,
       context: [],
     });
   });

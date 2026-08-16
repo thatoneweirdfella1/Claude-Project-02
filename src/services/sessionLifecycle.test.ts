@@ -6,6 +6,9 @@ function session(overrides: Partial<SessionState> = {}): SessionState {
   return {
     draftInput: "unsent thought",
     model: "auto",
+    destination: { providerId: "universal", modelId: "universal" },
+    translatorEngine: "local-rules",
+    reviewBeforeSend: true,
     directness: 2,
     techniques: ["auto-detect"],
     context: [],

@@ -19,9 +19,9 @@ export interface TranslateAskSettings {
   model: ModelSelection;
   directness: DirectnessLevel;
   techniques: TechniqueId[];
-  destination: DestinationSelection;
-  translatorEngine: TranslatorEngine;
-  reviewBeforeSend: boolean;
+  destination?: DestinationSelection;
+  translatorEngine?: TranslatorEngine;
+  reviewBeforeSend?: boolean;
 }
 
 /** The exact shape Step 5.2's orchestrator subscribes to. Plain, JSON-
@@ -52,9 +52,9 @@ export function buildTranslateAskRequest(
     model: settings.model,
     directness: settings.directness,
     techniques: settings.techniques,
-    destination: settings.destination,
-    translatorEngine: settings.translatorEngine,
-    reviewBeforeSend: settings.reviewBeforeSend,
+    destination: settings.destination ?? { providerId: "universal", modelId: "universal" },
+    translatorEngine: settings.translatorEngine ?? "local-rules",
+    reviewBeforeSend: settings.reviewBeforeSend ?? true,
     context,
   };
 }
