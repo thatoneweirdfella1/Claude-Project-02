@@ -32,12 +32,17 @@ export function AppShell() {
   const destination = useSessionStore((s) => s.destination);
   const quickTools = useAccountStore((s) => s.visibility.quickTools);
   const [showShortcuts, setShowShortcuts] = useState(false);
-  const [canvasScale, setCanvasScale] = useState(() =>
-    typeof window === "undefined" ? 1 : Math.min(window.innerWidth / 1600, window.innerHeight / 1024),
-  );
+  const canvasScaleForViewport = () => {
+    if (typeof window === "undefined") return 0.72;
+    const edgeGutter = 48;
+    const widthScale = (window.innerWidth - edgeGutter * 2) / 1600;
+    const heightScale = (window.innerHeight - edgeGutter * 2) / 1024;
+    return Math.max(0.1, Math.min(0.72, widthScale, heightScale));
+  };
+  const [canvasScale, setCanvasScale] = useState(canvasScaleForViewport);
   useThemeEffect(); useDesignLayoutEffect(); useKeyboardShortcuts(() => setShowShortcuts(true));
   useEffect(() => {
-    const resize = () => setCanvasScale(Math.min(window.innerWidth / 1600, window.innerHeight / 1024));
+    const resize = () => setCanvasScale(canvasScaleForViewport());
     window.addEventListener("resize", resize);
     resize();
     return () => window.removeEventListener("resize", resize);

@@ -1154,3 +1154,95 @@ input:focus-visible {
   .col-right { display: block !important; }
   .topbar-center, .topbar-right { position: relative !important; left: -19px !important; }
 }
+
+
+/* v1.2 fixed-window spacing and compact clickable controls.
+   This block changes layout density only: materials, opacity, blur, labels,
+   features, and component order remain untouched. */
+:root[data-layout="gold"] {
+  --topbar-height: 52px;
+  --frozen-left-track: 200px;
+  --frozen-left-gap: 30px;
+  --frozen-right-gap: 34px;
+  --frozen-right-track: 280px;
+  --frozen-section-gap: 14px;
+}
+
+.fixed-canvas-stage {
+  padding: 48px;
+}
+
+:root[data-layout="gold"] .app-shell {
+  grid-template-rows: var(--topbar-height) 18px minmax(0, 1fr) !important;
+  grid-template-columns:
+    var(--frozen-left-track)
+    var(--frozen-left-gap)
+    minmax(0, 1020px)
+    var(--frozen-right-gap)
+    var(--frozen-right-track) !important;
+  grid-template-areas:
+    "topbar topbar topbar topbar topbar"
+    ". . . . ."
+    "left . center . right" !important;
+  padding: 16px 18px !important;
+}
+
+:root[data-layout="gold"] .leftnav-content,
+:root[data-layout="gold"] .col-center,
+:root[data-layout="gold"] .col-right {
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+}
+
+:root[data-layout="gold"] .frozen-center-stack {
+  gap: var(--frozen-section-gap) !important;
+}
+
+:root[data-layout="gold"] .col-right {
+  gap: var(--frozen-section-gap) !important;
+}
+
+:root[data-layout="gold"] .topbar-content .primitive-glass-button {
+  min-height: 38px !important;
+  height: 38px !important;
+  padding-block: 0 !important;
+}
+
+:root[data-layout="gold"] .leftnav-item,
+:root[data-layout="gold"] .leftnav-trash {
+  min-height: 44px !important;
+  height: 44px !important;
+}
+
+:root[data-layout="gold"] .workspace-mode-toggle button {
+  min-height: 34px !important;
+  height: 34px !important;
+}
+
+:root[data-layout="gold"] .frozen-composer__heading-actions .primitive-glass-button,
+:root[data-layout="gold"] .frozen-clear,
+:root[data-layout="gold"] .frozen-field select,
+:root[data-layout="gold"] .model-dropdown-field select {
+  min-height: 32px !important;
+  height: 32px !important;
+}
+
+:root[data-layout="gold"] .translate-ask-button {
+  min-height: 36px !important;
+  height: 36px !important;
+}
+
+:root[data-layout="gold"] .quick-actions-row .primitive-glass-button,
+:root[data-layout="gold"] .quick-actions__tray > button,
+:root[data-layout="gold"] .quick-actions__more > button,
+:root[data-layout="gold"] .quick-actions__more-menu button,
+:root[data-layout="gold"] .leftnav-tools__popup > button {
+  min-height: 32px !important;
+  height: 32px !important;
+}
+
+:root[data-layout="gold"] .quick-tools-tile__button {
+  min-height: 72px !important;
+  height: 72px !important;
+}
