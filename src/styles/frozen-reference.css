@@ -1106,3 +1106,17 @@ input:focus-visible {
   overflow: visible;
   pointer-events: auto;
 }
+
+
+/* Collapsed right-rail overlays are exactly 26px including their 1px border. */
+:root[data-layout="gold"] .accordion-panel:not(.is-open) {
+  min-height: 26px !important;
+  height: 26px !important;
+  max-height: 26px !important;
+}
+:root[data-layout="gold"] .accordion-panel:not(.is-open) .accordion-panel__header {
+  min-height: 24px !important;
+  height: 24px !important;
+  max-height: 24px !important;
+  padding: 0 8px !important;
+}
