@@ -28,7 +28,10 @@ export type DestinationProviderId =
   | "xai"
   | "perplexity"
   | "deepseek"
-  | "mistral";
+  | "mistral"
+  | "microsoft"
+  | "local"
+  | "custom";
 
 export interface DestinationSelection {
   providerId: DestinationProviderId;
@@ -36,7 +39,13 @@ export interface DestinationSelection {
   modelId: string;
 }
 
-export type TranslatorEngine = "local-rules" | "legacy-claude";
+export type TranslatorEngine =
+  | "auto-free-first"
+  | "local-rules"
+  | "local-ai"
+  | "destination-one-pass"
+  | "managed-translator"
+  | "legacy-claude";
 
 /** Directness levels (CANON Feature 3): 1 supportive, 2 balanced, 3 blunt. */
 export type DirectnessLevel = 1 | 2 | 3;
@@ -222,6 +231,16 @@ export interface ConversationMessage {
       tension Step 6.5's DECISIONS already logged for deriveStateFeeds). */
   telemetryId?: string;
   statePills?: StatePills;
+  /** Prepared handoffs are not answers. Imported responses become answers only
+      after the user previews and confirms them. */
+  messageKind?: "answer" | "handoff" | "imported";
+  handoffStatus?: "prepared" | "handed-off" | "imported";
+  sourceLabel?: string;
+  preparedRequest?: string;
+  parentMessageId?: string;
+  branchId?: string;
+  branchIndex?: number;
+  branchCount?: number;
 }
 
 /* Loaded context. Provisional — upload limits, OCR, URL fetch, and
@@ -284,6 +303,8 @@ export interface SessionRecord {
   context: ContextItem[];
   variables: SavedVariables;
   conversation: ConversationMessage[];
+  /** Recovery saves include an unfinished composer draft. */
+  draftInput?: string;
 }
 
 /* Feedback rating (CANON Feature 7). Full rating UI + learning loop is
@@ -500,6 +521,8 @@ export interface SessionState {
   destination: DestinationSelection;
   translatorEngine: TranslatorEngine;
   reviewBeforeSend: boolean;
+  paidFallbackEnabled: boolean;
+  maxRequestCost: number;
   directness: DirectnessLevel;
   /** Widened from a single TechniqueId to an array at Step 4.5: CANON Feature 4
       allows manually stacking up to MAX_TECHNIQUE_STACK techniques (not just

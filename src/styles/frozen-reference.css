@@ -1120,3 +1120,37 @@ input:focus-visible {
   max-height: 24px !important;
   padding: 0 8px !important;
 }
+/* v1.1 logical canvas: one fixed 1600x1024 composition, uniformly scaled. */
+.fixed-canvas-stage {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.app-shell {
+  width: 1600px !important;
+  height: 1024px !important;
+  min-width: 1600px;
+  min-height: 1024px;
+  transform-origin: center center;
+  grid-template-columns: 200px 18px minmax(0, 1044px) 18px 300px !important;
+  padding-left: 20px !important;
+}
+.leftnav-content { height: 938px !important; }
+.frozen-connectors {
+  position: absolute !important;
+  width: 1600px !important;
+  height: 1024px !important;
+}
+@media (max-width: 1400px), (max-width: 1180px) {
+  body { min-width: 0 !important; }
+  .app-shell {
+    width: 1600px !important;
+    height: 1024px !important;
+    grid-template-columns: 200px 18px minmax(0, 1044px) 18px 300px !important;
+    padding-left: 20px !important;
+  }
+  .col-right { display: block !important; }
+  .topbar-center, .topbar-right { position: relative !important; left: -19px !important; }
+}

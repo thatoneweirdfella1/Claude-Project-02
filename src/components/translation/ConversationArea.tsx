@@ -10,6 +10,8 @@ export interface ConversationAreaProps { children?: ReactNode; }
 export function ConversationArea({ children }: ConversationAreaProps) {
   const conversation = useSessionStore((s) => s.conversation);
   const setMessageRating = useSessionStore((s) => s.setMessageRating);
+  const setDraftInput = useSessionStore((s) => s.setDraftInput);
+  const updateMessage = useSessionStore((s) => s.updateMessage);
   const setRating = useAccountStore((s) => s.setRating);
   const [downloadMessageId, setDownloadMessageId] = useState<string | null>(null);
 
@@ -36,6 +38,13 @@ export function ConversationArea({ children }: ConversationAreaProps) {
           onRate={(stars) => saveRating(message.id, stars, message.ratingComment)}
           onRatingComment={(comment) => message.ratingStars !== undefined && saveRating(message.id, message.ratingStars, comment)}
           onDownload={() => setDownloadMessageId(message.id)}
+          onRefine={(instruction) => {
+            const nextBranch = (message.branchCount ?? 1) + 1;
+            updateMessage(message.id, { branchCount: nextBranch, branchIndex: nextBranch });
+            setDraftInput(`${instruction}: ${message.content}`);
+            queueMicrotask(() => document.querySelector<HTMLTextAreaElement>(".input-box__textarea")?.focus());
+          }}
+          onBranchChange={(branchIndex) => updateMessage(message.id, { branchIndex })}
         />
       ))}
       {children}

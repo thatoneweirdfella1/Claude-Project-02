@@ -383,3 +383,60 @@
 .review-ready__actions button { min-height:40px; padding:0 14px; }
 .conversation-empty { margin:auto; padding:24px; text-align:center; color:var(--text-secondary); }
 .conversation-empty h3 { margin:0 0 6px; color:var(--text-primary); }
+.workflow-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 2200;
+  display: grid;
+  place-items: center;
+  padding: 28px;
+  background: rgb(0 0 0 / .38);
+  backdrop-filter: blur(5px);
+}
+.workflow-dialog__card {
+  width: min(680px, calc(100% - 40px));
+  max-height: 86vh;
+  overflow: auto;
+  padding: 22px;
+  border: 1px solid var(--frozen-border);
+  border-radius: 12px;
+  box-shadow: 0 24px 80px rgb(0 0 0 / .42);
+}
+.workflow-dialog__card header h2 { margin: 0 0 4px; }
+.workflow-dialog__card header p { margin: 0 0 18px; color: var(--frozen-muted); }
+.workflow-dialog__card label { display: grid; gap: 6px; margin-block: 12px; }
+.workflow-dialog__card textarea { min-height: 180px; resize: vertical; }
+.workflow-dialog__card input,
+.workflow-dialog__card textarea,
+.workflow-dialog__card select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--frozen-line);
+  border-radius: 7px;
+  background: var(--frozen-control);
+  color: var(--frozen-text);
+}
+.workflow-dialog__actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.workflow-dialog__actions button, .handoff-status button, .handoff-chooser button {
+  padding: 9px 13px; border: 1px solid var(--frozen-line); border-radius: 7px;
+  background: var(--frozen-control); color: var(--frozen-text); cursor: pointer;
+}
+.workflow-dialog__actions .primary { border-color: var(--frozen-gold); background: color-mix(in srgb, var(--frozen-gold) 24%, var(--frozen-control)); }
+.workflow-dialog__actions .danger, .finish-session__choices .danger { border-color: #b94a48; color: #b32929; }
+.state-review-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; }
+.workflow-dialog__summary { padding: 10px; border-left: 3px solid var(--frozen-cyan); background: var(--frozen-cyan-soft); }
+.handoff-chooser { display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; max-height: 210px; overflow: auto; }
+.handoff-chooser button { display: grid; text-align: left; }
+.handoff-chooser button[aria-pressed="true"] { border-color: var(--frozen-cyan); }
+.import-response-preview, .session-preview { max-height: 180px; overflow: auto; padding: 12px; border: 1px solid var(--frozen-line); border-radius: 8px; white-space: pre-wrap; }
+.handoff-status { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 12px; border: 1px solid var(--frozen-gold); border-radius: 8px; }
+.handoff-status div { display: grid; }
+.handoff-status span { color: var(--frozen-muted); font-size: 12px; }
+.destination-field__provider, .destination-field__back {
+  width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 9px; border: 0; border-bottom: 1px solid var(--frozen-line); background: transparent; color: var(--frozen-text); text-align: left;
+}
+.destination-field__provider span, .destination-field__group { display: grid; }
+.destination-field__provider small, .destination-field__group small, .destination-field__option small { color: var(--frozen-muted); }
+.destination-field__option { display: flex !important; justify-content: space-between; gap: 10px; width: 100%; }
+.advanced-controls__connection { display: grid; gap: 5px; padding: 10px; border: 1px solid var(--frozen-line); border-radius: 8px; }

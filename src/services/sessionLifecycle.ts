@@ -36,7 +36,7 @@ export interface BuildSessionRecordOptions {
 export function buildSessionRecord(
   session: Pick<
     SessionState,
-    "model" | "destination" | "translatorEngine" | "reviewBeforeSend" | "directness" | "techniques" | "context" | "variables" | "conversation"
+    "draftInput" | "model" | "destination" | "translatorEngine" | "reviewBeforeSend" | "directness" | "techniques" | "context" | "variables" | "conversation"
   >,
   options: BuildSessionRecordOptions,
 ): SessionRecord {
@@ -56,5 +56,6 @@ export function buildSessionRecord(
     context: session.context,
     variables: session.variables,
     conversation: session.conversation,
+    draftInput: session.draftInput,
   };
 }

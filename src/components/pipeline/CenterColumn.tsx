@@ -7,6 +7,7 @@ import {
   buildAdaptationNote,
   deriveStateFeeds,
   detectState,
+  detectStateLocally,
   toStatePills,
   type StateDetectionResult,
 } from "../../services/detection";
@@ -15,11 +16,13 @@ import { useAccountStore } from "../../stores/accountStore";
 import { useSessionStore } from "../../stores/sessionStore";
 import { Composer } from "../composer";
 import { ReviewReadyRequest } from "../composer/ReviewReadyRequest";
+import { StateReviewPanel } from "../composer/StateReviewPanel";
+import { ImportResponseDialog } from "../composer/ImportResponseDialog";
 import {
   buildAiReadyRequest,
   compileMeaningPacket,
   destinationLabel,
-  destinationOfficialUrl,
+  isFreeTranslator,
   NO_CREDIT_BADGE,
 } from "../../services/providerNeutral";
 import type { PillDimension } from "../detection";
@@ -76,6 +79,8 @@ export function CenterColumn() {
 
   const [run, setRun] = useState<ActivePipelineRun | null>(null);
   const [pendingReview, setPendingReview] = useState<{ request: TranslateAskRequest; text: string } | null>(null);
+  const [pendingStateReview, setPendingStateReview] = useState<{ request: TranslateAskRequest; result: StateDetectionResult } | null>(null);
+  const [importingResponse, setImportingResponse] = useState(false);
   const [detection, setDetection] = useState<StateDetectionResult | null>(null);
   // Step 11.2 (latency): true while this turn's classification call is in
   // flight. The pill panel is cleared on submit and the classification is a
@@ -87,6 +92,11 @@ export function CenterColumn() {
   const controllerRef = useRef<AbortController | null>(null);
   /** The raw text behind the current run — the base a refinement extends. */
   const lastRawRef = useRef("");
+  const conversation = useSessionStore((s) => s.conversation);
+  const updateMessage = useSessionStore((s) => s.updateMessage);
+  const pendingHandoff = [...conversation].reverse().find((message) =>
+    message.messageKind === "handoff" && message.handoffStatus === "handed-off",
+  );
 
   const startRun = useCallback(
     (request: TranslateAskRequest) => {
@@ -143,25 +153,46 @@ export function CenterColumn() {
   );
 
   function completeFreeHandoff(request: TranslateAskRequest, readyText: string) {
+    const label = destinationLabel(request.destination);
     addMessage({ id: newMessageId(), role: "user", content: request.rawInput, timestamp: Date.now() });
     addMessage({
       id: newMessageId(),
       role: "assistant",
-      content: readyText,
+      content: `AI-ready request handed off to ${label}. Paste the destination AI's answer back with Import Response.`,
       timestamp: Date.now(),
-      confidence: 100,
-      notes: [NO_CREDIT_BADGE, "AI-ready request for " + destinationLabel(request.destination)],
+      messageKind: "handoff",
+      handoffStatus: "handed-off",
+      sourceLabel: label,
+      preparedRequest: readyText,
+      notes: [NO_CREDIT_BADGE, "Handed off — not answered"],
     });
+  }
+
+  function continueFreeFlow(request: TranslateAskRequest, result: StateDetectionResult | null, commitReading: boolean) {
+    if (result && commitReading) {
+      setDetection(result);
+      useSessionStore.getState().setStatePills(toStatePills(result));
+    }
+    const packet = compileMeaningPacket({
+      ...request,
+      statePills: result && commitReading ? toStatePills(result) : useSessionStore.getState().statePills,
+    });
+    const readyText = buildAiReadyRequest(packet);
+    if (request.reviewBeforeSend) setPendingReview({ request, text: readyText });
+    else completeFreeHandoff(request, readyText);
+    setPendingStateReview(null);
   }
 
   async function handleSubmit(request: TranslateAskRequest): Promise<boolean> {
     if (!request.rawInput.trim()) return false;
 
-    if (request.translatorEngine === "local-rules") {
-      const packet = compileMeaningPacket(request);
-      const readyText = buildAiReadyRequest(packet);
-      if (request.reviewBeforeSend) setPendingReview({ request, text: readyText });
-      else completeFreeHandoff(request, readyText);
+    if (
+      isFreeTranslator(request.translatorEngine) ||
+      (request.translatorEngine === "destination-one-pass" && request.destination.providerId !== "anthropic")
+    ) {
+      const result = detectStateLocally(request.rawInput);
+      setDetection(result);
+      setPendingStateReview({ request, result });
       return true;
     }
 
@@ -289,6 +320,23 @@ export function CenterColumn() {
       ? directnessSuggestion
       : null;
 
+  function confirmImportedResponse(response: string, sourceLabel: string) {
+    if (!pendingHandoff) return;
+    updateMessage(pendingHandoff.id, { handoffStatus: "imported" });
+    addMessage({
+      id: newMessageId(),
+      role: "assistant",
+      content: response,
+      timestamp: Date.now(),
+      messageKind: "imported",
+      handoffStatus: "imported",
+      sourceLabel,
+      parentMessageId: pendingHandoff.id,
+      notes: [`Imported from ${sourceLabel}`, "Reviewed and confirmed by you"],
+    });
+    setImportingResponse(false);
+  }
+
   return (
     <>
       <ConversationArea>
@@ -304,16 +352,49 @@ export function CenterColumn() {
         onApplyDirectness={() => setDirectness(suggestedDirectness!)}
       />
       <QuickActionsRow />
+      {pendingHandoff && !importingResponse && (
+        <div className="handoff-status surface-smoked-glass" role="status">
+          <div><strong>Handed off — awaiting response</strong><span>{pendingHandoff.sourceLabel}</span></div>
+          <button type="button" onClick={() => setImportingResponse(true)}>Import Response</button>
+        </div>
+      )}
+      {pendingStateReview && (
+        <StateReviewPanel
+          initial={pendingStateReview.result}
+          onCancel={() => setPendingStateReview(null)}
+          onAccept={(result) => {
+            (["emotion", "rsd", "interest", "cognitive"] as PillDimension[]).forEach((dimension) => {
+              const from = pendingStateReview.result[dimension]?.value;
+              const to = result[dimension]?.value;
+              if (from && to && from !== to) {
+                useAccountStore.getState().recordStateCorrection({ dimension, from, to, timestamp: Date.now() });
+              }
+            });
+            continueFreeFlow(pendingStateReview.request, result, true);
+          }}
+          onKeepCurrent={() => continueFreeFlow(pendingStateReview.request, pendingStateReview.result, false)}
+          onDismiss={() => {
+            setDetection(null);
+            continueFreeFlow(pendingStateReview.request, null, false);
+          }}
+        />
+      )}
       {pendingReview && (
         <ReviewReadyRequest
           initialText={pendingReview.text}
-          destination={destinationLabel(pendingReview.request.destination)}
-          officialUrl={destinationOfficialUrl(pendingReview.request.destination)}
+          destination={pendingReview.request.destination}
           onCancel={() => setPendingReview(null)}
-          onConfirm={(text) => {
-            completeFreeHandoff(pendingReview.request, text);
+          onHandoff={(text, destination) => {
+            completeFreeHandoff({ ...pendingReview.request, destination }, text);
             setPendingReview(null);
           }}
+        />
+      )}
+      {importingResponse && pendingHandoff && (
+        <ImportResponseDialog
+          sourceLabel={pendingHandoff.sourceLabel ?? "Destination AI"}
+          onCancel={() => setImportingResponse(false)}
+          onConfirm={confirmImportedResponse}
         />
       )}
     </>

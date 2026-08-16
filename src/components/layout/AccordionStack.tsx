@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { Activity, BarChart3, CalendarDays, ChevronDown, ChevronRight, ClipboardList, Cpu, ShieldCheck } from "lucide-react";
 import { ContextSnapshotContent } from "../context";
-import { destinationLabel } from "../../services/providerNeutral";
+import { destinationLabel, TRANSLATOR_ENGINES } from "../../services/providerNeutral";
 import { useAccountStore } from "../../stores/accountStore";
 import { useSessionStore } from "../../stores/sessionStore";
 
@@ -37,8 +37,8 @@ function AiStatusContent() {
   const engine = useSessionStore((s) => s.translatorEngine);
   return <div className="accordion-stats">
     <div><span>Destination</span><strong>{destinationLabel(destination)}</strong></div>
-    <div><span>Translator</span><strong>{engine === "local-rules" ? "Local Rules" : "Connected Claude"}</strong></div>
-    <div><span>Cost route</span><strong>{engine === "local-rules" ? "No Divergence credits" : "Confirmation required"}</strong></div>
+    <div><span>Translator</span><strong>{TRANSLATOR_ENGINES.find((option) => option.id === engine)?.label ?? "Managed translator"}</strong></div>
+    <div><span>Cost route</span><strong>{engine === "local-rules" || engine === "auto-free-first" || engine === "local-ai" ? "No Divergence credits" : "Confirmation required"}</strong></div>
   </div>;
 }
 

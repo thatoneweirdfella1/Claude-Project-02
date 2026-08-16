@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { QuickToolsGrid } from "../quicktools";
 import { AccordionStack } from "./AccordionStack";
 import { LeftNav } from "./LeftNav";
@@ -16,7 +16,7 @@ import { VisibilityMenu } from "../visibility/VisibilityMenu";
 import { AppErrorBoundary } from "./AppErrorBoundary";
 
 function FrozenReferenceConnectors() {
-  return <svg className="frozen-connectors" viewBox="0 0 1543 1019" preserveAspectRatio="none" aria-hidden="true" data-testid="frozen-connectors">
+  return <svg className="frozen-connectors" viewBox="0 0 1600 1024" preserveAspectRatio="none" aria-hidden="true" data-testid="frozen-connectors">
     <g fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round">
       <path d="M1092 261 H1150 V188 H1212" /><path d="M1092 454 H1163 V374 H1212" />
       <path d="M1092 454 H1163 V589 H1212" /><path d="M1092 923 H1163 V589" /><path d="M1163 589 V809 H1212" />
@@ -32,10 +32,20 @@ export function AppShell() {
   const destination = useSessionStore((s) => s.destination);
   const quickTools = useAccountStore((s) => s.visibility.quickTools);
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const [canvasScale, setCanvasScale] = useState(() =>
+    typeof window === "undefined" ? 1 : Math.min(window.innerWidth / 1600, window.innerHeight / 1024),
+  );
   useThemeEffect(); useDesignLayoutEffect(); useKeyboardShortcuts(() => setShowShortcuts(true));
+  useEffect(() => {
+    const resize = () => setCanvasScale(Math.min(window.innerWidth / 1600, window.innerHeight / 1024));
+    window.addEventListener("resize", resize);
+    resize();
+    return () => window.removeEventListener("resize", resize);
+  }, []);
 
   return <>
-    <div className="app-shell app-layer" data-layout-authority="frozen-reference-2026-08-10">
+    <div className="fixed-canvas-stage">
+    <div className="app-shell app-layer" style={{ transform: `scale(${canvasScale})` }} data-layout-authority="frozen-reference-1600x1024">
       <header className="topbar" aria-label="Top bar" data-testid="topbar"><TopBar /></header>
       <nav className="col-left" aria-label="Primary navigation" data-testid="col-left"><LeftNav /></nav>
       <main className="col-center" data-testid="col-center"><div className="frozen-center-stack"><AppErrorBoundary resetKey={currentScreen}><ScreenRouter /></AppErrorBoundary></div></main>
@@ -46,6 +56,7 @@ export function AppShell() {
         <AccordionStack />
       </aside>
       <FrozenReferenceConnectors />
+    </div>
     </div>
     <KeyboardShortcutsModal open={showShortcuts} onClose={() => setShowShortcuts(false)} />
     <CostConfirm />

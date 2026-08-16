@@ -53,7 +53,7 @@ export function buildTranslateAskRequest(
     directness: settings.directness,
     techniques: settings.techniques,
     destination: settings.destination ?? { providerId: "universal", modelId: "universal" },
-    translatorEngine: settings.translatorEngine ?? "local-rules",
+    translatorEngine: settings.translatorEngine ?? "auto-free-first",
     reviewBeforeSend: settings.reviewBeforeSend ?? true,
     context,
   };
