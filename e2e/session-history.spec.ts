@@ -7,15 +7,12 @@ test("Session History: save, load, delete, restore", async ({ page }) => {
   await page.goto("/");
   await page.waitForLoadState("networkidle");
 
-  // Go to Translate screen and create a session by duplicating
+  // Go to the approved Talk to AI screen and duplicate from Quick Actions.
   const leftNav = page.locator(".leftnav-items");
-  const translateButton = leftNav.locator("text=Translate");
-  await translateButton.click();
-  await page.waitForLoadState("networkidle");
-
-  // Click "Duplicate Session" to create a test session
-  const duplicateButton = page.locator("button:has-text('Duplicate Session')");
-  await duplicateButton.click();
+  await page.getByRole("button", { name: "Talk to AI", exact: true }).click();
+  await page.getByRole("button", { name: /Quick Actions/ }).click();
+  await page.getByRole("button", { name: "More", exact: true }).click();
+  await page.getByRole("button", { name: "Duplicate", exact: true }).click();
   await page.waitForTimeout(500);
 
   // Navigate to Sessions screen
@@ -41,7 +38,7 @@ test("Session History: save, load, delete, restore", async ({ page }) => {
   await loadButton.click();
   await page.waitForLoadState("networkidle");
 
-  // Verify we're back on Translate screen
+  // Verify we're back on Talk to AI
   const centerColumn = page.getByTestId("col-center");
   await expect(centerColumn).toBeVisible();
 

@@ -1069,3 +1069,10 @@ input:focus-visible {
   :root { --frozen-left-track:180px; --frozen-left-gap:10px; --frozen-right-gap:10px; --frozen-right-track:270px; }
   .app-shell { padding-left:10px; }
 }
+
+
+/* The approved 60px header leaves the workspace rails the full remaining viewport. */
+:root[data-layout="gold"] .col-center,
+:root[data-layout="gold"] .col-right {
+  height: calc(100vh - var(--topbar-height));
+}

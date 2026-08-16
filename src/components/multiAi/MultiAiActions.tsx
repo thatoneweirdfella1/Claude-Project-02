@@ -58,6 +58,7 @@ type Phase = "idle" | "debating" | "consensus" | "synthesis";
 export function MultiAiActions() {
   const conversation = useSessionStore((s) => s.conversation);
   const logAutoSelectUsage = useAccountStore((s) => s.logAutoSelectUsage);
+  const paidAiEnabled = useAccountStore((s) => s.plan !== "free" || s.appMode === "developer");
   // Use conversation length as a session identifier for auto-select logging
   const sessionId = `session-${conversation.length}`;
 
@@ -255,6 +256,12 @@ export function MultiAiActions() {
                 featureType="discussion_type"
               />
 
+              {!paidAiEnabled && (
+                <p className="multi-ai-actions__note" role="status">
+                  Paid multi-AI routes are unavailable on the free-first route. Connect and authorize a paid provider in Settings.
+                </p>
+              )}
+
               <div className="multi-ai-actions__selection">
                 <AutoSelectButton
                   question={lastQuestion}
@@ -262,13 +269,13 @@ export function MultiAiActions() {
                     setPartnerIds(ids);
                     setUseAutoSelect(false);
                   }}
-                  disabled={busy || !useAutoSelectFeature}
+                  disabled={busy || !useAutoSelectFeature || !paidAiEnabled}
                 />
                 <button
                   type="button"
                   className="multi-ai-actions__toggle-manual"
                   onClick={() => setUseAutoSelect(!useAutoSelect)}
-                  disabled={busy || !useAutoSelectFeature}
+                  disabled={busy || !useAutoSelectFeature || !paidAiEnabled}
                 >
                   {useAutoSelect && useAutoSelectFeature ? "Manual selection" : "Auto-select"}
                 </button>
@@ -279,10 +286,10 @@ export function MultiAiActions() {
               )}
 
               <div className="multi-ai-actions__row">
-                <GlassButton onClick={() => void startDebate()} disabled={busy || selectedPartnerIds.length === 0}>
+                <GlassButton onClick={() => void startDebate()} disabled={busy || selectedPartnerIds.length === 0 || !paidAiEnabled}>
                   {phase === "debating" ? "Debating…" : outcome ? "Run debate again" : "Start debate"}
                 </GlassButton>
-                <GlassButton onClick={() => void doConsensus()} disabled={busy || !transcript}>
+                <GlassButton onClick={() => void doConsensus()} disabled={busy || !transcript || !paidAiEnabled}>
                   {phase === "consensus" ? "Finding consensus…" : "Consensus"}
                 </GlassButton>
                 <GlassButton onClick={() => void doSynthesis()} disabled={busy || !transcript}>
