@@ -19,6 +19,7 @@ import {
   buildAiReadyRequest,
   compileMeaningPacket,
   destinationLabel,
+  destinationOfficialUrl,
   NO_CREDIT_BADGE,
 } from "../../services/providerNeutral";
 import type { PillDimension } from "../detection";
@@ -307,6 +308,7 @@ export function CenterColumn() {
         <ReviewReadyRequest
           initialText={pendingReview.text}
           destination={destinationLabel(pendingReview.request.destination)}
+          officialUrl={destinationOfficialUrl(pendingReview.request.destination)}
           onCancel={() => setPendingReview(null)}
           onConfirm={(text) => {
             completeFreeHandoff(pendingReview.request, text);
