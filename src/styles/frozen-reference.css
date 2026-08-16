@@ -1246,3 +1246,56 @@ input:focus-visible {
   min-height: 72px !important;
   height: 72px !important;
 }
+
+
+/* v1.3 visible, opaque interactive overlays.
+   Only floating menus are made solid; normal panels and the marble remain unchanged. */
+:root[data-layout="gold"] {
+  --frozen-overlay-solid: #e7e5e1;
+}
+
+:root[data-layout="gold"][data-theme="dark"] {
+  --frozen-overlay-solid: #080a0c;
+}
+
+:root[data-layout="gold"] .destination-field__popover,
+:root[data-layout="gold"] .quick-actions-row__popover,
+:root[data-layout="gold"] .leftnav-tools__popup,
+:root[data-layout="gold"] .topbar-popover,
+:root[data-layout="gold"] .advanced-controls__overlay,
+:root[data-layout="gold"] .quick-actions__tray,
+:root[data-layout="gold"] .quick-actions__more-menu,
+:root[data-layout="gold"] .attach-context-controls__popover {
+  background-color: var(--frozen-overlay-solid) !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+:root[data-layout="gold"] .topbar .quick-actions-row__more {
+  position: relative;
+  z-index: 2000;
+}
+
+:root[data-layout="gold"] .topbar .quick-actions-row__popover {
+  top: calc(100% + 8px) !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: 0 !important;
+  z-index: 2000 !important;
+  margin: 0 !important;
+}
+
+:root[data-layout="gold"] .col-left,
+:root[data-layout="gold"] .leftnav-content,
+:root[data-layout="gold"] .leftnav-items,
+:root[data-layout="gold"] .leftnav-tools {
+  overflow: visible !important;
+}
+
+:root[data-layout="gold"] .leftnav-tools__popup {
+  top: 0 !important;
+  bottom: auto !important;
+  left: calc(100% + 12px) !important;
+  z-index: 2000 !important;
+}
