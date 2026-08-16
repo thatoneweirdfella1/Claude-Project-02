@@ -17,6 +17,27 @@ export type ModelId = "claude-haiku-4-5" | "claude-sonnet-5" | "claude-opus-4-8"
     the routing engine (ROUTING.md); a ModelId is a manual override. */
 export type ModelSelection = ModelId | "auto";
 
+/** Provider-neutral destination selected by the user. The legacy Claude model
+    remains separate so historical sessions can migrate without pretending it
+    was always a destination choice. */
+export type DestinationProviderId =
+  | "universal"
+  | "anthropic"
+  | "openai"
+  | "google"
+  | "xai"
+  | "perplexity"
+  | "deepseek"
+  | "mistral";
+
+export interface DestinationSelection {
+  providerId: DestinationProviderId;
+  /** Registry model id, or "universal" for provider-neutral manual handoff. */
+  modelId: string;
+}
+
+export type TranslatorEngine = "local-rules" | "legacy-claude";
+
 /** Directness levels (CANON Feature 3): 1 supportive, 2 balanced, 3 blunt. */
 export type DirectnessLevel = 1 | 2 | 3;
 
@@ -252,6 +273,12 @@ export interface SessionRecord {
   /** True when user has starred/favorited this session for quick access. */
   starred?: boolean;
   model: ModelSelection;
+  /** Provider/model that receives the AI-ready request. */
+  destination?: DestinationSelection;
+  /** Engine that prepares the request; local-rules is the free-first default. */
+  translatorEngine?: TranslatorEngine;
+  /** Whether the user reviews the AI-ready request before handoff. */
+  reviewBeforeSend?: boolean;
   directness: DirectnessLevel;
   techniques: TechniqueId[];
   context: ContextItem[];
@@ -470,6 +497,9 @@ export interface SessionState {
       thought. Cleared to "" only on TRANSLATE & ASK submit or session close. */
   draftInput: string;
   model: ModelSelection;
+  destination: DestinationSelection;
+  translatorEngine: TranslatorEngine;
+  reviewBeforeSend: boolean;
   directness: DirectnessLevel;
   /** Widened from a single TechniqueId to an array at Step 4.5: CANON Feature 4
       allows manually stacking up to MAX_TECHNIQUE_STACK techniques (not just

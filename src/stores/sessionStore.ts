@@ -2,6 +2,7 @@ import { create } from "zustand";
 import type {
   ContextItem,
   ConversationMessage,
+  DestinationSelection,
   DirectnessLevel,
   MethodologyPhase,
   MethodologyType,
@@ -11,6 +12,7 @@ import type {
   SessionState,
   StatePills,
   TechniqueId,
+  TranslatorEngine,
 } from "./types";
 
 /* Session store (CANON "STORES AND PERSISTENCE") — cleared when a session
@@ -27,7 +29,10 @@ import type {
 export function createInitialSessionState(): SessionState {
   return {
     draftInput: "", // Step 5.0: the composer's not-yet-submitted text
-    model: "auto", // CANON: free tier auto-routes; "auto" exercises the router by default
+    model: "auto", // retained for the explicit legacy Claude translator
+    destination: { providerId: "universal", modelId: "universal" },
+    translatorEngine: "local-rules",
+    reviewBeforeSend: true,
     directness: 2, // CANON Feature 3: Level 2 balanced is the default
     techniques: ["auto-detect"], // CANON Feature 4: Auto-detect is the default mode (Step 4.5)
     context: [],
@@ -46,6 +51,9 @@ export function createInitialSessionState(): SessionState {
 export const SESSION_PERSISTED_KEYS: (keyof SessionState)[] = [
   "draftInput",
   "model",
+  "destination",
+  "translatorEngine",
+  "reviewBeforeSend",
   "directness",
   "techniques",
   "context",
@@ -61,6 +69,9 @@ export const SESSION_PERSISTED_KEYS: (keyof SessionState)[] = [
 interface SessionActions {
   setDraftInput: (draftInput: string) => void;
   setModel: (model: ModelSelection) => void;
+  setDestination: (destination: DestinationSelection) => void;
+  setTranslatorEngine: (translatorEngine: TranslatorEngine) => void;
+  setReviewBeforeSend: (reviewBeforeSend: boolean) => void;
   setDirectness: (directness: DirectnessLevel) => void;
   /** Replaces the whole selection (Step 4.5): ["auto-detect"] for auto mode,
       or the user's exact manual stack (validated by the caller — see
@@ -136,6 +147,9 @@ export const useSessionStore = create<SessionStore>((set) => ({
 
   setDraftInput: (draftInput) => set({ draftInput }),
   setModel: (model) => set({ model }),
+  setDestination: (destination) => set({ destination }),
+  setTranslatorEngine: (translatorEngine) => set({ translatorEngine }),
+  setReviewBeforeSend: (reviewBeforeSend) => set({ reviewBeforeSend }),
   setDirectness: (directness) => set({ directness }),
   setTechniques: (techniques) => set({ techniques }),
   addContextItem: (item) => set((s) => ({ context: [...s.context, item] })),
@@ -171,6 +185,9 @@ export const useSessionStore = create<SessionStore>((set) => ({
   loadSessionRecord: (record) =>
     set({
       model: record.model,
+      destination: record.destination ?? { providerId: "anthropic", modelId: record.model === "auto" ? "auto" : record.model },
+      translatorEngine: record.translatorEngine ?? "legacy-claude",
+      reviewBeforeSend: record.reviewBeforeSend ?? true,
       directness: record.directness,
       techniques: record.techniques,
       context: record.context,
@@ -187,6 +204,13 @@ export const useSessionStore = create<SessionStore>((set) => ({
     ...(state.context !== undefined ? { context: Array.isArray(state.context) ? state.context : current.context } : {}),
     ...(state.conversation !== undefined ? { conversation: Array.isArray(state.conversation) ? state.conversation : current.conversation } : {}),
     ...(state.techniques !== undefined ? { techniques: Array.isArray(state.techniques) ? state.techniques : current.techniques } : {}),
+    ...(state.destination !== undefined && state.destination && typeof state.destination === "object"
+      ? { destination: state.destination }
+      : {}),
+    ...(state.translatorEngine !== undefined
+      ? { translatorEngine: state.translatorEngine === "legacy-claude" ? "legacy-claude" : "local-rules" }
+      : {}),
+    ...(state.reviewBeforeSend !== undefined ? { reviewBeforeSend: Boolean(state.reviewBeforeSend) } : {}),
     ...(state.currentScreen !== undefined
       ? { currentScreen: VALID_SCREENS.has(state.currentScreen) ? state.currentScreen : "translate" }
       : {}),

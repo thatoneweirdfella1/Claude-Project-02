@@ -8,15 +8,20 @@
 
 import type {
   ContextItem,
+  DestinationSelection,
   DirectnessLevel,
   ModelSelection,
   TechniqueId,
+  TranslatorEngine,
 } from "../stores/types";
 
 export interface TranslateAskSettings {
   model: ModelSelection;
   directness: DirectnessLevel;
   techniques: TechniqueId[];
+  destination: DestinationSelection;
+  translatorEngine: TranslatorEngine;
+  reviewBeforeSend: boolean;
 }
 
 /** The exact shape Step 5.2's orchestrator subscribes to. Plain, JSON-
@@ -27,6 +32,9 @@ export interface TranslateAskRequest {
   model: ModelSelection;
   directness: DirectnessLevel;
   techniques: TechniqueId[];
+  destination: DestinationSelection;
+  translatorEngine: TranslatorEngine;
+  reviewBeforeSend: boolean;
   context: ContextItem[];
 }
 
@@ -44,6 +52,9 @@ export function buildTranslateAskRequest(
     model: settings.model,
     directness: settings.directness,
     techniques: settings.techniques,
+    destination: settings.destination,
+    translatorEngine: settings.translatorEngine,
+    reviewBeforeSend: settings.reviewBeforeSend,
     context,
   };
 }

@@ -14,6 +14,13 @@ import { mergeVariables, substituteVariables } from "../../services/context";
 import { useAccountStore } from "../../stores/accountStore";
 import { useSessionStore } from "../../stores/sessionStore";
 import { Composer } from "../composer";
+import { ReviewReadyRequest } from "../composer/ReviewReadyRequest";
+import {
+  buildAiReadyRequest,
+  compileMeaningPacket,
+  destinationLabel,
+  NO_CREDIT_BADGE,
+} from "../../services/providerNeutral";
 import type { PillDimension } from "../detection";
 import { QuickActionsRow } from "../session";
 import { ConversationArea, TranslationCard } from "../translation";
@@ -67,6 +74,7 @@ export function CenterColumn() {
   const setDirectness = useSessionStore((s) => s.setDirectness);
 
   const [run, setRun] = useState<ActivePipelineRun | null>(null);
+  const [pendingReview, setPendingReview] = useState<{ request: TranslateAskRequest; text: string } | null>(null);
   const [detection, setDetection] = useState<StateDetectionResult | null>(null);
   // Step 11.2 (latency): true while this turn's classification call is in
   // flight. The pill panel is cleared on submit and the classification is a
@@ -133,24 +141,34 @@ export function CenterColumn() {
     [plan],
   );
 
+  function completeFreeHandoff(request: TranslateAskRequest, readyText: string) {
+    addMessage({ id: newMessageId(), role: "user", content: request.rawInput, timestamp: Date.now() });
+    addMessage({
+      id: newMessageId(),
+      role: "assistant",
+      content: readyText,
+      timestamp: Date.now(),
+      confidence: 100,
+      notes: [NO_CREDIT_BADGE, "AI-ready request for " + destinationLabel(request.destination)],
+    });
+  }
+
   async function handleSubmit(request: TranslateAskRequest): Promise<boolean> {
+    if (!request.rawInput.trim()) return false;
+
+    if (request.translatorEngine === "local-rules") {
+      const packet = compileMeaningPacket(request);
+      const readyText = buildAiReadyRequest(packet);
+      if (request.reviewBeforeSend) setPendingReview({ request, text: readyText });
+      else completeFreeHandoff(request, readyText);
+      return true;
+    }
+
     const selectedModel = request.model === "auto" ? "claude-haiku-4-5" : request.model;
     const estimate = getEstimatedCostForPipeline(request.rawInput, selectedModel);
-    const authorization = await authorizeEstimatedCost(
-      estimate,
-      "Translate, personalize, and answer",
-    );
+    const authorization = await authorizeEstimatedCost(estimate, "Connected Claude translator");
     if (!authorization.authorized) return false;
-    // An empty submit still runs (translate() owns empty-handling, Step 5.0
-    // decision) but adds no empty bubble to the conversation.
-    if (request.rawInput.trim().length > 0) {
-      addMessage({
-        id: newMessageId(),
-        role: "user",
-        content: request.rawInput,
-        timestamp: Date.now(),
-      });
-    }
+    addMessage({ id: newMessageId(), role: "user", content: request.rawInput, timestamp: Date.now() });
     startRun(request);
     return true;
   }
@@ -187,7 +205,14 @@ export function CenterColumn() {
     startRun(
       buildTranslateAskRequest(
         combinedInput,
-        { model: s.model, directness: s.directness, techniques: s.techniques },
+        {
+          model: s.model,
+          destination: s.destination,
+          translatorEngine: s.translatorEngine,
+          reviewBeforeSend: s.reviewBeforeSend,
+          directness: s.directness,
+          techniques: s.techniques,
+        },
         s.context,
       ),
     );
@@ -265,6 +290,10 @@ export function CenterColumn() {
 
   return (
     <>
+      <ConversationArea>
+        {gated && <TranslationCard gated={gated} onRefine={(value) => void handleRefine(value)} />}
+        {display && <StreamingAnswer state={display} />}
+      </ConversationArea>
       <Composer
         onSubmit={handleSubmit}
         detection={detection}
@@ -274,12 +303,17 @@ export function CenterColumn() {
         onApplyDirectness={() => setDirectness(suggestedDirectness!)}
       />
       <QuickActionsRow />
-      <ConversationArea>
-        {gated && (
-          <TranslationCard gated={gated} onRefine={(value) => void handleRefine(value)} />
-        )}
-        {display && <StreamingAnswer state={display} />}
-      </ConversationArea>
+      {pendingReview && (
+        <ReviewReadyRequest
+          initialText={pendingReview.text}
+          destination={destinationLabel(pendingReview.request.destination)}
+          onCancel={() => setPendingReview(null)}
+          onConfirm={(text) => {
+            completeFreeHandoff(pendingReview.request, text);
+            setPendingReview(null);
+          }}
+        />
+      )}
     </>
   );
 }
