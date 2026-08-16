@@ -48,7 +48,7 @@ export const DEFAULT_VISIBILITY: VisibilitySettings = {
   recentActivity: true,
   tokenUsage: true,
   modelStatus: true,
-  quickTools: true,
+  quickTools: false,
   activeSession: false,
 };
 

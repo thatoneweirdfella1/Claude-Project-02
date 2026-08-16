@@ -5,7 +5,7 @@ import { useAccountStore } from "../../stores/accountStore";
 import { CenterColumn } from "../pipeline";
 import { SubscriptionUI } from "../credits";
 import { PersonalOptimization } from "../optimization";
-import { DesktopProviderSettings } from "../settings/DesktopProviderSettings";
+import { ProviderNeutralSettings } from "../settings/ProviderNeutralSettings";
 import { AppearanceSettings } from "../settings/AppearanceSettings";
 
 function HomeScreen() {
@@ -1724,7 +1724,7 @@ function SettingsScreen() {
 
         <PersonalOptimization />
 
-        <DesktopProviderSettings />
+        <ProviderNeutralSettings />
 
         <AppearanceSettings />
 
