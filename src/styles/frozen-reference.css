@@ -1080,12 +1080,21 @@ input:focus-visible {
 
 /* Compact utility overlays must escape legacy clipped center-child geometry. */
 :root[data-layout="gold"] .frozen-center-stack > .quick-actions {
-  z-index: 60;
-  min-height: 26px;
-  height: 26px;
-  max-height: 26px;
+  z-index: 5;
+  flex: 0 0 26px !important;
+  min-height: 26px !important;
+  height: 26px !important;
+  max-height: 26px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
   clip-path: none !important;
   overflow: visible !important;
+}
+:root[data-layout="gold"] .frozen-center-stack > .quick-actions.is-open {
+  z-index: 60;
 }
 :root[data-layout="gold"] .quick-actions__bar {
   min-height: 26px !important;
