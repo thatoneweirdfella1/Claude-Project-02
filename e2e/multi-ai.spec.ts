@@ -23,11 +23,7 @@ test("multi-AI: paid routes stay visibly disabled on the free-first route", asyn
   await expect(body).toBeVisible();
   await expect(body.getByRole("status")).toContainText("Paid multi-AI routes are unavailable");
 
-  await body.getByRole("button", { name: "Manual selection" }).click();
-  const partnerPicker = page.locator('[data-testid="partner-picker"]');
-  await expect(partnerPicker).toBeVisible();
-  await partnerPicker.getByRole("checkbox", { name: /GPT-5\.5/ }).check();
-
+  await expect(body.getByRole("button", { name: "Manual selection" })).toBeDisabled();
   await expect(body.getByRole("button", { name: "Start debate" })).toBeDisabled();
   await expect(body.getByRole("button", { name: "Consensus" })).toBeDisabled();
   await expect(body.getByRole("button", { name: "Synthesis" })).toBeDisabled();

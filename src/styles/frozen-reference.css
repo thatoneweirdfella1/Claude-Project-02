@@ -1076,3 +1076,24 @@ input:focus-visible {
 :root[data-layout="gold"] .col-right {
   height: calc(100vh - var(--topbar-height));
 }
+
+
+/* Compact utility overlays must escape legacy clipped center-child geometry. */
+:root[data-layout="gold"] .frozen-center-stack > .quick-actions {
+  z-index: 60;
+  min-height: 26px;
+  height: 26px;
+  max-height: 26px;
+  clip-path: none !important;
+  overflow: visible !important;
+}
+:root[data-layout="gold"] .quick-actions__bar {
+  min-height: 26px !important;
+  height: 26px !important;
+  max-height: 26px !important;
+}
+:root[data-layout="gold"] .quick-actions__tray {
+  z-index: 61;
+  overflow: visible;
+  pointer-events: auto;
+}
