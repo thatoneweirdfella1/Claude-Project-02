@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { installModelMocks } from "./mocks";
-import { clickWithCostConfirmation, enableDeveloperMode } from "./credit-helpers";
+import { clickWithCostConfirmation } from "./credit-helpers";
 
 /* e2e/multi-ai.spec.ts (Step 12.2) — Feature 9 (Debate/Consensus/Synthesis,
    Step 8.3/8.4), the app's core differentiator per this step's explicit
@@ -24,12 +24,10 @@ const ANSWER_TEXT =
   "Water boils at 100 degrees Celsius, which is 212 degrees Fahrenheit, at sea level under standard atmospheric pressure.";
 
 async function askAndAnswer(page: import("@playwright/test").Page): Promise<void> {
-  await enableDeveloperMode(page);
   await page.getByLabel("What's on your mind?").fill(QUESTION);
-  await clickWithCostConfirmation(
-    page,
-    page.locator(".translate-ask-button"),
-  );
+  await page.locator(".translate-ask-button").click();
+  const review = page.getByRole("dialog", { name: "Review AI-ready request" });
+  await review.getByRole("button", { name: /Copy-ready · Continue/ }).click();
   await expect(page.locator(".message-bubble--assistant").first()).toBeVisible({ timeout: 10_000 });
 }
 

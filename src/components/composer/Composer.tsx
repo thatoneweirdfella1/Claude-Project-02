@@ -5,6 +5,8 @@ import { useSessionStore } from "../../stores/sessionStore";
 import type { StateDetectionResult } from "../../services/detection";
 import type { DirectnessLevel } from "../../stores/types";
 import { StateDetectionPanel, type PillDimension } from "../detection";
+import { MultiAiActions } from "../multiAi";
+import { TransparencyCard } from "../transparency";
 import { AttachContextControls } from "./AttachContextControls";
 import { AdvancedControls } from "./AdvancedControls";
 import { DestinationAiDropdown } from "./DestinationAiDropdown";
@@ -37,6 +39,7 @@ export function Composer({
   const context = useSessionStore((s) => s.context);
   const sessionVariables = useSessionStore((s) => s.variables);
   const accountVariables = useAccountStore((s) => s.variables);
+  const hasConversation = useSessionStore((s) => s.conversation.length > 0);
 
   async function handleTranslate() {
     if (!draftInput.trim()) return;
@@ -61,6 +64,7 @@ export function Composer({
         <TranslateAskButton onClick={() => void handleTranslate()} disabled={!draftInput.trim()} />
       </div>
       <AdvancedControls />
+      {hasConversation && <div className="composer__footer-row frozen-post-submit-tools"><TransparencyCard /><MultiAiActions /></div>}
     </section>
   );
 }
