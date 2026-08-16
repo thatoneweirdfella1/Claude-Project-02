@@ -9,6 +9,8 @@ function session(overrides: Partial<SessionState> = {}): SessionState {
     destination: { providerId: "universal", modelId: "universal" },
     translatorEngine: "local-rules",
     reviewBeforeSend: true,
+    paidFallbackEnabled: false,
+    maxRequestCost: 0,
     directness: 2,
     techniques: ["auto-detect"],
     context: [],
