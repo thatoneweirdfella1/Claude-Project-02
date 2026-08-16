@@ -115,17 +115,15 @@ describe("createInitialAccountState", () => {
 
 describe("DEFAULT_VISIBILITY", () => {
   it("matches CANON Feature 12's seven documented defaults", () => {
-    // quickTools: true as of an operator-directed override (this session) —
-    // CANON's own rule #1 ("V3 screenshot wins on disagreement") already
-    // outranked rule #9's "hidden (OFF)"; V3 shows the grid always visible.
-    // See BUILD-LOG.md DECISIONS.
+    // Frozen provider-neutral amendment: Quick Tools are hidden by default
+    // and remain user-configurable from Visibility.
     expect(DEFAULT_VISIBILITY).toEqual({
       recentSessions: true,
       contextSnapshot: true,
       recentActivity: true,
       tokenUsage: true,
       modelStatus: true,
-      quickTools: true,
+      quickTools: false,
       activeSession: false,
     });
   });
