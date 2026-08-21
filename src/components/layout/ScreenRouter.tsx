@@ -833,44 +833,7 @@ function ProjectsScreen() {
 }
 
 function IntegrationsScreen() {
-  const integrations = [
-    {
-      name: "Email",
-      icon: "📧",
-      description: "Send translated thoughts directly to your inbox or email them to others",
-      status: "planned",
-    },
-    {
-      name: "Slack",
-      icon: "💬",
-      description: "Post translated messages to Slack channels and save them to your workspace",
-      status: "planned",
-    },
-    {
-      name: "Google Docs",
-      icon: "📄",
-      description: "Export translated conversations to Google Docs for further editing and sharing",
-      status: "planned",
-    },
-    {
-      name: "Notion",
-      icon: "📝",
-      description: "Save sessions and templates to your Notion workspace for centralized knowledge management",
-      status: "planned",
-    },
-    {
-      name: "GitHub",
-      icon: "🐙",
-      description: "Create GitHub issues with translated problem descriptions and technical details",
-      status: "planned",
-    },
-    {
-      name: "Discord",
-      icon: "🎮",
-      description: "Share translated messages with your Discord communities and servers",
-      status: "planned",
-    },
-  ];
+  const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
 
   return (
     <div className="screen screen-integrations">
@@ -878,27 +841,10 @@ function IntegrationsScreen() {
         <h1>Integrations</h1>
       </div>
       <div className="screen__content">
-        <div className="integrations-intro">
-          <p>
-            Divergence.AI integrations let you send your translated thoughts to the tools you already use. Connect your favorite apps to streamline your workflow.
-          </p>
-          <p style={{ color: "var(--text-secondary)", fontSize: "13px" }}>
-            Integrations are planned for a future release. All features listed below are coming soon.
-          </p>
-        </div>
+        <div className="integrations-intro"><p>Choose where requests go and how Divergence prepares them. Provider connections stay optional; the local handoff route works without one.</p></div>
         <div className="integrations-grid">
-          {integrations.map((integration) => (
-            <div key={integration.name} className="integration-card">
-              <div className="integration-card__icon">{integration.icon}</div>
-              <h3 className="integration-card__title">{integration.name}</h3>
-              <p className="integration-card__description">{integration.description}</p>
-              <div className="integration-card__status">
-                <span className="integration-card__badge integration-card__badge--planned">
-                  Coming Soon
-                </span>
-              </div>
-            </div>
-          ))}
+          <div className="integration-card"><div className="integration-card__icon">↗</div><h3 className="integration-card__title">Destination AI</h3><p className="integration-card__description">Prepare a provider-neutral request and hand it off to the AI you choose.</p><button type="button" className="settings-btn" onClick={() => setCurrentScreen("translate")}>Open composer</button></div>
+          <div className="integration-card"><div className="integration-card__icon">⚙</div><h3 className="integration-card__title">Provider settings</h3><p className="integration-card__description">Configure optional paid routes, limits, and review safeguards.</p><button type="button" className="settings-btn" onClick={() => setCurrentScreen("settings")}>Open settings</button></div>
         </div>
       </div>
     </div>
@@ -1767,14 +1713,26 @@ function SettingsScreen() {
 }
 
 function CustomizeScreen() {
+  const variables = useAccountStore((s) => s.variables);
+  const setVariable = useAccountStore((s) => s.setVariable);
+  const removeVariable = useAccountStore((s) => s.removeVariable);
+  const [name, setName] = useState("");
+  const [value, setValue] = useState("");
+  function saveVariable() {
+    const cleanName = name.trim().replace(/^\$/, "").replace(/[^a-zA-Z0-9_-]/g, "");
+    if (!cleanName || !value.trim()) return;
+    setVariable(cleanName, value.trim());
+    setName(""); setValue("");
+  }
   return (
     <div className="screen screen-customize">
       <div className="screen__header">
-        <h1>Customize</h1>
+        <h1>Variables</h1>
       </div>
       <div className="screen__content">
-        <p>Customize is a future feature planned for panel/widget layout configuration.</p>
-        <p>For now, use the Settings gear menu (top right) to control theme, layout, and sidebar visibility.</p>
+        <p>Save reusable values, then type <strong>$name</strong> in the composer to insert one.</p>
+        <div className="variable-editor"><label>Name<input value={name} onChange={(event) => setName(event.target.value)} placeholder="client_name" /></label><label>Value<input value={value} onChange={(event) => setValue(event.target.value)} placeholder="Acme" /></label><button type="button" className="settings-btn" disabled={!name.trim() || !value.trim()} onClick={saveVariable}>Save variable</button></div>
+        <div className="variable-list">{Object.entries(variables).map(([key, savedValue]) => <div key={key} className="variable-row"><code>${key}</code><span>{savedValue}</span><button type="button" onClick={() => removeVariable(key)}>Remove</button></div>)}{!Object.keys(variables).length && <p>No saved variables yet.</p>}</div>
       </div>
     </div>
   );

@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { Settings } from "lucide-react";
+import { ChevronDown, ChevronUp, Pin, Settings } from "lucide-react";
 import { GlassButton } from "../primitives";
 import { useDismissableLayer } from "../../keyboard";
-import { DEFAULT_VISIBILITY, useAccountStore } from "../../stores/accountStore";
-import type { LayoutId, ThemePreference, VisibilitySettings } from "../../stores/types";
+import { DEFAULT_RIGHT_RAIL_ORDER, DEFAULT_VISIBILITY, useAccountStore } from "../../stores/accountStore";
+import type { RightRailPanelKey, ThemePreference, VisibilitySettings } from "../../stores/types";
 
 /* Visibility Toggle (Step 9.4) — CANON Feature 12: the gear dropdown (top
    right) with 7 checkboxes (Recent Sessions/Context Snapshot/Recent
@@ -58,20 +58,19 @@ const THEME_OPTIONS: { key: ThemePreference; label: string }[] = [
   { key: "auto", label: "Auto" },
 ];
 
-const LAYOUT_OPTIONS: { key: LayoutId; label: string }[] = [
-  { key: "original", label: "Original" },
-  { key: "gold", label: "Gold" },
-];
-
 export function VisibilityMenu() {
   const visibility = useAccountStore((s) => s.visibility);
   const setVisibility = useAccountStore((s) => s.setVisibility);
   const theme = useAccountStore((s) => s.theme);
   const setTheme = useAccountStore((s) => s.setTheme);
-  const layout = useAccountStore((s) => s.layout);
-  const setLayout = useAccountStore((s) => s.setLayout);
+  const rightRailOrder = useAccountStore((s) => s.rightRailOrder);
+  const rightRailPinned = useAccountStore((s) => s.rightRailPinned);
+  const setRightRailPreferences = useAccountStore((s) => s.setRightRailPreferences);
 
   const [open, setOpen] = useState(false);
+  const [draftVisibility, setDraftVisibility] = useState(visibility);
+  const [draftOrder, setDraftOrder] = useState<RightRailPanelKey[]>(rightRailOrder);
+  const [draftPinned, setDraftPinned] = useState<RightRailPanelKey | null>(rightRailPinned);
   const rootRef = useRef<HTMLDivElement>(null);
 
   useDismissableLayer(open, () => setOpen(false));
@@ -86,6 +85,13 @@ export function VisibilityMenu() {
     return () => document.removeEventListener("mousedown", onPointerDown);
   }, [open]);
 
+  useEffect(() => {
+    if (!open) return;
+    setDraftVisibility(visibility);
+    setDraftOrder(rightRailOrder);
+    setDraftPinned(rightRailPinned);
+  }, [open, visibility, rightRailOrder, rightRailPinned]);
+
   function toggle(key: keyof VisibilitySettings): void {
     // A generic single-key patch object doesn't narrow cleanly against
     // VisibilitySettings' fixed named fields (vs. an index-signature type
@@ -93,8 +99,31 @@ export function VisibilityMenu() {
     // in this codebase) — every field here is boolean and `key` is proven
     // to be one of VisibilitySettings' own keys, so this is a precise,
     // safe assertion, not an escape hatch.
-    const patch = { [key]: !visibility[key] } as Partial<VisibilitySettings>;
-    setVisibility(patch);
+    const patch = { [key]: !draftVisibility[key] } as Partial<VisibilitySettings>;
+    setDraftVisibility((current) => ({ ...current, ...patch }));
+  }
+
+  function move(key: RightRailPanelKey, amount: -1 | 1) {
+    setDraftOrder((current) => {
+      const from = current.indexOf(key);
+      const to = from + amount;
+      if (from < 0 || to < 0 || to >= current.length) return current;
+      const next = [...current];
+      [next[from], next[to]] = [next[to], next[from]];
+      return next;
+    });
+  }
+
+  function restoreRecommended() {
+    setDraftVisibility({ ...DEFAULT_VISIBILITY });
+    setDraftOrder([...DEFAULT_RIGHT_RAIL_ORDER]);
+    setDraftPinned("contextSnapshot");
+  }
+
+  function apply() {
+    setVisibility(draftVisibility);
+    setRightRailPreferences(draftOrder, draftPinned);
+    setOpen(false);
   }
 
   return (
@@ -137,42 +166,19 @@ export function VisibilityMenu() {
             ))}
           </div>
 
-          <p className="visibility-menu__title">Layout</p>
-          <div
-            className="visibility-menu__theme-row"
-            role="radiogroup"
-            aria-label="Layout"
-            data-testid="layout-toggle"
-          >
-            {LAYOUT_OPTIONS.map(({ key, label }) => (
-              <button
-                key={key}
-                type="button"
-                role="radio"
-                aria-checked={layout === key}
-                aria-label={label}
-                className={`visibility-menu__theme-option ${layout === key ? "visibility-menu__theme-option--active" : ""}`}
-                onClick={() => setLayout(key)}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-
-          <p className="visibility-menu__title">Sidebar Visibility</p>
-          {VISIBILITY_ROWS.map(({ key, label }) => (
-            <label key={key} className="visibility-menu__row">
-              <input type="checkbox" checked={visibility[key]} onChange={() => toggle(key)} />
-              {label}
-            </label>
-          ))}
-          <button
-            type="button"
-            className="visibility-menu__reset"
-            onClick={() => setVisibility(DEFAULT_VISIBILITY)}
-          >
-            Reset to defaults
-          </button>
+          <p className="visibility-menu__title">Right rail</p>
+          {draftOrder.map((key, index) => {
+            const label = VISIBILITY_ROWS.find((row) => row.key === key)?.label ?? key;
+            return <div key={key} className="visibility-menu__rail-row">
+              <label className="visibility-menu__row"><input type="checkbox" checked={draftVisibility[key]} onChange={() => toggle(key)} />{label}</label>
+              <button type="button" aria-label={`Move ${label} up`} disabled={index === 0} onClick={() => move(key, -1)}><ChevronUp size={14} /></button>
+              <button type="button" aria-label={`Move ${label} down`} disabled={index === draftOrder.length - 1} onClick={() => move(key, 1)}><ChevronDown size={14} /></button>
+              <button type="button" className={draftPinned === key ? "is-pinned" : ""} aria-label={`${draftPinned === key ? "Unpin" : "Pin"} ${label}`} onClick={() => setDraftPinned(draftPinned === key ? null : key)}><Pin size={14} fill={draftPinned === key ? "currentColor" : "none"} /></button>
+            </div>;
+          })}
+          <label className="visibility-menu__row visibility-menu__quick-tools"><input type="checkbox" checked={draftVisibility.quickTools} onChange={() => toggle("quickTools")} />Quick Tools</label>
+          <button type="button" className="visibility-menu__reset" onClick={restoreRecommended}>Restore recommended</button>
+          <div className="visibility-menu__actions"><button type="button" onClick={() => setOpen(false)}>Cancel</button><button type="button" className="is-primary" onClick={apply}>Apply</button></div>
         </div>
       )}
     </div>

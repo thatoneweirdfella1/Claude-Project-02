@@ -358,6 +358,10 @@ export function CenterColumn() {
 
   return (
     <>
+      <header className="frozen-workspace-heading">
+        <div><h1>Talk to AI</h1><p>Shape the request, review it, then hand it off.</p></div>
+        <span>Conversation first</span>
+      </header>
       <ConversationArea>
         {gated && <TranslationCard gated={gated} onRefine={(value) => void handleRefine(value)} />}
         {display && <StreamingAnswer state={display} />}

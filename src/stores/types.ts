@@ -383,6 +383,8 @@ export interface VisibilitySettings {
   activeSession: boolean;
 }
 
+export type RightRailPanelKey = Exclude<keyof VisibilitySettings, "quickTools">;
+
 /* Learned routing and technique preferences (CANON "STORES AND
    PERSISTENCE": "learned routing and technique preferences"). Written by
    Step 10.2's applier from Step 10.1's analyzer proposals. (State-
@@ -583,6 +585,11 @@ export interface AccountState {
   savedPrompts: SavedPrompt[];
   variables: SavedVariables;
   visibility: VisibilitySettings;
+  /** User-controlled right-rail order and single pinned panel. */
+  rightRailOrder: RightRailPanelKey[];
+  rightRailPinned: RightRailPanelKey | null;
+  /** One optional shortcut shown directly below All Tools. */
+  pinnedTool: ScreenId | null;
   /** CANON Feature 12's theme toggle. Default "dark" — matches every prior
       session's only rendered theme; this field didn't exist before, so a
       default that changes nothing for existing users is correct. */

@@ -89,6 +89,9 @@ describe("createInitialAccountState", () => {
     expect(state.savedPrompts).toEqual([]);
     expect(state.variables).toEqual({});
     expect(state.visibility).toEqual(DEFAULT_VISIBILITY);
+    expect(state.rightRailOrder).toEqual(["contextSnapshot", "modelStatus", "activeSession", "recentSessions", "recentActivity", "tokenUsage"]);
+    expect(state.rightRailPinned).toBe("contextSnapshot");
+    expect(state.pinnedTool).toBeNull();
     expect(state.learnedPreferences).toEqual({ routing: {}, technique: {} });
     expect(state.stateCorrections).toEqual([]);
     expect(state.sessions).toEqual([]);
@@ -146,6 +149,9 @@ describe("ACCOUNT_PERSISTED_KEYS", () => {
         "savedPrompts",
         "variables",
         "visibility",
+        "rightRailOrder",
+        "rightRailPinned",
+        "pinnedTool",
         "theme",
         "layout",
         "learnedPreferences",
@@ -396,5 +402,11 @@ describe("hydrate", () => {
     expect(s.plan).toBe("free");
     expect(s.variables).toEqual({ restored: "1" });
   });
-});
 
+  it("normalizes partial right-rail order and preserves every panel", () => {
+    useAccountStore.getState().hydrate({ rightRailOrder: ["tokenUsage", "contextSnapshot"] });
+    expect(useAccountStore.getState().rightRailOrder).toEqual([
+      "tokenUsage", "contextSnapshot", "modelStatus", "activeSession", "recentSessions", "recentActivity",
+    ]);
+  });
+});

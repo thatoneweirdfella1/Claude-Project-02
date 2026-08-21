@@ -18,11 +18,11 @@ import { AppErrorBoundary } from "./AppErrorBoundary";
 function FrozenReferenceConnectors() {
   return <svg className="frozen-connectors" viewBox="0 0 1600 1024" preserveAspectRatio="none" aria-hidden="true" data-testid="frozen-connectors">
     <g fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round">
-      <path d="M1092 261 H1150 V188 H1212" /><path d="M1092 454 H1163 V374 H1212" />
-      <path d="M1092 454 H1163 V589 H1212" /><path d="M1092 923 H1163 V589" /><path d="M1163 589 V809 H1212" />
+      <path d="M1112 261 H1170 V188 H1252" /><path d="M1112 454 H1183 V374 H1252" />
+      <path d="M1112 454 H1183 V589 H1252" /><path d="M1112 923 H1183 V589" /><path d="M1183 589 V809 H1252" />
     </g>
     <g fill="var(--frozen-node-fill)" stroke="currentColor" strokeWidth="2">
-      <circle cx="1212" cy="188" r="4" /><circle cx="1212" cy="374" r="4" /><circle cx="1212" cy="589" r="4" /><circle cx="1212" cy="809" r="4" />
+      <circle cx="1252" cy="188" r="4" /><circle cx="1252" cy="374" r="4" /><circle cx="1252" cy="589" r="4" /><circle cx="1252" cy="809" r="4" />
     </g>
   </svg>;
 }
@@ -50,7 +50,7 @@ export function AppShell() {
 
   return <>
     <div className="fixed-canvas-stage">
-    <div className="app-shell app-layer" style={{ transform: `scale(${canvasScale})` }} data-layout-authority="frozen-reference-1600x1024">
+    <div className="app-shell app-layer" style={{ transform: `scale(${canvasScale})` }} data-layout-authority="approved-gold-1600x1024-v2">
       <header className="topbar" aria-label="Top bar" data-testid="topbar"><TopBar /></header>
       <nav className="col-left" aria-label="Primary navigation" data-testid="col-left"><LeftNav /></nav>
       <main className="col-center" data-testid="col-center"><div className="frozen-center-stack"><AppErrorBoundary resetKey={currentScreen}><ScreenRouter /></AppErrorBoundary></div></main>

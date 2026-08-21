@@ -103,7 +103,7 @@ describe("persistence: kill and reload", () => {
     expect(account.plan).toBe("pro");
     expect(account.variables.codename).toBe("Zarquith");
     expect(account.visibility.quickTools).toBe(true);
-    expect(account.visibility.recentSessions).toBe(true); // untouched default preserved
+    expect(account.visibility.recentSessions).toBe(false); // untouched approved default preserved
     expect(account.stateCorrections).toEqual([
       { dimension: "emotion", from: "overwhelmed", to: "frustrated", timestamp: 222 },
     ]);
@@ -174,7 +174,7 @@ describe("persistence: kill and reload", () => {
     const hasFunction = Object.values(raw).some((v) => typeof v === "function");
     expect(hasFunction).toBe(false);
     expect(Object.keys(raw).sort()).toEqual(
-      ["context", "conversation", "currentScreen", "destination", "directness", "draftInput", "lockedProblemStatement", "methodology", "methodologyPhase", "model", "reviewBeforeSend", "statePills", "techniques", "translatorEngine", "variables"].sort(),
+      ["context", "conversation", "currentScreen", "destination", "directness", "draftInput", "lockedProblemStatement", "maxRequestCost", "methodology", "methodologyPhase", "model", "paidFallbackEnabled", "reviewBeforeSend", "stateDetectionMode", "statePills", "techniques", "translatorEngine", "variables"].sort(),
     );
   });
 });

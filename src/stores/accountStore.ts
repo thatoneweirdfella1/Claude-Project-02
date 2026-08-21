@@ -15,6 +15,7 @@ import type {
   SubscriptionTier,
   PromptTemplate,
   Rating,
+  RightRailPanelKey,
   SavedPrompt,
   SessionRecord,
   StateCorrection,
@@ -51,6 +52,15 @@ export const DEFAULT_VISIBILITY: VisibilitySettings = {
   quickTools: false,
   activeSession: true,
 };
+
+export const DEFAULT_RIGHT_RAIL_ORDER: RightRailPanelKey[] = [
+  "contextSnapshot",
+  "modelStatus",
+  "activeSession",
+  "recentSessions",
+  "recentActivity",
+  "tokenUsage",
+];
 
 /** Cap on stored corrections (Step 6.4) — bounded so a very long-lived
     account can't grow this unboundedly, same reasoning as telemetry's
@@ -147,6 +157,9 @@ export function createInitialAccountState(): AccountState {
     savedPrompts: [],
     variables: {},
     visibility: { ...DEFAULT_VISIBILITY },
+    rightRailOrder: [...DEFAULT_RIGHT_RAIL_ORDER],
+    rightRailPinned: "contextSnapshot",
+    pinnedTool: null,
     theme: "light", // Gold layout uses light theme to display cream marble per design mockup
     layout: "gold", // The desktop shell overrides this visually with the frozen supplied layout.
     learnedPreferences: { routing: {}, technique: {} },
@@ -177,6 +190,9 @@ export const ACCOUNT_PERSISTED_KEYS: (keyof AccountState)[] = [
   "savedPrompts",
   "variables",
   "visibility",
+  "rightRailOrder",
+  "rightRailPinned",
+  "pinnedTool",
   "theme",
   "layout",
   "learnedPreferences",
@@ -226,6 +242,8 @@ interface AccountActions {
   removeVariable: (name: string) => void;
   /** Merge a partial visibility change (one or more of the seven checkboxes). */
   setVisibility: (patch: Partial<VisibilitySettings>) => void;
+  setRightRailPreferences: (order: RightRailPanelKey[], pinned: RightRailPanelKey | null) => void;
+  setPinnedTool: (screen: AccountState["pinnedTool"]) => void;
   /** CANON Feature 12's theme toggle — the user's raw preference, not the
       resolved light/dark value ("auto" is resolved at render time, see
       useThemeEffect.ts, not here). */
@@ -443,6 +461,8 @@ export const useAccountStore = create<AccountStore>((set, get) => ({
       return { variables: rest };
     }),
   setVisibility: (patch) => set((s) => ({ visibility: { ...s.visibility, ...patch } })),
+  setRightRailPreferences: (rightRailOrder, rightRailPinned) => set({ rightRailOrder, rightRailPinned }),
+  setPinnedTool: (pinnedTool) => set({ pinnedTool }),
   setTheme: (theme) => set({ theme }),
   setLayout: (layout) => set({ layout }),
   setLearnedPreferences: (learnedPreferences) => set({ learnedPreferences }),
@@ -566,6 +586,12 @@ export const useAccountStore = create<AccountStore>((set, get) => ({
     }),
   hydrate: (state) => set((current) => ({
     ...state,
+    rightRailOrder: Array.isArray(state.rightRailOrder)
+      ? state.rightRailOrder.filter((key, index, all) => DEFAULT_RIGHT_RAIL_ORDER.includes(key) && all.indexOf(key) === index)
+          .concat(DEFAULT_RIGHT_RAIL_ORDER.filter((key) => !state.rightRailOrder?.includes(key)))
+      : current.rightRailOrder,
+    rightRailPinned: state.rightRailPinned === undefined ? current.rightRailPinned : state.rightRailPinned,
+    pinnedTool: state.pinnedTool === undefined ? current.pinnedTool : state.pinnedTool,
     ...(state.visibility !== undefined
       ? { visibility: { ...DEFAULT_VISIBILITY, ...state.visibility } }
       : {}),
@@ -642,5 +668,4 @@ export function canPerformAutoSelect(): boolean {
 export function mapTierToRoutingPlan(tier: string): "free" | "paid" {
   return tier === "free" ? "free" : "paid";
 }
-
 
