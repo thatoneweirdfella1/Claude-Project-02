@@ -50,7 +50,7 @@ export function AppShell() {
 
   return <>
     <div className="fixed-canvas-stage">
-    <div className="app-shell app-layer" style={{ transform: `scale(${canvasScale})` }} data-layout-authority="approved-gold-1600x1024-v2">
+    <div className="app-shell app-layer" style={{ transform: `translate(-50%, -50%) scale(${canvasScale})` }} data-layout-authority="approved-gold-1600x1024-v2">
       <header className="topbar" aria-label="Top bar" data-testid="topbar"><TopBar /></header>
       <nav className="col-left" aria-label="Primary navigation" data-testid="col-left"><LeftNav /></nav>
       <main className="col-center" data-testid="col-center"><div className="frozen-center-stack"><AppErrorBoundary resetKey={currentScreen}><ScreenRouter /></AppErrorBoundary></div></main>
@@ -67,5 +67,4 @@ export function AppShell() {
     <CostConfirm />
   </>;
 }
-
 

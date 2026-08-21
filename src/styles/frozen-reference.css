@@ -1349,9 +1349,13 @@ input:focus-visible {
   --frozen-right-track: 348px;
 }
 
-.fixed-canvas-stage { padding: 0 !important; }
+.fixed-canvas-stage { display: block !important; padding: 0 !important; }
 
 :root[data-layout="gold"] .app-shell {
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform-origin: center center !important;
   width: 1600px !important;
   height: 1024px !important;
   padding: 0 !important;
@@ -1489,4 +1493,3 @@ input:focus-visible {
   :root[data-layout="gold"] .topbar-center,
   :root[data-layout="gold"] .topbar-right { left: 0 !important; }
 }
-
