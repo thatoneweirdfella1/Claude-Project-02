@@ -26,11 +26,11 @@
  */
 
 :root {
-  --topbar-height: 86px;
-  --frozen-left-track: 220px;
-  --frozen-left-gap: 53px;
-  --frozen-right-gap: 120px;
-  --frozen-right-track: 332px;
+  --topbar-height: 60px;
+  --frozen-left-track: 200px;
+  --frozen-left-gap: 18px;
+  --frozen-right-gap: 18px;
+  --frozen-right-track: 300px;
   --frozen-gold: #c5993d;
   --frozen-gold-bright: #e6bd62;
   --frozen-cyan: #0d9df5;
@@ -1035,3 +1035,307 @@ input:focus-visible {
   .frozen-composer__controls { grid-template-columns: 150px 175px 1fr; }
   .quick-actions-row .primitive-glass-button { padding-inline: 7px; font-size: 10px; }
 }
+
+/* Frozen conversation-first recovery overrides */
+.topbar-logo { flex-basis:240px; }
+.logo-mark { width:44px; height:44px; flex-basis:44px; }
+.frozen-center-stack { bottom:8px !important; left:0 !important; gap:6px; }
+.frozen-center-stack > .conversation-area { order:1; margin:0; min-height:0; }
+.frozen-center-stack > .frozen-composer { order:2; flex:0 0 auto; width:100%; padding:0 12px 8px; }
+.frozen-center-stack > .quick-actions { order:3; }
+.frozen-composer__heading { min-height:38px; }
+.frozen-composer .input-box__textarea { height:96px !important; min-height:76px; max-height:132px; padding:10px 12px; }
+.frozen-composer__controls { grid-template-columns:minmax(220px,1fr) 168px 190px 180px !important; align-items:end; gap:10px; padding-top:8px; }
+.translate-ask-button { min-width:168px; min-height:40px; height:40px; padding:0 16px; border-radius:7px; font-size:14px; }
+.state-detection-controls {
+  display: grid;
+  grid-template-columns: 112px 170px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  min-height: 28px;
+  margin-top: 6px;
+  padding: 3px 8px;
+  border: 1px solid var(--frozen-border);
+  border-radius: 6px;
+  background: var(--frozen-control);
+}
+.state-detection-controls label {
+  color: var(--frozen-text);
+  font: 600 10px/1 var(--font-family-base);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.state-detection-controls select,
+.state-detection-controls button {
+  height: 24px;
+  min-height: 24px;
+  border: 1px solid var(--frozen-border);
+  border-radius: 5px;
+  background: var(--frozen-panel-strong);
+  color: var(--frozen-text);
+  font: 500 10px/1 var(--font-family-base);
+}
+.state-detection-controls select { width: 100%; padding: 0 7px; }
+.state-detection-controls button {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 9px;
+  cursor: pointer;
+}
+.state-detection-controls button:disabled { cursor: not-allowed; opacity: .48; }
+.state-detection-controls__status { color: var(--frozen-muted); font-size: 10px; }
+.quick-actions { position:relative; flex:0 0 26px; height:26px; margin:0; padding:0; border:0; background:transparent; overflow:visible; }
+.quick-actions__bar { position:relative; z-index:32; }
+.quick-actions__tray { position:absolute; left:0; right:0; bottom:32px; z-index:31; display:flex; gap:7px; padding:10px; box-shadow:var(--shadow-modal); }
+.quick-actions__tray > button,.quick-actions__more > button,.quick-actions__more-menu button { min-height:36px; display:flex; align-items:center; gap:6px; padding:0 10px; border:1px solid var(--frozen-border); border-radius:6px; background:var(--frozen-control); color:var(--frozen-text); cursor:pointer; }
+.quick-actions__more { position:relative; }
+.quick-actions__more-menu { position:absolute; right:0; bottom:calc(100% + 5px); z-index:36; min-width:170px; display:flex; flex-direction:column; gap:5px; padding:7px; }
+.accordion-panel__header { min-height:26px; height:26px; grid-template-columns:18px 1fr 16px; padding:0 8px; }
+.accordion-panel__body { padding:6px 10px 9px; }
+.accordion-view-all { align-self:flex-start; border:0; background:transparent; color:var(--accent-cyan); cursor:pointer; }
+.right-rail-helpful { display:flex; flex-direction:column; gap:3px; margin-bottom:6px; padding:9px 10px; border:1px solid var(--frozen-border); border-radius:8px; }
+.right-rail-helpful strong { font-size:12px; }
+.right-rail-helpful span { color:var(--frozen-muted); font-size:10px; }
+.leftnav-tools { position:relative; }
+.leftnav-tools__popup { position:absolute; left:calc(100% + 8px); bottom:0; z-index:50; width:220px; display:flex; flex-direction:column; gap:4px; padding:8px; box-shadow:var(--shadow-modal); }
+.leftnav-tools__popup header { display:flex; align-items:center; justify-content:space-between; padding:3px 4px 7px; }
+.leftnav-tools__popup header button { border:0; background:transparent; color:var(--frozen-text); }
+.leftnav-tools__popup > button { min-height:34px; display:flex; align-items:center; gap:7px; border:0; border-radius:5px; background:transparent; color:var(--frozen-text); cursor:pointer; }
+.leftnav-tools__popup > button:hover { background:var(--frozen-cyan-soft); }
+@media (max-width:1180px) {
+  :root { --frozen-left-track:180px; --frozen-left-gap:10px; --frozen-right-gap:10px; --frozen-right-track:270px; }
+  .app-shell { padding-left:10px; }
+}
+
+
+/* The approved 60px header leaves the workspace rails the full remaining viewport. */
+:root[data-layout="gold"] .col-center,
+:root[data-layout="gold"] .col-right {
+  height: calc(100vh - var(--topbar-height));
+}
+
+
+/* Compact utility overlays must escape legacy clipped center-child geometry. */
+:root[data-layout="gold"] .frozen-center-stack > .quick-actions {
+  z-index: 5;
+  flex: 0 0 26px !important;
+  min-height: 26px !important;
+  height: 26px !important;
+  max-height: 26px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  clip-path: none !important;
+  overflow: visible !important;
+}
+:root[data-layout="gold"] .frozen-center-stack > .quick-actions.is-open {
+  z-index: 60;
+}
+:root[data-layout="gold"] .quick-actions__bar {
+  min-height: 26px !important;
+  height: 26px !important;
+  max-height: 26px !important;
+}
+:root[data-layout="gold"] .quick-actions__tray {
+  z-index: 61;
+  overflow: visible;
+  pointer-events: auto;
+}
+
+
+/* Collapsed right-rail overlays are exactly 26px including their 1px border. */
+:root[data-layout="gold"] .accordion-panel:not(.is-open) {
+  min-height: 26px !important;
+  height: 26px !important;
+  max-height: 26px !important;
+}
+:root[data-layout="gold"] .accordion-panel:not(.is-open) .accordion-panel__header {
+  min-height: 24px !important;
+  height: 24px !important;
+  max-height: 24px !important;
+  padding: 0 8px !important;
+}
+/* v1.1 logical canvas: one fixed 1600x1024 composition, uniformly scaled. */
+.fixed-canvas-stage {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.app-shell {
+  width: 1600px !important;
+  height: 1024px !important;
+  min-width: 1600px;
+  min-height: 1024px;
+  transform-origin: center center;
+  grid-template-columns: 200px 18px minmax(0, 1044px) 18px 300px !important;
+  padding-left: 20px !important;
+}
+.leftnav-content { height: 938px !important; }
+.frozen-connectors {
+  position: absolute !important;
+  width: 1600px !important;
+  height: 1024px !important;
+}
+@media (max-width: 1400px), (max-width: 1180px) {
+  body { min-width: 0 !important; }
+  .app-shell {
+    width: 1600px !important;
+    height: 1024px !important;
+    grid-template-columns: 200px 18px minmax(0, 1044px) 18px 300px !important;
+    padding-left: 20px !important;
+  }
+  .col-right { display: block !important; }
+  .topbar-center, .topbar-right { position: relative !important; left: -19px !important; }
+}
+
+
+/* v1.2 fixed-window spacing and compact clickable controls.
+   This block changes layout density only: materials, opacity, blur, labels,
+   features, and component order remain untouched. */
+:root[data-layout="gold"] {
+  --topbar-height: 52px;
+  --frozen-left-track: 200px;
+  --frozen-left-gap: 30px;
+  --frozen-right-gap: 34px;
+  --frozen-right-track: 280px;
+  --frozen-section-gap: 14px;
+}
+
+.fixed-canvas-stage {
+  padding: 48px;
+}
+
+:root[data-layout="gold"] .app-shell {
+  grid-template-rows: var(--topbar-height) 18px minmax(0, 1fr) !important;
+  grid-template-columns:
+    var(--frozen-left-track)
+    var(--frozen-left-gap)
+    minmax(0, 1020px)
+    var(--frozen-right-gap)
+    var(--frozen-right-track) !important;
+  grid-template-areas:
+    "topbar topbar topbar topbar topbar"
+    ". . . . ."
+    "left . center . right" !important;
+  padding: 16px 18px !important;
+}
+
+:root[data-layout="gold"] .leftnav-content,
+:root[data-layout="gold"] .col-center,
+:root[data-layout="gold"] .col-right {
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+}
+
+:root[data-layout="gold"] .frozen-center-stack {
+  gap: var(--frozen-section-gap) !important;
+}
+
+:root[data-layout="gold"] .col-right {
+  gap: var(--frozen-section-gap) !important;
+}
+
+:root[data-layout="gold"] .topbar-content .primitive-glass-button {
+  min-height: 38px !important;
+  height: 38px !important;
+  padding-block: 0 !important;
+}
+
+:root[data-layout="gold"] .leftnav-item,
+:root[data-layout="gold"] .leftnav-trash {
+  min-height: 44px !important;
+  height: 44px !important;
+}
+
+:root[data-layout="gold"] .workspace-mode-toggle button {
+  min-height: 34px !important;
+  height: 34px !important;
+}
+
+:root[data-layout="gold"] .frozen-composer__heading-actions .primitive-glass-button,
+:root[data-layout="gold"] .frozen-clear,
+:root[data-layout="gold"] .frozen-field select,
+:root[data-layout="gold"] .model-dropdown-field select {
+  min-height: 32px !important;
+  height: 32px !important;
+}
+
+:root[data-layout="gold"] .translate-ask-button {
+  min-height: 36px !important;
+  height: 36px !important;
+}
+
+:root[data-layout="gold"] .quick-actions-row .primitive-glass-button,
+:root[data-layout="gold"] .quick-actions__tray > button,
+:root[data-layout="gold"] .quick-actions__more > button,
+:root[data-layout="gold"] .quick-actions__more-menu button,
+:root[data-layout="gold"] .leftnav-tools__popup > button {
+  min-height: 32px !important;
+  height: 32px !important;
+}
+
+:root[data-layout="gold"] .quick-tools-tile__button {
+  min-height: 72px !important;
+  height: 72px !important;
+}
+
+
+/* v1.3 visible, opaque interactive overlays.
+   Only floating menus are made solid; normal panels and the marble remain unchanged. */
+:root[data-layout="gold"] {
+  --frozen-overlay-solid: #e7e5e1;
+}
+
+:root[data-layout="gold"][data-theme="dark"] {
+  --frozen-overlay-solid: #080a0c;
+}
+
+:root[data-layout="gold"] .destination-field__popover,
+:root[data-layout="gold"] .quick-actions-row__popover,
+:root[data-layout="gold"] .leftnav-tools__popup,
+:root[data-layout="gold"] .topbar-popover,
+:root[data-layout="gold"] .advanced-controls__overlay,
+:root[data-layout="gold"] .quick-actions__tray,
+:root[data-layout="gold"] .quick-actions__more-menu,
+:root[data-layout="gold"] .attach-context-controls__popover {
+  background-color: var(--frozen-overlay-solid) !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+:root[data-layout="gold"] .topbar .quick-actions-row__more {
+  position: relative;
+  z-index: 2000;
+}
+
+:root[data-layout="gold"] .topbar .quick-actions-row__popover {
+  top: calc(100% + 8px) !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: 0 !important;
+  z-index: 2000 !important;
+  margin: 0 !important;
+}
+
+:root[data-layout="gold"] .col-left,
+:root[data-layout="gold"] .leftnav-content,
+:root[data-layout="gold"] .leftnav-items,
+:root[data-layout="gold"] .leftnav-tools {
+  overflow: visible !important;
+}
+
+:root[data-layout="gold"] .leftnav-tools__popup {
+  top: 0 !important;
+  bottom: auto !important;
+  left: calc(100% + 12px) !important;
+  z-index: 2000 !important;
+}
+

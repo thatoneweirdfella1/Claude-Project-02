@@ -17,6 +17,41 @@ export type ModelId = "claude-haiku-4-5" | "claude-sonnet-5" | "claude-opus-4-8"
     the routing engine (ROUTING.md); a ModelId is a manual override. */
 export type ModelSelection = ModelId | "auto";
 
+/** Provider-neutral destination selected by the user. The legacy Claude model
+    remains separate so historical sessions can migrate without pretending it
+    was always a destination choice. */
+export type DestinationProviderId =
+  | "universal"
+  | "anthropic"
+  | "openai"
+  | "google"
+  | "xai"
+  | "perplexity"
+  | "deepseek"
+  | "mistral"
+  | "microsoft"
+  | "local"
+  | "custom";
+
+export interface DestinationSelection {
+  providerId: DestinationProviderId;
+  /** Registry model id, or "universal" for provider-neutral manual handoff. */
+  modelId: string;
+}
+
+export type TranslatorEngine =
+  | "auto-free-first"
+  | "local-rules"
+  | "local-ai"
+  | "destination-one-pass"
+  | "managed-translator"
+  | "legacy-claude";
+
+/** State Detection is opt-in by default. Manual checks may use the private
+    local detector or a paid model; automatic checking is available only as
+    an explicitly selected paid mode. */
+export type StateDetectionMode = "manual-free" | "manual-paid" | "automatic-paid";
+
 /** Directness levels (CANON Feature 3): 1 supportive, 2 balanced, 3 blunt. */
 export type DirectnessLevel = 1 | 2 | 3;
 
@@ -201,6 +236,16 @@ export interface ConversationMessage {
       tension Step 6.5's DECISIONS already logged for deriveStateFeeds). */
   telemetryId?: string;
   statePills?: StatePills;
+  /** Prepared handoffs are not answers. Imported responses become answers only
+      after the user previews and confirms them. */
+  messageKind?: "answer" | "handoff" | "imported";
+  handoffStatus?: "prepared" | "handed-off" | "imported";
+  sourceLabel?: string;
+  preparedRequest?: string;
+  parentMessageId?: string;
+  branchId?: string;
+  branchIndex?: number;
+  branchCount?: number;
 }
 
 /* Loaded context. Provisional — upload limits, OCR, URL fetch, and
@@ -252,11 +297,21 @@ export interface SessionRecord {
   /** True when user has starred/favorited this session for quick access. */
   starred?: boolean;
   model: ModelSelection;
+  /** Provider/model that receives the AI-ready request. */
+  destination?: DestinationSelection;
+  /** Engine that prepares the request; local-rules is the free-first default. */
+  translatorEngine?: TranslatorEngine;
+  /** Whether the user reviews the AI-ready request before handoff. */
+  reviewBeforeSend?: boolean;
+  /** Manual free by default; paid modes are explicit per saved session. */
+  stateDetectionMode?: StateDetectionMode;
   directness: DirectnessLevel;
   techniques: TechniqueId[];
   context: ContextItem[];
   variables: SavedVariables;
   conversation: ConversationMessage[];
+  /** Recovery saves include an unfinished composer draft. */
+  draftInput?: string;
 }
 
 /* Feedback rating (CANON Feature 7). Full rating UI + learning loop is
@@ -470,6 +525,12 @@ export interface SessionState {
       thought. Cleared to "" only on TRANSLATE & ASK submit or session close. */
   draftInput: string;
   model: ModelSelection;
+  destination: DestinationSelection;
+  translatorEngine: TranslatorEngine;
+  reviewBeforeSend: boolean;
+  paidFallbackEnabled: boolean;
+  maxRequestCost: number;
+  stateDetectionMode: StateDetectionMode;
   directness: DirectnessLevel;
   /** Widened from a single TechniqueId to an array at Step 4.5: CANON Feature 4
       allows manually stacking up to MAX_TECHNIQUE_STACK techniques (not just

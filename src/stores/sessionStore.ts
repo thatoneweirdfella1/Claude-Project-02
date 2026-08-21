@@ -2,6 +2,7 @@ import { create } from "zustand";
 import type {
   ContextItem,
   ConversationMessage,
+  DestinationSelection,
   DirectnessLevel,
   MethodologyPhase,
   MethodologyType,
@@ -9,8 +10,10 @@ import type {
   ScreenId,
   SessionRecord,
   SessionState,
+  StateDetectionMode,
   StatePills,
   TechniqueId,
+  TranslatorEngine,
 } from "./types";
 
 /* Session store (CANON "STORES AND PERSISTENCE") — cleared when a session
@@ -27,7 +30,13 @@ import type {
 export function createInitialSessionState(): SessionState {
   return {
     draftInput: "", // Step 5.0: the composer's not-yet-submitted text
-    model: "auto", // CANON: free tier auto-routes; "auto" exercises the router by default
+    model: "auto", // retained for the explicit legacy Claude translator
+    destination: { providerId: "universal", modelId: "universal" },
+    translatorEngine: "auto-free-first",
+    reviewBeforeSend: true,
+    paidFallbackEnabled: false,
+    maxRequestCost: 0,
+    stateDetectionMode: "manual-free",
     directness: 2, // CANON Feature 3: Level 2 balanced is the default
     techniques: ["auto-detect"], // CANON Feature 4: Auto-detect is the default mode (Step 4.5)
     context: [],
@@ -46,6 +55,12 @@ export function createInitialSessionState(): SessionState {
 export const SESSION_PERSISTED_KEYS: (keyof SessionState)[] = [
   "draftInput",
   "model",
+  "destination",
+  "translatorEngine",
+  "reviewBeforeSend",
+  "paidFallbackEnabled",
+  "maxRequestCost",
+  "stateDetectionMode",
   "directness",
   "techniques",
   "context",
@@ -61,6 +76,12 @@ export const SESSION_PERSISTED_KEYS: (keyof SessionState)[] = [
 interface SessionActions {
   setDraftInput: (draftInput: string) => void;
   setModel: (model: ModelSelection) => void;
+  setDestination: (destination: DestinationSelection) => void;
+  setTranslatorEngine: (translatorEngine: TranslatorEngine) => void;
+  setReviewBeforeSend: (reviewBeforeSend: boolean) => void;
+  setPaidFallbackEnabled: (paidFallbackEnabled: boolean) => void;
+  setMaxRequestCost: (maxRequestCost: number) => void;
+  setStateDetectionMode: (stateDetectionMode: StateDetectionMode) => void;
   setDirectness: (directness: DirectnessLevel) => void;
   /** Replaces the whole selection (Step 4.5): ["auto-detect"] for auto mode,
       or the user's exact manual stack (validated by the caller — see
@@ -82,6 +103,7 @@ interface SessionActions {
       message with that id exists (defensive — a stale id should never
       throw, same posture as every other store action taking an id). */
   setMessageRating: (messageId: string, stars: number, comment?: string) => void;
+  updateMessage: (messageId: string, patch: Partial<ConversationMessage>) => void;
   /** Clear to defaults — CANON "cleared when a session closes". Its first
       real caller is Close Session (Step 9.1): a closed session is done, not
       just refreshed, so it resets model/directness/techniques too, unlike
@@ -136,6 +158,12 @@ export const useSessionStore = create<SessionStore>((set) => ({
 
   setDraftInput: (draftInput) => set({ draftInput }),
   setModel: (model) => set({ model }),
+  setDestination: (destination) => set({ destination }),
+  setTranslatorEngine: (translatorEngine) => set({ translatorEngine }),
+  setReviewBeforeSend: (reviewBeforeSend) => set({ reviewBeforeSend }),
+  setPaidFallbackEnabled: (paidFallbackEnabled) => set({ paidFallbackEnabled }),
+  setMaxRequestCost: (maxRequestCost) => set({ maxRequestCost: Math.max(0, maxRequestCost) }),
+  setStateDetectionMode: (stateDetectionMode) => set({ stateDetectionMode }),
   setDirectness: (directness) => set({ directness }),
   setTechniques: (techniques) => set({ techniques }),
   addContextItem: (item) => set((s) => ({ context: [...s.context, item] })),
@@ -158,6 +186,8 @@ export const useSessionStore = create<SessionStore>((set) => ({
           : m,
       ),
     })),
+  updateMessage: (messageId, patch) =>
+    set((s) => ({ conversation: s.conversation.map((m) => m.id === messageId ? { ...m, ...patch } : m) })),
   resetSession: () => set(createInitialSessionState()),
   newSession: () =>
     set({
@@ -171,12 +201,18 @@ export const useSessionStore = create<SessionStore>((set) => ({
   loadSessionRecord: (record) =>
     set({
       model: record.model,
+      destination: record.destination ?? { providerId: "anthropic", modelId: record.model === "auto" ? "auto" : record.model },
+      translatorEngine: record.translatorEngine ?? "legacy-claude",
+      reviewBeforeSend: record.reviewBeforeSend ?? true,
+      paidFallbackEnabled: false,
+      maxRequestCost: 0,
+      stateDetectionMode: record.stateDetectionMode ?? "manual-free",
       directness: record.directness,
       techniques: record.techniques,
       context: record.context,
       variables: record.variables,
       conversation: record.conversation,
-      draftInput: "",
+      draftInput: record.draftInput ?? "",
       statePills: { emotion: null, rsd: null, interest: null, cognitive: null },
     }),
   setMethodology: (methodology) => set({ methodology }),
@@ -187,8 +223,21 @@ export const useSessionStore = create<SessionStore>((set) => ({
     ...(state.context !== undefined ? { context: Array.isArray(state.context) ? state.context : current.context } : {}),
     ...(state.conversation !== undefined ? { conversation: Array.isArray(state.conversation) ? state.conversation : current.conversation } : {}),
     ...(state.techniques !== undefined ? { techniques: Array.isArray(state.techniques) ? state.techniques : current.techniques } : {}),
+    ...(state.destination !== undefined && state.destination && typeof state.destination === "object"
+      ? { destination: state.destination }
+      : {}),
+    ...(state.translatorEngine !== undefined ? { translatorEngine: state.translatorEngine } : {}),
+    ...(state.reviewBeforeSend !== undefined ? { reviewBeforeSend: Boolean(state.reviewBeforeSend) } : {}),
+    ...(state.paidFallbackEnabled !== undefined ? { paidFallbackEnabled: Boolean(state.paidFallbackEnabled) } : {}),
+    ...(state.maxRequestCost !== undefined ? { maxRequestCost: Math.max(0, Number(state.maxRequestCost) || 0) } : {}),
+    ...(state.stateDetectionMode !== undefined
+      ? { stateDetectionMode: (["manual-free", "manual-paid", "automatic-paid"] as StateDetectionMode[]).includes(state.stateDetectionMode)
+          ? state.stateDetectionMode
+          : "manual-free" }
+      : {}),
     ...(state.currentScreen !== undefined
       ? { currentScreen: VALID_SCREENS.has(state.currentScreen) ? state.currentScreen : "translate" }
       : {}),
   })),
 }));
+

@@ -43,13 +43,13 @@ import type {
     checkboxes, unchanged) — only the DEFAULT changed. See BUILD-LOG.md
     DECISIONS and CANON.md (rule #9, Feature 12, LAYOUT all updated). */
 export const DEFAULT_VISIBILITY: VisibilitySettings = {
-  recentSessions: true,
+  recentSessions: false,
   contextSnapshot: true,
-  recentActivity: true,
-  tokenUsage: true,
+  recentActivity: false,
+  tokenUsage: false,
   modelStatus: true,
-  quickTools: true,
-  activeSession: false,
+  quickTools: false,
+  activeSession: true,
 };
 
 /** Cap on stored corrections (Step 6.4) — bounded so a very long-lived
@@ -254,6 +254,7 @@ interface AccountActions {
   /** Step 9.1 — files one duplicated or closed-and-archived session. Pure
       append; nothing here ever removes or mutates a past record. */
   addSessionRecord: (record: SessionRecord) => void;
+  removeSessionRecord: (id: string) => void;
   /** Move a session from active history to trash (soft delete). */
   moveSessionToTrash: (id: string) => void;
   /** Permanently delete a session from trash. */
@@ -467,6 +468,7 @@ export const useAccountStore = create<AccountStore>((set, get) => ({
       };
     }),
   addSessionRecord: (record) => set((s) => ({ sessions: [...s.sessions, record] })),
+  removeSessionRecord: (id) => set((s) => ({ sessions: s.sessions.filter((record) => record.id !== id) })),
   moveSessionToTrash: (id) =>
     set((s) => ({
       sessions: s.sessions.filter((rec) => rec.id !== id),
@@ -640,3 +642,5 @@ export function canPerformAutoSelect(): boolean {
 export function mapTierToRoutingPlan(tier: string): "free" | "paid" {
   return tier === "free" ? "free" : "paid";
 }
+
+

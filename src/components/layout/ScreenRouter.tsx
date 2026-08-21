@@ -5,7 +5,7 @@ import { useAccountStore } from "../../stores/accountStore";
 import { CenterColumn } from "../pipeline";
 import { SubscriptionUI } from "../credits";
 import { PersonalOptimization } from "../optimization";
-import { DesktopProviderSettings } from "../settings/DesktopProviderSettings";
+import { ProviderNeutralSettings } from "../settings/ProviderNeutralSettings";
 import { AppearanceSettings } from "../settings/AppearanceSettings";
 
 function HomeScreen() {
@@ -775,7 +775,7 @@ function ProjectsScreen() {
   sessions.forEach((session) => {
     const projectName = session.tag ? session.tag.split(":")[0].trim() : defaultProject;
     if (!projectsMap.has(projectName)) {
-      projectsMap.get(projectName) || projectsMap.set(projectName, []);
+      projectsMap.set(projectName, []);
     }
     projectsMap.get(projectName)?.push(session);
   });
@@ -1715,8 +1715,8 @@ function SettingsScreen() {
             </div>
           </div>
           <div className="settings-item">
-            <div className="settings-item__label">Email</div>
-            <div className="settings-item__value">user@example.com</div>
+            <div className="settings-item__label">Profile</div>
+            <div className="settings-item__value">Local workspace</div>
           </div>
         </div>
 
@@ -1724,7 +1724,7 @@ function SettingsScreen() {
 
         <PersonalOptimization />
 
-        <DesktopProviderSettings />
+        <ProviderNeutralSettings />
 
         <AppearanceSettings />
 
@@ -2413,3 +2413,5 @@ export function ScreenRouter() {
       return <CenterColumn />;
   }
 }
+
+

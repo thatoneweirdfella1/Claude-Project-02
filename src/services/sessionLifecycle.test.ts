@@ -6,11 +6,17 @@ function session(overrides: Partial<SessionState> = {}): SessionState {
   return {
     draftInput: "unsent thought",
     model: "auto",
+    destination: { providerId: "universal", modelId: "universal" },
+    translatorEngine: "local-rules",
+    reviewBeforeSend: true,
+    paidFallbackEnabled: false,
+    maxRequestCost: 0,
     directness: 2,
     techniques: ["auto-detect"],
     context: [],
     conversation: [{ id: "m1", role: "user", content: "hi", timestamp: 0 }],
     statePills: { emotion: "calm", rsd: "low", interest: "medium", cognitive: "analytical" },
+    stateDetectionMode: "manual-free",
     variables: { name: "value" },
     currentScreen: "translate",
     methodology: "standard",
@@ -26,6 +32,7 @@ describe("buildSessionRecord", () => {
     expect(record.model).toBe("auto");
     expect(record.directness).toBe(2);
     expect(record.techniques).toEqual(["auto-detect"]);
+    expect(record.stateDetectionMode).toBe("manual-free");
     expect(record.conversation).toEqual(session().conversation);
     expect(record.variables).toEqual({ name: "value" });
   });
@@ -56,3 +63,4 @@ describe("buildSessionRecord", () => {
     expect(untagged.tag).toBeUndefined();
   });
 });
+

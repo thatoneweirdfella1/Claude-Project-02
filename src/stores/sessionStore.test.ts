@@ -47,11 +47,15 @@ describe("createInitialSessionState", () => {
     const state = createInitialSessionState();
     expect(state.draftInput).toBe("");
     expect(state.model).toBe("auto");
+    expect(state.destination).toEqual({ providerId: "universal", modelId: "universal" });
+    expect(state.translatorEngine).toBe("auto-free-first");
+    expect(state.reviewBeforeSend).toBe(true);
     expect(state.directness).toBe(2);
     expect(state.techniques).toEqual(["auto-detect"]);
     expect(state.context).toEqual([]);
     expect(state.conversation).toEqual([]);
     expect(state.statePills).toEqual({ emotion: null, rsd: null, interest: null, cognitive: null });
+    expect(state.stateDetectionMode).toBe("manual-free");
     expect(state.variables).toEqual({});
     expect(state.currentScreen).toBe("translate");
   });
@@ -68,11 +72,17 @@ describe("createInitialSessionState", () => {
 });
 
 describe("SESSION_PERSISTED_KEYS", () => {
-  it("is exactly the twelve documented fields", () => {
+  it("persists every documented session field", () => {
     expect([...SESSION_PERSISTED_KEYS].sort()).toEqual(
       [
         "draftInput",
         "model",
+        "destination",
+        "translatorEngine",
+        "reviewBeforeSend",
+        "paidFallbackEnabled",
+        "maxRequestCost",
+        "stateDetectionMode",
         "directness",
         "techniques",
         "context",
@@ -302,3 +312,4 @@ describe("hydrate", () => {
     expect(s.model).toBe("claude-opus-4-8"); // untouched by this hydrate call
   });
 });
+

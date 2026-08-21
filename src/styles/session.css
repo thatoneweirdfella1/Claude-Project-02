@@ -177,3 +177,21 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+.session-picker { display: grid; gap: 7px; max-height: 240px; overflow: auto; }
+.session-picker button, .finish-session__choices button {
+  display: grid; gap: 3px; width: 100%; padding: 11px; border: 1px solid var(--frozen-line);
+  border-radius: 8px; background: var(--frozen-control); color: var(--frozen-text); text-align: left; cursor: pointer;
+}
+.session-picker button[aria-pressed="true"] { border-color: var(--frozen-cyan); background: var(--frozen-cyan-soft); }
+.finish-session { width: 480px; min-height: 360px; }
+.finish-session__choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.finish-session__choices span { color: var(--frozen-muted); font-size: 12px; }
+.undo-toast {
+  position: fixed; left: 50%; bottom: 26px; z-index: 2400; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 12px; padding: 10px 14px; border: 1px solid var(--frozen-gold);
+  border-radius: 9px; background: var(--frozen-panel-strong); box-shadow: 0 12px 30px rgb(0 0 0 / .35);
+}
+.undo-toast button { color: var(--frozen-cyan); border: 0; background: transparent; font-weight: 700; cursor: pointer; }
+.undo-toast small { color: var(--frozen-muted); }
+
+

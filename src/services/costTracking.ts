@@ -65,10 +65,8 @@ export function getEstimatedCostForCall(input: CostEstimateInput): number {
   return calculateUsageCost(input.inputTokens, input.maxOutputTokens, input.model);
 }
 
-/** Estimate one complete Translate action: prompt normalization, state
-    detection, and answer generation. The input repeats across those calls,
-    which is intentionally reflected here so the user sees the whole action's
-    likely cost before any network request starts. */
+/** Estimate one complete Translate action: prompt normalization and answer
+    generation. State Detection is optional and authorized separately. */
 export function getEstimatedCostForPipeline(
   rawInput: string,
   answerModel = "claude-haiku-4-5",
@@ -81,17 +79,22 @@ export function getEstimatedCostForPipeline(
     inputTokens: normalizedInput,
     maxOutputTokens: 450,
   });
-  const stateDetection = getEstimatedCostForCall({
-    model: "claude-haiku-4-5",
-    inputTokens: messageTokens + 350,
-    maxOutputTokens: 180,
-  });
   const answer = getEstimatedCostForCall({
     model: answerModel,
     inputTokens: normalizedInput + 600,
     maxOutputTokens: 1_400,
   });
-  return roundDollars(translation + stateDetection + answer);
+  return roundDollars(translation + answer);
+}
+
+/** Estimate the single Haiku classification used by paid State Detection. */
+export function getEstimatedCostForStateDetection(rawInput: string): number {
+  const messageTokens = Math.max(1, Math.ceil(rawInput.length / 4));
+  return getEstimatedCostForCall({
+    model: "claude-haiku-4-5",
+    inputTokens: messageTokens + 350,
+    maxOutputTokens: 180,
+  });
 }
 
 export function addTokenUsage(

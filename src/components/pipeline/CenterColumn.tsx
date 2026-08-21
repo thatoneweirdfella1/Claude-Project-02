@@ -7,6 +7,7 @@ import {
   buildAdaptationNote,
   deriveStateFeeds,
   detectState,
+  detectStateLocally,
   toStatePills,
   type StateDetectionResult,
 } from "../../services/detection";
@@ -14,13 +15,27 @@ import { mergeVariables, substituteVariables } from "../../services/context";
 import { useAccountStore } from "../../stores/accountStore";
 import { useSessionStore } from "../../stores/sessionStore";
 import { Composer } from "../composer";
+import { ReviewReadyRequest } from "../composer/ReviewReadyRequest";
+import { StateReviewPanel } from "../composer/StateReviewPanel";
+import { ImportResponseDialog } from "../composer/ImportResponseDialog";
+import {
+  buildAiReadyRequest,
+  compileMeaningPacket,
+  destinationLabel,
+  isFreeTranslator,
+  NO_CREDIT_BADGE,
+} from "../../services/providerNeutral";
 import type { PillDimension } from "../detection";
 import { QuickActionsRow } from "../session";
 import { ConversationArea, TranslationCard } from "../translation";
 import { StreamingAnswer } from "../streaming";
 import { usePipelineRun, type ActivePipelineRun } from "./usePipelineRun";
 import { authorizeEstimatedCost } from "../../services/creditAuthorization";
-import { addTokenUsage, getEstimatedCostForPipeline } from "../../services/costTracking";
+import {
+  addTokenUsage,
+  getEstimatedCostForPipeline,
+  getEstimatedCostForStateDetection,
+} from "../../services/costTracking";
 
 /* CenterColumn (Step 5.2) — the live center column: the real ConversationArea
    over the real Composer, joined by the pipeline orchestrator. This replaces
@@ -40,17 +55,10 @@ import { addTokenUsage, getEstimatedCostForPipeline } from "../../services/costT
    user's added detail appended to their original message (translation needs
    both — the addition alone usually isn't self-contained).
 
-   Step 6.3: State Detection fires ALONGSIDE the pipeline, not inside it —
-   PIPELINE.md's RESOLVED note describes detection as its own single on-demand
-   classification on the same input, not one of the five orchestrator stages,
-   so it's a parallel side effect here rather than a change to orchestrator.ts
-   (already fresh-context-audited at 5.2, error-boundary-hardened at 5.3).
-   detectState()'s outcome feeds two places: the panel's local `detection`
-   state (rich — confidence, summary, for display/correction) and the session
-   store's `statePills` (Step 1.7's existing field — the durable, four-value
-   "current state" a later step, 6.5, delivers to its consumers). A failed or
-   absent detection just means no pills this turn; it never blocks or affects
-   the answer running beside it. */
+   State Detection is deliberately separate from translation. Manual modes run
+   only when the person presses Check this message. Automatic — Paid runs on
+   submit, but pauses for review before the request continues. No reading is
+   silently applied and a failed/cancelled check never sends the request. */
 
 const client = createProxyClient();
 
@@ -67,6 +75,14 @@ export function CenterColumn() {
   const setDirectness = useSessionStore((s) => s.setDirectness);
 
   const [run, setRun] = useState<ActivePipelineRun | null>(null);
+  const [pendingReview, setPendingReview] = useState<{ request: TranslateAskRequest; text: string } | null>(null);
+  const [pendingStateReview, setPendingStateReview] = useState<{
+    request: TranslateAskRequest;
+    result: StateDetectionResult;
+    intent: "manual" | "send";
+    paid: boolean;
+  } | null>(null);
+  const [importingResponse, setImportingResponse] = useState(false);
   const [detection, setDetection] = useState<StateDetectionResult | null>(null);
   // Step 11.2 (latency): true while this turn's classification call is in
   // flight. The pill panel is cleared on submit and the classification is a
@@ -78,6 +94,11 @@ export function CenterColumn() {
   const controllerRef = useRef<AbortController | null>(null);
   /** The raw text behind the current run — the base a refinement extends. */
   const lastRawRef = useRef("");
+  const conversation = useSessionStore((s) => s.conversation);
+  const updateMessage = useSessionStore((s) => s.updateMessage);
+  const pendingHandoff = [...conversation].reverse().find((message) =>
+    message.messageKind === "handoff" && message.handoffStatus === "handed-off",
+  );
 
   const startRun = useCallback(
     (request: TranslateAskRequest) => {
@@ -105,54 +126,103 @@ export function CenterColumn() {
           }),
       });
 
-      // State Detection — fires alongside translation, on the SAME raw input,
-      // sharing this submission's AbortController so a resubmit cancels both.
-      // Step 6.4: the adaptation note is built fresh from this user's current
-      // corrections every call (never stale — a correction made moments ago
-      // on THIS session already counts toward the next classification).
-      setDetection(null); // clear the panel immediately; this turn's read isn't in yet
-      setDetecting(true); // show the in-flight indicator until this call resolves (or is superseded)
-      const adaptationNote = buildAdaptationNote(useAccountStore.getState().stateCorrections);
-      void detectState(request.rawInput, {
-        client: (req) =>
-          client.complete({
-            ...req,
-            onUsage: (usage) => addTokenUsage(usage.inputTokens, usage.outputTokens, req.model),
-          }),
-        signal: controller.signal,
-        adaptationNote,
-      }).then((outcome) => {
-        if (controller.signal.aborted) return; // superseded by a resubmit — the newer run now owns `detecting`
-        setDetecting(false); // detectState never throws, so this .then always runs for the live call
-        if (outcome.status === "ok") {
-          setDetection(outcome.result);
-          useSessionStore.getState().setStatePills(toStatePills(outcome.result));
-        }
-      });
     },
     [plan],
   );
 
-  async function handleSubmit(request: TranslateAskRequest): Promise<boolean> {
+  function completeFreeHandoff(request: TranslateAskRequest, readyText: string) {
+    const label = destinationLabel(request.destination);
+    addMessage({ id: newMessageId(), role: "user", content: request.rawInput, timestamp: Date.now() });
+    addMessage({
+      id: newMessageId(),
+      role: "assistant",
+      content: `AI-ready request handed off to ${label}. Paste the destination AI's answer back with Import Response.`,
+      timestamp: Date.now(),
+      messageKind: "handoff",
+      handoffStatus: "handed-off",
+      sourceLabel: label,
+      preparedRequest: readyText,
+      notes: [NO_CREDIT_BADGE, "Handed off — not answered"],
+    });
+  }
+
+  function continueFreeFlow(request: TranslateAskRequest, result: StateDetectionResult | null, commitReading: boolean) {
+    if (result && commitReading) {
+      setDetection(result);
+      useSessionStore.getState().setStatePills(toStatePills(result));
+    }
+    const packet = compileMeaningPacket({
+      ...request,
+      statePills: result && commitReading ? toStatePills(result) : useSessionStore.getState().statePills,
+    });
+    const readyText = buildAiReadyRequest(packet);
+    if (request.reviewBeforeSend) setPendingReview({ request, text: readyText });
+    else completeFreeHandoff(request, readyText);
+    setPendingStateReview(null);
+  }
+
+  async function executeRequest(request: TranslateAskRequest): Promise<boolean> {
+    if (
+      isFreeTranslator(request.translatorEngine) ||
+      (request.translatorEngine === "destination-one-pass" && request.destination.providerId !== "anthropic")
+    ) {
+      continueFreeFlow(request, null, false);
+      return true;
+    }
+
     const selectedModel = request.model === "auto" ? "claude-haiku-4-5" : request.model;
     const estimate = getEstimatedCostForPipeline(request.rawInput, selectedModel);
-    const authorization = await authorizeEstimatedCost(
-      estimate,
-      "Translate, personalize, and answer",
-    );
+    const authorization = await authorizeEstimatedCost(estimate, "Connected Claude translator");
     if (!authorization.authorized) return false;
-    // An empty submit still runs (translate() owns empty-handling, Step 5.0
-    // decision) but adds no empty bubble to the conversation.
-    if (request.rawInput.trim().length > 0) {
-      addMessage({
-        id: newMessageId(),
-        role: "user",
-        content: request.rawInput,
-        timestamp: Date.now(),
-      });
-    }
+    addMessage({ id: newMessageId(), role: "user", content: request.rawInput, timestamp: Date.now() });
     startRun(request);
     return true;
+  }
+
+  async function runPaidStateDetection(request: TranslateAskRequest): Promise<StateDetectionResult | null> {
+    const estimate = getEstimatedCostForStateDetection(request.rawInput);
+    const authorization = await authorizeEstimatedCost(estimate, "Paid State Detection");
+    if (!authorization.authorized) return null;
+
+    const controller = new AbortController();
+    setDetecting(true);
+    try {
+      const adaptationNote = buildAdaptationNote(useAccountStore.getState().stateCorrections);
+      const outcome = await detectState(request.rawInput, {
+        client: (req) => client.complete({
+          ...req,
+          onUsage: (usage) => addTokenUsage(usage.inputTokens, usage.outputTokens, req.model),
+        }),
+        signal: controller.signal,
+        adaptationNote,
+      });
+      if (outcome.status !== "ok") return null;
+      setDetection(outcome.result);
+      return outcome.result;
+    } finally {
+      setDetecting(false);
+    }
+  }
+
+  async function handleCheckState(request: TranslateAskRequest, paid: boolean): Promise<void> {
+    if (!request.rawInput.trim()) return;
+    const result = paid
+      ? await runPaidStateDetection(request)
+      : detectStateLocally(request.rawInput);
+    if (!result) return;
+    setDetection(result);
+    setPendingStateReview({ request, result, intent: "manual", paid });
+  }
+
+  async function handleSubmit(request: TranslateAskRequest): Promise<boolean> {
+    if (!request.rawInput.trim()) return false;
+    if (useSessionStore.getState().stateDetectionMode === "automatic-paid") {
+      const result = await runPaidStateDetection(request);
+      if (!result) return false;
+      setPendingStateReview({ request, result, intent: "send", paid: true });
+      return false;
+    }
+    return executeRequest(request);
   }
 
   async function handleRefine(refinedInput: string): Promise<void> {
@@ -183,11 +253,17 @@ export function CenterColumn() {
     });
     // Original + addition, so translation sees the whole thought; settings are
     // read fresh from the store (the user may have changed a dropdown since).
-    // startRun also re-fires detection on this same combined text.
     startRun(
       buildTranslateAskRequest(
         combinedInput,
-        { model: s.model, directness: s.directness, techniques: s.techniques },
+        {
+          model: s.model,
+          destination: s.destination,
+          translatorEngine: s.translatorEngine,
+          reviewBeforeSend: s.reviewBeforeSend,
+          directness: s.directness,
+          techniques: s.techniques,
+        },
         s.context,
       ),
     );
@@ -263,23 +339,110 @@ export function CenterColumn() {
       ? directnessSuggestion
       : null;
 
+  function confirmImportedResponse(response: string, sourceLabel: string) {
+    if (!pendingHandoff) return;
+    updateMessage(pendingHandoff.id, { handoffStatus: "imported" });
+    addMessage({
+      id: newMessageId(),
+      role: "assistant",
+      content: response,
+      timestamp: Date.now(),
+      messageKind: "imported",
+      handoffStatus: "imported",
+      sourceLabel,
+      parentMessageId: pendingHandoff.id,
+      notes: [`Imported from ${sourceLabel}`, "Reviewed and confirmed by you"],
+    });
+    setImportingResponse(false);
+  }
+
   return (
     <>
+      <ConversationArea>
+        {gated && <TranslationCard gated={gated} onRefine={(value) => void handleRefine(value)} />}
+        {display && <StreamingAnswer state={display} />}
+      </ConversationArea>
       <Composer
         onSubmit={handleSubmit}
+        onCheckState={handleCheckState}
         detection={detection}
         detecting={detecting}
+        stateChecking={detecting}
         onCorrectState={handleCorrectState}
         suggestedDirectness={suggestedDirectness}
         onApplyDirectness={() => setDirectness(suggestedDirectness!)}
       />
       <QuickActionsRow />
-      <ConversationArea>
-        {gated && (
-          <TranslationCard gated={gated} onRefine={(value) => void handleRefine(value)} />
-        )}
-        {display && <StreamingAnswer state={display} />}
-      </ConversationArea>
+      {pendingHandoff && !importingResponse && (
+        <div className="handoff-status surface-smoked-glass" role="status">
+          <div><strong>Handed off — awaiting response</strong><span>{pendingHandoff.sourceLabel}</span></div>
+          <button type="button" onClick={() => setImportingResponse(true)}>Import Response</button>
+        </div>
+      )}
+      {pendingStateReview && (
+        <StateReviewPanel
+          initial={pendingStateReview.result}
+          intent={pendingStateReview.intent}
+          paid={pendingStateReview.paid}
+          onCancel={() => setPendingStateReview(null)}
+          onAccept={(result) => {
+            (["emotion", "rsd", "interest", "cognitive"] as PillDimension[]).forEach((dimension) => {
+              const from = pendingStateReview.result[dimension]?.value;
+              const to = result[dimension]?.value;
+              if (from && to && from !== to) {
+                useAccountStore.getState().recordStateCorrection({ dimension, from, to, timestamp: Date.now() });
+              }
+            });
+            setDetection(result);
+            useSessionStore.getState().setStatePills(toStatePills(result));
+            const shouldSend = pendingStateReview.intent === "send";
+            const request = pendingStateReview.request;
+            setPendingStateReview(null);
+            if (shouldSend) {
+              useSessionStore.getState().setDraftInput("");
+              void executeRequest(request);
+            }
+          }}
+          onKeepCurrent={() => {
+            const shouldSend = pendingStateReview.intent === "send";
+            const request = pendingStateReview.request;
+            setPendingStateReview(null);
+            if (shouldSend) {
+              useSessionStore.getState().setDraftInput("");
+              void executeRequest(request);
+            }
+          }}
+          onDismiss={() => {
+            setDetection(null);
+            const shouldSend = pendingStateReview.intent === "send";
+            const request = pendingStateReview.request;
+            setPendingStateReview(null);
+            if (shouldSend) {
+              useSessionStore.getState().setDraftInput("");
+              void executeRequest(request);
+            }
+          }}
+        />
+      )}
+      {pendingReview && (
+        <ReviewReadyRequest
+          initialText={pendingReview.text}
+          destination={pendingReview.request.destination}
+          onCancel={() => setPendingReview(null)}
+          onHandoff={(text, destination) => {
+            completeFreeHandoff({ ...pendingReview.request, destination }, text);
+            setPendingReview(null);
+          }}
+        />
+      )}
+      {importingResponse && pendingHandoff && (
+        <ImportResponseDialog
+          sourceLabel={pendingHandoff.sourceLabel ?? "Destination AI"}
+          onCancel={() => setImportingResponse(false)}
+          onConfirm={confirmImportedResponse}
+        />
+      )}
     </>
   );
 }
+
