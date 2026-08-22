@@ -1,0 +1,28 @@
+UNIVERSAL GOVERNANCE — CURRENT STATE
+
+This file is a short snapshot, not a history. Replace its values as work changes.
+Do not add fields. Decision history belongs only in DECISION_LOG.txt.
+
+ST1 — ACTIVE TASK AND OUTCOME SERVED
+Active task: Begin governed work in Claude-Project-02 through Claude Code or Codex.
+Outcome served: Produce the system the user actually requests without objective
+substitution, silent redesign, or unverified completion in either agent.
+
+ST2 — ACTIVE CONSTRAINTS / INSTRUCTIONS
+Preserve the user's exact objective, scope, existing decisions, and definition of
+success. Necessary technical completion is allowed only when supported and does
+not alter those boundaries. The user does not audit intermediate work or relay
+messages between AIs. Keep user-facing communication short and decision-focused.
+
+ST3 — CURRENT SCOPE BOUNDARY
+Boundary type: OPEN for the next explicit user request.
+Decision reference: D-002 establishes the universal executable enforcement layer;
+D-003 establishes the one-user, low-management operating scale; D-004 establishes
+the Codex-native adapter. A project task may extend this boundary only through the
+user's request or a new DECISION_LOG entry supported by that request.
+
+ST4 — LAST COMPLETED STEP / NEXT ACTION
+Last completed step: Universal governance installed and validated for Claude Code
+and Codex without changing website code.
+Next action: Start a fresh session on this branch, trust the repository hooks when
+prompted, then read DECISION_LOG.txt and CURRENT_STATE.txt before acting.

@@ -1,0 +1,74 @@
+{
+  "description": "Universal governance and completion gate for Codex.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$(git rev-parse --show-toplevel)/.codex/hooks/universal-governance-codex.cjs\" context",
+            "commandWindows": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"$root = git rev-parse --show-toplevel; node (Join-Path $root '.codex/hooks/universal-governance-codex.cjs') context\"",
+            "timeout": 30,
+            "statusMessage": "Restoring the governed task context",
+            "additionalContextLimit": 5000
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$(git rev-parse --show-toplevel)/.codex/hooks/universal-governance-codex.cjs\" capture",
+            "commandWindows": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"$root = git rev-parse --show-toplevel; node (Join-Path $root '.codex/hooks/universal-governance-codex.cjs') capture\"",
+            "timeout": 60,
+            "statusMessage": "Freezing the user's exact request",
+            "additionalContextLimit": 5000
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "^(Bash|apply_patch|Edit|Write|NotebookEdit|mcp__.*__(?:.*_)?(?:write|create|update|delete|remove|move|rename|merge).*)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$(git rev-parse --show-toplevel)/.codex/hooks/universal-governance-codex.cjs\" guard-tool",
+            "commandWindows": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"$root = git rev-parse --show-toplevel; node (Join-Path $root '.codex/hooks/universal-governance-codex.cjs') guard-tool\"",
+            "timeout": 30,
+            "statusMessage": "Enforcing the approved task boundary"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$(git rev-parse --show-toplevel)/.codex/hooks/universal-governance-codex.cjs\" verifier-result",
+            "commandWindows": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"$root = git rev-parse --show-toplevel; node (Join-Path $root '.codex/hooks/universal-governance-codex.cjs') verifier-result\"",
+            "timeout": 60,
+            "statusMessage": "Recording independent verifier evidence"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$(git rev-parse --show-toplevel)/.codex/hooks/universal-governance-codex.cjs\" finalize",
+            "commandWindows": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"$root = git rev-parse --show-toplevel; node (Join-Path $root '.codex/hooks/universal-governance-codex.cjs') finalize\"",
+            "timeout": 900,
+            "statusMessage": "Confirming the completion gate passed"
+          }
+        ]
+      }
+    ]
+  }
+}
