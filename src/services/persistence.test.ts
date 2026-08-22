@@ -8,6 +8,7 @@ import {
   createInitialSessionState,
   useSessionStore,
 } from "../stores/sessionStore";
+import { DEFAULT_REQUEST_SETTINGS, useSettingsDefaultsStore } from "../stores/settingsDefaultsStore";
 import {
   AUTOSAVE_INTERVAL_MS,
   _resetDbHandleForTests,
@@ -27,6 +28,14 @@ import {
 /** Reset the in-memory stores to cold-start defaults, as a fresh page load
     would have them before rehydration. */
 function coldStartStores() {
+  useSettingsDefaultsStore.setState({
+    directness: DEFAULT_REQUEST_SETTINGS.directness,
+    requestDefaults: {
+      ...DEFAULT_REQUEST_SETTINGS.requestDefaults,
+      destination: { ...DEFAULT_REQUEST_SETTINGS.requestDefaults.destination },
+      techniques: [...DEFAULT_REQUEST_SETTINGS.requestDefaults.techniques],
+    },
+  });
   useSessionStore.setState(createInitialSessionState());
   useAccountStore.setState(createInitialAccountState());
 }
@@ -178,5 +187,3 @@ describe("persistence: kill and reload", () => {
     );
   });
 });
-
-

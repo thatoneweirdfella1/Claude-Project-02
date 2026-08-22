@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { TRANSLATOR_ENGINES } from "../../services/providerNeutral";
 import { useSessionStore } from "../../stores/sessionStore";
+import { useSettingsDefaultsStore } from "../../stores/settingsDefaultsStore";
 import type { TranslatorEngine } from "../../stores/types";
 import { MethodologyDropdown } from "../methodology";
 
@@ -9,6 +10,8 @@ const OVERLAY_EVENT = "divergence:composer-overlay";
 
 export function AdvancedControls() {
   const [open, setOpen] = useState(false);
+  const [defaultsSaved, setDefaultsSaved] = useState(false);
+  const destination = useSessionStore((s) => s.destination);
   const translatorEngine = useSessionStore((s) => s.translatorEngine);
   const setTranslatorEngine = useSessionStore((s) => s.setTranslatorEngine);
   const reviewBeforeSend = useSessionStore((s) => s.reviewBeforeSend);
@@ -17,6 +20,11 @@ export function AdvancedControls() {
   const setPaidFallbackEnabled = useSessionStore((s) => s.setPaidFallbackEnabled);
   const maxRequestCost = useSessionStore((s) => s.maxRequestCost);
   const setMaxRequestCost = useSessionStore((s) => s.setMaxRequestCost);
+  const stateDetectionMode = useSessionStore((s) => s.stateDetectionMode);
+  const directness = useSessionStore((s) => s.directness);
+  const techniques = useSessionStore((s) => s.techniques);
+  const methodology = useSessionStore((s) => s.methodology);
+  const setRequestDefaults = useSettingsDefaultsStore((s) => s.setRequestDefaults);
 
   useEffect(() => {
     const switchOverlay = (event: Event) => {
@@ -33,6 +41,22 @@ export function AdvancedControls() {
   }
 
   const selectedEngine = translatorEngine === "legacy-claude" ? "managed-translator" : translatorEngine;
+
+  function saveDefaults() {
+    setRequestDefaults({
+      destination,
+      translatorEngine: selectedEngine,
+      reviewBeforeSend,
+      paidFallbackEnabled,
+      maxRequestCost,
+      stateDetectionMode,
+      techniques,
+      methodology,
+    });
+    useSettingsDefaultsStore.getState().setDirectness(directness);
+    setDefaultsSaved(true);
+    window.setTimeout(() => setDefaultsSaved(false), 2200);
+  }
 
   return <section className={"advanced-controls " + (open ? "is-open" : "")}>
     <button type="button" className="utility-bar" aria-expanded={open} onClick={toggle}>
@@ -56,9 +80,8 @@ export function AdvancedControls() {
         Allow paid fallback (off by default)
       </label>
       <label className="advanced-controls__field"><span>Maximum per request</span><input type="number" min="0" step="0.01" value={maxRequestCost} onChange={(event) => setMaxRequestCost(Number(event.target.value))} /></label>
-      <button type="button" className="advanced-controls__defaults">Set as defaults</button>
+      <button type="button" className="advanced-controls__defaults" onClick={saveDefaults}>{defaultsSaved ? "Defaults saved" : "Set as defaults"}</button>
     </div>}
   </section>;
 }
-
 

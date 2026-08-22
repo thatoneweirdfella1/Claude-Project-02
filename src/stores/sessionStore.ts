@@ -15,6 +15,7 @@ import type {
   TechniqueId,
   TranslatorEngine,
 } from "./types";
+import { useSettingsDefaultsStore } from "./settingsDefaultsStore";
 
 /* Session store (CANON "STORES AND PERSISTENCE") — cleared when a session
    closes. Holds the live working state of one conversation: model,
@@ -28,23 +29,26 @@ import type {
     `techniques`) is created fresh in this call, never a module-level const,
     for the same reason. */
 export function createInitialSessionState(): SessionState {
+  const settings = useSettingsDefaultsStore.getState();
+  const defaultDirectness = settings.directness;
+  const defaults = settings.requestDefaults;
   return {
     draftInput: "", // Step 5.0: the composer's not-yet-submitted text
     model: "auto", // retained for the explicit legacy Claude translator
-    destination: { providerId: "universal", modelId: "universal" },
-    translatorEngine: "auto-free-first",
-    reviewBeforeSend: true,
-    paidFallbackEnabled: false,
-    maxRequestCost: 0,
-    stateDetectionMode: "manual-free",
-    directness: 2, // CANON Feature 3: Level 2 balanced is the default
-    techniques: ["auto-detect"], // CANON Feature 4: Auto-detect is the default mode (Step 4.5)
+    destination: { ...defaults.destination },
+    translatorEngine: defaults.translatorEngine,
+    reviewBeforeSend: defaults.reviewBeforeSend,
+    paidFallbackEnabled: defaults.paidFallbackEnabled,
+    maxRequestCost: defaults.maxRequestCost,
+    stateDetectionMode: defaults.stateDetectionMode,
+    directness: defaultDirectness,
+    techniques: [...defaults.techniques],
     context: [],
     conversation: [],
     statePills: { emotion: null, rsd: null, interest: null, cognitive: null },
     variables: {}, // Step 7.4: session-local variables, default empty
     currentScreen: "translate", // Step 9.7: default to the main composer view
-    methodology: "standard", // 3-State Methodology: default to standard
+    methodology: defaults.methodology,
     methodologyPhase: "define", // Current phase when using 3-state
     lockedProblemStatement: "", // Locked problem statement to prevent drift
   };
@@ -164,7 +168,10 @@ export const useSessionStore = create<SessionStore>((set) => ({
   setPaidFallbackEnabled: (paidFallbackEnabled) => set({ paidFallbackEnabled }),
   setMaxRequestCost: (maxRequestCost) => set({ maxRequestCost: Math.max(0, maxRequestCost) }),
   setStateDetectionMode: (stateDetectionMode) => set({ stateDetectionMode }),
-  setDirectness: (directness) => set({ directness }),
+  setDirectness: (directness) => {
+    useSettingsDefaultsStore.getState().setDirectness(directness);
+    set({ directness });
+  },
   setTechniques: (techniques) => set({ techniques }),
   addContextItem: (item) => set((s) => ({ context: [...s.context, item] })),
   removeContextItem: (id) =>
@@ -240,4 +247,3 @@ export const useSessionStore = create<SessionStore>((set) => ({
       : {}),
   })),
 }));
-

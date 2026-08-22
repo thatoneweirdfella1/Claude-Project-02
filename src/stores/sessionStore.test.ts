@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { createInitialSessionState, SESSION_PERSISTED_KEYS, useSessionStore } from "./sessionStore";
+import { createInitialAccountState, useAccountStore } from "./accountStore";
+import { DEFAULT_REQUEST_SETTINGS, useSettingsDefaultsStore } from "./settingsDefaultsStore";
 import type { ConversationMessage, ContextItem, SessionRecord } from "./types";
 
 /* Step 12.1 — direct unit tests for sessionStore's own actions. Other test
@@ -10,6 +12,15 @@ import type { ConversationMessage, ContextItem, SessionRecord } from "./types";
    which fields it does and doesn't touch — is verified directly. */
 
 function resetStore() {
+  useAccountStore.setState(createInitialAccountState());
+  useSettingsDefaultsStore.setState({
+    directness: DEFAULT_REQUEST_SETTINGS.directness,
+    requestDefaults: {
+      ...DEFAULT_REQUEST_SETTINGS.requestDefaults,
+      destination: { ...DEFAULT_REQUEST_SETTINGS.requestDefaults.destination },
+      techniques: [...DEFAULT_REQUEST_SETTINGS.requestDefaults.techniques],
+    },
+  });
   useSessionStore.setState(createInitialSessionState());
 }
 
@@ -226,7 +237,7 @@ describe("setMessageRating", () => {
 });
 
 describe("resetSession", () => {
-  it("clears every field, including model/directness/techniques/currentScreen, to fresh defaults", () => {
+  it("clears session data while preserving the account-wide Directness setting", () => {
     useSessionStore.getState().setModel("claude-opus-4-8");
     useSessionStore.getState().setDirectness(3);
     useSessionStore.getState().setTechniques(["verify"]);
@@ -240,7 +251,8 @@ describe("resetSession", () => {
 
     const s = useSessionStore.getState();
     expect(s.model).toBe("auto");
-    expect(s.directness).toBe(2);
+    expect(s.directness).toBe(3);
+    expect(useSettingsDefaultsStore.getState().directness).toBe(3);
     expect(s.techniques).toEqual(["auto-detect"]);
     expect(s.currentScreen).toBe("translate");
     expect(s.conversation).toEqual([]);
@@ -312,4 +324,3 @@ describe("hydrate", () => {
     expect(s.model).toBe("claude-opus-4-8"); // untouched by this hydrate call
   });
 });
-
