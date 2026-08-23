@@ -20,7 +20,7 @@ Read these committed files before changing the next repair:
 4. `docs/repair-authority/DIVERGENCE-AI-DECISION-QUEUE-v2.md`
 5. `docs/repair-authority/DIVERGENCE-AI-UPSTREAM-DECISION-RECOVERY-AUDIT-v1.md` only when provenance is needed.
 
-The queue has 39 repair groups. V2-RQ-001 through V2-RQ-003 are complete and verified. Thirty-six remain. The visible-site routing milestone and the paid Review-first RQ-004 slice below are also complete. Continue the remaining V2-RQ-004 acceptance audit next.
+The queue has 39 repair groups. V2-RQ-001 through V2-RQ-003 are complete and verified. Thirty-six remain. The visible-site routing milestone plus the RQ-004/RQ-005 frontend slices below are complete. Do not count each remaining RQ as one current task; continue in small, coherent, verified batches.
 
 ## Completed and verified
 
@@ -72,17 +72,36 @@ The queue has 39 repair groups. V2-RQ-001 through V2-RQ-003 are complete and ver
 - Model-registry/type mismatches were corrected without mixing provider destinations into the Claude scorer.
 - Do not mark all of V2-RQ-004 complete yet. Managed-free and provider/backend dependencies remain later work, and the remaining SPEC-MC rows still require an explicit acceptance audit.
 
+### V2-RQ-004 follow-ons — truthful handoff and exact destination
+
+- Manual handoff commit: `dbfbfd77e9427295cc637c129fa8b998371a6a30`
+- Matching READY deployment: `dpl_4h8iUTiT1KZLnkUtV2ThAT12aj4A`
+- Exact destination commit: `cd1834e09771f063450c3e85a666263618082f5b`
+- Matching READY deployment before the next branch deployment: `dpl_HBWrXysFWTL1xq5mvbJyY2s3qGLW`
+- Manual/free routes now require a real Copy/Open action before reporting handoff.
+- An explicitly selected official destination opens directly.
+- Supported Anthropic model selections are honored exactly; unsupported or unconnected selections use truthful manual handoff rather than silent substitution.
+
+### V2-RQ-005 slice — attached context delivery
+
+- App commit: `91feb54684326b53d0db56968b5307771dea5a32`
+- Matching READY deployment: `dpl_6jX8ATmKWB4XZgppW8LJYTrTJzo6`
+- Deployment URL: `https://claude-project-02-ablihm01q-thatoneweirdfella1s-projects.vercel.app`
+- Verification: 68 test files / 643 tests passed; TypeScript and Vite production build passed; root returned HTTP 200.
+- Included context now reaches the connected model request; excluded context does not.
+- Preflight estimation includes the included context length.
+- Do not mark all of V2-RQ-005 complete: real PDF extraction and richer per-item loading/error/retry/source metadata remain.
+
 ## Next exact action
 
-Continue V2-RQ-004: audit the deployed main composer against SPEC-MC-01 through SPEC-MC-13 and implement only the remaining acceptance gaps.
+The user-visible navigation/link batch is complete and verified. Continue only the next smallest authority-backed functional gap; do not restart or broaden the visible-link work.
 
 Before editing:
 
-1. Extract the SPEC-MC rows from the control map and the matching sections of `docs/frozen-implementation-v1/DIVERGENCE-AI-COMPREHENSIVE-SPECIFICATION.md`.
-2. Audit the current branch and the encoded Cowork overlay, not the obsolete ZIP.
-3. Treat the paid Review-first slice above as completed evidence; do not rebuild it.
-4. Map every remaining acceptance behavior to its actual entry point and test.
-5. Implement the remaining repair, then test, build, deploy, and inspect the live bundle/flow before marking it complete.
+1. Audit the current branch and the encoded Cowork overlay, not the obsolete ZIP.
+2. Treat visible navigation, paid Review first, truthful manual handoff, exact destination routing, and included-context delivery as completed evidence; do not rebuild them.
+3. Keep later managed-free/provider/backend work explicitly deferred unless it is the next selected queue batch.
+4. For any next batch: map the exact acceptance behavior to its real entry point and test, implement it, then test, build, deploy, and inspect live evidence before marking it complete.
 
 V2-RQ-004 depends on RQ-001 and RQ-002, which are done. Final managed-free acceptance also depends on later RQ-010/RQ-011; do not falsely claim that later dependency complete during RQ-004.
 

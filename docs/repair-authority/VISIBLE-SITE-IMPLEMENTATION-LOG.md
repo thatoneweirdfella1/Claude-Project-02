@@ -89,3 +89,47 @@ Not claimed complete by this checkpoint:
 - V2-RQ-004 as a whole remains open pending the remaining SPEC-MC acceptance audit and dependent managed-free work.
 - V2-RQ-007 remains open for the complete persisted transparency record and `Why this worked` behavior.
 - Server-backed provider connections, managed allowance, authoritative credit reservation/reconciliation, and provider-specific execution remain in their later queue items.
+
+## Follow-on checkpoint — truthful manual handoff
+
+- App commit: `dbfbfd77e9427295cc637c129fa8b998371a6a30`.
+- Matching Vercel deployment: `dpl_4h8iUTiT1KZLnkUtV2ThAT12aj4A` — READY.
+- Deployment URL: `https://claude-project-02-5rujhxmgs-thatoneweirdfella1s-projects.vercel.app`.
+- Vercel ran 68 test files / 639 tests successfully, then passed the full TypeScript and Vite production build.
+- The deployed root returned HTTP 200.
+
+Implemented and verified in this checkpoint:
+
+- Free/manual routes never claim the request was handed off before the user actually uses Copy or Open.
+- An explicitly selected official destination opens directly instead of forcing the user to select it again.
+
+## Follow-on checkpoint — exact paid destination
+
+- App commit: `cd1834e09771f063450c3e85a666263618082f5b`.
+- Matching Vercel deployment: `dpl_HBWrXysFWTL1xq5mvbJyY2s3qGLW` — READY before the next successful branch deployment.
+
+Implemented and verified in this checkpoint:
+
+- A supported Anthropic model selected by the user is honored exactly.
+- An unsupported or unconnected provider/model becomes a truthful manual handoff instead of being silently substituted.
+
+## Follow-on checkpoint — attached context reaches the model
+
+- App commit: `91feb54684326b53d0db56968b5307771dea5a32`.
+- Matching Vercel deployment: `dpl_6jX8ATmKWB4XZgppW8LJYTrTJzo6` — READY.
+- Deployment URL: `https://claude-project-02-ablihm01q-thatoneweirdfella1s-projects.vercel.app`.
+- Vercel ran 68 test files / 643 tests successfully, then passed the full TypeScript and Vite production build.
+- The deployed root returned HTTP 200.
+
+Implemented and verified in this checkpoint:
+
+- Included context is appended to the final connected-model request in a clearly delimited reference-material block.
+- Excluded context remains out of the model request.
+- Connected-route preflight cost estimation includes the selected context length.
+- Unit and end-to-end pipeline tests use unique included/excluded markers to prove the boundary.
+
+Still deferred and not claimed complete:
+
+- Real PDF text extraction; the current PDF path reports an honest placeholder instead of pretending extraction succeeded.
+- Richer persistent per-item loading/error/retry and source/open metadata.
+- Whole-RQ completion for RQ-004/RQ-005 and later provider/backend dependencies.
