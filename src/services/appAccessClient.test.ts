@@ -1,49 +1,85 @@
-/* Client-side app access storage — confirms the header helper reads exactly
-   what's stored, storage round-trips through localStorage, and clearing
-   actually clears (rather than leaving a stale empty string that would
-   still satisfy a server checking against an empty configured password —
-   appAccess.ts's own isAuthorized already guards that server-side, but the
-   client shouldn't rely solely on that). */
-
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { APP_PASSWORD_HEADER } from "./appAccess";
 import {
   appAccessHeaders,
   clearStoredAppPassword,
   getStoredAppPassword,
   setStoredAppPassword,
+  verifyAppAccess,
 } from "./appAccessClient";
 
 beforeEach(() => {
-  localStorage.clear();
+  clearStoredAppPassword();
 });
 
-describe("getStoredAppPassword / setStoredAppPassword", () => {
-  it("returns an empty string when nothing is stored", () => {
+describe("app access storage", () => {
+  it("round-trips and clears the stored password", () => {
     expect(getStoredAppPassword()).toBe("");
-  });
-
-  it("round-trips a stored value", () => {
     setStoredAppPassword("hunter2");
     expect(getStoredAppPassword()).toBe("hunter2");
-  });
-});
-
-describe("clearStoredAppPassword", () => {
-  it("removes a previously stored value", () => {
-    setStoredAppPassword("hunter2");
     clearStoredAppPassword();
     expect(getStoredAppPassword()).toBe("");
   });
-});
 
-describe("appAccessHeaders", () => {
-  it("is empty when nothing is stored", () => {
-    expect(appAccessHeaders()).toEqual({});
+  it("builds no header for an empty password", () => {
+    expect(appAccessHeaders("")).toEqual({});
   });
 
-  it("carries the stored password under the shared header name", () => {
-    setStoredAppPassword("hunter2");
-    expect(appAccessHeaders()).toEqual({ [APP_PASSWORD_HEADER]: "hunter2" });
+  it("builds the shared header for an explicit password", () => {
+    expect(appAccessHeaders("hunter2")).toEqual({ [APP_PASSWORD_HEADER]: "hunter2" });
+  });
+});
+
+describe("verifyAppAccess", () => {
+  it("checks the deployment without a password", async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(JSON.stringify({ requiresPassword: false, ok: true }), { status: 200 }),
+    );
+
+    await expect(verifyAppAccess("", fetchImpl)).resolves.toEqual({
+      requiresPassword: false,
+      ok: true,
+    });
+    expect(fetchImpl).toHaveBeenCalledWith("/api/verify-access", {
+      method: "GET",
+      headers: {},
+      cache: "no-store",
+    });
+  });
+
+  it("sends an entered password to the verification endpoint", async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(JSON.stringify({ requiresPassword: true, ok: true }), { status: 200 }),
+    );
+
+    await expect(verifyAppAccess("correct-horse", fetchImpl)).resolves.toEqual({
+      requiresPassword: true,
+      ok: true,
+    });
+    expect(fetchImpl).toHaveBeenCalledWith("/api/verify-access", {
+      method: "GET",
+      headers: { [APP_PASSWORD_HEADER]: "correct-horse" },
+      cache: "no-store",
+    });
+  });
+
+  it("preserves a valid locked response for the gate to handle", async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(JSON.stringify({ requiresPassword: true, ok: false }), { status: 200 }),
+    );
+    await expect(verifyAppAccess("wrong", fetchImpl)).resolves.toEqual({
+      requiresPassword: true,
+      ok: false,
+    });
+  });
+
+  it("fails closed on HTTP and malformed responses", async () => {
+    const unavailable = vi.fn<typeof fetch>().mockResolvedValue(new Response("no", { status: 503 }));
+    await expect(verifyAppAccess("secret", unavailable)).rejects.toThrow("503");
+
+    const malformed = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(JSON.stringify({ ok: true }), { status: 200 }),
+    );
+    await expect(verifyAppAccess("secret", malformed)).rejects.toThrow("invalid response");
   });
 });

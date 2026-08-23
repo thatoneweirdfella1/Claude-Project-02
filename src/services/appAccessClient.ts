@@ -1,46 +1,63 @@
-/* Client-side half of the app access gate (see appAccess.ts for the
-   server-side check this pairs with). Stores the user's entered password in
-   localStorage — never sent anywhere except this app's own /api/* endpoints,
-   as the one extra header every provider-call client already attaches. */
-
-import { APP_PASSWORD_HEADER } from "./appAccess";
+import { APP_PASSWORD_HEADER, type AccessCheckResult } from "./appAccess";
 
 const STORAGE_KEY = "divergence-app-access-password";
+const VERIFY_ENDPOINT = "/api/verify-access";
+let memoryPassword = "";
 
-/** localStorage can throw (private browsing, storage disabled, quota) —
-    every call here is wrapped so a storage failure degrades to "not
-    remembered" rather than crashing the app. */
 export function getStoredAppPassword(): string {
   try {
-    return localStorage.getItem(STORAGE_KEY) ?? "";
+    return localStorage.getItem(STORAGE_KEY) ?? memoryPassword;
   } catch {
-    return "";
+    return memoryPassword;
   }
 }
 
 export function setStoredAppPassword(password: string): void {
+  memoryPassword = password;
   try {
     localStorage.setItem(STORAGE_KEY, password);
   } catch {
-    // Not remembered across reloads, but the in-memory gate state still
-    // unlocks for the rest of this session — see AppAccessGate.tsx.
+    // The active gate still unlocks for this browser session.
   }
 }
 
 export function clearStoredAppPassword(): void {
+  memoryPassword = "";
   try {
     localStorage.removeItem(STORAGE_KEY);
   } catch {
-    // Nothing to do — see getStoredAppPassword's own comment.
+    // Nothing else to clear.
   }
 }
 
-/** Every client that calls this app's own /api/* endpoints (proxyClient.ts,
-    debate/client.ts, urlContext.ts) spreads this into its request headers.
-    Empty when nothing's stored yet — the server's isAuthorized() rejects an
-    empty/missing header the same as a wrong one, so this never needs its own
-    "do I have a password" branch at the call site. */
-export function appAccessHeaders(): Record<string, string> {
-  const password = getStoredAppPassword();
+export function appAccessHeaders(password = getStoredAppPassword()): Record<string, string> {
   return password ? { [APP_PASSWORD_HEADER]: password } : {};
+}
+
+function isAccessCheckResult(value: unknown): value is AccessCheckResult {
+  if (!value || typeof value !== "object") return false;
+  const result = value as Partial<AccessCheckResult>;
+  return typeof result.requiresPassword === "boolean" && typeof result.ok === "boolean";
+}
+
+export async function verifyAppAccess(
+  password: string,
+  fetchImpl: typeof fetch = fetch,
+  endpoint = VERIFY_ENDPOINT,
+): Promise<AccessCheckResult> {
+  const response = await fetchImpl(endpoint, {
+    method: "GET",
+    headers: appAccessHeaders(password),
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Access verification failed (${response.status})`);
+  }
+
+  const result: unknown = await response.json();
+  if (!isAccessCheckResult(result)) {
+    throw new Error("Access verification returned an invalid response");
+  }
+  return result;
 }
