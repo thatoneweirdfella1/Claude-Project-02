@@ -8,6 +8,7 @@ import {
   TRANSLATOR_ENGINES,
 } from "./providerNeutral";
 import { useSessionStore } from "../stores/sessionStore";
+import type { ContextItem } from "../stores/types";
 
 describe("provider-neutral frozen flow", () => {
   beforeEach(() => useSessionStore.getState().resetSession());
@@ -48,6 +49,26 @@ describe("provider-neutral frozen flow", () => {
     expect(ready).toContain("USER STATE");
     expect(ready).toContain("overwhelmed");
     expect(ready).toContain("step-by-step");
+  });
+
+  it("delivers included context content and omits excluded context", () => {
+    const included = {
+      id: "included", kind: "text", label: "Launch notes",
+      content: "UNIQUE_CONTEXT_SENTINEL_74291", bytes: 29,
+    } satisfies ContextItem;
+    const excluded = {
+      id: "excluded", kind: "text", label: "Private scratch",
+      content: "EXCLUDED_CONTEXT_SENTINEL_93517", bytes: 31, included: false,
+    } as ContextItem & { included: boolean };
+    const packet = compileMeaningPacket({
+      rawInput: "Summarize the launch notes.", directness: 2, techniques: ["auto-detect"],
+      context: [included, excluded],
+    });
+    const ready = buildAiReadyRequest(packet);
+    expect(ready).toContain("Launch notes");
+    expect(ready).toContain("UNIQUE_CONTEXT_SENTINEL_74291");
+    expect(ready).not.toContain("Private scratch");
+    expect(ready).not.toContain("EXCLUDED_CONTEXT_SENTINEL_93517");
   });
 
   it("stores handoff and imported response as distinct message kinds", () => {
