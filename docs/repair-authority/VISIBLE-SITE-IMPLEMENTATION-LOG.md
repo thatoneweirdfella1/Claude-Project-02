@@ -62,5 +62,30 @@ Implementation files:
 - Search opens the correct content category; per-record focus inside Templates and Saved Prompts remains deferred.
 - Checkpoints create and restore recoverable snapshots; preview, pre-restore snapshot, and one-click undo remain deferred.
 - Router opens existing Advanced Controls; a dedicated route-reason drawer and recorded Apply action remain deferred.
-- The paid Review-first patch remains unpublished until its CenterColumn wiring is complete. Its four local files are intentionally excluded from this batch.
+- The paid Review-first flow is now published as the separately verified follow-on checkpoint below; complete RQ-004 and RQ-007 acceptance remain separate work.
 - Backend-heavy repair-queue items remain separate work. They were not pulled into this visible-site pass.
+
+## Follow-on checkpoint — paid Review first
+
+- App code commit: `e03110da135a1aea74c9a52a8f7c0b59408ac03b`.
+- Deployment-preservation fix: `8e1055b87cad233d9af6a0b9bf6812cf0098b9b0`.
+- Matching Vercel deployment: `dpl_EdnsSFikvL57nmwPcfCys5R9pguP` — READY.
+- Deployment URL: `https://claude-project-02-5w37exb2j-thatoneweirdfella1s-projects.vercel.app`.
+- Vercel ran 67 test files / 637 tests successfully, then passed the full TypeScript and Vite production build.
+- The deployed root returned HTTP 200.
+
+Implemented and verified in this checkpoint:
+
+- Paid connected routes with Review first prepare the translation once, display an editable review, and do not execute the answer request until the user selects Send to AI.
+- Show changes exposes original and prepared wording.
+- Back and Cancel preserve the original draft and current settings.
+- `Send automatically next time` updates the remembered session choice only when the reviewed request is actually sent.
+- The exact edited prepared request is passed into the pipeline without a duplicate translation call.
+- Preparation usage is retained in telemetry and cost tracking.
+- Provider destination models remain separate from the Claude complexity-scorer override, preventing an unsupported provider selection from silently entering that scorer.
+
+Not claimed complete by this checkpoint:
+
+- V2-RQ-004 as a whole remains open pending the remaining SPEC-MC acceptance audit and dependent managed-free work.
+- V2-RQ-007 remains open for the complete persisted transparency record and `Why this worked` behavior.
+- Server-backed provider connections, managed allowance, authoritative credit reservation/reconciliation, and provider-specific execution remain in their later queue items.
