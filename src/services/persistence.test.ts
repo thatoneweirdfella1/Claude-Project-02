@@ -49,6 +49,9 @@ describe("persistence: kill and reload", () => {
     // text comes back" — draftInput is deliberately left mid-thought here,
     // exactly the crash-mid-thought scenario CANON's persistence rule targets.
     useSessionStore.getState().setDraftInput("okay so i was thinking about how");
+    useSessionStore.getState().setDraftSelection(8, 18);
+    useSessionStore.getState().setConversationScrollTop(144);
+    const originalSessionId = useSessionStore.getState().sessionId;
     useSessionStore.getState().setDirectness(3);
     useSessionStore.getState().setModel("claude-opus-4-8");
     useSessionStore.getState().setTechniques(["step-by-step"]);
@@ -91,6 +94,10 @@ describe("persistence: kill and reload", () => {
     // draft, which is the whole point of Step 5.0 binding it to store state.
     const session = useSessionStore.getState();
     expect(session.draftInput).toBe("okay so i was thinking about how");
+    expect(session.sessionId).toBe(originalSessionId);
+    expect(session.draftSelectionStart).toBe(8);
+    expect(session.draftSelectionEnd).toBe(18);
+    expect(session.conversationScrollTop).toBe(144);
     expect(session.directness).toBe(3);
     expect(session.model).toBe("claude-opus-4-8");
     expect(session.techniques).toEqual(["step-by-step"]);
@@ -103,10 +110,11 @@ describe("persistence: kill and reload", () => {
     expect(account.plan).toBe("pro");
     expect(account.variables.codename).toBe("Zarquith");
     expect(account.visibility.quickTools).toBe(true);
-    expect(account.visibility.recentSessions).toBe(true); // untouched default preserved
+    expect(account.visibility.recentSessions).toBe(false); // untouched default preserved
     expect(account.stateCorrections).toEqual([
       { dimension: "emotion", from: "overwhelmed", to: "frustrated", timestamp: 222 },
     ]);
+    expect(account.sessions.some((record) => record.id === originalSessionId)).toBe(true);
   });
 
   it("leaves stores at defaults when nothing was ever saved", async () => {
@@ -131,15 +139,9 @@ describe("persistence: kill and reload", () => {
     expect(useAccountStore.getState().variables.x).toBe("y");
   });
 
-  it("autosave interval is 5s and startAutosave flushes on pagehide; stop() removes the listener", async () => {
-    // CANON's interval value.
-    expect(AUTOSAVE_INTERVAL_MS).toBe(5000);
+  it("autosaves 500ms after changes, flushes on pagehide, and stop() removes protection", async () => {
+    expect(AUTOSAVE_INTERVAL_MS).toBe(500);
 
-    // (Fake timers are deliberately NOT used here: they deadlock against
-    // fake-indexeddb's async scheduler. The 5s setInterval is a trivial
-    // wrapper over saveNow(), which is exercised directly by the other
-    // tests; here we verify the close-protection flush + listener cleanup,
-    // which is the part with real logic.)
     const { openDB } = await import("idb");
     const rawAccountPlan = async () => {
       const db = await openDB("divergence-ai", 1);
@@ -149,11 +151,16 @@ describe("persistence: kill and reload", () => {
 
     const stop = startAutosave();
 
-    // A page-hide flush must persist current state.
     useAccountStore.getState().setPlan("pro");
-    window.dispatchEvent(new Event("pagehide"));
     await vi.waitFor(async () => {
       expect(await rawAccountPlan()).toBe("pro");
+    }, { timeout: 1_500 });
+
+    // A page-hide flush must persist current state.
+    useAccountStore.getState().setPlan("insane");
+    window.dispatchEvent(new Event("pagehide"));
+    await vi.waitFor(async () => {
+      expect(await rawAccountPlan()).toBe("insane");
     });
 
     // After stop(), a page-hide must NOT persist further changes.
@@ -161,7 +168,7 @@ describe("persistence: kill and reload", () => {
     useAccountStore.getState().setPlan("free");
     window.dispatchEvent(new Event("pagehide"));
     await new Promise((resolve) => setTimeout(resolve, 50));
-    expect(await rawAccountPlan()).toBe("pro"); // unchanged since stop()
+    expect(await rawAccountPlan()).toBe("insane"); // unchanged since stop()
   });
 
   it("persisted session state contains only data, no action functions", async () => {
@@ -174,7 +181,7 @@ describe("persistence: kill and reload", () => {
     const hasFunction = Object.values(raw).some((v) => typeof v === "function");
     expect(hasFunction).toBe(false);
     expect(Object.keys(raw).sort()).toEqual(
-      ["context", "conversation", "currentScreen", "destination", "directness", "draftInput", "lockedProblemStatement", "methodology", "methodologyPhase", "model", "reviewBeforeSend", "statePills", "techniques", "translatorEngine", "variables"].sort(),
+      ["sessionId", "sessionCreatedAt", "sessionTitle", "draftInput", "draftSelectionStart", "draftSelectionEnd", "conversationScrollTop", "context", "conversation", "currentScreen", "destination", "directness", "lockedProblemStatement", "maxRequestCost", "methodology", "methodologyPhase", "model", "paidFallbackEnabled", "reviewBeforeSend", "statePills", "techniques", "translatorEngine", "variables"].sort(),
     );
   });
 });

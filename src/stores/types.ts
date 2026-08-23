@@ -9,9 +9,25 @@
 
 /* ── Small fixed enums (settled by CANON/ROUTING, won't change) ───────── */
 
-/** The three model ids, fixed by CANON "LOCKED DECISIONS" and ROUTING.md.
+/** Model IDs across all supported providers.
+    Fixed by CANON "LOCKED DECISIONS" and ROUTING.md.
     Full model registry (labels, tiers, capabilities) is Step 1.10. */
-export type ModelId = "claude-haiku-4-5" | "claude-sonnet-5" | "claude-opus-4-8";
+export type ModelId =
+  // Anthropic
+  | "claude-haiku-4-5"
+  | "claude-sonnet-5"
+  | "claude-opus-4-8"
+  // OpenAI
+  | "gpt-4o"
+  | "gpt-5"
+  // Google Gemini
+  | "gemini-flash"
+  | "gemini-pro"
+  // xAI Grok
+  | "grok"
+  // DeepSeek
+  | "deepseek"
+  | "deepseek-reasoner";
 
 /** What the user picks in the Model dropdown. "auto" hands the choice to
     the routing engine (ROUTING.md); a ModelId is a manual override. */
@@ -271,17 +287,29 @@ export interface ArchivedPair {
   timestamp: number;
 }
 
-/* A whole session snapshot (CANON Feature 11: Duplicate Session "copy
-   conversation, context, and settings"; Close Session "save and archive,
-   discard, or archive tagged"; LEFT NAVIGATION's Archive screen; the Recent
-   Sessions accordion, Step 9.5). Duplicating writes one of these with
-   `archived: false` (a filed-away copy, live session keeps running
-   untouched) — closed-and-saved sessions write one with `archived: true`
-   (optionally `tag`ged); a *discarded* close writes nothing here at all,
-   by design ("discard" means don't keep it). */
+/* A complete lifecycle/recovery snapshot. Active and Saved records remain in
+   sessions; Archived records are marked explicitly; Discard moves the same
+   recoverable record to accountStore.trashed instead of erasing it. */
+export type SessionLifecycleStatus = "active" | "saved" | "archived";
+export type SessionRecoveryReason =
+  | "autosave"
+  | "navigation"
+  | "new-session"
+  | "resume"
+  | "duplicate"
+  | "finish-save"
+  | "finish-archive"
+  | "discard"
+  | "start-fresh";
+
 export interface SessionRecord {
   id: string;
   createdAt: number;
+  /** Last recovery write; legacy records fall back to createdAt. */
+  updatedAt?: number;
+  /** Explicit lifecycle state. Legacy records derive this from archived. */
+  status?: SessionLifecycleStatus;
+  recoveryReason?: SessionRecoveryReason;
   /** Set only when archived via Close Session; undefined for a duplicated,
       still-conceptually-open copy. */
   closedAt?: number;
@@ -298,6 +326,8 @@ export interface SessionRecord {
   translatorEngine?: TranslatorEngine;
   /** Whether the user reviews the AI-ready request before handoff. */
   reviewBeforeSend?: boolean;
+  paidFallbackEnabled?: boolean;
+  maxRequestCost?: number;
   directness: DirectnessLevel;
   techniques: TechniqueId[];
   context: ContextItem[];
@@ -305,6 +335,14 @@ export interface SessionRecord {
   conversation: ConversationMessage[];
   /** Recovery saves include an unfinished composer draft. */
   draftInput?: string;
+  draftSelectionStart?: number;
+  draftSelectionEnd?: number;
+  conversationScrollTop?: number;
+  statePills?: StatePills;
+  currentScreen?: ScreenId;
+  methodology?: MethodologyType;
+  methodologyPhase?: MethodologyPhase;
+  lockedProblemStatement?: string;
 }
 
 /* Feedback rating (CANON Feature 7). Full rating UI + learning loop is
@@ -347,6 +385,30 @@ export interface PromptTemplate {
 /* Explicitly-saved variables ($name -> value), CANON Feature 6/11.
    Record, not Map, so it serializes straight to IndexedDB. */
 export type SavedVariables = Record<string, string>;
+
+/* Saved session (RQ-016: Session Management). Stores snapshot of a session
+   for archiving and resuming. */
+export interface SavedSession {
+  id: string;
+  title: string;
+  createdAt: number;
+  lastModifiedAt: number;
+  archivedAt?: number;
+  /** Snapshot of SessionState for resuming */
+  snapshot: Partial<SessionState>;
+  messageCount: number;
+  cost: number;
+}
+
+/* Trash item (RQ-017: Archive & Trash). Stores deleted sessions for recovery. */
+export interface TrashItem {
+  id: string;
+  sessionId: string;
+  title: string;
+  deletedAt: number;
+  expiresAt: number; /** Auto-purge after 30 days */
+  snapshot: Partial<SavedSession>;
+}
 
 /* Theme preference (CANON Feature 12: "gear dropdown... with theme toggle
    (Light / Dark / Auto)"). Built this session, alongside the actual light
@@ -512,11 +574,18 @@ export type ScreenId =
   | "trash";
 
 export interface SessionState {
+  /** Stable identity for the live session so autosave updates one record. */
+  sessionId: string;
+  sessionCreatedAt: number;
+  sessionTitle: string;
   /** The composer's in-progress, not-yet-submitted text (Step 5.0). Lives here
       (not local component state) so autosave (Step 1.8) covers it — CANON's
       persistence rule that a crash mid-thought must not cost the user the
       thought. Cleared to "" only on TRANSLATE & ASK submit or session close. */
   draftInput: string;
+  draftSelectionStart: number;
+  draftSelectionEnd: number;
+  conversationScrollTop: number;
   model: ModelSelection;
   destination: DestinationSelection;
   translatorEngine: TranslatorEngine;

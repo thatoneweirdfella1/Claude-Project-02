@@ -251,8 +251,7 @@ interface AccountActions {
   /** Record one state-pill correction (Step 6.4). Appends, capped at
       MAX_STATE_CORRECTIONS (oldest dropped first). */
   recordStateCorrection: (correction: StateCorrection) => void;
-  /** Step 9.1 — files one duplicated or closed-and-archived session. Pure
-      append; nothing here ever removes or mutates a past record. */
+  /** Insert or replace one lifecycle snapshot by stable session id. */
   addSessionRecord: (record: SessionRecord) => void;
   removeSessionRecord: (id: string) => void;
   /** Move a session from active history to trash (soft delete). */
@@ -467,20 +466,38 @@ export const useAccountStore = create<AccountStore>((set, get) => ({
             : next,
       };
     }),
-  addSessionRecord: (record) => set((s) => ({ sessions: [...s.sessions, record] })),
+  addSessionRecord: (record) => set((s) => {
+    const existing = s.sessions.findIndex((item) => item.id === record.id);
+    return {
+      sessions: existing === -1
+        ? [...s.sessions, record]
+        : s.sessions.map((item) => item.id === record.id ? record : item),
+    };
+  }),
   removeSessionRecord: (id) => set((s) => ({ sessions: s.sessions.filter((record) => record.id !== id) })),
   moveSessionToTrash: (id) =>
-    set((s) => ({
-      sessions: s.sessions.filter((rec) => rec.id !== id),
-      trashed: [...s.trashed, ...s.sessions.filter((rec) => rec.id === id)],
-    })),
+    set((s) => {
+      const record = s.sessions.find((item) => item.id === id);
+      if (!record) return {};
+      return {
+        sessions: s.sessions.filter((item) => item.id !== id),
+        trashed: [...s.trashed.filter((item) => item.id !== id), record],
+      };
+    }),
   deleteSessionFromTrash: (id) =>
     set((s) => ({ trashed: s.trashed.filter((rec) => rec.id !== id) })),
   restoreSessionFromTrash: (id) =>
-    set((s) => ({
-      trashed: s.trashed.filter((rec) => rec.id !== id),
-      sessions: [...s.sessions, ...s.trashed.filter((rec) => rec.id === id)],
-    })),
+    set((s) => {
+      const record = s.trashed.find((item) => item.id === id);
+      if (!record) return {};
+      return {
+        trashed: s.trashed.filter((item) => item.id !== id),
+        sessions: [
+          ...s.sessions.filter((item) => item.id !== id),
+          record,
+        ],
+      };
+    }),
   addTemplate: (template) => set((s) => ({ templates: [...s.templates, template] })),
   removeTemplate: (id) =>
     set((s) => ({ templates: s.templates.filter((t) => t.id !== id) })),
@@ -516,6 +533,9 @@ export const useAccountStore = create<AccountStore>((set, get) => ({
         ...original,
         id: `session-${Date.now()}`,
         createdAt: Date.now(),
+        updatedAt: Date.now(),
+        status: "active",
+        recoveryReason: "duplicate",
         archived: false,
         closedAt: undefined,
         tag: `Copy of ${original.tag || `Session ${original.id.slice(0, 6)}`}`,

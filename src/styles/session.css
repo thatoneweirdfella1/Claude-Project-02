@@ -193,3 +193,9 @@
 }
 .undo-toast button { color: var(--frozen-cyan); border: 0; background: transparent; font-weight: 700; cursor: pointer; }
 .undo-toast small { color: var(--frozen-muted); }
+
+@media (max-width: 600px) {
+  .finish-session { width: 100%; min-height: 0; }
+  .finish-session__choices { grid-template-columns: 1fr; }
+  .undo-toast { width: calc(100% - 24px); bottom: 12px; flex-wrap: wrap; justify-content: center; }
+}

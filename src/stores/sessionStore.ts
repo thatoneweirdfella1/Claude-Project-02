@@ -17,6 +17,12 @@ import type {
 
 export const DEFAULT_MAX_REQUEST_COST = 0.25;
 
+function newLiveSessionId(): string {
+  return typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : `session-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
+}
+
 /* Session store (CANON "STORES AND PERSISTENCE") — cleared when a session
    closes. Holds the live working state of one conversation: model,
    directness, technique(s), loaded context, conversation history, and the
@@ -29,8 +35,15 @@ export const DEFAULT_MAX_REQUEST_COST = 0.25;
     `techniques`) is created fresh in this call, never a module-level const,
     for the same reason. */
 export function createInitialSessionState(): SessionState {
+  const now = Date.now();
   return {
+    sessionId: newLiveSessionId(),
+    sessionCreatedAt: now,
+    sessionTitle: "",
     draftInput: "", // Step 5.0: the composer's not-yet-submitted text
+    draftSelectionStart: 0,
+    draftSelectionEnd: 0,
+    conversationScrollTop: 0,
     model: "auto", // retained for the explicit legacy Claude translator
     destination: { providerId: "universal", modelId: "universal" },
     translatorEngine: "auto-free-first",
@@ -53,7 +66,13 @@ export function createInitialSessionState(): SessionState {
 /** The persisted data keys, for the autosave layer (Step 1.8) to read and
     rehydrate without hardcoding field names or touching the actions. */
 export const SESSION_PERSISTED_KEYS: (keyof SessionState)[] = [
+  "sessionId",
+  "sessionCreatedAt",
+  "sessionTitle",
   "draftInput",
+  "draftSelectionStart",
+  "draftSelectionEnd",
+  "conversationScrollTop",
   "model",
   "destination",
   "translatorEngine",
@@ -74,6 +93,8 @@ export const SESSION_PERSISTED_KEYS: (keyof SessionState)[] = [
 
 interface SessionActions {
   setDraftInput: (draftInput: string) => void;
+  setDraftSelection: (start: number, end: number) => void;
+  setConversationScrollTop: (scrollTop: number) => void;
   setModel: (model: ModelSelection) => void;
   setDestination: (destination: DestinationSelection) => void;
   setTranslatorEngine: (translatorEngine: TranslatorEngine) => void;
@@ -125,13 +146,9 @@ interface SessionActions {
       did not build ("if resuming turns out to be needed, it's a new
       sessionStore action ... calling hydrate() with the record's fields").
 
-      Sets exactly the six fields a SessionRecord carries. draftInput and
-      statePills are CLEARED, not preserved: a record stores neither (an
-      unsent draft and a per-turn pill reading both belong to the moment, not
-      the archived session), so carrying the CURRENT session's values forward
-      would leave the user's half-typed thought and stale pills sitting above
-      a conversation they no longer belong to. currentScreen is deliberately
-      untouched — navigation is orthogonal to which session is loaded. */
+      Restores the complete recoverable working snapshot, including draft,
+      caret, scroll position, state pills, and request settings. currentScreen
+      remains untouched because the caller owns the destination transition. */
   loadSessionRecord: (record: SessionRecord) => void;
   /** Set which methodology to use (standard or 3-state). */
   setMethodology: (methodology: MethodologyType) => void;
@@ -154,7 +171,20 @@ const VALID_SCREENS = new Set<ScreenId>([
 export const useSessionStore = create<SessionStore>((set) => ({
   ...createInitialSessionState(),
 
-  setDraftInput: (draftInput) => set({ draftInput }),
+  setDraftInput: (draftInput) => set({
+    draftInput,
+    draftSelectionStart: draftInput.length,
+    draftSelectionEnd: draftInput.length,
+  }),
+  setDraftSelection: (start, end) => set((state) => ({
+    draftSelectionStart: Math.max(0, Math.min(state.draftInput.length, Math.floor(start))),
+    draftSelectionEnd: Math.max(0, Math.min(state.draftInput.length, Math.floor(end))),
+  })),
+  setConversationScrollTop: (conversationScrollTop) => set({
+    conversationScrollTop: Number.isFinite(conversationScrollTop)
+      ? Math.max(0, conversationScrollTop)
+      : 0,
+  }),
   setModel: (model) => set({ model }),
   setDestination: (destination) => set({ destination }),
   setTranslatorEngine: (translatorEngine) => set({ translatorEngine }),
@@ -188,36 +218,69 @@ export const useSessionStore = create<SessionStore>((set) => ({
   updateMessage: (messageId, patch) =>
     set((s) => ({ conversation: s.conversation.map((m) => m.id === messageId ? { ...m, ...patch } : m) })),
   resetSession: () => set(createInitialSessionState()),
-  newSession: () =>
+  newSession: () => {
+    const now = Date.now();
     set({
+      sessionId: newLiveSessionId(),
+      sessionCreatedAt: now,
+      sessionTitle: "",
       draftInput: "",
+      draftSelectionStart: 0,
+      draftSelectionEnd: 0,
+      conversationScrollTop: 0,
       conversation: [],
       context: [],
       variables: {},
       statePills: { emotion: null, rsd: null, interest: null, cognitive: null },
-    }),
+    });
+  },
   setCurrentScreen: (currentScreen) => set({ currentScreen }),
   loadSessionRecord: (record) =>
     set({
+      sessionId: record.id,
+      sessionCreatedAt: record.createdAt,
+      sessionTitle: record.tag ?? "",
       model: record.model,
       destination: record.destination ?? { providerId: "anthropic", modelId: record.model === "auto" ? "auto" : record.model },
       translatorEngine: record.translatorEngine ?? "legacy-claude",
       reviewBeforeSend: record.reviewBeforeSend ?? true,
-      paidFallbackEnabled: false,
-      maxRequestCost: DEFAULT_MAX_REQUEST_COST,
+      paidFallbackEnabled: record.paidFallbackEnabled ?? false,
+      maxRequestCost: record.maxRequestCost ?? DEFAULT_MAX_REQUEST_COST,
       directness: record.directness,
       techniques: record.techniques,
       context: record.context,
       variables: record.variables,
       conversation: record.conversation,
       draftInput: record.draftInput ?? "",
-      statePills: { emotion: null, rsd: null, interest: null, cognitive: null },
+      draftSelectionStart: record.draftSelectionStart ?? (record.draftInput?.length ?? 0),
+      draftSelectionEnd: record.draftSelectionEnd ?? (record.draftInput?.length ?? 0),
+      conversationScrollTop: record.conversationScrollTop ?? 0,
+      statePills: record.statePills ?? { emotion: null, rsd: null, interest: null, cognitive: null },
+      methodology: record.methodology ?? "standard",
+      methodologyPhase: record.methodologyPhase ?? "define",
+      lockedProblemStatement: record.lockedProblemStatement ?? "",
     }),
   setMethodology: (methodology) => set({ methodology }),
   setMethodologyPhase: (methodologyPhase) => set({ methodologyPhase }),
   setLockedProblemStatement: (lockedProblemStatement) => set({ lockedProblemStatement }),
   hydrate: (state) => set((current) => ({
     ...state,
+    ...(state.sessionId !== undefined
+      ? { sessionId: typeof state.sessionId === "string" && state.sessionId ? state.sessionId : current.sessionId }
+      : {}),
+    ...(state.sessionCreatedAt !== undefined
+      ? { sessionCreatedAt: Number.isFinite(state.sessionCreatedAt) ? state.sessionCreatedAt : current.sessionCreatedAt }
+      : {}),
+    ...(state.sessionTitle !== undefined ? { sessionTitle: String(state.sessionTitle) } : {}),
+    ...(state.draftSelectionStart !== undefined
+      ? { draftSelectionStart: Math.max(0, Number(state.draftSelectionStart) || 0) }
+      : {}),
+    ...(state.draftSelectionEnd !== undefined
+      ? { draftSelectionEnd: Math.max(0, Number(state.draftSelectionEnd) || 0) }
+      : {}),
+    ...(state.conversationScrollTop !== undefined
+      ? { conversationScrollTop: Math.max(0, Number(state.conversationScrollTop) || 0) }
+      : {}),
     ...(state.context !== undefined ? { context: Array.isArray(state.context) ? state.context : current.context } : {}),
     ...(state.conversation !== undefined ? { conversation: Array.isArray(state.conversation) ? state.conversation : current.conversation } : {}),
     ...(state.techniques !== undefined ? { techniques: Array.isArray(state.techniques) ? state.techniques : current.techniques } : {}),

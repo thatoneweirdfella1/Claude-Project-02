@@ -38,12 +38,29 @@ if (actual !== expected) {
   throw new Error(`Cowork overlay checksum mismatch: expected ${expected}, got ${actual}`);
 }
 
+// These files contain repairs made after the frozen Cowork archive was
+// created. Preserve their branch versions so extracting the visual overlay
+// cannot silently roll functional fixes back during deployment.
+const repairedSourcePaths = [
+  'src/main.tsx',
+  'src/components/session/QuickActionsRow.tsx',
+  'src/stores/types.ts',
+  'src/stores/sessionStore.test.ts',
+  'src/services/persistence.test.ts',
+];
+const repairedSources = new Map(
+  repairedSourcePaths.map((rel) => [rel, fs.readFileSync(path.join(root, rel), 'utf8')]),
+);
+
 const tmp = path.join(root, '.cowork-delta.tar.gz');
 fs.writeFileSync(tmp, archive);
 try {
   cp.execFileSync('tar', ['-xzf', tmp, '-C', root], { stdio: 'inherit' });
 } finally {
   if (fs.existsSync(tmp)) fs.unlinkSync(tmp);
+}
+for (const [rel, source] of repairedSources) {
+  fs.writeFileSync(path.join(root, rel), source);
 }
 
 // Vercel compiles files in api/ with NodeNext module resolution, which requires
@@ -78,4 +95,4 @@ fs.appendFileSync(
   `\n\n/* Cowork preview hotfix: All Tools popup must overlay the center canvas. */\n:root[data-layout="gold"] .col-left { z-index: 70; }\n:root[data-layout="gold"] .leftnav-tools { z-index: 80; }\n:root[data-layout="gold"] .leftnav-tools__popup { z-index: 81; }\n`
 );
 
-console.log(`Applied complete Cowork preview overlay (${actual}), Vercel-only NodeNext import normalization, and preview All Tools stacking hotfix`);
+console.log(`Applied complete Cowork preview overlay (${actual}), preserved ${repairedSources.size} post-overlay repair files, normalized Vercel-only NodeNext imports, and applied the preview All Tools stacking hotfix`);

@@ -1,4 +1,4 @@
-import { Children, useState, type ReactNode } from "react";
+import { Children, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { MessageBubble } from "../streaming";
 import { DownloadModal } from "../export";
 import { getTelemetryEntries } from "../../services/telemetry";
@@ -9,11 +9,19 @@ export interface ConversationAreaProps { children?: ReactNode; }
 
 export function ConversationArea({ children }: ConversationAreaProps) {
   const conversation = useSessionStore((s) => s.conversation);
+  const sessionId = useSessionStore((s) => s.sessionId);
   const setMessageRating = useSessionStore((s) => s.setMessageRating);
   const setDraftInput = useSessionStore((s) => s.setDraftInput);
   const updateMessage = useSessionStore((s) => s.updateMessage);
   const setRating = useAccountStore((s) => s.setRating);
   const [downloadMessageId, setDownloadMessageId] = useState<string | null>(null);
+  const areaRef = useRef<HTMLElement>(null);
+
+  useLayoutEffect(() => {
+    if (areaRef.current) {
+      areaRef.current.scrollTop = useSessionStore.getState().conversationScrollTop;
+    }
+  }, [sessionId]);
 
   function saveRating(messageId: string, stars: number, comment: string | undefined) {
     setMessageRating(messageId, stars, comment);
@@ -27,7 +35,13 @@ export function ConversationArea({ children }: ConversationAreaProps) {
   const isEmpty = conversation.length === 0 && Children.toArray(children).length === 0;
 
   return (
-    <section className="conversation-area surface-smoked-glass" data-testid="conversation-area" aria-label="Conversation">
+    <section
+      ref={areaRef}
+      className="conversation-area surface-smoked-glass"
+      data-testid="conversation-area"
+      aria-label="Conversation"
+      onScroll={(event) => useSessionStore.getState().setConversationScrollTop(event.currentTarget.scrollTop)}
+    >
       <div className="conversation-area__heading"><h2>Conversation</h2></div>
       {isEmpty && <div className="conversation-empty"><h3>Start with what is in your head.</h3><p>Divergence.AI will turn it into an AI-ready request without spending credits.</p></div>}
       {conversation.map((message) => (

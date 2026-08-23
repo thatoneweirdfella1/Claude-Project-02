@@ -34,24 +34,40 @@ const SESSION_RECORD: SessionRecord = {
   id: "r1",
   createdAt: 500,
   archived: false,
+  status: "active",
+  tag: "Recovered work",
   model: "claude-opus-4-8",
   directness: 3,
   techniques: ["chain-of-thought"],
   context: [CONTEXT_ITEM],
   variables: { project: "Divergence" },
   conversation: [MESSAGE],
+  draftInput: "unfinished",
+  draftSelectionStart: 2,
+  draftSelectionEnd: 6,
+  conversationScrollTop: 88,
+  paidFallbackEnabled: true,
+  maxRequestCost: 0.5,
+  statePills: { emotion: "calm", rsd: "low", interest: "high", cognitive: "analytical" },
+  methodology: "3-state",
+  methodologyPhase: "test",
+  lockedProblemStatement: "Keep the work",
 };
 
 describe("createInitialSessionState", () => {
   it("matches CANON's documented defaults", () => {
     const state = createInitialSessionState();
+    expect(state.sessionId).not.toBe("");
+    expect(state.sessionCreatedAt).toBeGreaterThan(0);
+    expect(state.sessionTitle).toBe("");
     expect(state.draftInput).toBe("");
+    expect(state.draftSelectionStart).toBe(0);
+    expect(state.draftSelectionEnd).toBe(0);
+    expect(state.conversationScrollTop).toBe(0);
     expect(state.model).toBe("auto");
     expect(state.destination).toEqual({ providerId: "universal", modelId: "universal" });
     expect(state.translatorEngine).toBe("auto-free-first");
     expect(state.reviewBeforeSend).toBe(true);
-    expect(state.paidFallbackEnabled).toBe(false);
-    expect(state.maxRequestCost).toBe(0.25);
     expect(state.directness).toBe(2);
     expect(state.techniques).toEqual(["auto-detect"]);
     expect(state.context).toEqual([]);
@@ -77,12 +93,16 @@ describe("SESSION_PERSISTED_KEYS", () => {
     expect([...SESSION_PERSISTED_KEYS].sort()).toEqual(
       [
         "draftInput",
+        "sessionId",
+        "sessionCreatedAt",
+        "sessionTitle",
+        "draftSelectionStart",
+        "draftSelectionEnd",
+        "conversationScrollTop",
         "model",
         "destination",
         "translatorEngine",
         "reviewBeforeSend",
-        "paidFallbackEnabled",
-        "maxRequestCost",
         "directness",
         "techniques",
         "context",
@@ -93,13 +113,15 @@ describe("SESSION_PERSISTED_KEYS", () => {
         "methodology",
         "methodologyPhase",
         "lockedProblemStatement",
+        "maxRequestCost",
+        "paidFallbackEnabled",
       ].sort(),
     );
   });
 });
 
 describe("plain setters", () => {
-  it("setDraftInput/setModel/setDirectness/setTechniques each set exactly their own field", () => {
+  it("plain settings setters update their fields and draft input moves the caret to the end", () => {
     useSessionStore.getState().setDraftInput("hello");
     useSessionStore.getState().setModel("claude-sonnet-5");
     useSessionStore.getState().setDirectness(1);
@@ -107,6 +129,8 @@ describe("plain setters", () => {
 
     const s = useSessionStore.getState();
     expect(s.draftInput).toBe("hello");
+    expect(s.draftSelectionStart).toBe(5);
+    expect(s.draftSelectionEnd).toBe(5);
     expect(s.model).toBe("claude-sonnet-5");
     expect(s.directness).toBe(1);
     expect(s.techniques).toEqual(["socratic", "examples"]);
@@ -262,6 +286,7 @@ describe("newSession", () => {
     useSessionStore.getState().setDraftInput("mid sentence");
     useSessionStore.getState().setStatePills({ emotion: "calm", rsd: null, interest: null, cognitive: null });
 
+    const previousId = useSessionStore.getState().sessionId;
     useSessionStore.getState().newSession();
 
     const s = useSessionStore.getState();
@@ -270,6 +295,7 @@ describe("newSession", () => {
     expect(s.directness).toBe(3);
     expect(s.techniques).toEqual(["verify"]);
     expect(s.currentScreen).toBe("archive");
+    expect(s.sessionId).not.toBe(previousId);
     // Cleared
     expect(s.conversation).toEqual([]);
     expect(s.context).toEqual([]);
@@ -280,7 +306,7 @@ describe("newSession", () => {
 });
 
 describe("loadSessionRecord", () => {
-  it("sets exactly the six SessionRecord fields, clears draftInput/statePills, leaves currentScreen alone", () => {
+  it("restores complete recoverable state while leaving navigation alone", () => {
     useSessionStore.getState().setCurrentScreen("archive");
     useSessionStore.getState().setDraftInput("half-typed thought");
     useSessionStore.getState().setStatePills({ emotion: "calm", rsd: null, interest: null, cognitive: null });
@@ -288,15 +314,25 @@ describe("loadSessionRecord", () => {
     useSessionStore.getState().loadSessionRecord(SESSION_RECORD);
 
     const s = useSessionStore.getState();
+    expect(s.sessionId).toBe("r1");
+    expect(s.sessionCreatedAt).toBe(500);
+    expect(s.sessionTitle).toBe("Recovered work");
     expect(s.model).toBe("claude-opus-4-8");
     expect(s.directness).toBe(3);
     expect(s.techniques).toEqual(["chain-of-thought"]);
     expect(s.context).toEqual([CONTEXT_ITEM]);
     expect(s.variables).toEqual({ project: "Divergence" });
     expect(s.conversation).toEqual([MESSAGE]);
-    // Cleared, not carried from the record (a record stores neither).
-    expect(s.draftInput).toBe("");
-    expect(s.statePills).toEqual({ emotion: null, rsd: null, interest: null, cognitive: null });
+    expect(s.draftInput).toBe("unfinished");
+    expect(s.draftSelectionStart).toBe(2);
+    expect(s.draftSelectionEnd).toBe(6);
+    expect(s.conversationScrollTop).toBe(88);
+    expect(s.statePills).toEqual({ emotion: "calm", rsd: "low", interest: "high", cognitive: "analytical" });
+    expect(s.paidFallbackEnabled).toBe(true);
+    expect(s.maxRequestCost).toBe(0.5);
+    expect(s.methodology).toBe("3-state");
+    expect(s.methodologyPhase).toBe("test");
+    expect(s.lockedProblemStatement).toBe("Keep the work");
     // Untouched — navigation is orthogonal to which session is loaded.
     expect(s.currentScreen).toBe("archive");
   });
