@@ -6,7 +6,8 @@ import { useSessionStore } from "../../stores/sessionStore";
 import { useSettingsDefaultsStore } from "../../stores/settingsDefaultsStore";
 import type { StateDetectionResult } from "../../services/detection";
 import type { ContextItem, DirectnessLevel } from "../../stores/types";
-import { StateDetectionPanel, type PillDimension } from "../detection";
+import type { PillDimension } from "../detection";
+import { StateDetectionStatusBar } from "../detection/StateDetectionStatusBar";
 import { MultiAiActions } from "../multiAi";
 import { TransparencyCard } from "../transparency";
 import { ActiveContextChips } from "../context/ActiveContextChips";
@@ -30,11 +31,7 @@ export interface ComposerProps {
   submitDisabled?: boolean;
 }
 
-export function Composer({
-  onSubmit, onAttach, onContext, detection, detecting = false,
-  onCorrectState, suggestedDirectness, onApplyDirectness,
-  statusMessage = "", submitDisabled = false,
-}: ComposerProps) {
+export function Composer({ onSubmit, onAttach, onContext, detection, detecting = false, onCorrectState, suggestedDirectness, onApplyDirectness, statusMessage = "", submitDisabled = false }: ComposerProps) {
   const [validationMessage, setValidationMessage] = useState("");
   const draftInput = useSessionStore((s) => s.draftInput);
   const model = useSessionStore((s) => s.model);
@@ -51,28 +48,19 @@ export function Composer({
 
   async function handleTranslate() {
     if (submitDisabled) return;
-    if (!draftInput.trim()) {
-      setValidationMessage("Type something first. Your draft has not been changed.");
-      return;
-    }
+    if (!draftInput.trim()) { setValidationMessage("Type something first. Your draft has not been changed."); return; }
     const substituted = substituteVariables(draftInput, mergeVariables(accountVariables, sessionVariables));
-    const variableContext: ContextItem[] = Object.entries(sessionVariables).map(([name, value]) => ({
-      id: `variable:${name}`, kind: "variable", label: `$${name}`, content: value, bytes: value.length,
-    }));
-    const accepted = await onSubmit(buildTranslateAskRequest(substituted, {
-      model, destination, translatorEngine, reviewBeforeSend, directness, techniques,
-    }, [...context, ...variableContext]));
+    const variableContext: ContextItem[] = Object.entries(sessionVariables).map(([name, value]) => ({ id: `variable:${name}`, kind: "variable", label: `$${name}`, content: value, bytes: value.length }));
+    const accepted = await onSubmit(buildTranslateAskRequest(substituted, { model, destination, translatorEngine, reviewBeforeSend, directness, techniques }, [...context, ...variableContext]));
     setValidationMessage(accepted === false ? "Not sent. Your draft is still here." : "");
   }
 
   const feedback = validationMessage || statusMessage;
-
   return <section className="composer frozen-composer" data-testid="composer">
     <div className="frozen-composer__heading"><h2>What&apos;s on your mind?</h2><AttachContextControls onAttach={onAttach} onContext={onContext} /></div>
     <InputBox onSubmit={() => void handleTranslate()} />
     <ActiveContextChips />
-    {detecting && !detection && <p className="state-detection-panel__detecting" role="status">Reading your message…</p>}
-    {detection && <StateDetectionPanel result={detection} onCorrect={onCorrectState} suggestedDirectness={suggestedDirectness} onApplyDirectness={onApplyDirectness} />}
+    <StateDetectionStatusBar detection={detection} detecting={detecting} suggestedDirectness={suggestedDirectness} onCorrectState={onCorrectState} onApplyDirectness={onApplyDirectness} />
     <div className="frozen-composer__controls">
       <DestinationAiDropdown />
       {methodologyPinned && <MethodologyDropdown showPinControl={false} />}
