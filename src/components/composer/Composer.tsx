@@ -4,10 +4,11 @@ import { mergeVariables, substituteVariables } from "../../services/context";
 import { useAccountStore } from "../../stores/accountStore";
 import { useSessionStore } from "../../stores/sessionStore";
 import type { StateDetectionResult } from "../../services/detection";
-import type { DirectnessLevel } from "../../stores/types";
+import type { ContextItem, DirectnessLevel } from "../../stores/types";
 import { StateDetectionPanel, type PillDimension } from "../detection";
 import { MultiAiActions } from "../multiAi";
 import { TransparencyCard } from "../transparency";
+import { ActiveContextChips } from "../context/ActiveContextChips";
 import { AttachContextControls } from "./AttachContextControls";
 import { AdvancedControls } from "./AdvancedControls";
 import { DestinationAiDropdown } from "./DestinationAiDropdown";
@@ -52,9 +53,16 @@ export function Composer({
       return;
     }
     const substituted = substituteVariables(draftInput, mergeVariables(accountVariables, sessionVariables));
+    const variableContext: ContextItem[] = Object.entries(sessionVariables).map(([name, value]) => ({
+      id: `variable:${name}`,
+      kind: "variable",
+      label: `$${name}`,
+      content: value,
+      bytes: value.length,
+    }));
     const accepted = await onSubmit(buildTranslateAskRequest(substituted, {
       model, destination, translatorEngine, reviewBeforeSend, directness, techniques,
-    }, context));
+    }, [...context, ...variableContext]));
     setValidationMessage(accepted === false ? "Not sent. Your draft is still here." : "");
   }
 
@@ -67,6 +75,7 @@ export function Composer({
         <AttachContextControls onAttach={onAttach} onContext={onContext} />
       </div>
       <InputBox onSubmit={() => void handleTranslate()} />
+      <ActiveContextChips />
       {detecting && !detection && <p className="state-detection-panel__detecting" role="status">Reading your message…</p>}
       {detection && <StateDetectionPanel result={detection} onCorrect={onCorrectState} suggestedDirectness={suggestedDirectness} onApplyDirectness={onApplyDirectness} />}
       <div className="frozen-composer__controls">
