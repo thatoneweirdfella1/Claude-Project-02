@@ -2,15 +2,16 @@ import { useEffect, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { TRANSLATOR_ENGINES } from "../../services/providerNeutral";
 import { useSessionStore } from "../../stores/sessionStore";
+import { useSettingsDefaultsStore } from "../../stores/settingsDefaultsStore";
 import type { TranslatorEngine } from "../../stores/types";
-import { DirectnessDropdown } from "../directness";
 import { MethodologyDropdown } from "../methodology";
-import { TechniqueDropdown } from "../techniques";
 
 const OVERLAY_EVENT = "divergence:composer-overlay";
 
 export function AdvancedControls() {
   const [open, setOpen] = useState(false);
+  const [defaultsSaved, setDefaultsSaved] = useState(false);
+  const destination = useSessionStore((s) => s.destination);
   const translatorEngine = useSessionStore((s) => s.translatorEngine);
   const setTranslatorEngine = useSessionStore((s) => s.setTranslatorEngine);
   const reviewBeforeSend = useSessionStore((s) => s.reviewBeforeSend);
@@ -19,6 +20,11 @@ export function AdvancedControls() {
   const setPaidFallbackEnabled = useSessionStore((s) => s.setPaidFallbackEnabled);
   const maxRequestCost = useSessionStore((s) => s.maxRequestCost);
   const setMaxRequestCost = useSessionStore((s) => s.setMaxRequestCost);
+  const techniques = useSessionStore((s) => s.techniques);
+  const methodology = useSessionStore((s) => s.methodology);
+  const directness = useSessionStore((s) => s.directness);
+  const setRequestDefaults = useSettingsDefaultsStore((s) => s.setRequestDefaults);
+  const setDefaultDirectness = useSettingsDefaultsStore((s) => s.setDirectness);
 
   useEffect(() => {
     const switchOverlay = (event: Event) => {
@@ -34,34 +40,72 @@ export function AdvancedControls() {
     if (next) window.dispatchEvent(new CustomEvent(OVERLAY_EVENT, { detail: "advanced" }));
   }
 
-  const selectedEngine = translatorEngine === "legacy-claude" ? "managed-translator" : translatorEngine;
+  const selectedEngine = translatorEngine === "legacy-claude"
+    ? "managed-translator"
+    : translatorEngine === "local-ai"
+      ? "local-rules"
+      : translatorEngine;
+
+  function rememberReview(next: boolean) {
+    setReviewBeforeSend(next);
+    const defaults = useSettingsDefaultsStore.getState().requestDefaults;
+    setRequestDefaults({ ...defaults, reviewBeforeSend: next });
+  }
+
+  function saveDefaults() {
+    setRequestDefaults({
+      destination,
+      translatorEngine: selectedEngine,
+      reviewBeforeSend,
+      paidFallbackEnabled,
+      maxRequestCost,
+      techniques,
+      methodology,
+    });
+    setDefaultDirectness(directness);
+    setDefaultsSaved(true);
+    window.setTimeout(() => setDefaultsSaved(false), 2200);
+  }
 
   return <section className={"advanced-controls " + (open ? "is-open" : "")}>
     <button type="button" className="utility-bar" aria-expanded={open} onClick={toggle}>
       <span>Show Advanced Controls</span>{open ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
     </button>
     {open && <div className="advanced-controls__overlay surface-smoked-glass">
-      <DirectnessDropdown />
-      <TechniqueDropdown />
       <MethodologyDropdown />
-      <label className="advanced-controls__check">
-        <input type="checkbox" checked={reviewBeforeSend} onChange={(event) => setReviewBeforeSend(event.target.checked)} />
-        Review before sending
-      </label>
+      <fieldset className="advanced-controls__field">
+        <legend>Review before sending</legend>
+        <label className="advanced-controls__check">
+          <input type="radio" name="review-before-sending" checked={reviewBeforeSend} onChange={() => rememberReview(true)} />
+          Review first
+        </label>
+        <label className="advanced-controls__check">
+          <input type="radio" name="review-before-sending" checked={!reviewBeforeSend} onChange={() => rememberReview(false)} />
+          Send automatically
+        </label>
+      </fieldset>
       <label className="advanced-controls__field">
         <span>Translator Engine</span>
         <select value={selectedEngine} onChange={(event) => setTranslatorEngine(event.target.value as TranslatorEngine)}>
           {TRANSLATOR_ENGINES.map((engine) => <option key={engine.id} value={engine.id}>{engine.label} — {engine.cost}</option>)}
         </select>
       </label>
-      <div className="advanced-controls__connection"><strong>Connection summary</strong><span>Manual handoff needs no connection. Connected and managed routes always require approval before a charge.</span><button type="button" onClick={() => useSessionStore.getState().setCurrentScreen("settings")}>Manage connections</button></div>
+      <div className="advanced-controls__connection">
+        <strong>Connection summary</strong>
+        <span>Manual handoff needs no connection. Connected and managed routes require approval before any charge.</span>
+        <button type="button" onClick={() => useSessionStore.getState().setCurrentScreen("settings")}>Manage connections</button>
+      </div>
       <label className="advanced-controls__check">
         <input type="checkbox" checked={paidFallbackEnabled} onChange={(event) => setPaidFallbackEnabled(event.target.checked)} />
         Allow paid fallback (off by default)
       </label>
-      <label className="advanced-controls__field"><span>Maximum per paid request ($)</span><input type="number" min="0" step="0.01" value={maxRequestCost} onChange={(event) => setMaxRequestCost(Number(event.target.value))} /></label>
-      <button type="button" className="advanced-controls__defaults">Set as defaults</button>
+      <label className="advanced-controls__field">
+        <span>Maximum per paid request ($)</span>
+        <input type="number" min="0" step="0.01" value={maxRequestCost} onChange={(event) => setMaxRequestCost(Number(event.target.value))} />
+      </label>
+      <button type="button" className="advanced-controls__defaults" onClick={saveDefaults}>
+        {defaultsSaved ? "Defaults saved" : "Set as defaults"}
+      </button>
     </div>}
   </section>;
 }
-
