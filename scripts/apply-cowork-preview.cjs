@@ -48,6 +48,7 @@ const repairedSourcePaths = [
   'src/services/persistence.test.ts',
   'src/stores/settingsDefaultsStore.ts',
   'src/services/providerNeutral.ts',
+  'src/services/providerNeutral.test.ts',
   'src/components/composer/InputBox.tsx',
   'src/components/directness/DirectnessDropdown.tsx',
   'src/components/composer/AdvancedControls.tsx',
@@ -69,10 +70,6 @@ for (const [rel, source] of repairedSources) {
   fs.writeFileSync(path.join(root, rel), source);
 }
 
-// Vercel compiles files in api/ with NodeNext module resolution, which requires
-// explicit .js extensions on relative ESM imports. Cowork's client-side Vite
-// build accepts the extensionless form, so normalize only in this disposable
-// preview build after the authoritative Cowork overlay has been applied.
 const nodeNextFixes = [
   ['src/services/modelRegistry.ts', 'export type { ModelId } from "../stores/types";', 'export type { ModelId } from "../stores/types.js";'],
   ['src/services/providers/openai.ts', 'from "../proxyHandler";', 'from "../proxyHandler.js";'],
@@ -90,11 +87,6 @@ for (const [rel, before, after] of nodeNextFixes) {
   fs.writeFileSync(file, source.replace(before, after));
 }
 
-// Preview-only visual hotfix discovered by live inspection: the All Tools
-// popup lives inside .col-left, while .col-center is a sibling stacking context
-// at the same z-index and is painted over it. Raise the left rail above the
-// center rail so the popup can actually appear in front of the conversation
-// canvas. This changes only the disposable Cowork preview build.
 const frozenCssPath = path.join(root, 'src/styles/frozen-reference.css');
 fs.appendFileSync(
   frozenCssPath,
