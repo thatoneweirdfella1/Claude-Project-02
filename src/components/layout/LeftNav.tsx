@@ -20,14 +20,16 @@ const ALL_TOOLS: Array<{ label: string; screen: ScreenId }> = [
   { label: "Saved Prompts", screen: "saved-prompts" },
   { label: "Techniques", screen: "resources" },
   { label: "Variables", screen: "customize" },
-  { label: "Checkpoints", screen: "projects" },
-  { label: "Integrations", screen: "integrations" },
+  { label: "Checkpoints", screen: "checkpoints" },
+  { label: "AI Connections", screen: "settings" },
 ];
 
 export function LeftNav() {
   const currentScreen = useSessionStore((s) => s.currentScreen);
   const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
   const [toolsOpen, setToolsOpen] = useState(false);
+  const [toolQuery, setToolQuery] = useState("");
+  const visibleTools = ALL_TOOLS.filter((tool) => tool.label.toLowerCase().includes(toolQuery.toLowerCase()));
 
   function navigate(screen: ScreenId) {
     setCurrentScreen(screen);
@@ -49,7 +51,15 @@ export function LeftNav() {
           {toolsOpen && (
             <div className="leftnav-tools__popup surface-smoked-glass" role="dialog" aria-label="All tools">
               <header><strong>All Tools</strong><button type="button" aria-label="Close tools" onClick={() => setToolsOpen(false)}><X size={16} /></button></header>
-              {ALL_TOOLS.map((tool) => <button type="button" key={tool.label} onClick={() => navigate(tool.screen)}><Wrench size={15} />{tool.label}</button>)}
+              <input
+                aria-label="Search All Tools"
+                placeholder="Search tools"
+                value={toolQuery}
+                onChange={(event) => setToolQuery(event.target.value)}
+                style={{ width: "100%", padding: "8px 9px", border: "1px solid var(--frozen-border)", borderRadius: 5, background: "var(--frozen-overlay-solid)", color: "var(--frozen-text)" }}
+              />
+              {visibleTools.map((tool) => <button type="button" key={tool.label} onClick={() => navigate(tool.screen)}><Wrench size={15} />{tool.label}</button>)}
+              {visibleTools.length === 0 && <p>No matching tools.</p>}
             </div>
           )}
         </div>
@@ -58,10 +68,10 @@ export function LeftNav() {
         <button type="button" className={"leftnav-item leftnav-trash " + (currentScreen === "trash" ? "leftnav-item--active" : "")} onClick={() => navigate("trash")}>
           <Trash2 size={23} strokeWidth={1.8} aria-hidden="true" /><span>Trash</span>
         </button>
-        <div className="system-status" data-testid="system-status">
+        <button type="button" className="system-status" data-testid="system-status" onClick={() => navigate("settings")} style={{ cursor: "pointer", textAlign: "left" }}>
           <span className="system-status-heading"><i aria-hidden="true" /> System Status</span>
-          <span className="system-status-message">Local route ready</span>
-        </div>
+          <span className="system-status-message">Open connection and storage status</span>
+        </button>
       </div>
     </div>
   );

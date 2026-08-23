@@ -11,7 +11,6 @@ import {
   UserRound,
 } from "lucide-react";
 import { GlassButton } from "../primitives";
-import { LoadTemplateMenu } from "../session";
 import { useDismissableLayer } from "../../keyboard";
 import { useAccountStore } from "../../stores/accountStore";
 import { useSessionStore } from "../../stores/sessionStore";
@@ -47,6 +46,7 @@ function SearchPopover({ open, setOpen, rootRef }: PopoverProps) {
   const [query, setQuery] = useState("");
   const sessions = useAccountStore((s) => s.sessions);
   const templates = useAccountStore((s) => s.templates);
+  const savedPrompts = useAccountStore((s) => s.savedPrompts);
   const loadSessionRecord = useSessionStore((s) => s.loadSessionRecord);
   const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
 
@@ -59,6 +59,16 @@ function SearchPopover({ open, setOpen, rootRef }: PopoverProps) {
       .filter((template) => template.title.toLowerCase().includes(query.toLowerCase()))
       .slice(0, 4)
       .map((template) => ({ id: template.id, label: template.title, type: "template" as const })),
+    ...savedPrompts
+      .filter((prompt) => prompt.title.toLowerCase().includes(query.toLowerCase()))
+      .slice(0, 4)
+      .map((prompt) => ({ id: prompt.id, label: prompt.title, type: "saved-prompt" as const })),
+    ...([
+      { id: "projects", label: "Projects", type: "projects" as const },
+      { id: "settings", label: "Settings", type: "settings" as const },
+      { id: "insights", label: "Insights", type: "insights" as const },
+      { id: "variables", label: "Variables", type: "variables" as const },
+    ].filter((item) => item.label.toLowerCase().includes(query.toLowerCase()))),
   ];
 
   return (
@@ -71,7 +81,7 @@ function SearchPopover({ open, setOpen, rootRef }: PopoverProps) {
         <div className="surface-smoked-glass topbar-popover topbar-popover--search" role="search">
           <input
             className="topbar-popover__input"
-            placeholder="Search sessions and templates"
+            placeholder="Search sessions, Saved Tools, Projects, and Settings"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             autoFocus
@@ -89,8 +99,18 @@ function SearchPopover({ open, setOpen, rootRef }: PopoverProps) {
                     const session = sessions.find((item) => item.id === match.id);
                     if (session) loadSessionRecord(session);
                     setCurrentScreen("translate");
-                  } else {
+                  } else if (match.type === "template") {
                     setCurrentScreen("templates");
+                  } else if (match.type === "saved-prompt") {
+                    setCurrentScreen("saved-prompts");
+                  } else if (match.type === "projects") {
+                    setCurrentScreen("projects");
+                  } else if (match.type === "settings") {
+                    setCurrentScreen("settings");
+                  } else if (match.type === "insights") {
+                    setCurrentScreen("dashboard");
+                  } else {
+                    setCurrentScreen("customize");
                   }
                   setOpen(false);
                 }}
@@ -124,6 +144,7 @@ function SimplePopover({ open, setOpen, rootRef, kind }: PopoverProps & { kind: 
 }
 
 function UserMenu({ open, setOpen, rootRef }: PopoverProps) {
+  const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
   const [desktopUser, setDesktopUser] = useState<DesktopUser | null>(null);
   useEffect(() => {
     const desktop = desktopBridge();
@@ -139,6 +160,9 @@ function UserMenu({ open, setOpen, rootRef }: PopoverProps) {
       {open && (
         <div className="surface-smoked-glass topbar-popover topbar-popover--right" role="menu" aria-label="Profile menu">
           {desktopUser && <p className="topbar-popover__text">{desktopUser.email}</p>}
+          <button type="button" className="topbar-popover__menu-item" onClick={() => { setCurrentScreen("settings"); setOpen(false); }}>Profile</button>
+          <button type="button" className="topbar-popover__menu-item" onClick={() => { setCurrentScreen("settings"); setOpen(false); }}>Account and plan</button>
+          <button type="button" className="topbar-popover__menu-item" onClick={() => { window.dispatchEvent(new CustomEvent("divergence:open-shortcuts")); setOpen(false); }}>Keyboard shortcuts</button>
           <button type="button" className="topbar-popover__menu-item" onClick={() => void logOutCurrentAccount()}>
             <LogOut size={16} /> Logout
           </button>
@@ -169,13 +193,11 @@ export function TopBar() {
 
   return (
     <div className="topbar-content">
-      <div className="topbar-logo" data-testid="logo-slot"><Logo /></div>
+      <button type="button" className="topbar-logo" data-testid="logo-slot" aria-label="Go to Talk to AI" onClick={() => setCurrentScreen("translate")} style={{ border: 0, background: "transparent", padding: 0 }}><Logo /></button>
       <div className="topbar-center">
         <QuickReferencePopover open={referenceOpen} setOpen={setReferenceOpen} rootRef={referenceRef} />
         <SearchPopover open={searchOpen} setOpen={setSearchOpen} rootRef={searchRef} />
-        <LoadTemplateMenu renderTrigger={({ open, onClick }) => (
-          <GlassButton onClick={onClick} aria-expanded={open}><ClipboardList size={20} /> Templates</GlassButton>
-        )} />
+        <GlassButton onClick={() => setCurrentScreen("templates")}><ClipboardList size={20} /> Templates</GlassButton>
       </div>
       <div className="topbar-right">
         <SimplePopover kind="notifications" open={notificationsOpen} setOpen={setNotificationsOpen} rootRef={notificationsRef} />

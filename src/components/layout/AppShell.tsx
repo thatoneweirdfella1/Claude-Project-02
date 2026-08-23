@@ -47,6 +47,11 @@ export function AppShell() {
     resize();
     return () => window.removeEventListener("resize", resize);
   }, []);
+  useEffect(() => {
+    const openShortcuts = () => setShowShortcuts(true);
+    window.addEventListener("divergence:open-shortcuts", openShortcuts);
+    return () => window.removeEventListener("divergence:open-shortcuts", openShortcuts);
+  }, []);
 
   return <>
     <div className="fixed-canvas-stage">

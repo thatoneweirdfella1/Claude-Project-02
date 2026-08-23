@@ -601,6 +601,7 @@ export type ScreenId =
   | "templates"
   | "saved-prompts"
   | "settings"
+  | "checkpoints"
   | "trash";
 
 export interface SessionState {

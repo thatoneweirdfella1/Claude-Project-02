@@ -29,7 +29,7 @@ export function AdvancedControls() {
 
   useEffect(() => {
     const switchOverlay = (event: Event) => {
-      if ((event as CustomEvent<string>).detail !== "advanced") setOpen(false);
+      setOpen((event as CustomEvent<string>).detail === "advanced");
     };
     window.addEventListener(OVERLAY_EVENT, switchOverlay);
     return () => window.removeEventListener(OVERLAY_EVENT, switchOverlay);

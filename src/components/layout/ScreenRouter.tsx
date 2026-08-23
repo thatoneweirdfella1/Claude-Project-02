@@ -7,6 +7,10 @@ import { SubscriptionUI } from "../credits";
 import { PersonalOptimization } from "../optimization";
 import { ProviderNeutralSettings } from "../settings/ProviderNeutralSettings";
 import { AppearanceSettings } from "../settings/AppearanceSettings";
+import { COMPOSABLE_TECHNIQUE_IDS, MAX_TECHNIQUE_STACK, getTechnique } from "../../services/techniques";
+import { buildSessionRecord } from "../../services/sessionLifecycle";
+import { saveNow } from "../../services/persistence";
+import type { TechniqueId } from "../../stores/types";
 
 function HomeScreen() {
   const sessions = useAccountStore((s) => s.sessions);
@@ -212,7 +216,8 @@ function DashboardScreen() {
   return (
     <div className="screen screen-dashboard">
       <div className="screen__header">
-        <h1>Dashboard</h1>
+        <h1>Insights</h1>
+        <p>Overview · Usage · Activity · Communication Patterns</p>
       </div>
       <div className="screen__content">
         <div className="dashboard-grid">
@@ -710,57 +715,36 @@ function ArchiveScreen() {
 }
 
 function ResourcesScreen() {
-  const resources = [
-    {
-      title: "Getting Started",
-      description: "Learn how to use Divergence.AI to translate your thoughts into clear communication.",
-      items: [
-        "1. Type your thoughts in the composer",
-        "2. Click Translate & Ask to get AI feedback",
-        "3. Explore different directness and technique options",
-      ],
-    },
-    {
-      title: "Features",
-      description: "Core features of Divergence.AI",
-      items: [
-        "Sessions: Save and load conversation sessions",
-        "Templates: Create and reuse preset configurations",
-        "Search: Find sessions and templates quickly",
-      ],
-    },
-    {
-      title: "Tips",
-      description: "Best practices for getting better results",
-      items: [
-        "Use Directness to control response formality",
-        "Try different Techniques to explore various response styles",
-        "Save successful sessions as templates",
-      ],
-    },
-  ];
+  const current = useSessionStore((s) => s.techniques);
+  const setTechniques = useSessionStore((s) => s.setTechniques);
+  const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
+  const [staged, setStaged] = useState<TechniqueId[]>(current);
+
+  function toggle(id: TechniqueId) {
+    if (id === "auto-detect") return;
+    setStaged((selected) => {
+      const manual = selected.filter((item) => item !== "auto-detect");
+      if (manual.includes(id)) return manual.filter((item) => item !== id);
+      if (manual.length >= MAX_TECHNIQUE_STACK) return manual;
+      return [...manual, id];
+    });
+  }
 
   return (
     <div className="screen screen-resources">
       <div className="screen__header">
-        <h1>Resources</h1>
+        <h1>Techniques</h1>
+        <p>Choose the same response techniques used by the composer.</p>
       </div>
       <div className="screen__content">
-        <div className="resources-grid">
-          {resources.map((resource) => (
-            <div key={resource.title} className="resource-card">
-              <h3 className="resource-card__title">{resource.title}</h3>
-              <p className="resource-card__description">{resource.description}</p>
-              <ul className="resource-card__list">
-                {resource.items.map((item) => (
-                  <li key={item} className="resource-card__item">
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+        <div className="resources-grid" role="group" aria-label="Technique choices">
+          <label className="resource-card"><input type="radio" checked={staged.includes("auto-detect")} onChange={() => setStaged(["auto-detect"])} /><strong>Auto recommend</strong><span>Choose techniques for each request.</span></label>
+          {COMPOSABLE_TECHNIQUE_IDS.map((id) => {
+            const technique = getTechnique(id);
+            return <label key={id} className="resource-card"><input type="checkbox" checked={staged.includes(id)} disabled={!staged.includes(id) && staged.filter((item) => item !== "auto-detect").length >= MAX_TECHNIQUE_STACK} onChange={() => toggle(id)} /><strong>{technique.label}</strong><span>{technique.effect}</span></label>;
+          })}
         </div>
+        <div className="screen__actions"><button type="button" onClick={() => setCurrentScreen("translate")}>Back</button><button type="button" className="primary" disabled={staged.length === 0} onClick={() => { setTechniques(staged); setCurrentScreen("translate"); }}>Apply to composer</button></div>
       </div>
     </div>
   );
@@ -1103,7 +1087,7 @@ function TemplatesScreen() {
     <div className="screen screen-templates">
       <div className="screen__header">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <h1>Templates</h1>
+          <div><h1>Saved Tools</h1><p><strong>Templates</strong> · <button type="button" onClick={() => setCurrentScreen("saved-prompts")}>Saved Prompts</button></p></div>
           <button
             type="button"
             className="settings-btn"
@@ -1478,6 +1462,7 @@ function SavedPromptsScreen() {
   const savedPrompts = useAccountStore((s) => s.savedPrompts);
   const removeSavedPrompt = useAccountStore((s) => s.removeSavedPrompt);
   const toggleSavedPromptStar = useAccountStore((s) => s.toggleSavedPromptStar);
+  const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<"recent" | "title">("recent");
@@ -1503,7 +1488,8 @@ function SavedPromptsScreen() {
   return (
     <div className="screen screen-saved-prompts">
       <div className="screen__header">
-        <h1>Saved Prompts</h1>
+        <h1>Saved Tools</h1>
+        <p><button type="button" onClick={() => setCurrentScreen("templates")}>Templates</button> · <strong>Saved Prompts</strong></p>
       </div>
       <div className="screen__content">
         {savedPrompts.length === 0 ? (
@@ -1767,14 +1753,28 @@ function SettingsScreen() {
 }
 
 function CustomizeScreen() {
+  const variables = useAccountStore((s) => s.variables);
+  const setVariable = useAccountStore((s) => s.setVariable);
+  const removeVariable = useAccountStore((s) => s.removeVariable);
+  const addContextItem = useSessionStore((s) => s.addContextItem);
+  const [name, setName] = useState("");
+  const [value, setValue] = useState("");
+
+  function saveVariable() {
+    const cleanName = name.trim().replace(/^\$/, "");
+    if (!cleanName || !value.trim()) return;
+    setVariable(cleanName, value.trim()); setName(""); setValue("");
+  }
   return (
     <div className="screen screen-customize">
       <div className="screen__header">
-        <h1>Customize</h1>
+        <h1>Variables</h1>
+        <p>Create, edit, remove, or add saved variables to this request.</p>
       </div>
       <div className="screen__content">
-        <p>Customize is a future feature planned for panel/widget layout configuration.</p>
-        <p>For now, use the Settings gear menu (top right) to control theme, layout, and sidebar visibility.</p>
+        <div className="template-form"><input aria-label="Variable name" placeholder="Name" value={name} onChange={(event) => setName(event.target.value)} /><textarea aria-label="Variable value" placeholder="Value" value={value} onChange={(event) => setValue(event.target.value)} /><button type="button" onClick={saveVariable} disabled={!name.trim() || !value.trim()}>Save variable</button></div>
+        {Object.entries(variables).map(([variableName, variableValue]) => <div className="template-card" key={variableName}><strong>${variableName}</strong><p>{variableValue}</p><div className="template-card__actions"><button type="button" onClick={() => addContextItem({ id: `variable:${variableName}:${Date.now()}`, kind: "variable", label: `$${variableName}`, content: variableValue, bytes: variableValue.length })}>Add to context</button><button type="button" onClick={() => removeVariable(variableName)}>Delete</button></div></div>)}
+        {Object.keys(variables).length === 0 && <p>No saved variables yet.</p>}
       </div>
     </div>
   );
@@ -2170,6 +2170,28 @@ function SessionsScreen() {
   );
 }
 
+function CheckpointsScreen() {
+  const sessions = useAccountStore((s) => s.sessions);
+  const addSession = useAccountStore((s) => s.addSessionRecord);
+  const loadSession = useSessionStore((s) => s.loadSessionRecord);
+  const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
+  const [status, setStatus] = useState("");
+
+  async function createCheckpoint() {
+    const now = Date.now();
+    const snapshot = buildSessionRecord(useSessionStore.getState(), { status: "active", recoveryReason: "navigation" });
+    addSession({ ...snapshot, id: `checkpoint-${now}`, createdAt: now, updatedAt: now, tag: `Checkpoint · ${new Date(now).toLocaleString()}` });
+    await saveNow({ snapshotActiveSession: false });
+    setStatus("Checkpoint created.");
+  }
+
+  return <div className="screen screen-sessions"><div className="screen__header"><h1>Checkpoints</h1><p>Create or restore a recoverable snapshot of your work.</p></div><div className="screen__content">
+    <button type="button" className="primary" onClick={() => void createCheckpoint()}>Create checkpoint</button>{status && <p role="status">{status}</p>}
+    <div className="sessions-list">{sessions.filter((session) => session.id.startsWith("checkpoint-")).map((session) => <div className="session-card" key={session.id}><strong>{session.tag}</strong><span>{session.conversation.length} messages</span><button type="button" onClick={() => { loadSession(session); setCurrentScreen("translate"); }}>Restore</button></div>)}</div>
+    {!sessions.some((session) => session.id.startsWith("checkpoint-")) && <p>No checkpoints yet.</p>}
+  </div></div>;
+}
+
 function TrashScreen() {
   const trashed = useAccountStore((s) => s.trashed);
   const restoreSessionFromTrash = useAccountStore((s) => s.restoreSessionFromTrash);
@@ -2407,6 +2429,8 @@ export function ScreenRouter() {
       return <SavedPromptsScreen />;
     case "settings":
       return <SettingsScreen />;
+    case "checkpoints":
+      return <CheckpointsScreen />;
     case "trash":
       return <TrashScreen />;
     default:
