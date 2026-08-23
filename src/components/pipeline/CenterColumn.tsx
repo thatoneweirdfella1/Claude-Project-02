@@ -1,8 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { buildTranslateAskRequest, type TranslateAskRequest } from "../../services/composer";
-import { createProxyClient } from "../../services/proxyClient";
+import { createProxyClient, type TokenUsage } from "../../services/proxyClient";
 import type { PipelineDone } from "../../services/pipeline";
 import { getTelemetryEntries, observePipeline } from "../../services/telemetry";
+import {
+  gateTranslation,
+  translate,
+  type GatedTranslation,
+  type TranslationResult,
+} from "../../services/translation";
 import {
   applyStateRecommendation,
   buildAdaptationNote,
@@ -59,6 +65,26 @@ interface PendingDetectionFailure {
   message: string;
 }
 
+interface PendingHandoffReview {
+  mode: "handoff";
+  request: TranslateAskRequest;
+  text: string;
+  decisionNote: string;
+}
+
+interface PendingPaidReview {
+  mode: "send";
+  request: TranslateAskRequest;
+  translation: TranslationResult;
+  translationUsage?: TokenUsage;
+  detection: StateDetectionResult | null;
+  recommendationApplied: boolean;
+  text: string;
+  decisionNote: string;
+}
+
+type PendingReview = PendingHandoffReview | PendingPaidReview;
+
 function newMessageId(): string {
   return typeof crypto !== "undefined" && "randomUUID" in crypto
     ? crypto.randomUUID()
@@ -81,7 +107,8 @@ export function CenterColumn() {
   const plan = useAccountStore((s) => s.plan);
 
   const [run, setRun] = useState<ActivePipelineRun | null>(null);
-  const [pendingReview, setPendingReview] = useState<{ request: TranslateAskRequest; text: string; decisionNote: string } | null>(null);
+  const [pendingReview, setPendingReview] = useState<PendingReview | null>(null);
+  const [preparationGate, setPreparationGate] = useState<GatedTranslation | null>(null);
   const [pendingStateReview, setPendingStateReview] = useState<PendingStateReview | null>(null);
   const [pendingDetectionFailure, setPendingDetectionFailure] = useState<PendingDetectionFailure | null>(null);
   const [correctingDetection, setCorrectingDetection] = useState(false);
@@ -106,6 +133,8 @@ export function CenterColumn() {
       result: StateDetectionResult | null,
       recommendationApplied: boolean,
       decisionNote: string,
+      pretranslated?: TranslationResult,
+      pretranslationUsage?: TokenUsage,
     ) => {
       controllerRef.current?.abort();
       const controller = new AbortController();
@@ -133,6 +162,8 @@ export function CenterColumn() {
             signal: controller.signal,
             stateTechniques: feeds.techniqueCandidates,
             stateTone: feeds.toneGuidance,
+            pretranslated,
+            pretranslationUsage,
           }),
       });
     },
@@ -180,11 +211,62 @@ export function CenterColumn() {
     });
     const readyText = buildAiReadyRequest(packet);
     if (request.reviewBeforeSend) {
-      setPendingReview({ request, text: readyText, decisionNote });
+      setPendingReview({ mode: "handoff", request, text: readyText, decisionNote });
       setWorkflowMessage("Review request before handoff.");
     } else {
       completeFreeHandoff(request, readyText, decisionNote);
     }
+  }
+
+  async function preparePaidReview(
+    request: TranslateAskRequest,
+    result: StateDetectionResult | null,
+    recommendationApplied: boolean,
+    decisionNote: string,
+  ) {
+    controllerRef.current?.abort();
+    const controller = new AbortController();
+    controllerRef.current = controller;
+    let translationUsage: TokenUsage | undefined;
+
+    setPreparationGate(null);
+    setWorkflowMessage("Preparing…");
+    const outcome = await translate(request.rawInput, {
+      client: (translationRequest) => client.complete({
+        ...translationRequest,
+        onUsage: (usage) => {
+          translationUsage = usage;
+          addTokenUsage(usage.inputTokens, usage.outputTokens, translationRequest.model);
+        },
+      }),
+      signal: controller.signal,
+    });
+    if (controller.signal.aborted) return;
+
+    const gated = gateTranslation(outcome);
+    setPreparationGate(gated);
+    if (gated.kind === "proceed" || gated.kind === "moderate") {
+      setPendingReview({
+        mode: "send",
+        request,
+        translation: gated.result,
+        translationUsage,
+        detection: result,
+        recommendationApplied,
+        text: gated.result.translatedPrompt,
+        decisionNote,
+      });
+      setWorkflowMessage("Review request before sending.");
+      return;
+    }
+
+    setWorkflowMessage(gated.kind === "clarify"
+      ? "Please confirm what you meant before sending."
+      : gated.kind === "too-large"
+        ? "Request is too long to prepare. Your draft is unchanged."
+        : gated.kind === "empty"
+          ? "Nothing to send yet."
+          : `Request preparation failed: ${gated.message}. Your draft is ready to retry.`);
   }
 
   function continueRoute(
@@ -206,6 +288,11 @@ export function CenterColumn() {
 
     if (route.kind === "free") {
       continueFreeFlow(effectiveRequest, result, recommendation, recommendationApplied, decisionNote);
+      return;
+    }
+
+    if (effectiveRequest.reviewBeforeSend) {
+      void preparePaidReview(effectiveRequest, result, recommendationApplied, decisionNote);
       return;
     }
 
@@ -371,6 +458,7 @@ export function CenterColumn() {
   async function handleSubmit(request: TranslateAskRequest): Promise<boolean> {
     if (!request.rawInput.trim()) return false;
 
+    setPreparationGate(null);
     setWorkflowMessage("Recovery-saving…");
     try {
       await saveNow({ reason: "autosave" });
@@ -524,7 +612,9 @@ export function CenterColumn() {
     : pendingDetectionFailure
       ? "State Detection could not run. Continue with current settings?"
       : pendingReview
-        ? "Review request before handoff."
+        ? pendingReview.mode === "send"
+          ? "Review request before sending."
+          : "Review request before handoff."
         : displayMessage || workflowMessage;
   const submitDisabled = Boolean(
     pendingStateReview ||
@@ -538,7 +628,8 @@ export function CenterColumn() {
   return (
     <>
       <ConversationArea>
-        {gated && <TranslationCard gated={gated} onRefine={(value) => void handleRefine(value)} />}
+        {preparationGate && <TranslationCard gated={preparationGate} onRefine={(value) => void handleRefine(value)} />}
+        {!preparationGate && gated && <TranslationCard gated={gated} onRefine={(value) => void handleRefine(value)} />}
         {display && <StreamingAnswer state={display} />}
       </ConversationArea>
       <Composer
@@ -645,9 +736,10 @@ export function CenterColumn() {
           onCorrectionCancel={() => setCorrectingDetection(false)}
         />
       )}
-      {pendingReview && (
+      {pendingReview?.mode === "handoff" && (
         <ReviewReadyRequest
           initialText={pendingReview.text}
+          originalText={pendingReview.request.rawInput}
           destination={pendingReview.request.destination}
           onCancel={() => {
             setPendingReview(null);
@@ -656,6 +748,45 @@ export function CenterColumn() {
           onHandoff={(text, destination) => {
             completeFreeHandoff({ ...pendingReview.request, destination }, text, pendingReview.decisionNote);
             setPendingReview(null);
+          }}
+        />
+      )}
+      {pendingReview?.mode === "send" && (
+        <ReviewReadyRequest
+          mode="send"
+          initialText={pendingReview.text}
+          originalText={pendingReview.request.rawInput}
+          destination={pendingReview.request.destination}
+          onCancel={() => {
+            setPendingReview(null);
+            setPreparationGate(null);
+            setWorkflowMessage("Review cancelled. Your draft and settings are unchanged.");
+          }}
+          onSend={(text, sendAutomaticallyNextTime) => {
+            const reviewed = pendingReview;
+            const editedTranslation: TranslationResult = {
+              ...reviewed.translation,
+              translatedPrompt: text.trim(),
+              reasoning: text.trim() === reviewed.translation.translatedPrompt.trim()
+                ? reviewed.translation.reasoning
+                : `${reviewed.translation.reasoning} The prepared request was edited and approved in Review first.`,
+            };
+            if (sendAutomaticallyNextTime) {
+              useSessionStore.getState().setReviewBeforeSend(false);
+            }
+            addMessage({ id: newMessageId(), role: "user", content: reviewed.request.rawInput, timestamp: Date.now() });
+            lastRawRef.current = reviewed.request.rawInput;
+            useSessionStore.getState().setDraftInput("");
+            setPendingReview(null);
+            setPreparationGate(null);
+            startRun(
+              reviewed.request,
+              reviewed.detection,
+              reviewed.recommendationApplied,
+              reviewed.decisionNote,
+              editedTranslation,
+              reviewed.translationUsage,
+            );
           }}
         />
       )}
@@ -669,4 +800,3 @@ export function CenterColumn() {
     </>
   );
 }
-

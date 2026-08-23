@@ -108,10 +108,15 @@ describe("overrideFromSelection — Step 3.2's dropdown-to-engine wiring", () =>
     expect(overrideFromSelection("auto")).toBeNull();
   });
 
-  it("maps each ModelId to its routing ModelKey", () => {
+  it("maps each scorer model to its routing ModelKey", () => {
     expect(overrideFromSelection("claude-haiku-4-5")).toBe("haiku");
     expect(overrideFromSelection("claude-sonnet-5")).toBe("sonnet");
     expect(overrideFromSelection("claude-opus-4-8")).toBe("opus");
+  });
+
+  it("does not pass destination-provider models into the Claude scorer", () => {
+    expect(overrideFromSelection("gpt-5")).toBeNull();
+    expect(overrideFromSelection("gemini-pro")).toBeNull();
   });
 
   it("falls back to null (never throws) for a stale/unknown persisted value", () => {

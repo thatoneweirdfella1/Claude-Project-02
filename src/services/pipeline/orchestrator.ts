@@ -36,13 +36,14 @@
 
 import type { TranslateAskRequest } from "../composer";
 import type { SubscriptionTier, TechniqueId } from "../../stores/types";
-import type { ProxyCompletionRequest } from "../proxyClient";
+import type { ProxyCompletionRequest, TokenUsage } from "../proxyClient";
 import { mapTierToRoutingPlan } from "../../stores/accountStore";
 import { addTokenUsage } from "../costTracking";
 import {
   translate,
   gateTranslation,
   type GatedTranslation,
+  type TranslationResult,
 } from "../translation";
 import { overrideFromSelection, route, type RouteResult } from "../routingService";
 import {
@@ -88,6 +89,13 @@ export interface PipelineDeps {
       (deriveStateFeeds().toneGuidance), fed into composition's directness
       section. Same reasoning as stateTechniques above. */
   stateTone?: string | null;
+  /** A translation that was already prepared and approved in Review first.
+      When present, Stage 1 emits and gates this exact result without making a
+      second translation call. */
+  pretranslated?: TranslationResult;
+  /** Usage from the preparation call, retained for the telemetry record even
+      though the orchestrator correctly skips that already-completed call. */
+  pretranslationUsage?: TokenUsage;
 }
 
 function errorMessage(error: unknown): string {
@@ -168,15 +176,19 @@ export async function* runPipeline(
   yield { kind: "stage", stage: "translating" };
   let gated: GatedTranslation;
   try {
-    const outcome = await translate(request.rawInput, {
-      client: (req) =>
-        client.complete({
-          ...req,
-          onUsage: (usage) => addTokenUsage(usage.inputTokens, usage.outputTokens, req.model),
-        }),
-      signal: deps.signal,
-    });
-    gated = gateTranslation(outcome);
+    if (deps.pretranslated) {
+      gated = gateTranslation({ status: "ok", result: deps.pretranslated });
+    } else {
+      const outcome = await translate(request.rawInput, {
+        client: (req) =>
+          client.complete({
+            ...req,
+            onUsage: (usage) => addTokenUsage(usage.inputTokens, usage.outputTokens, req.model),
+          }),
+        signal: deps.signal,
+      });
+      gated = gateTranslation(outcome);
+    }
   } catch (error) {
     yield { kind: "error", message: errorMessage(error) };
     return;

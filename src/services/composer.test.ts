@@ -21,7 +21,7 @@ describe("buildTranslateAskRequest", () => {
       directness: 2,
       techniques: ["auto-detect"],
       destination: { providerId: "universal", modelId: "universal" },
-      translatorEngine: "local-rules",
+      translatorEngine: "auto-free-first",
       reviewBeforeSend: true,
       context: [],
     });

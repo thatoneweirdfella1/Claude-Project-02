@@ -1,6 +1,6 @@
-/* Step 1.10 verification — the model registry. Confirms the three CANON model
-   strings, their tiers/plans, and that extended thinking is modeled as a call
-   flag (ModelCallOptions), not a fourth model. */
+/* Model registry verification. Confirms the approved provider models, the
+   Claude scorer tiers/plans, and that extended thinking is a call flag rather
+   than a model identity. */
 
 import { describe, expect, it } from "vitest";
 import {
@@ -12,11 +12,18 @@ import {
 } from "./modelRegistry";
 
 describe("model registry", () => {
-  it("holds exactly the three CANON LOCKED DECISION 3 strings", () => {
+  it("holds the approved provider-model strings", () => {
     expect(MODEL_IDS).toEqual([
       "claude-haiku-4-5",
       "claude-sonnet-5",
       "claude-opus-4-8",
+      "gpt-4o",
+      "gpt-5",
+      "gemini-flash",
+      "gemini-pro",
+      "grok",
+      "deepseek",
+      "deepseek-reasoner",
     ]);
     // Explicitly not the retired string.
     expect(MODEL_IDS).not.toContain("claude-sonnet-4-6");
@@ -41,7 +48,6 @@ describe("model registry", () => {
   it("extended thinking is a call flag, not a model", () => {
     const opts: ModelCallOptions = { extendedThinking: true };
     expect(opts.extendedThinking).toBe(true);
-    // There is no thinking entry in the registry.
-    expect(MODEL_IDS).toHaveLength(3);
+    expect(MODEL_IDS).not.toContain("extended-thinking");
   });
 });

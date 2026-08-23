@@ -136,6 +136,29 @@ describe("runPipeline — a confident question flows through all five stages", (
       input: composed.prompt,
     });
   });
+
+  it("uses an approved edited translation without paying for a duplicate translation call", async () => {
+    const completeSpy = vi.fn(async () => translationJson());
+    const editedRequest = "Explain entanglement with one concrete analogy and no equations.";
+    const events = await collect(
+      runPipeline(request("raw wording that was already translated and reviewed"), {
+        client: stubClient({ complete: completeSpy }),
+        plan: "free",
+        pretranslated: {
+          translatedPrompt: editedRequest,
+          confidence: 94,
+          detectedGaps: ["tangential-preamble"],
+          reasoning: "The user reviewed and approved this prepared request.",
+        },
+      }),
+    );
+
+    expect(completeSpy).not.toHaveBeenCalled();
+    const gated = byKind(events, "translation").gated;
+    expect(gated.kind).toBe("proceed");
+    expect(byKind(events, "composed").composed.prompt).toContain(editedRequest);
+    expect(byKind(events, "done").done.text).toBe(ANSWER_TOKENS.join(""));
+  });
 });
 
 describe("runPipeline — the confidence gates", () => {

@@ -81,6 +81,7 @@ export async function* observePipeline(
   deps: PipelineDeps,
 ): AsyncGenerator<PipelineEvent> {
   const entry = createEntry();
+  entry.translationTokens = deps.pretranslationUsage ?? null;
   const client = withUsageTracking(deps.client, entry);
 
   let currentStage: PipelineStageName | null = null;

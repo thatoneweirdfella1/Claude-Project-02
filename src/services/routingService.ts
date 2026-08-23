@@ -15,7 +15,7 @@ import engine, {
   type RouteInput,
   type RouteResult,
 } from "./routing.js";
-import { getModel, isModelId } from "./modelRegistry";
+import { isModelId } from "./modelRegistry";
 import type { ModelSelection } from "../stores/types";
 
 export type { ModelKey, RouteInput, RouteResult } from "./routing.js";
@@ -42,5 +42,10 @@ export const ROUTING_MODELS = engine.MODELS;
     ModelId becomes its routing ModelKey via modelRegistry's key field. */
 export function overrideFromSelection(selection: ModelSelection): ModelKey | null {
   if (selection === "auto" || !isModelId(selection)) return null;
-  return getModel(selection).key;
+  switch (selection) {
+    case "claude-haiku-4-5": return "haiku";
+    case "claude-sonnet-5": return "sonnet";
+    case "claude-opus-4-8": return "opus";
+    default: return null;
+  }
 }

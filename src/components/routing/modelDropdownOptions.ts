@@ -1,4 +1,8 @@
-import { MODEL_IDS, getModel, type ModelId } from "../../services/modelRegistry";
+import {
+  ROUTABLE_MODEL_IDS,
+  getModel,
+  type RoutableModelId,
+} from "../../services/modelRegistry";
 import type { DropdownOption } from "../primitives";
 
 /* Model dropdown option list (Step 3.2), matching the V3 screenshot's label
@@ -7,7 +11,7 @@ import type { DropdownOption } from "../primitives";
    are inferred to match ROUTING.md's own tier names (Fast/Balanced/Deep)
    phrased as adjectives, not read off the image — flag for a future
    pixel-level screenshot check, same caveat as Step 1.2's eyeballed colors. */
-export const MODEL_DESCRIPTORS: Record<ModelId, string> = {
+export const MODEL_DESCRIPTORS: Record<RoutableModelId, string> = {
   "claude-haiku-4-5": "fastest",
   "claude-sonnet-5": "balanced",
   "claude-opus-4-8": "smartest", // screenshot-confirmed
@@ -18,7 +22,7 @@ export const MODEL_DESCRIPTORS: Record<ModelId, string> = {
     a paid-tier model (CANON ROUTING.md). */
 export const MODEL_DROPDOWN_OPTIONS: DropdownOption[] = [
   { value: "auto", label: "Auto-select optimal" },
-  ...MODEL_IDS.map((id) => {
+  ...ROUTABLE_MODEL_IDS.map((id) => {
     const model = getModel(id);
     const isPro = model.plan === "paid";
     return {
