@@ -82,7 +82,6 @@ export const DESTINATION_PROVIDERS: DestinationProvider[] = [
 export const TRANSLATOR_ENGINES: Array<{ id: TranslatorEngine; label: string; cost: string }> = [
   { id: "auto-free-first", label: "Auto — free first", cost: "No charge unless you explicitly approve a paid route" },
   { id: "local-rules", label: "Local rules", cost: "No Divergence credits" },
-  { id: "local-ai", label: "Local AI", cost: "Uses your local setup" },
   { id: "destination-one-pass", label: "Destination AI — one pass", cost: "Uses the destination provider" },
   { id: "managed-translator", label: "Managed translator", cost: "Paid; confirmation required" },
 ];
@@ -150,8 +149,7 @@ export function destinationProvider(selection: DestinationSelection): Destinatio
 }
 
 export function isFreeTranslator(engine: TranslatorEngine): boolean {
-  return engine === "auto-free-first" || engine === "local-rules" || engine === "local-ai";
+  return engine === "auto-free-first" || engine === "local-rules";
 }
 
 export const NO_CREDIT_BADGE = "No Divergence credits";
-
