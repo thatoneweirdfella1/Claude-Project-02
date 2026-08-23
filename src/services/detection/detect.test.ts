@@ -16,7 +16,7 @@ function detectionJson(overrides: Record<string, unknown> = {}): string {
     emotion: { value: "overwhelmed", confidence: 78 },
     rsd: { value: "high", confidence: 66 },
     interest: { value: "medium", confidence: 50 },
-    cognitive: { value: "processing", confidence: 44 },
+    cognitive: { value: "execution", confidence: 44 },
     summary: "You sound a bit overwhelmed — I'll keep it clear and supportive.",
     ...overrides,
   });
@@ -30,7 +30,7 @@ describe("detectState — the happy path", () => {
     expect(outcome.status).toBe("ok");
     if (outcome.status !== "ok") return;
     expect(outcome.result.emotion?.value).toBe("overwhelmed");
-    expect(outcome.result.cognitive?.value).toBe("processing");
+    expect(outcome.result.cognitive?.value).toBe("execution");
     expect(outcome.result.summary).toContain("overwhelmed");
   });
 

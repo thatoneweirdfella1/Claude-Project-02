@@ -424,6 +424,24 @@
 .workflow-dialog__actions .primary { border-color: var(--frozen-gold); background: color-mix(in srgb, var(--frozen-gold) 24%, var(--frozen-control)); }
 .workflow-dialog__actions .danger, .finish-session__choices .danger { border-color: #b94a48; color: #b32929; }
 .state-review-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; }
+.state-review-dialog { width: min(420px, calc(100% - 24px)); }
+.state-review-dialog > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.state-review-dismiss { flex: 0 0 32px; width: 32px !important; min-height: 32px; padding: 0; border: 0; background: transparent; color: var(--frozen-muted); font-size: 22px; cursor: pointer; }
+.state-review-chips { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.state-review-chip { display: grid; gap: 2px; padding: 7px 9px; border: 1px solid var(--frozen-line); border-radius: 7px; }
+.state-review-chip span { color: var(--frozen-muted); font-size: 10px; text-transform: uppercase; }
+.state-review-adjustments { margin-top: 10px; padding: 9px 11px; border: 1px solid var(--frozen-gold); border-radius: 7px; }
+.state-review-adjustments ul { margin: 6px 0 0; padding-left: 18px; }
+.state-review-remember { grid-template-columns: auto 1fr !important; align-items: center; }
+.state-review-remember input { width: auto; }
+.detection-failure-dialog { width: min(440px, calc(100% - 24px)); }
+.state-detection-status { position: relative; width: min(382px, 100%); margin-left: auto; }
+.state-detection-status__bar { height: 26px; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 8px; border: 1px solid var(--frozen-line); border-radius: 7px; color: var(--frozen-muted); font-size: 11px; }
+.state-detection-status.is-recommendation .state-detection-status__bar { border-color: var(--frozen-gold); color: var(--frozen-text); }
+.state-detection-status.is-unavailable .state-detection-status__bar { border-color: #b94a48; }
+.state-detection-status__bar button { border: 0; background: transparent; color: inherit; cursor: pointer; }
+.state-detection-details { position: absolute; right: 0; bottom: 32px; z-index: 80; width: min(382px, calc(100vw - 24px)); max-height: 206px; overflow: auto; padding: 10px; border: 1px solid var(--frozen-line); border-radius: 8px; box-shadow: var(--shadow-modal); }
+.state-detection-details p { margin: 8px 0; color: var(--frozen-muted); font-size: 11px; }
 .workflow-dialog__summary { padding: 10px; border-left: 3px solid var(--frozen-cyan); background: var(--frozen-cyan-soft); }
 .handoff-chooser { display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; max-height: 210px; overflow: auto; }
 .handoff-chooser button { display: grid; text-align: left; }

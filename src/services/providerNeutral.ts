@@ -7,6 +7,7 @@ import type {
   TechniqueId,
   TranslatorEngine,
 } from "../stores/types";
+import { autoDetectTechniques, isAutoMode } from "./techniques";
 
 export interface DestinationModel { id: string; label: string; cost: "Free handoff" | "Provider account" | "Local" | "Custom"; }
 export interface DestinationProvider {
@@ -47,6 +48,8 @@ export interface MeaningPacket {
   directness: "supportive" | "balanced" | "blunt";
   techniques: string[];
   state: StatePills;
+  stateApplied: boolean;
+  toneGuidance: string | null;
   requestedOutput: string;
 }
 const DIRECTNESS_LABEL: Record<DirectnessLevel, MeaningPacket["directness"]> = { 1: "supportive", 2: "balanced", 3: "blunt" };
@@ -58,9 +61,15 @@ export function compileMeaningPacket(input: {
   techniques: TechniqueId[];
   context: ContextItem[];
   statePills?: StatePills;
+  stateApplied?: boolean;
+  stateTechniques?: TechniqueId[];
+  toneGuidance?: string | null;
 }): MeaningPacket {
   const original = input.rawInput.trim();
   const sentences = original.split(/(?<=[.!?])\s+/).filter(Boolean);
+  const techniques = isAutoMode(input.techniques)
+    ? autoDetectTechniques(original, { stateTechniques: input.stateTechniques }).selected
+    : input.techniques.filter((id) => id !== "auto-detect");
   return {
     version: 1,
     original,
@@ -69,8 +78,10 @@ export function compileMeaningPacket(input: {
       .filter((item) => (item as ManagedContextItem).included !== false)
       .map((item) => `${item.label}\n${item.content}`.trim()),
     directness: DIRECTNESS_LABEL[input.directness],
-    techniques: input.techniques.filter((id) => id !== "auto-detect"),
+    techniques,
     state: input.statePills ?? { emotion: null, rsd: null, interest: null, cognitive: null },
+    stateApplied: input.stateApplied ?? false,
+    toneGuidance: input.toneGuidance ?? null,
     requestedOutput: "Answer the request directly, preserve the user's meaning, and make the next action obvious.",
   };
 }
@@ -79,7 +90,12 @@ export function buildAiReadyRequest(packet: MeaningPacket): string {
   const context = packet.context.length ? "\nCONTEXT\n---\n" + packet.context.join("\n---\n") : "";
   const techniques = packet.techniques.length ? "\nMETHODS\nUse: " + packet.techniques.join(", ") + "." : "";
   const state = Object.entries(packet.state).filter(([, value]) => value).map(([key, value]) => `${key}: ${value}`);
-  const stateGuidance = state.length ? "\nUSER STATE\n" + state.join("; ") + ". Respond without mentioning this classification." : "";
+  const stateGuidance = packet.stateApplied && (state.length || packet.toneGuidance)
+    ? "\nCOMMUNICATION SUPPORT\n" + [
+        packet.toneGuidance ? `Tone: ${packet.toneGuidance}.` : "",
+        state.length ? `Request-scoped signals: ${state.join("; ")}. Do not mention these classifications.` : "",
+      ].filter(Boolean).join(" ")
+    : "";
   return ["REQUEST", packet.original, context, stateGuidance, "", "RESPONSE STYLE", "Use a " + packet.directness + " tone. " + packet.requestedOutput, techniques].filter(Boolean).join("\n").replace(/\n{3,}/g, "\n\n");
 }
 

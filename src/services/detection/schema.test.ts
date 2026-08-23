@@ -15,13 +15,13 @@ describe("parseDetectionOutput", () => {
       emotion: { value: "overwhelmed", confidence: 82 },
       rsd: { value: "high", confidence: 70 },
       interest: { value: "high", confidence: 60 },
-      cognitive: { value: "processing", confidence: 55 },
+      cognitive: { value: "execution", confidence: 55 },
       summary: "You sound a bit overwhelmed — I'll keep it clear.",
     });
     expect(result.emotion).toEqual({ value: "overwhelmed", confidence: 82 });
     expect(result.rsd).toEqual({ value: "high", confidence: 70 });
     expect(result.interest).toEqual({ value: "high", confidence: 60 });
-    expect(result.cognitive).toEqual({ value: "processing", confidence: 55 });
+    expect(result.cognitive).toEqual({ value: "execution", confidence: 55 });
     expect(result.summary).toContain("overwhelmed");
   });
 
@@ -86,14 +86,14 @@ describe("toStatePills", () => {
       emotion: { value: "frustrated", confidence: 80 },
       rsd: null,
       interest: { value: "low", confidence: 40 },
-      cognitive: { value: "racing", confidence: 65 },
+      cognitive: { value: "decision", confidence: 65 },
       summary: "s",
     });
     expect(pills).toEqual({
       emotion: "frustrated",
       rsd: null,
       interest: "low",
-      cognitive: "racing",
+      cognitive: "decision",
     });
   });
 });

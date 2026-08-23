@@ -91,10 +91,10 @@ describe("adaptedValues", () => {
   it("returns an entry per adapted dimension, omitting dimensions that haven't adapted", () => {
     const corrections = [
       ...repeat("emotion", "frustrated", CORRECTION_THRESHOLD),
-      ...repeat("cognitive", "stuck", CORRECTION_THRESHOLD),
+      ...repeat("cognitive", "execution", CORRECTION_THRESHOLD),
       ...repeat("rsd", "high", 2), // below threshold
     ];
-    expect(adaptedValues(corrections)).toEqual({ emotion: "frustrated", cognitive: "stuck" });
+    expect(adaptedValues(corrections)).toEqual({ emotion: "frustrated", cognitive: "execution" });
   });
 
   it("returns {} when nothing has adapted (the common case)", () => {

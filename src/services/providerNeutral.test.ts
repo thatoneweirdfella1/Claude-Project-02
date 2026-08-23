@@ -35,7 +35,7 @@ describe("provider-neutral frozen flow", () => {
   it("detects state locally before compiling the meaning packet", () => {
     const result = detectStateLocally("I am overwhelmed and stuck. Please give me a detailed plan.");
     expect(result.emotion?.value).toBe("overwhelmed");
-    expect(result.cognitive?.value).toBe("stuck");
+    expect(result.cognitive?.value).toBe("execution");
     expect(result.interest?.value).toBe("high");
 
     const packet = compileMeaningPacket({
@@ -44,9 +44,10 @@ describe("provider-neutral frozen flow", () => {
       techniques: ["step-by-step"],
       context: [],
       statePills: toStatePills(result),
+      stateApplied: true,
     });
     const ready = buildAiReadyRequest(packet);
-    expect(ready).toContain("USER STATE");
+    expect(ready).toContain("COMMUNICATION SUPPORT");
     expect(ready).toContain("overwhelmed");
     expect(ready).toContain("step-by-step");
   });

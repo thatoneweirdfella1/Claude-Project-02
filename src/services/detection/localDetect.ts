@@ -38,7 +38,7 @@ export function detectStateLocally(rawInput: string): StateDetectionResult {
 
   const cognitive = has(/which should|choose|pick between|decide|trade.?off|best option/)
     ? { value: "decision" as const, confidence: 82 }
-    : has(/how do i|steps|implement|build|fix|do this|next action|execute/)
+    : has(/\b(?:how do i|steps?|implement|build|fix|do this|next action|execute|plan)\b/)
       ? { value: "execution" as const, confidence: 80 }
       : has(/compare|analy[sz]|evidence|research|evaluate|why exactly|cause/)
         ? { value: "analytical" as const, confidence: 78 }

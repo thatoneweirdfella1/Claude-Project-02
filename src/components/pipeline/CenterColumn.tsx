@@ -4,17 +4,23 @@ import { createProxyClient } from "../../services/proxyClient";
 import type { PipelineDone } from "../../services/pipeline";
 import { getTelemetryEntries, observePipeline } from "../../services/telemetry";
 import {
+  applyStateRecommendation,
   buildAdaptationNote,
+  buildStateRecommendation,
   deriveStateFeeds,
   detectState,
   detectStateLocally,
+  findRememberedStateChoice,
+  stateChoiceSignature,
   toStatePills,
   type StateDetectionResult,
+  type StateRecommendation,
 } from "../../services/detection";
 import { mergeVariables, substituteVariables } from "../../services/context";
 import { useAccountStore } from "../../stores/accountStore";
 import { useSessionStore } from "../../stores/sessionStore";
 import { Composer } from "../composer";
+import { DetectionFailurePanel } from "../composer/DetectionFailurePanel";
 import { ReviewReadyRequest } from "../composer/ReviewReadyRequest";
 import { StateReviewPanel } from "../composer/StateReviewPanel";
 import { ImportResponseDialog } from "../composer/ImportResponseDialog";
@@ -25,7 +31,7 @@ import {
   isFreeTranslator,
   NO_CREDIT_BADGE,
 } from "../../services/providerNeutral";
-import type { PillDimension } from "../detection";
+import type { StateDetectionUiStatus } from "../detection/StateDetectionStatusBar";
 import { QuickActionsRow } from "../session";
 import { ConversationArea, TranslationCard } from "../translation";
 import { StreamingAnswer } from "../streaming";
@@ -36,6 +42,22 @@ import type { PaidRoutePolicy } from "../../services/paidRoutePolicy";
 import { saveNow } from "../../services/persistence";
 
 const client = createProxyClient();
+const STATE_DIMENSIONS = ["emotion", "rsd", "interest", "cognitive"] as const;
+
+type RouteContext = { kind: "free" } | { kind: "paid" };
+
+interface PendingStateReview {
+  request: TranslateAskRequest;
+  result: StateDetectionResult;
+  recommendation: StateRecommendation;
+  route: RouteContext;
+}
+
+interface PendingDetectionFailure {
+  request: TranslateAskRequest;
+  route: RouteContext;
+  message: string;
+}
 
 function newMessageId(): string {
   return typeof crypto !== "undefined" && "randomUUID" in crypto
@@ -43,22 +65,35 @@ function newMessageId(): string {
     : `msg-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
 }
 
+function detectionFailureMessage(outcome: Exclude<Awaited<ReturnType<typeof detectState>>, { status: "ok" }>): string {
+  switch (outcome.status) {
+    case "error":
+      return outcome.message;
+    case "too-large":
+      return `The message has ${outcome.chars.toLocaleString()} characters; State Detection accepts up to ${outcome.limit.toLocaleString()}.`;
+    case "empty":
+      return "The message was empty.";
+  }
+}
+
 export function CenterColumn() {
   const addMessage = useSessionStore((s) => s.addMessage);
   const plan = useAccountStore((s) => s.plan);
-  const currentDirectness = useSessionStore((s) => s.directness);
-  const setDirectness = useSessionStore((s) => s.setDirectness);
 
   const [run, setRun] = useState<ActivePipelineRun | null>(null);
-  const [pendingReview, setPendingReview] = useState<{ request: TranslateAskRequest; text: string } | null>(null);
-  const [pendingStateReview, setPendingStateReview] = useState<{ request: TranslateAskRequest; result: StateDetectionResult } | null>(null);
+  const [pendingReview, setPendingReview] = useState<{ request: TranslateAskRequest; text: string; decisionNote: string } | null>(null);
+  const [pendingStateReview, setPendingStateReview] = useState<PendingStateReview | null>(null);
+  const [pendingDetectionFailure, setPendingDetectionFailure] = useState<PendingDetectionFailure | null>(null);
+  const [correctingDetection, setCorrectingDetection] = useState(false);
   const [importingResponse, setImportingResponse] = useState(false);
   const [detection, setDetection] = useState<StateDetectionResult | null>(null);
-  const [detecting, setDetecting] = useState(false);
+  const [detectionStatus, setDetectionStatus] = useState<StateDetectionUiStatus>("idle");
   const [workflowMessage, setWorkflowMessage] = useState("");
   const runIdRef = useRef(0);
   const controllerRef = useRef<AbortController | null>(null);
   const lastRawRef = useRef("");
+  const runDecisionNoteRef = useRef("");
+  const runHadDetectionRef = useRef(false);
   const conversation = useSessionStore((s) => s.conversation);
   const updateMessage = useSessionStore((s) => s.updateMessage);
   const pendingHandoff = [...conversation].reverse().find((message) =>
@@ -66,13 +101,28 @@ export function CenterColumn() {
   );
 
   const startRun = useCallback(
-    (request: TranslateAskRequest) => {
+    (
+      request: TranslateAskRequest,
+      result: StateDetectionResult | null,
+      recommendationApplied: boolean,
+      decisionNote: string,
+    ) => {
       controllerRef.current?.abort();
       const controller = new AbortController();
       controllerRef.current = controller;
       runIdRef.current += 1;
       lastRawRef.current = request.rawInput;
-      const feeds = deriveStateFeeds(useSessionStore.getState().statePills);
+      runDecisionNoteRef.current = decisionNote;
+      runHadDetectionRef.current = result !== null;
+
+      if (result) {
+        setDetection(result);
+        useSessionStore.getState().setStatePills(toStatePills(result));
+      }
+      const feeds = result && recommendationApplied
+        ? deriveStateFeeds(toStatePills(result))
+        : { directnessSuggestion: null, techniqueCandidates: [], toneGuidance: null, transparency: [] };
+
       setWorkflowMessage("Sending…");
       setRun({
         id: runIdRef.current,
@@ -85,31 +135,11 @@ export function CenterColumn() {
             stateTone: feeds.toneGuidance,
           }),
       });
-
-      setDetection(null);
-      setDetecting(true);
-      const adaptationNote = buildAdaptationNote(useAccountStore.getState().stateCorrections);
-      void detectState(request.rawInput, {
-        client: (req) =>
-          client.complete({
-            ...req,
-            onUsage: (usage) => addTokenUsage(usage.inputTokens, usage.outputTokens, req.model),
-          }),
-        signal: controller.signal,
-        adaptationNote,
-      }).then((outcome) => {
-        if (controller.signal.aborted) return;
-        setDetecting(false);
-        if (outcome.status === "ok") {
-          setDetection(outcome.result);
-          useSessionStore.getState().setStatePills(toStatePills(outcome.result));
-        }
-      });
     },
     [plan],
   );
 
-  function completeFreeHandoff(request: TranslateAskRequest, readyText: string) {
+  function completeFreeHandoff(request: TranslateAskRequest, readyText: string, decisionNote: string) {
     const label = destinationLabel(request.destination);
     addMessage({ id: newMessageId(), role: "user", content: request.rawInput, timestamp: Date.now() });
     addMessage({
@@ -121,7 +151,7 @@ export function CenterColumn() {
       handoffStatus: "handed-off",
       sourceLabel: label,
       preparedRequest: readyText,
-      notes: [NO_CREDIT_BADGE, "Handed off — not answered"],
+      notes: [NO_CREDIT_BADGE, "Handed off — not answered", decisionNote].filter(Boolean),
     });
     useSessionStore.getState().setDraftInput("");
     setWorkflowMessage("Handed off — awaiting response.");
@@ -130,31 +160,183 @@ export function CenterColumn() {
     });
   }
 
-  function continueFreeFlow(request: TranslateAskRequest, result: StateDetectionResult | null, commitReading: boolean) {
-    if (result && commitReading) {
+  function continueFreeFlow(
+    request: TranslateAskRequest,
+    result: StateDetectionResult | null,
+    recommendation: StateRecommendation | null,
+    recommendationApplied: boolean,
+    decisionNote: string,
+  ) {
+    if (result) {
       setDetection(result);
       useSessionStore.getState().setStatePills(toStatePills(result));
     }
     const packet = compileMeaningPacket({
       ...request,
-      statePills: result && commitReading ? toStatePills(result) : useSessionStore.getState().statePills,
+      statePills: result ? toStatePills(result) : undefined,
+      stateApplied: recommendationApplied,
+      stateTechniques: recommendationApplied ? recommendation?.techniqueCandidates : undefined,
+      toneGuidance: recommendationApplied ? recommendation?.toneGuidance : null,
     });
     const readyText = buildAiReadyRequest(packet);
     if (request.reviewBeforeSend) {
-      setPendingReview({ request, text: readyText });
+      setPendingReview({ request, text: readyText, decisionNote });
       setWorkflowMessage("Review request before handoff.");
     } else {
-      completeFreeHandoff(request, readyText);
+      completeFreeHandoff(request, readyText, decisionNote);
     }
+  }
+
+  function continueRoute(
+    route: RouteContext,
+    request: TranslateAskRequest,
+    result: StateDetectionResult | null,
+    recommendation: StateRecommendation | null,
+    recommendationApplied: boolean,
+    decisionNote: string,
+    nextStatus: StateDetectionUiStatus,
+  ) {
+    const effectiveRequest = recommendationApplied && recommendation
+      ? applyStateRecommendation(request, recommendation)
+      : request;
+
     setPendingStateReview(null);
+    setPendingDetectionFailure(null);
+    setDetectionStatus(nextStatus);
+
+    if (route.kind === "free") {
+      continueFreeFlow(effectiveRequest, result, recommendation, recommendationApplied, decisionNote);
+      return;
+    }
+
+    addMessage({ id: newMessageId(), role: "user", content: request.rawInput, timestamp: Date.now() });
+    lastRawRef.current = request.rawInput;
+    useSessionStore.getState().setDraftInput("");
+    startRun(effectiveRequest, result, recommendationApplied, decisionNote);
+  }
+
+  function rememberChoice(result: StateDetectionResult, action: "accept" | "keep-current" | "dismiss", remember: boolean) {
+    if (!remember) return;
+    useAccountStore.getState().rememberStateChoice({
+      signature: stateChoiceSignature(result),
+      action,
+      timestamp: Date.now(),
+    });
+  }
+
+  function rememberCorrections(
+    original: StateDetectionResult,
+    corrected: StateDetectionResult,
+    remember: boolean,
+  ) {
+    if (!remember) return;
+    for (const dimension of STATE_DIMENSIONS) {
+      const from = original[dimension]?.value;
+      const to = corrected[dimension]?.value;
+      if (to && from !== to) {
+        useAccountStore.getState().recordStateCorrection({
+          dimension,
+          from: from ?? "none",
+          to,
+          timestamp: Date.now(),
+        });
+      }
+    }
+  }
+
+  function resolveDetection(
+    request: TranslateAskRequest,
+    result: StateDetectionResult,
+    route: RouteContext,
+  ) {
+    setDetection(result);
+    useSessionStore.getState().setStatePills(toStatePills(result));
+
+    const recommendation = buildStateRecommendation(result, request);
+    if (!recommendation) {
+      setWorkflowMessage("State checked — no change suggested.");
+      continueRoute(
+        route,
+        request,
+        result,
+        null,
+        false,
+        "State checked — no change suggested.",
+        "no-change",
+      );
+      return;
+    }
+
+    const remembered = findRememberedStateChoice(
+      useAccountStore.getState().rememberedStateChoices,
+      result,
+    );
+    if (remembered) {
+      const accept = remembered.action === "accept";
+      const note = accept
+        ? "Remembered State choice applied to this similar request."
+        : "Remembered State choice kept the current request settings.";
+      setWorkflowMessage(note);
+      continueRoute(
+        route,
+        request,
+        result,
+        recommendation,
+        accept,
+        note,
+        "used",
+      );
+      return;
+    }
+
+    setPendingStateReview({ request, result, recommendation, route });
+    setDetectionStatus("recommendation");
+    setWorkflowMessage("A response adjustment may help. Choose how to continue.");
+  }
+
+  function failDetection(request: TranslateAskRequest, route: RouteContext, message: string) {
+    setPendingDetectionFailure({ request, route, message });
+    setDetectionStatus("unavailable");
+    setWorkflowMessage("State Detection could not run. Continue with current settings?");
   }
 
   function queueFreeFlow(request: TranslateAskRequest) {
+    setDetectionStatus("checking");
     setWorkflowMessage("Checking state…");
-    const result = detectStateLocally(request.rawInput);
-    setDetection(result);
-    setPendingStateReview({ request, result });
-    setWorkflowMessage("State recommendation ready. Review it to continue.");
+    try {
+      resolveDetection(request, detectStateLocally(request.rawInput), { kind: "free" });
+    } catch (error) {
+      failDetection(
+        request,
+        { kind: "free" },
+        error instanceof Error ? error.message : String(error),
+      );
+    }
+  }
+
+  async function queuePaidFlow(request: TranslateAskRequest) {
+    controllerRef.current?.abort();
+    const controller = new AbortController();
+    controllerRef.current = controller;
+    setDetectionStatus("checking");
+    setWorkflowMessage("Checking state…");
+
+    const adaptationNote = buildAdaptationNote(useAccountStore.getState().stateCorrections);
+    const outcome = await detectState(request.rawInput, {
+      client: (req) =>
+        client.complete({
+          ...req,
+          onUsage: (usage) => addTokenUsage(usage.inputTokens, usage.outputTokens, req.model),
+        }),
+      signal: controller.signal,
+      adaptationNote,
+    });
+    if (controller.signal.aborted) return;
+    if (outcome.status === "ok") {
+      resolveDetection(request, outcome.result, { kind: "paid" });
+    } else {
+      failDetection(request, { kind: "paid" }, detectionFailureMessage(outcome));
+    }
   }
 
   function paidRoutePolicy(
@@ -226,10 +408,7 @@ export function CenterColumn() {
       return false;
     }
 
-    addMessage({ id: newMessageId(), role: "user", content: request.rawInput, timestamp: Date.now() });
-    lastRawRef.current = request.rawInput;
-    useSessionStore.getState().setDraftInput("");
-    startRun(request);
+    await queuePaidFlow(request);
     return true;
   }
 
@@ -274,7 +453,7 @@ export function CenterColumn() {
       content: substitutedAddition,
       timestamp: Date.now(),
     });
-    startRun(rerunRequest);
+    startRun(rerunRequest, null, false, "Refine rerun used the current explicit settings.");
   }
 
   const handleDone = useCallback(
@@ -288,11 +467,12 @@ export function CenterColumn() {
         timestamp: Date.now(),
         confidence: done.confidence,
         downgraded: done.downgraded,
-        notes: done.notes,
+        notes: [...(done.notes ?? []), runDecisionNoteRef.current].filter(Boolean),
         telemetryId,
         statePills: useSessionStore.getState().statePills,
       });
       setWorkflowMessage("Response received.");
+      if (runHadDetectionRef.current) setDetectionStatus("used");
       setRun(null);
       void saveNow({ reason: "autosave" }).catch(() => {
         setWorkflowMessage("Response received, but recovery save failed. Keep this page open until the next save succeeds.");
@@ -300,24 +480,6 @@ export function CenterColumn() {
     },
     [addMessage],
   );
-
-  function handleCorrectState(dimension: PillDimension, value: string) {
-    setDetection((prev) => {
-      if (!prev) return prev;
-      const previousReading = prev[dimension];
-      const corrected = { ...prev, [dimension]: { value, confidence: 100 } } as StateDetectionResult;
-      useSessionStore.getState().setStatePills(toStatePills(corrected));
-      if (previousReading && previousReading.value !== value) {
-        useAccountStore.getState().recordStateCorrection({
-          dimension,
-          from: previousReading.value,
-          to: value,
-          timestamp: Date.now(),
-        });
-      }
-      return corrected;
-    });
-  }
 
   const { gated, display } = usePipelineRun(run, handleDone);
 
@@ -327,14 +489,6 @@ export function CenterColumn() {
     const session = useSessionStore.getState();
     if (!session.draftInput.trim() && lastRawRef.current) session.setDraftInput(lastRawRef.current);
   }, [display]);
-
-  const directnessSuggestion = detection
-    ? deriveStateFeeds(toStatePills(detection)).directnessSuggestion
-    : null;
-  const suggestedDirectness =
-    directnessSuggestion !== null && directnessSuggestion !== currentDirectness
-      ? directnessSuggestion
-      : null;
 
   function confirmImportedResponse(response: string, sourceLabel: string) {
     if (!pendingHandoff) return;
@@ -351,6 +505,7 @@ export function CenterColumn() {
       notes: [`Imported from ${sourceLabel}`, "Reviewed and confirmed by you"],
     });
     setImportingResponse(false);
+    setDetectionStatus(detection ? "used" : detectionStatus);
     setWorkflowMessage("Imported response added to the conversation.");
     void saveNow({ reason: "autosave" }).catch(() => {
       setWorkflowMessage("Response imported, but recovery save failed. Keep this page open until the next save succeeds.");
@@ -365,11 +520,20 @@ export function CenterColumn() {
         ? `Request failed: ${display.message}`
         : "";
   const composerStatus = pendingStateReview
-    ? "State recommendation ready. Review it to continue."
-    : pendingReview
-      ? "Review request before handoff."
-      : displayMessage || workflowMessage;
-  const submitDisabled = Boolean(pendingStateReview || pendingReview || (run && display?.kind !== "error"));
+    ? "A response adjustment may help. Choose how to continue."
+    : pendingDetectionFailure
+      ? "State Detection could not run. Continue with current settings?"
+      : pendingReview
+        ? "Review request before handoff."
+        : displayMessage || workflowMessage;
+  const submitDisabled = Boolean(
+    pendingStateReview ||
+    pendingDetectionFailure ||
+    pendingReview ||
+    correctingDetection ||
+    detectionStatus === "checking" ||
+    (run && display?.kind !== "error"),
+  );
 
   return (
     <>
@@ -380,10 +544,8 @@ export function CenterColumn() {
       <Composer
         onSubmit={handleSubmit}
         detection={detection}
-        detecting={detecting}
-        onCorrectState={handleCorrectState}
-        suggestedDirectness={suggestedDirectness}
-        onApplyDirectness={() => setDirectness(suggestedDirectness!)}
+        detectionStatus={detectionStatus}
+        onOpenStateCorrection={detection ? () => setCorrectingDetection(true) : undefined}
         statusMessage={composerStatus}
         submitDisabled={submitDisabled}
       />
@@ -397,25 +559,90 @@ export function CenterColumn() {
       {pendingStateReview && (
         <StateReviewPanel
           initial={pendingStateReview.result}
+          recommendationChanges={pendingStateReview.recommendation.changes}
+          onAccept={(result, remember) => {
+            rememberCorrections(pendingStateReview.result, result, remember);
+            rememberChoice(pendingStateReview.result, "accept", remember);
+            const correctedRecommendation = buildStateRecommendation(result, pendingStateReview.request);
+            continueRoute(
+              pendingStateReview.route,
+              pendingStateReview.request,
+              result,
+              correctedRecommendation,
+              correctedRecommendation !== null,
+              correctedRecommendation
+                ? `State adjustment accepted: ${correctedRecommendation.changes.join(" ")}`
+                : "State corrected; no request adjustment was needed.",
+              correctedRecommendation ? "used" : "no-change",
+            );
+          }}
+          onKeepCurrent={(remember) => {
+            rememberChoice(pendingStateReview.result, "keep-current", remember);
+            continueRoute(
+              pendingStateReview.route,
+              pendingStateReview.request,
+              pendingStateReview.result,
+              pendingStateReview.recommendation,
+              false,
+              "State recommendation declined; current explicit settings kept.",
+              "used",
+            );
+          }}
+          onDismiss={(remember) => {
+            rememberChoice(pendingStateReview.result, "dismiss", remember);
+            continueRoute(
+              pendingStateReview.route,
+              pendingStateReview.request,
+              pendingStateReview.result,
+              pendingStateReview.recommendation,
+              false,
+              "State recommendation dismissed; current explicit settings kept.",
+              "used",
+            );
+          }}
+        />
+      )}
+      {pendingDetectionFailure && (
+        <DetectionFailurePanel
+          message={pendingDetectionFailure.message}
+          onContinue={() => continueRoute(
+            pendingDetectionFailure.route,
+            pendingDetectionFailure.request,
+            null,
+            null,
+            false,
+            "State Detection unavailable; continued with current explicit settings.",
+            "unavailable",
+          )}
+          onRetry={() => {
+            const pending = pendingDetectionFailure;
+            setPendingDetectionFailure(null);
+            if (pending.route.kind === "free") queueFreeFlow(pending.request);
+            else void queuePaidFlow(pending.request);
+          }}
           onCancel={() => {
-            setPendingStateReview(null);
-            setWorkflowMessage("State review cancelled. Your draft is still here.");
+            setPendingDetectionFailure(null);
+            setWorkflowMessage("Send cancelled. Your draft and settings are unchanged.");
           }}
-          onAccept={(result) => {
-            (["emotion", "rsd", "interest", "cognitive"] as PillDimension[]).forEach((dimension) => {
-              const from = pendingStateReview.result[dimension]?.value;
-              const to = result[dimension]?.value;
-              if (from && to && from !== to) {
-                useAccountStore.getState().recordStateCorrection({ dimension, from, to, timestamp: Date.now() });
-              }
-            });
-            continueFreeFlow(pendingStateReview.request, result, true);
+        />
+      )}
+      {correctingDetection && detection && (
+        <StateReviewPanel
+          initial={detection}
+          initialMode="correct"
+          onAccept={(corrected, remember) => {
+            rememberCorrections(detection, corrected, remember);
+            setDetection(corrected);
+            useSessionStore.getState().setStatePills(toStatePills(corrected));
+            setCorrectingDetection(false);
+            setDetectionStatus("used");
+            setWorkflowMessage(remember
+              ? "State correction saved and remembered."
+              : "State correction saved for this request only.");
           }}
-          onKeepCurrent={() => continueFreeFlow(pendingStateReview.request, pendingStateReview.result, false)}
-          onDismiss={() => {
-            setDetection(null);
-            continueFreeFlow(pendingStateReview.request, null, false);
-          }}
+          onKeepCurrent={() => setCorrectingDetection(false)}
+          onDismiss={() => setCorrectingDetection(false)}
+          onCorrectionCancel={() => setCorrectingDetection(false)}
         />
       )}
       {pendingReview && (
@@ -427,7 +654,7 @@ export function CenterColumn() {
             setWorkflowMessage("Review cancelled. Your draft is still here.");
           }}
           onHandoff={(text, destination) => {
-            completeFreeHandoff({ ...pendingReview.request, destination }, text);
+            completeFreeHandoff({ ...pendingReview.request, destination }, text, pendingReview.decisionNote);
             setPendingReview(null);
           }}
         />
@@ -442,3 +669,4 @@ export function CenterColumn() {
     </>
   );
 }
+

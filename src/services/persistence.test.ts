@@ -58,6 +58,11 @@ describe("persistence: kill and reload", () => {
       to: "frustrated",
       timestamp: 222,
     });
+    useAccountStore.getState().rememberStateChoice({
+      signature: "emotion:overwhelmed|rsd:none|interest:none|cognitive:execution",
+      action: "accept",
+      timestamp: 223,
+    });
 
     await saveNow();
 
@@ -90,6 +95,13 @@ describe("persistence: kill and reload", () => {
     expect(account.visibility.recentSessions).toBe(false);
     expect(account.stateCorrections).toEqual([
       { dimension: "emotion", from: "overwhelmed", to: "frustrated", timestamp: 222 },
+    ]);
+    expect(account.rememberedStateChoices).toEqual([
+      {
+        signature: "emotion:overwhelmed|rsd:none|interest:none|cognitive:execution",
+        action: "accept",
+        timestamp: 223,
+      },
     ]);
     expect(account.sessions.some((record) => record.id === originalSessionId)).toBe(true);
   });

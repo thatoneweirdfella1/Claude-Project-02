@@ -15,6 +15,7 @@ import type {
   SubscriptionTier,
   PromptTemplate,
   Rating,
+  RememberedStateChoice,
   SavedPrompt,
   SessionRecord,
   StateCorrection,
@@ -59,6 +60,7 @@ export const DEFAULT_VISIBILITY: VisibilitySettings = {
     crossing threshold on several different values each before anything
     is dropped (oldest first). */
 export const MAX_STATE_CORRECTIONS = 1000;
+export const MAX_REMEMBERED_STATE_CHOICES = 100;
 
 /** Cap on stored learning-loop audit entries (Step 10.2) — bounded so a
     very long-lived account can't grow this unboundedly, same reasoning as
@@ -151,6 +153,7 @@ export function createInitialAccountState(): AccountState {
     layout: "gold", // The desktop shell overrides this visually with the frozen supplied layout.
     learnedPreferences: { routing: {}, technique: {} },
     stateCorrections: [], // Step 6.4
+    rememberedStateChoices: [],
     sessions: [], // Step 9.1
     trashed: [], // Deleted sessions (can be restored or permanently deleted)
     templates: DEFAULT_TEMPLATES.map((t) => ({ ...t, techniques: [...t.techniques] })), // Step 9.2 — fresh objects/arrays, no shared references
@@ -181,6 +184,7 @@ export const ACCOUNT_PERSISTED_KEYS: (keyof AccountState)[] = [
   "layout",
   "learnedPreferences",
   "stateCorrections",
+  "rememberedStateChoices",
   "sessions",
   "trashed",
   "templates",
@@ -251,6 +255,7 @@ interface AccountActions {
   /** Record one state-pill correction (Step 6.4). Appends, capped at
       MAX_STATE_CORRECTIONS (oldest dropped first). */
   recordStateCorrection: (correction: StateCorrection) => void;
+  rememberStateChoice: (choice: RememberedStateChoice) => void;
   /** Insert or replace one lifecycle snapshot by stable session id. */
   addSessionRecord: (record: SessionRecord) => void;
   removeSessionRecord: (id: string) => void;
@@ -466,6 +471,15 @@ export const useAccountStore = create<AccountStore>((set, get) => ({
             : next,
       };
     }),
+  rememberStateChoice: (choice) =>
+    set((state) => {
+      const withoutOlderMatch = (state.rememberedStateChoices ?? [])
+        .filter((item) => item.signature !== choice.signature);
+      return {
+        rememberedStateChoices: [...withoutOlderMatch, choice]
+          .slice(-MAX_REMEMBERED_STATE_CHOICES),
+      };
+    }),
   addSessionRecord: (record) => set((s) => {
     const existing = s.sessions.findIndex((item) => item.id === record.id);
     return {
@@ -612,6 +626,13 @@ export const useAccountStore = create<AccountStore>((set, get) => ({
     ...(state.sessions !== undefined ? { sessions: Array.isArray(state.sessions) ? state.sessions : current.sessions } : {}),
     ...(state.trashed !== undefined ? { trashed: Array.isArray(state.trashed) ? state.trashed : current.trashed } : {}),
     ...(state.templates !== undefined ? { templates: Array.isArray(state.templates) ? state.templates : current.templates } : {}),
+    ...(state.rememberedStateChoices !== undefined
+      ? {
+          rememberedStateChoices: Array.isArray(state.rememberedStateChoices)
+            ? state.rememberedStateChoices
+            : current.rememberedStateChoices,
+        }
+      : {}),
   })),
 }));
 

@@ -183,10 +183,28 @@ export type PlanFlag = "free" | "paid";
 /* State pills (CANON Feature 5). Provisional — detection architecture and
    the authoritative pill model are Steps 6.1–6.3. Values mirror CANON's
    named dimensions; null means "not yet detected this session". */
-export type EmotionState = "overwhelmed" | "frustrated" | "calm" | "excited" | "anxious";
+export type EmotionState =
+  | "neutral"
+  | "calm"
+  | "focused"
+  | "frustrated"
+  | "overwhelmed"
+  | "anxious"
+  | "low-energy"
+  | "excited";
 export type RsdLevel = "low" | "medium" | "high";
 export type InterestLevel = "low" | "medium" | "high";
-export type CognitiveMode = "analytical" | "creative" | "processing" | "racing" | "stuck";
+/** New writes use the approved five-value vocabulary. The last three values
+ * remain readable only so pre-migration saved sessions do not fail to load. */
+export type CognitiveMode =
+  | "exploratory"
+  | "analytical"
+  | "creative"
+  | "decision"
+  | "execution"
+  | "processing"
+  | "racing"
+  | "stuck";
 
 export interface StatePills {
   emotion: EmotionState | null;
@@ -512,6 +530,18 @@ export interface StateCorrection {
   timestamp: number;
 }
 
+export type RememberedStateAction = "accept" | "keep-current" | "dismiss";
+
+/** A deliberately conservative "similar situation" rule: a remembered
+ * choice is reused only when all four detected values match this signature.
+ * The recommendation itself is recomputed against the current request, so a
+ * remembered Accept never replays a stale or now-conflicting adjustment. */
+export interface RememberedStateChoice {
+  signature: string;
+  action: RememberedStateAction;
+  timestamp: number;
+}
+
 /* Auto-select usage tracking (Step 12.3+ Pro tier). Records when user
    triggers auto-select (discussion type or model selection), result
    quality, and whether the selection was kept. Bounded array to prevent
@@ -659,6 +689,7 @@ export interface AccountState {
       Bounded (see accountStore.ts) so a very long-lived account can't grow
       this unboundedly. */
   stateCorrections: StateCorrection[];
+  rememberedStateChoices?: RememberedStateChoice[];
   /** Step 9.1 ADD — CANON Feature 11: every duplicated or closed-and-archived
       session (a plain "discard" close writes nothing here). Feeds the
       Recent Sessions accordion (Step 9.5) and the Archive screen (LEFT

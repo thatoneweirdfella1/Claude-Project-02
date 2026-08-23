@@ -34,7 +34,7 @@ const FULL: StateDetectionResult = {
 };
 
 describe("STATE_IMPACTS — covers every value of every dimension", () => {
-  it("has an impact for all five emotions, three RSD levels, three interest levels, five cognitive modes", () => {
+  it("has an impact for every approved emotion, RSD level, interest level, and cognitive mode", () => {
     for (const v of EMOTION_STATES) expect(STATE_IMPACTS.emotion[v]).toBeDefined();
     for (const v of RSD_LEVELS) expect(STATE_IMPACTS.rsd[v]).toBeDefined();
     for (const v of INTEREST_LEVELS) expect(STATE_IMPACTS.interest[v]).toBeDefined();
@@ -71,9 +71,10 @@ describe("STATE_IMPACTS — matches PIPELINE.md's specific mappings", () => {
     }
   });
 
-  it("emotion techniques match: frustrated→Simplify, calm→Socratic, excited→Detailed, anxious→Verify", () => {
+  it("emotion techniques match the approved request-support mappings", () => {
     expect(STATE_IMPACTS.emotion.frustrated.techniques).toEqual(["simplify"]);
-    expect(STATE_IMPACTS.emotion.calm.techniques).toEqual(["socratic"]);
+    expect(STATE_IMPACTS.emotion.calm.techniques).toBeUndefined();
+    expect(STATE_IMPACTS.emotion["low-energy"].techniques).toEqual(["simplify"]);
     expect(STATE_IMPACTS.emotion.excited.techniques).toEqual(["detailed"]);
     expect(STATE_IMPACTS.emotion.anxious.techniques).toEqual(["verify"]);
   });
@@ -91,12 +92,12 @@ describe("STATE_IMPACTS — matches PIPELINE.md's specific mappings", () => {
     expect(STATE_IMPACTS.interest.high.techniques).toEqual(["detailed", "comparative"]);
   });
 
-  it("cognitive modes match: analytical→CoT+Step, creative→Metaphor+Comparative, processing→Socratic, racing→Simplify, stuck→Examples", () => {
-    expect(STATE_IMPACTS.cognitive.analytical.techniques).toEqual(["chain-of-thought", "step-by-step"]);
+  it("cognitive modes match the approved five-value vocabulary", () => {
+    expect(STATE_IMPACTS.cognitive.exploratory.techniques).toEqual(["socratic"]);
+    expect(STATE_IMPACTS.cognitive.analytical.techniques).toEqual(["step-by-step", "verify"]);
     expect(STATE_IMPACTS.cognitive.creative.techniques).toEqual(["metaphor", "comparative"]);
-    expect(STATE_IMPACTS.cognitive.processing.techniques).toEqual(["socratic"]);
-    expect(STATE_IMPACTS.cognitive.racing.techniques).toEqual(["simplify"]);
-    expect(STATE_IMPACTS.cognitive.stuck.techniques).toEqual(["examples"]);
+    expect(STATE_IMPACTS.cognitive.decision.techniques).toEqual(["comparative", "verify"]);
+    expect(STATE_IMPACTS.cognitive.execution.techniques).toEqual(["step-by-step", "examples"]);
   });
 });
 
@@ -133,19 +134,21 @@ describe("recommendedDirectness — agrees with directness.ts", () => {
 
 describe("suggestedTechniques — de-duplicated candidates from all dimensions", () => {
   it("collects technique candidates across emotion/interest/cognitive, dropping RSD (tone-only)", () => {
-    // frustrated→simplify, high interest→detailed+comparative, racing→simplify (dup)
+    // frustrated→simplify, high interest→detailed+comparative, execution→step-by-step+examples
     const result: StateDetectionResult = {
       emotion: reading("frustrated"),
       rsd: reading("high"),
       interest: reading("high"),
-      cognitive: reading("racing"),
+      cognitive: reading("execution"),
       summary: "s",
     };
     const techniques = suggestedTechniques(result);
     expect(techniques).toContain("simplify");
     expect(techniques).toContain("detailed");
     expect(techniques).toContain("comparative");
-    // de-duplicated: simplify from both frustrated and racing appears once
+    expect(techniques).toContain("step-by-step");
+    expect(techniques).toContain("examples");
+    // de-duplicated values appear only once
     expect(techniques.filter((t) => t === "simplify")).toHaveLength(1);
   });
 
@@ -166,7 +169,7 @@ describe("prompt/table consistency — no drift", () => {
     for (const v of ["low", "medium", "high"]) {
       expect(DETECTION_SYSTEM_PROMPT).toContain(v);
     }
-    expect(allValues.length).toBe(16); // 5 + 3 + 3 + 5, a guard on the taxonomy size
+    expect(allValues.length).toBe(19); // 8 + 3 + 3 + 5, a guard on the approved taxonomy size
   });
 
   it("the prompt tells the model to emit JSON only and not reason aloud (Haiku tuning)", () => {

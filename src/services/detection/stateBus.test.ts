@@ -44,12 +44,12 @@ describe("deriveStateFeeds — technique-selection consumer", () => {
       emotion: "frustrated", // simplify
       rsd: "high", // tone only, no technique
       interest: "high", // detailed, comparative
-      cognitive: "stuck", // examples
+      cognitive: "execution", // step-by-step, examples
     });
     expect(feeds.techniqueCandidates).toEqual(
       expect.arrayContaining(["simplify", "detailed", "comparative", "examples"]),
     );
-    expect(feeds.techniqueCandidates).toHaveLength(4);
+    expect(feeds.techniqueCandidates).toHaveLength(5);
   });
 
   it("de-duplicates when two dimensions point at the same technique", () => {
@@ -85,7 +85,7 @@ describe("deriveStateFeeds — transparency-card consumer", () => {
       emotion: "excited",
       rsd: "medium",
       interest: "high",
-      cognitive: "racing",
+      cognitive: "decision",
     });
     expect(feeds.transparency.map((t) => t.dimension)).toEqual(["emotion", "rsd", "interest", "cognitive"]);
     expect(feeds.transparency[0]).toEqual({

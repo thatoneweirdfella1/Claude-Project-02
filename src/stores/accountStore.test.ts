@@ -91,6 +91,7 @@ describe("createInitialAccountState", () => {
     expect(state.visibility).toEqual(DEFAULT_VISIBILITY);
     expect(state.learnedPreferences).toEqual({ routing: {}, technique: {} });
     expect(state.stateCorrections).toEqual([]);
+    expect(state.rememberedStateChoices).toEqual([]);
     expect(state.sessions).toEqual([]);
     expect(state.templates).toHaveLength(3);
     expect(state.learningAuditLog).toEqual([]);
@@ -114,17 +115,18 @@ describe("createInitialAccountState", () => {
 });
 
 describe("DEFAULT_VISIBILITY", () => {
-  it("matches CANON Feature 12's seven documented defaults", () => {
-    // Frozen provider-neutral amendment: Quick Tools are hidden by default
-    // and remain user-configurable from Visibility.
+  it("sets minimalist defaults with core panels visible", () => {
+    // Frozen provider-neutral amendment: Quick Tools and most statistics
+    // are hidden by default and remain user-configurable from Visibility.
+    // Core panels: context, model status, and metadata snapshot are visible.
     expect(DEFAULT_VISIBILITY).toEqual({
-      recentSessions: true,
+      recentSessions: false,
       contextSnapshot: true,
-      recentActivity: true,
-      tokenUsage: true,
+      recentActivity: false,
+      tokenUsage: false,
       modelStatus: true,
       quickTools: false,
-      activeSession: false,
+      activeSession: true,
     });
   });
 });
@@ -150,6 +152,7 @@ describe("ACCOUNT_PERSISTED_KEYS", () => {
         "layout",
         "learnedPreferences",
         "stateCorrections",
+        "rememberedStateChoices",
         "sessions",
         "trashed",
         "templates",
@@ -300,8 +303,8 @@ describe("setVisibility", () => {
     useAccountStore.getState().setVisibility({ quickTools: true });
     const v = useAccountStore.getState().visibility;
     expect(v.quickTools).toBe(true);
-    expect(v.recentSessions).toBe(true); // untouched default
-    expect(v.activeSession).toBe(false); // untouched default
+    expect(v.recentSessions).toBe(false); // untouched default
+    expect(v.activeSession).toBe(true); // untouched default
   });
 
   it("a full-object patch (Reset to defaults) restores every field", () => {
@@ -353,6 +356,17 @@ describe("recordStateCorrection", () => {
     expect(corrections).toHaveLength(MAX_STATE_CORRECTIONS);
     expect(corrections[0].timestamp).toBe(overflow - MAX_STATE_CORRECTIONS);
     expect(corrections[corrections.length - 1].timestamp).toBe(overflow - 1);
+  });
+});
+
+describe("rememberStateChoice", () => {
+  it("keeps only the newest choice for an exact state signature", () => {
+    const signature = "emotion:overwhelmed|rsd:none|interest:none|cognitive:execution";
+    useAccountStore.getState().rememberStateChoice({ signature, action: "accept", timestamp: 1 });
+    useAccountStore.getState().rememberStateChoice({ signature, action: "keep-current", timestamp: 2 });
+    expect(useAccountStore.getState().rememberedStateChoices).toEqual([
+      { signature, action: "keep-current", timestamp: 2 },
+    ]);
   });
 });
 

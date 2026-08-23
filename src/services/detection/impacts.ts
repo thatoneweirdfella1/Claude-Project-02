@@ -60,15 +60,19 @@ export interface AppliedImpact {
 
 export function impactsFor(result: StateDetectionResult): AppliedImpact[] {
   const out: AppliedImpact[] = [];
-  if (result.emotion) out.push({ dimension: "emotion", value: result.emotion.value, impact: EMOTION_IMPACTS[result.emotion.value] });
-  if (result.rsd) out.push({ dimension: "rsd", value: result.rsd.value, impact: RSD_IMPACTS[result.rsd.value] });
-  if (result.interest) out.push({ dimension: "interest", value: result.interest.value, impact: INTEREST_IMPACTS[result.interest.value] });
-  if (result.cognitive) out.push({ dimension: "cognitive", value: result.cognitive.value, impact: COGNITIVE_IMPACTS[result.cognitive.value] });
+  const emotion = result.emotion ? EMOTION_IMPACTS[result.emotion.value] : null;
+  const rsd = result.rsd ? RSD_IMPACTS[result.rsd.value] : null;
+  const interest = result.interest ? INTEREST_IMPACTS[result.interest.value] : null;
+  const cognitive = result.cognitive ? COGNITIVE_IMPACTS[result.cognitive.value] : null;
+  if (result.emotion && emotion) out.push({ dimension: "emotion", value: result.emotion.value, impact: emotion });
+  if (result.rsd && rsd) out.push({ dimension: "rsd", value: result.rsd.value, impact: rsd });
+  if (result.interest && interest) out.push({ dimension: "interest", value: result.interest.value, impact: interest });
+  if (result.cognitive && cognitive) out.push({ dimension: "cognitive", value: result.cognitive.value, impact: cognitive });
   return out;
 }
 
 export function recommendedDirectness(result: StateDetectionResult): DirectnessLevel | null {
-  return result.emotion ? EMOTION_IMPACTS[result.emotion.value].directness ?? null : null;
+  return result.emotion ? EMOTION_IMPACTS[result.emotion.value]?.directness ?? null : null;
 }
 
 export function suggestedTechniques(result: StateDetectionResult): TechniqueId[] {
