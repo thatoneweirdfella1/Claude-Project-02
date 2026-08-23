@@ -67,4 +67,15 @@ for (const [rel, before, after] of nodeNextFixes) {
   fs.writeFileSync(file, source.replace(before, after));
 }
 
-console.log(`Applied complete Cowork preview overlay (${actual}) and Vercel-only NodeNext import normalization`);
+// Preview-only visual hotfix discovered by live inspection: the All Tools
+// popup lives inside .col-left, while .col-center is a sibling stacking context
+// at the same z-index and is painted over it. Raise the left rail above the
+// center rail so the popup can actually appear in front of the conversation
+// canvas. This changes only the disposable Cowork preview build.
+const frozenCssPath = path.join(root, 'src/styles/frozen-reference.css');
+fs.appendFileSync(
+  frozenCssPath,
+  `\n\n/* Cowork preview hotfix: All Tools popup must overlay the center canvas. */\n:root[data-layout="gold"] .col-left { z-index: 70; }\n:root[data-layout="gold"] .leftnav-tools { z-index: 80; }\n:root[data-layout="gold"] .leftnav-tools__popup { z-index: 81; }\n`
+);
+
+console.log(`Applied complete Cowork preview overlay (${actual}), Vercel-only NodeNext import normalization, and preview All Tools stacking hotfix`);
