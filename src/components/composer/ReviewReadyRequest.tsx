@@ -12,12 +12,16 @@ interface ReviewReadyRequestBaseProps {
 
 interface HandoffReviewProps extends ReviewReadyRequestBaseProps {
   mode?: "handoff";
+  /** Manual handoff always needs a Copy/Open action. When Review first is off,
+      present it as the terminal handoff step instead of a forced review. */
+  reviewRequired?: boolean;
   onHandoff: (text: string, destination: DestinationSelection) => void;
   onSend?: never;
 }
 
 interface PaidSendReviewProps extends ReviewReadyRequestBaseProps {
   mode: "send";
+  reviewRequired?: never;
   onHandoff?: never;
   onSend: (text: string, sendAutomaticallyNextTime: boolean) => void;
 }
@@ -50,6 +54,7 @@ export function ReviewReadyRequest(props: ReviewReadyRequestProps) {
   const [copyError, setCopyError] = useState(false);
   const [showChanges, setShowChanges] = useState(false);
   const [sendAutomaticallyNextTime, setSendAutomaticallyNextTime] = useState(false);
+  const reviewRequired = props.mode === "send" || props.reviewRequired !== false;
 
   async function handoff(openDestination: boolean) {
     setCopyError(false);
@@ -64,7 +69,7 @@ export function ReviewReadyRequest(props: ReviewReadyRequestProps) {
   return <div className="review-ready workflow-dialog" role="dialog" aria-modal="true" aria-labelledby="review-ready-title">
     <div className="review-ready__card workflow-dialog__card surface-smoked-glass">
       <header>
-        <h2 id="review-ready-title">Review AI-ready request</h2>
+        <h2 id="review-ready-title">{reviewRequired ? "Review AI-ready request" : "Copy & Open AI-ready request"}</h2>
         <p>Destination: {destinationLabel(selected)} · {props.mode === "send" ? "Connected send" : "No Divergence credits"}</p>
       </header>
       <label><span>AI-ready request</span><textarea value={text} onChange={(event) => setText(event.target.value)} /></label>
@@ -109,4 +114,3 @@ export function ReviewReadyRequest(props: ReviewReadyRequestProps) {
     </div>
   </div>;
 }
-

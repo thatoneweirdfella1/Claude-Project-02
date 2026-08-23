@@ -210,12 +210,10 @@ export function CenterColumn() {
       toneGuidance: recommendationApplied ? recommendation?.toneGuidance : null,
     });
     const readyText = buildAiReadyRequest(packet);
-    if (request.reviewBeforeSend) {
-      setPendingReview({ mode: "handoff", request, text: readyText, decisionNote });
-      setWorkflowMessage("Review request before handoff.");
-    } else {
-      completeFreeHandoff(request, readyText, decisionNote);
-    }
+    setPendingReview({ mode: "handoff", request, text: readyText, decisionNote });
+    setWorkflowMessage(request.reviewBeforeSend
+      ? "Review request before handoff."
+      : "Copy & Open to complete the handoff.");
   }
 
   async function preparePaidReview(
@@ -614,7 +612,9 @@ export function CenterColumn() {
       : pendingReview
         ? pendingReview.mode === "send"
           ? "Review request before sending."
-          : "Review request before handoff."
+          : pendingReview.request.reviewBeforeSend
+            ? "Review request before handoff."
+            : "Copy & Open to complete the handoff."
         : displayMessage || workflowMessage;
   const submitDisabled = Boolean(
     pendingStateReview ||
@@ -741,6 +741,7 @@ export function CenterColumn() {
           initialText={pendingReview.text}
           originalText={pendingReview.request.rawInput}
           destination={pendingReview.request.destination}
+          reviewRequired={pendingReview.request.reviewBeforeSend}
           onCancel={() => {
             setPendingReview(null);
             setWorkflowMessage("Review cancelled. Your draft is still here.");

@@ -62,6 +62,7 @@ const repairedSourcePaths = [
   "src/components/composer/Composer.tsx",
   "src/components/composer/AttachContextControls.tsx",
   "src/components/composer/ReviewReadyRequest.tsx",
+  "src/components/composer/ReviewReadyRequest.test.ts",
   "src/components/context/ActiveContextChips.tsx",
   "src/components/context/ContextManagerDialog.tsx",
   "src/components/context/ContextSnapshotContent.tsx",
