@@ -1,5 +1,5 @@
 {
   "installCommand": "npm install && node scripts/apply-cowork-preview.cjs",
-  "buildCommand": "npm run build",
+  "buildCommand": "npm test && npm run build",
   "outputDirectory": "dist"
 }
