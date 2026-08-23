@@ -46,4 +46,25 @@ try {
   if (fs.existsSync(tmp)) fs.unlinkSync(tmp);
 }
 
-console.log(`Applied complete Cowork preview overlay (${actual})`);
+// Vercel compiles files in api/ with NodeNext module resolution, which requires
+// explicit .js extensions on relative ESM imports. Cowork's client-side Vite
+// build accepts the extensionless form, so normalize only in this disposable
+// preview build after the authoritative Cowork overlay has been applied.
+const nodeNextFixes = [
+  ['src/services/modelRegistry.ts', 'export type { ModelId } from "../stores/types";', 'export type { ModelId } from "../stores/types.js";'],
+  ['src/services/providers/openai.ts', 'from "../proxyHandler";', 'from "../proxyHandler.js";'],
+  ['src/services/providers/google.ts', 'from "../proxyHandler";', 'from "../proxyHandler.js";'],
+  ['src/services/providers/xai.ts', 'from "../proxyHandler";', 'from "../proxyHandler.js";'],
+  ['src/services/providers/deepseek.ts', 'from "../proxyHandler";', 'from "../proxyHandler.js";'],
+];
+for (const [rel, before, after] of nodeNextFixes) {
+  const file = path.join(root, rel);
+  const source = fs.readFileSync(file, 'utf8');
+  if (!source.includes(before)) {
+    if (!source.includes(after)) throw new Error(`Expected NodeNext import pattern missing in ${rel}`);
+    continue;
+  }
+  fs.writeFileSync(file, source.replace(before, after));
+}
+
+console.log(`Applied complete Cowork preview overlay (${actual}) and Vercel-only NodeNext import normalization`);
