@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import type { StateDetectionResult } from "../../services/detection";
 import type { DirectnessLevel } from "../../stores/types";
-import { StateDetectionPanel, type PillDimension } from "./StateDetectionPanel";
+import { StateDetectionPanel } from "./StateDetectionPanel";
+import type { PillDimension } from "./pillOptions";
 
 export interface StateDetectionStatusBarProps {
   detection?: StateDetectionResult | null;
