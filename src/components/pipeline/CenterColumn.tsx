@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { buildTranslateAskRequest, type TranslateAskRequest } from "../../services/composer";
 import { createProxyClient } from "../../services/proxyClient";
 import type { PipelineDone } from "../../services/pipeline";
@@ -33,36 +33,7 @@ import { usePipelineRun, type ActivePipelineRun } from "./usePipelineRun";
 import { authorizeEstimatedCost } from "../../services/creditAuthorization";
 import { addTokenUsage, getEstimatedCostForPipeline } from "../../services/costTracking";
 import type { PaidRoutePolicy } from "../../services/paidRoutePolicy";
-
-/* CenterColumn (Step 5.2) — the live center column: the real ConversationArea
-   over the real Composer, joined by the pipeline orchestrator. This replaces
-   Step 5.0's ComposerSection (whose JSON-readout onSubmit existed only because
-   no orchestrator did yet) and Step 5.1's StreamingAnswerDemo (same reason).
-
-   TRANSLATE & ASK now does the real thing: the emitted TranslateAskRequest
-   goes straight into observePipeline() (Step 5.4's transparent telemetry tee
-   around runPipeline) against the Step 1.10 proxy client, the user's text is
-   appended to the conversation, the stage indicator / gated translation /
-   streamed answer render as the run progresses, and the finished answer is
-   appended to the session store (so it persists via the Step 1.8 autosave)
-   carrying confidence + routing's downgraded/notes.
-
-   The <60 clarify path finally closes the Step 2.3 loop: TranslationCard
-   renders the ClarifyPrompt, and onRefine re-runs the WHOLE pipeline with the
-   user's added detail appended to their original message (translation needs
-   both — the addition alone usually isn't self-contained).
-
-   Step 6.3: State Detection fires ALONGSIDE the pipeline, not inside it —
-   PIPELINE.md's RESOLVED note describes detection as its own single on-demand
-   classification on the same input, not one of the five orchestrator stages,
-   so it's a parallel side effect here rather than a change to orchestrator.ts
-   (already fresh-context-audited at 5.2, error-boundary-hardened at 5.3).
-   detectState()'s outcome feeds two places: the panel's local `detection`
-   state (rich — confidence, summary, for display/correction) and the session
-   store's `statePills` (Step 1.7's existing field — the durable, four-value
-   "current state" a later step, 6.5, delivers to its consumers). A failed or
-   absent detection just means no pills this turn; it never blocks or affects
-   the answer running beside it. */
+import { saveNow } from "../../services/persistence";
 
 const client = createProxyClient();
 
@@ -83,15 +54,10 @@ export function CenterColumn() {
   const [pendingStateReview, setPendingStateReview] = useState<{ request: TranslateAskRequest; result: StateDetectionResult } | null>(null);
   const [importingResponse, setImportingResponse] = useState(false);
   const [detection, setDetection] = useState<StateDetectionResult | null>(null);
-  // Step 11.2 (latency): true while this turn's classification call is in
-  // flight. The pill panel is cleared on submit and the classification is a
-  // network round-trip that routinely exceeds 1s, so without this the panel
-  // would blank and silently reappear with no indicator — a CANON 1-second-rule
-  // miss. Drives a quiet inline "reading" status in the panel's own slot.
   const [detecting, setDetecting] = useState(false);
+  const [workflowMessage, setWorkflowMessage] = useState("");
   const runIdRef = useRef(0);
   const controllerRef = useRef<AbortController | null>(null);
-  /** The raw text behind the current run — the base a refinement extends. */
   const lastRawRef = useRef("");
   const conversation = useSessionStore((s) => s.conversation);
   const updateMessage = useSessionStore((s) => s.updateMessage);
@@ -101,18 +67,13 @@ export function CenterColumn() {
 
   const startRun = useCallback(
     (request: TranslateAskRequest) => {
-      controllerRef.current?.abort(); // a resubmit cancels the in-flight call
+      controllerRef.current?.abort();
       const controller = new AbortController();
       controllerRef.current = controller;
       runIdRef.current += 1;
       lastRawRef.current = request.rawInput;
-      // Step 6.5 state bus: read from whatever session.statePills CURRENTLY
-      // holds (the last completed detection — usually the prior turn's,
-      // since this turn's own detection runs in parallel and isn't in yet).
-      // One source (statePills), fed to two of its four consumers here —
-      // technique selection and answer tone; the other two (directness
-      // suggestion, transparency data) are consumed directly below/elsewhere.
       const feeds = deriveStateFeeds(useSessionStore.getState().statePills);
+      setWorkflowMessage("Sending…");
       setRun({
         id: runIdRef.current,
         start: () =>
@@ -125,13 +86,8 @@ export function CenterColumn() {
           }),
       });
 
-      // State Detection — fires alongside translation, on the SAME raw input,
-      // sharing this submission's AbortController so a resubmit cancels both.
-      // Step 6.4: the adaptation note is built fresh from this user's current
-      // corrections every call (never stale — a correction made moments ago
-      // on THIS session already counts toward the next classification).
-      setDetection(null); // clear the panel immediately; this turn's read isn't in yet
-      setDetecting(true); // show the in-flight indicator until this call resolves (or is superseded)
+      setDetection(null);
+      setDetecting(true);
       const adaptationNote = buildAdaptationNote(useAccountStore.getState().stateCorrections);
       void detectState(request.rawInput, {
         client: (req) =>
@@ -142,8 +98,8 @@ export function CenterColumn() {
         signal: controller.signal,
         adaptationNote,
       }).then((outcome) => {
-        if (controller.signal.aborted) return; // superseded by a resubmit — the newer run now owns `detecting`
-        setDetecting(false); // detectState never throws, so this .then always runs for the live call
+        if (controller.signal.aborted) return;
+        setDetecting(false);
         if (outcome.status === "ok") {
           setDetection(outcome.result);
           useSessionStore.getState().setStatePills(toStatePills(outcome.result));
@@ -167,6 +123,11 @@ export function CenterColumn() {
       preparedRequest: readyText,
       notes: [NO_CREDIT_BADGE, "Handed off — not answered"],
     });
+    useSessionStore.getState().setDraftInput("");
+    setWorkflowMessage("Handed off — awaiting response.");
+    void saveNow({ reason: "autosave" }).catch(() => {
+      setWorkflowMessage("Handoff completed, but the recovery save failed. Your conversation remains on screen.");
+    });
   }
 
   function continueFreeFlow(request: TranslateAskRequest, result: StateDetectionResult | null, commitReading: boolean) {
@@ -179,15 +140,21 @@ export function CenterColumn() {
       statePills: result && commitReading ? toStatePills(result) : useSessionStore.getState().statePills,
     });
     const readyText = buildAiReadyRequest(packet);
-    if (request.reviewBeforeSend) setPendingReview({ request, text: readyText });
-    else completeFreeHandoff(request, readyText);
+    if (request.reviewBeforeSend) {
+      setPendingReview({ request, text: readyText });
+      setWorkflowMessage("Review request before handoff.");
+    } else {
+      completeFreeHandoff(request, readyText);
+    }
     setPendingStateReview(null);
   }
 
   function queueFreeFlow(request: TranslateAskRequest) {
+    setWorkflowMessage("Checking state…");
     const result = detectStateLocally(request.rawInput);
     setDetection(result);
     setPendingStateReview({ request, result });
+    setWorkflowMessage("State recommendation ready. Review it to continue.");
   }
 
   function paidRoutePolicy(
@@ -222,6 +189,14 @@ export function CenterColumn() {
   async function handleSubmit(request: TranslateAskRequest): Promise<boolean> {
     if (!request.rawInput.trim()) return false;
 
+    setWorkflowMessage("Recovery-saving…");
+    try {
+      await saveNow({ reason: "autosave" });
+    } catch {
+      setWorkflowMessage("Recovery save failed. Request not sent; your draft is still here.");
+      return false;
+    }
+
     if (
       isFreeTranslator(request.translatorEngine) ||
       (request.translatorEngine === "destination-one-pass" && request.destination.providerId !== "anthropic")
@@ -232,6 +207,7 @@ export function CenterColumn() {
 
     const selectedModel = request.model === "auto" ? "claude-haiku-4-5" : request.model;
     const estimate = getEstimatedCostForPipeline(request.rawInput, selectedModel);
+    setWorkflowMessage("Confirm cost before sending.");
     const authorization = await authorizeEstimatedCost(
       estimate,
       "Connected Claude translator",
@@ -246,20 +222,18 @@ export function CenterColumn() {
         queueFreeFlow(request);
         return true;
       }
+      setWorkflowMessage("Not sent. Your draft is still here.");
       return false;
     }
+
     addMessage({ id: newMessageId(), role: "user", content: request.rawInput, timestamp: Date.now() });
+    lastRawRef.current = request.rawInput;
+    useSessionStore.getState().setDraftInput("");
     startRun(request);
     return true;
   }
 
   async function handleRefine(refinedInput: string): Promise<void> {
-    // Step 7.4: substitute the NEWLY typed addition only — lastRawRef.current
-    // is the original submission's text, which Composer already substituted
-    // before this run ever started, so re-running substitution on it would
-    // be redundant (and, if a variable's own value happened to contain a
-    // "$name" pattern, could re-substitute unexpectedly). Only fresh user
-    // input gets substitution applied.
     const s = useSessionStore.getState();
     const substitutedAddition = substituteVariables(
       refinedInput,
@@ -291,6 +265,7 @@ export function CenterColumn() {
     );
     if (!authorization.authorized) {
       if (authorization.reason === "free-route-selected") queueFreeFlow(rerunRequest);
+      else setWorkflowMessage("Refine cancelled. Nothing was spent.");
       return;
     }
     addMessage({
@@ -299,22 +274,11 @@ export function CenterColumn() {
       content: substitutedAddition,
       timestamp: Date.now(),
     });
-    // Original + addition, so translation sees the whole thought; settings are
-    // read fresh from the store (the user may have changed a dropdown since).
-    // startRun also re-fires detection on this same combined text.
     startRun(rerunRequest);
   }
 
   const handleDone = useCallback(
     (done: PipelineDone) => {
-      // Step 8.5: snapshot this turn's telemetry-log id + current state pills
-      // onto the message, so the download modal can look up transparency/
-      // state-pills content for THIS specific answer later, not just "the
-      // most recent one." observePipeline (Step 5.4) has already recorded
-      // this run's entry via recordTelemetryEntry by the time its "done"
-      // event reaches here (usePipelineRun -> this callback), so the last
-      // entry in the log IS this run's — same timing this component already
-      // relies on nowhere else, first read here.
       const entries = getTelemetryEntries();
       const telemetryId = entries.length > 0 ? entries[entries.length - 1].id : undefined;
       addMessage({
@@ -328,24 +292,19 @@ export function CenterColumn() {
         telemetryId,
         statePills: useSessionStore.getState().statePills,
       });
-      setRun(null); // the stored message takes over rendering from here
+      setWorkflowMessage("Response received.");
+      setRun(null);
+      void saveNow({ reason: "autosave" }).catch(() => {
+        setWorkflowMessage("Response received, but recovery save failed. Keep this page open until the next save succeeds.");
+      });
     },
     [addMessage],
   );
 
-  // Step 6.3: makes a correction visible immediately (updates the displayed
-  // pill + the committed session.statePills). Step 6.4: ALSO records it to
-  // the account store (persists across sessions) so countCorrectionsTo/
-  // adaptedValueFor can see it — this is the single call site both steps'
-  // BUILD-LOG PARKED notes named as where the correction store should hook in.
   function handleCorrectState(dimension: PillDimension, value: string) {
     setDetection((prev) => {
       if (!prev) return prev;
       const previousReading = prev[dimension];
-      // `value` is always one of this exact dimension's own valid values
-      // (PillCorrector only ever offers config.values for its own config) —
-      // safe by construction, though TS can't prove it through the generic
-      // PillDimension key here.
       const corrected = { ...prev, [dimension]: { value, confidence: 100 } } as StateDetectionResult;
       useSessionStore.getState().setStatePills(toStatePills(corrected));
       if (previousReading && previousReading.value !== value) {
@@ -362,11 +321,13 @@ export function CenterColumn() {
 
   const { gated, display } = usePipelineRun(run, handleDone);
 
-  // Step 6.5, directness consumer: a visible, never-silent suggestion — only
-  // shown when it actually differs from what's currently selected, and only
-  // applied on an explicit click (CenterColumn never calls setDirectness on
-  // its own). Derived from the SAME deriveStateFeeds() every other consumer
-  // reads, via this turn's detection result once it's in.
+  useEffect(() => {
+    if (display?.kind !== "error") return;
+    setWorkflowMessage(`Request failed: ${display.message}. Your draft is ready to retry.`);
+    const session = useSessionStore.getState();
+    if (!session.draftInput.trim() && lastRawRef.current) session.setDraftInput(lastRawRef.current);
+  }, [display]);
+
   const directnessSuggestion = detection
     ? deriveStateFeeds(toStatePills(detection)).directnessSuggestion
     : null;
@@ -390,7 +351,25 @@ export function CenterColumn() {
       notes: [`Imported from ${sourceLabel}`, "Reviewed and confirmed by you"],
     });
     setImportingResponse(false);
+    setWorkflowMessage("Imported response added to the conversation.");
+    void saveNow({ reason: "autosave" }).catch(() => {
+      setWorkflowMessage("Response imported, but recovery save failed. Keep this page open until the next save succeeds.");
+    });
   }
+
+  const displayMessage = display?.kind === "stage"
+    ? `${display.stage}…`
+    : display?.kind === "streaming"
+      ? "Waiting for response…"
+      : display?.kind === "error"
+        ? `Request failed: ${display.message}`
+        : "";
+  const composerStatus = pendingStateReview
+    ? "State recommendation ready. Review it to continue."
+    : pendingReview
+      ? "Review request before handoff."
+      : displayMessage || workflowMessage;
+  const submitDisabled = Boolean(pendingStateReview || pendingReview || (run && display?.kind !== "error"));
 
   return (
     <>
@@ -405,6 +384,8 @@ export function CenterColumn() {
         onCorrectState={handleCorrectState}
         suggestedDirectness={suggestedDirectness}
         onApplyDirectness={() => setDirectness(suggestedDirectness!)}
+        statusMessage={composerStatus}
+        submitDisabled={submitDisabled}
       />
       <QuickActionsRow />
       {pendingHandoff && !importingResponse && (
@@ -416,7 +397,10 @@ export function CenterColumn() {
       {pendingStateReview && (
         <StateReviewPanel
           initial={pendingStateReview.result}
-          onCancel={() => setPendingStateReview(null)}
+          onCancel={() => {
+            setPendingStateReview(null);
+            setWorkflowMessage("State review cancelled. Your draft is still here.");
+          }}
           onAccept={(result) => {
             (["emotion", "rsd", "interest", "cognitive"] as PillDimension[]).forEach((dimension) => {
               const from = pendingStateReview.result[dimension]?.value;
@@ -438,7 +422,10 @@ export function CenterColumn() {
         <ReviewReadyRequest
           initialText={pendingReview.text}
           destination={pendingReview.request.destination}
-          onCancel={() => setPendingReview(null)}
+          onCancel={() => {
+            setPendingReview(null);
+            setWorkflowMessage("Review cancelled. Your draft is still here.");
+          }}
           onHandoff={(text, destination) => {
             completeFreeHandoff({ ...pendingReview.request, destination }, text);
             setPendingReview(null);
