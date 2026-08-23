@@ -57,7 +57,7 @@ export function TechniqueDropdown() {
   function toggle(id: TechniqueId) {
     setStaged((current) => {
       const autoEnabled = current.includes("auto-detect");
-      const manual = current.filter((item) => item !== "auto-detect");
+      const manual: TechniqueId[] = current.filter((item) => item !== "auto-detect");
       const nextManual = manual.includes(id)
         ? deselectManualTechnique(manual, id).filter((item) => item !== "auto-detect")
         : selectManualTechnique(manual, id);
