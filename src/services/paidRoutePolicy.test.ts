@@ -36,6 +36,10 @@ describe("evaluatePaidRoutePolicy", () => {
     expect(evaluatePaidRoutePolicy(0.2501, BASE_POLICY)).toBe("request-cap-exceeded");
   });
 
+  it("allows an estimate exactly equal to the hard maximum", () => {
+    expect(evaluatePaidRoutePolicy(0.25, BASE_POLICY)).toBeNull();
+  });
+
   it("treats a zero cap as no permission to make a paid call", () => {
     expect(evaluatePaidRoutePolicy(0.01, { ...BASE_POLICY, maximum: 0 })).toBe(
       "request-cap-exceeded",
