@@ -133,6 +133,10 @@ export const ROUTABLE_MODEL_IDS = [
 
 export type RoutableModelId = (typeof ROUTABLE_MODEL_IDS)[number];
 
+export function isRoutableModelId(value: unknown): value is RoutableModelId {
+  return typeof value === "string" && (ROUTABLE_MODEL_IDS as readonly string[]).includes(value);
+}
+
 export function isModelId(value: unknown): value is ModelId {
   return typeof value === "string" && value in MODEL_REGISTRY;
 }

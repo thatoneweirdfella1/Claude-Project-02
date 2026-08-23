@@ -35,4 +35,18 @@ describe("ReviewReadyRequest terminal actions", () => {
     expect(markup).toContain("Send automatically next time");
     expect(markup).toContain("Send to AI");
   });
+
+  it("opens the already selected official destination without making the user choose it again", () => {
+    const markup = renderToStaticMarkup(createElement(ReviewReadyRequest, {
+      initialText: "Prepared request",
+      originalText: "Original request",
+      destination: { providerId: "openai", modelId: "gpt-5" },
+      reviewRequired: false,
+      onCancel: () => {},
+      onHandoff: () => {},
+    }));
+
+    expect(markup).toContain("Copy &amp; Open ChatGPT · GPT-5");
+    expect(markup).not.toContain("Copy &amp; Choose AI");
+  });
 });

@@ -3,11 +3,13 @@ import type {
   DestinationProviderId,
   DestinationSelection,
   DirectnessLevel,
+  ModelSelection,
   StatePills,
   TechniqueId,
   TranslatorEngine,
 } from "../stores/types";
 import { autoDetectWithPinned, isAutoMode } from "./techniques";
+import { isRoutableModelId } from "./modelRegistry";
 
 export interface DestinationModel { id: string; label: string; cost: "Free handoff" | "Provider account" | "Local" | "Custom"; }
 export interface DestinationProvider {
@@ -112,4 +114,21 @@ export function destinationLabel(selection: DestinationSelection): string {
 export function destinationOfficialUrl(selection: DestinationSelection): string | null { return DESTINATION_PROVIDERS.find((item) => item.id === selection.providerId)?.officialUrl ?? null; }
 export function destinationProvider(selection: DestinationSelection): DestinationProvider { return DESTINATION_PROVIDERS.find((item) => item.id === selection.providerId) ?? DESTINATION_PROVIDERS[0]; }
 export function isFreeTranslator(engine: TranslatorEngine): boolean { return engine === "auto-free-first" || engine === "local-rules"; }
+
+/** Resolve the answer model for routes this preview can actually execute.
+    Unsupported or unconnected Destination-one-pass choices return null so the
+    composer uses the truthful manual handoff instead of silently substituting
+    a different provider/model. */
+export function resolvePaidAnswerModel(input: {
+  model: ModelSelection;
+  destination: DestinationSelection;
+  translatorEngine: TranslatorEngine;
+}): ModelSelection | null {
+  if (input.translatorEngine !== "destination-one-pass") return input.model;
+  if (input.destination.providerId !== "anthropic") return null;
+  if (input.destination.modelId === "auto") {
+    return input.model === "auto" || isRoutableModelId(input.model) ? input.model : "auto";
+  }
+  return isRoutableModelId(input.destination.modelId) ? input.destination.modelId : null;
+}
 export const NO_CREDIT_BADGE = "No Divergence credits";

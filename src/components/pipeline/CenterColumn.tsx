@@ -36,6 +36,7 @@ import {
   destinationLabel,
   isFreeTranslator,
   NO_CREDIT_BADGE,
+  resolvePaidAnswerModel,
 } from "../../services/providerNeutral";
 import type { StateDetectionUiStatus } from "../detection/StateDetectionStatusBar";
 import { QuickActionsRow } from "../session";
@@ -465,22 +466,25 @@ export function CenterColumn() {
       return false;
     }
 
-    if (
-      isFreeTranslator(request.translatorEngine) ||
-      (request.translatorEngine === "destination-one-pass" && request.destination.providerId !== "anthropic")
-    ) {
+    if (isFreeTranslator(request.translatorEngine)) {
       queueFreeFlow(request);
       return true;
     }
 
-    const selectedModel = request.model === "auto" ? "claude-haiku-4-5" : request.model;
-    const estimate = getEstimatedCostForPipeline(request.rawInput, selectedModel);
+    const paidModel = resolvePaidAnswerModel(request);
+    if (paidModel === null) {
+      queueFreeFlow(request);
+      return true;
+    }
+    const paidRequest = paidModel === request.model ? request : { ...request, model: paidModel };
+    const selectedModel = paidModel === "auto" ? "claude-haiku-4-5" : paidModel;
+    const estimate = getEstimatedCostForPipeline(paidRequest.rawInput, selectedModel);
     setWorkflowMessage("Confirm cost before sending.");
     const authorization = await authorizeEstimatedCost(
       estimate,
       "Connected Claude translator",
       paidRoutePolicy(
-        request,
+        paidRequest,
         selectedModel,
         "This request uses a connected paid AI instead of the no-new-charge handoff.",
       ),
@@ -494,7 +498,7 @@ export function CenterColumn() {
       return false;
     }
 
-    await queuePaidFlow(request);
+    await queuePaidFlow(paidRequest);
     return true;
   }
 

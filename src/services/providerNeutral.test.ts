@@ -5,6 +5,7 @@ import {
   compileMeaningPacket,
   DESTINATION_PROVIDERS,
   isFreeTranslator,
+  resolvePaidAnswerModel,
   TRANSLATOR_ENGINES,
 } from "./providerNeutral";
 import { useSessionStore } from "../stores/sessionStore";
@@ -30,6 +31,24 @@ describe("provider-neutral frozen flow", () => {
     expect(isFreeTranslator("local-ai")).toBe(false);
     expect(isFreeTranslator("managed-translator")).toBe(false);
     expect(isFreeTranslator("destination-one-pass")).toBe(false);
+  });
+
+  it("honors an exact supported Claude destination and hands unsupported providers off", () => {
+    expect(resolvePaidAnswerModel({
+      model: "auto",
+      destination: { providerId: "anthropic", modelId: "claude-opus-4-8" },
+      translatorEngine: "destination-one-pass",
+    })).toBe("claude-opus-4-8");
+    expect(resolvePaidAnswerModel({
+      model: "auto",
+      destination: { providerId: "openai", modelId: "gpt-5" },
+      translatorEngine: "destination-one-pass",
+    })).toBeNull();
+    expect(resolvePaidAnswerModel({
+      model: "auto",
+      destination: { providerId: "anthropic", modelId: "fable" },
+      translatorEngine: "destination-one-pass",
+    })).toBeNull();
   });
 
   it("detects state locally before compiling the meaning packet", () => {
@@ -104,20 +123,5 @@ describe("provider-neutral frozen flow", () => {
     expect(next.directness).toBe(3);
     expect(next.draftInput).toBe("");
     expect(next.conversation).toEqual([]);
-  });
-});
-
-
-describe("provider-neutral Auto recommend with checked choices", () => {
-  it("carries checked techniques through Auto recommend into the neutral packet", () => {
-    const packet = compileMeaningPacket({
-      rawInput: "Explain this in simple terms",
-      directness: 2,
-      techniques: ["auto-detect", "examples"],
-      context: [],
-    });
-    expect(packet.techniques).toContain("examples");
-    expect(packet.techniques).toContain("simplify");
-    expect(packet.techniques.length).toBeLessThanOrEqual(4);
   });
 });

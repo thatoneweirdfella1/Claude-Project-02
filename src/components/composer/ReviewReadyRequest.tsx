@@ -55,6 +55,7 @@ export function ReviewReadyRequest(props: ReviewReadyRequestProps) {
   const [showChanges, setShowChanges] = useState(false);
   const [sendAutomaticallyNextTime, setSendAutomaticallyNextTime] = useState(false);
   const reviewRequired = props.mode === "send" || props.reviewRequired !== false;
+  const selectedDestinationUrl = destinationOfficialUrl(selected);
 
   async function handoff(openDestination: boolean) {
     setCopyError(false);
@@ -106,8 +107,8 @@ export function ReviewReadyRequest(props: ReviewReadyRequestProps) {
           </button>
         </> : <>
           <button type="button" onClick={() => void handoff(false)} disabled={!text.trim()}>Copy only</button>
-          <button type="button" className="primary" onClick={() => choosing ? void handoff(true) : setChoosing(true)} disabled={!text.trim()}>
-            {choosing ? `Copy & Open ${destinationLabel(selected)}` : "Copy & Choose AI"}
+          <button type="button" className="primary" onClick={() => (choosing || selectedDestinationUrl) ? void handoff(true) : setChoosing(true)} disabled={!text.trim()}>
+            {(choosing || selectedDestinationUrl) ? `Copy & Open ${destinationLabel(selected)}` : "Copy & Choose AI"}
           </button>
         </>}
       </footer>
