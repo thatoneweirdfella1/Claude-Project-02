@@ -517,10 +517,10 @@ body {
 .frozen-composer .input-box__textarea {
   display: block;
   width: 100%;
-  height: 158px !important;
-  min-height: 158px;
-  max-height: 158px;
-  padding: 20px 14px;
+  height: 122px !important;
+  min-height: 122px;
+  max-height: 122px;
+  padding: 14px 14px 32px;
   border: 1px solid var(--frozen-border);
   border-radius: 8px;
   background: rgb(236 236 233 / 0.31);
@@ -1044,7 +1044,7 @@ input:focus-visible {
 .frozen-center-stack > .frozen-composer { order:2; flex:0 0 auto; width:100%; padding:0 12px 8px; }
 .frozen-center-stack > .quick-actions { order:3; }
 .frozen-composer__heading { min-height:38px; }
-.frozen-composer .input-box__textarea { height:96px !important; min-height:76px; max-height:132px; padding:10px 12px; }
+.frozen-composer .input-box__textarea { height:122px !important; min-height:122px; max-height:122px; padding:10px 12px 32px; overflow-y:auto; }
 .frozen-composer__controls { grid-template-columns:minmax(220px,1fr) auto !important; align-items:end; gap:10px; padding-top:8px; }
 .translate-ask-button { min-width:168px; min-height:40px; height:40px; padding:0 16px; border-radius:7px; font-size:14px; }
 .quick-actions { position:relative; flex:0 0 26px; height:26px; margin:0; padding:0; border:0; background:transparent; overflow:visible; }
