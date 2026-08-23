@@ -38,15 +38,21 @@ if (actual !== expected) {
   throw new Error(`Cowork overlay checksum mismatch: expected ${expected}, got ${actual}`);
 }
 
-// These files contain repairs made after the frozen Cowork archive was
-// created. Preserve their branch versions so extracting the visual overlay
-// cannot silently roll functional fixes back during deployment.
+// Preserve every repair that post-dates the frozen Cowork archive. The archive
+// is visual authority, not permission to roll functional repairs backward.
 const repairedSourcePaths = [
   'src/main.tsx',
   'src/components/session/QuickActionsRow.tsx',
   'src/stores/types.ts',
   'src/stores/sessionStore.test.ts',
   'src/services/persistence.test.ts',
+  'src/stores/settingsDefaultsStore.ts',
+  'src/services/providerNeutral.ts',
+  'src/components/composer/InputBox.tsx',
+  'src/components/directness/DirectnessDropdown.tsx',
+  'src/components/composer/AdvancedControls.tsx',
+  'src/components/composer/Composer.tsx',
+  'src/components/pipeline/CenterColumn.tsx',
 ];
 const repairedSources = new Map(
   repairedSourcePaths.map((rel) => [rel, fs.readFileSync(path.join(root, rel), 'utf8')]),
