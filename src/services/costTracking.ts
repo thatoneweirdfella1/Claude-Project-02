@@ -72,8 +72,9 @@ export function getEstimatedCostForCall(input: CostEstimateInput): number {
 export function getEstimatedCostForPipeline(
   rawInput: string,
   answerModel = "claude-haiku-4-5",
+  includedContextCharacters = 0,
 ): number {
-  const messageTokens = Math.max(1, Math.ceil(rawInput.length / 4));
+  const messageTokens = Math.max(1, Math.ceil((rawInput.length + Math.max(0, includedContextCharacters)) / 4));
   const scaffoldTokens = 650;
   const normalizedInput = messageTokens + scaffoldTokens;
   const translation = getEstimatedCostForCall({

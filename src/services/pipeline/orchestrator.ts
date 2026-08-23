@@ -244,6 +244,7 @@ export async function* runPipeline(
       directness: request.directness,
       confidence: result.confidence,
       stateTone: deps.stateTone ?? undefined,
+      context: request.context,
     });
   } catch (error) {
     yield { kind: "error", message: errorMessage(error) };

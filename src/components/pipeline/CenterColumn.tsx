@@ -92,6 +92,12 @@ function newMessageId(): string {
     : `msg-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
 }
 
+function includedContextCharacters(request: TranslateAskRequest): number {
+  return request.context
+    .filter((item) => item.included !== false)
+    .reduce((total, item) => total + item.label.length + item.content.length, 0);
+}
+
 function detectionFailureMessage(outcome: Exclude<Awaited<ReturnType<typeof detectState>>, { status: "ok" }>): string {
   switch (outcome.status) {
     case "error":
@@ -478,7 +484,11 @@ export function CenterColumn() {
     }
     const paidRequest = paidModel === request.model ? request : { ...request, model: paidModel };
     const selectedModel = paidModel === "auto" ? "claude-haiku-4-5" : paidModel;
-    const estimate = getEstimatedCostForPipeline(paidRequest.rawInput, selectedModel);
+    const estimate = getEstimatedCostForPipeline(
+      paidRequest.rawInput,
+      selectedModel,
+      includedContextCharacters(paidRequest),
+    );
     setWorkflowMessage("Confirm cost before sending.");
     const authorization = await authorizeEstimatedCost(
       estimate,
@@ -522,7 +532,11 @@ export function CenterColumn() {
       },
       s.context,
     );
-    const estimate = getEstimatedCostForPipeline(combinedInput, selectedModel);
+    const estimate = getEstimatedCostForPipeline(
+      combinedInput,
+      selectedModel,
+      includedContextCharacters(rerunRequest),
+    );
     const authorization = await authorizeEstimatedCost(
       estimate,
       "Refine and rerun the answer",

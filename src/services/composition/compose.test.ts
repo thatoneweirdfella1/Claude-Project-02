@@ -141,4 +141,19 @@ describe("composeFinalPrompt — assembly rules", () => {
     const { sections } = composeFinalPrompt({ question: "x" });
     expect(sections.find((s) => s.name === "techniques")!.content).toMatch(/answer directly/i);
   });
+
+  it("delivers included context and keeps excluded context out of the prompt", () => {
+    const { prompt } = composeFinalPrompt({
+      question: "Use my notes.",
+      context: [
+        { id: "included", kind: "text", label: "Meeting notes", content: "UNIQUE_INCLUDED_FACT_7281", bytes: 25 },
+        { id: "excluded", kind: "text", label: "Old notes", content: "UNIQUE_EXCLUDED_FACT_9914", bytes: 25, included: false },
+      ],
+    });
+    expect(prompt).toContain("ATTACHED REFERENCE MATERIAL");
+    expect(prompt).toContain("Meeting notes");
+    expect(prompt).toContain("UNIQUE_INCLUDED_FACT_7281");
+    expect(prompt).not.toContain("Old notes");
+    expect(prompt).not.toContain("UNIQUE_EXCLUDED_FACT_9914");
+  });
 });

@@ -287,6 +287,8 @@ export interface ContextItem {
   label: string;
   content: string;
   bytes: number;
+  /** Excluded items remain attached for later use but are not sent. */
+  included?: boolean;
 }
 
 /* ── Account-store domain types ───────────────────────────────────────── */

@@ -75,6 +75,10 @@ const repairedSourcePaths = [
   "src/components/quicktools/QuickToolsGrid.tsx",
   "src/services/pipeline/orchestrator.ts",
   "src/services/pipeline/orchestrator.test.ts",
+  "src/services/composition/compose.ts",
+  "src/services/composition/compose.test.ts",
+  "src/services/costTracking.ts",
+  "src/services/costTracking.test.ts",
   "src/services/telemetry/observePipeline.ts",
   "src/styles/context-snapshot.css",
 ];

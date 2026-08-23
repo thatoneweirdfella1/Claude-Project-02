@@ -118,6 +118,17 @@ describe("runPipeline — a confident question flows through all five stages", (
     expect(done.notes).toEqual(routed.notes);
   });
 
+  it("carries only included attached context into the connected final prompt", async () => {
+    const req = buildTranslateAskRequest("Use my attached notes.", DEFAULT_SETTINGS, [
+      { id: "included", kind: "text", label: "Current notes", content: "PIPELINE_CONTEXT_INCLUDED_4432", bytes: 30 },
+      { id: "excluded", kind: "text", label: "Old notes", content: "PIPELINE_CONTEXT_EXCLUDED_8821", bytes: 30, included: false },
+    ]);
+    const events = await collect(runPipeline(req, { client: stubClient(), plan: "free" }));
+    const prompt = byKind(events, "composed").composed.prompt;
+    expect(prompt).toContain("PIPELINE_CONTEXT_INCLUDED_4432");
+    expect(prompt).not.toContain("PIPELINE_CONTEXT_EXCLUDED_8821");
+  });
+
   it("sends the COMPOSED prompt to the ROUTED model through the client", async () => {
     const streamSpy = vi.fn(async function* (_req: ProxyCompletionRequest) {
       yield "answer";
