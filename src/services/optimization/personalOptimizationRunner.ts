@@ -1,7 +1,10 @@
 import { authorizeEstimatedCost } from "../creditAuthorization";
 import { addTokenUsage, getEstimatedCostForCall } from "../costTracking";
 import { createProxyClient, type ProxyCompletionRequest } from "../proxyClient";
+import { useAccountStore } from "../../stores/accountStore";
+import { useSessionStore } from "../../stores/sessionStore";
 import type { LearnedPreferences, OptimizationChange, OptimizationRun } from "../../stores/types";
+import type { PaidRoutePolicy } from "../paidRoutePolicy";
 import { runPersonalOptimization, type PersonalOptimizationInput } from "./personalOptimizer";
 
 const MODEL = "claude-haiku-4-5";
@@ -9,7 +12,7 @@ const client = createProxyClient();
 
 export interface PersonalOptimizationRunnerDeps {
   complete?: (request: ProxyCompletionRequest) => Promise<string>;
-  authorize?: (amount: number, label: string) => Promise<{ authorized: boolean }>;
+  authorize?: (amount: number, label: string) => Promise<{ authorized: boolean; reason?: string }>;
 }
 
 interface AiDecision {
@@ -73,6 +76,22 @@ function applyValidatedChanges(
   return after;
 }
 
+function optimizationPaidPolicy(): PaidRoutePolicy {
+  const session = useSessionStore.getState();
+  const account = useAccountStore.getState();
+  return {
+    maximum: session.maxRequestCost,
+    paidFallbackEnabled: session.paidFallbackEnabled,
+    requiresPaidFallback: true,
+    routeLabel: "Personal optimization validator · Anthropic · Claude Haiku 4.5",
+    payerLabel: account.appMode === "developer"
+      ? "Divergence developer workspace"
+      : "Your Divergence credits",
+    reasonLabel: "AI validation checks proposed preference changes before they can be applied.",
+    freeAlternativeLabel: "Keep the local evidence preview without AI validation",
+  };
+}
+
 /** Script-prefiltered, Haiku-validated runner. Only short candidate excerpts
     reach the model; whole conversations never do, keeping the active goal and
     token bill bounded across large histories. */
@@ -90,9 +109,16 @@ export async function runPersonalOptimizationWithAi(
     inputTokens: Math.ceil(prompt.length / 4) + 300,
     maxOutputTokens: 900,
   });
-  const authorize = deps.authorize ?? authorizeEstimatedCost;
-  const authorization = await authorize(estimate, "Validate personal optimization evidence");
-  if (!authorization.authorized) return null;
+  const authorization = deps.authorize
+    ? await deps.authorize(estimate, "Validate personal optimization evidence")
+    : await authorizeEstimatedCost(
+        estimate,
+        "Validate personal optimization evidence",
+        optimizationPaidPolicy(),
+      );
+  if (!authorization.authorized) {
+    return authorization.reason === "free-route-selected" ? base : null;
+  }
 
   try {
     const complete = deps.complete ?? ((request) => client.complete(request));

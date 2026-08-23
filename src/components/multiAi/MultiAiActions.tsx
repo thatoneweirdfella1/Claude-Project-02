@@ -26,6 +26,7 @@ import { SynthesisView } from "./SynthesisView";
 import { ProTierSelector } from "./ProTierSelector";
 import { authorizeEstimatedCost } from "../../services/creditAuthorization";
 import { addTokenUsage, getEstimatedCostForCall } from "../../services/costTracking";
+import type { PaidRoutePolicy } from "../../services/paidRoutePolicy";
 
 /* MULTI-AI ACTIONS (Step 8.3) — the composer-footer control from the
    screenshot, sitting beside TRANSPARENCY DETAILS in the `.composer__footer-row`
@@ -51,6 +52,25 @@ function completeTracked(request: Parameters<typeof claudeClient.complete>[0]): 
     ...request,
     onUsage: (usage) => addTokenUsage(usage.inputTokens, usage.outputTokens, request.model),
   });
+}
+
+function explicitMultiAiPolicy(
+  routeLabel: string,
+  reasonLabel: string,
+): PaidRoutePolicy {
+  const session = useSessionStore.getState();
+  const account = useAccountStore.getState();
+  return {
+    maximum: session.maxRequestCost,
+    paidFallbackEnabled: session.paidFallbackEnabled,
+    requiresPaidFallback: false,
+    routeLabel,
+    payerLabel: account.appMode === "developer"
+      ? "Divergence developer workspace"
+      : "Your Divergence credits",
+    reasonLabel,
+    freeAlternativeLabel: "Keep the current answer without running another paid AI call",
+  };
 }
 
 type Phase = "idle" | "debating" | "consensus" | "synthesis";
@@ -92,6 +112,10 @@ export function MultiAiActions() {
     const authorization = await authorizeEstimatedCost(
       perSide * (selectedPartnerIds.length + 1),
       `Multi-AI debate with ${selectedPartnerIds.length + 1} participants`,
+      explicitMultiAiPolicy(
+        `Multi-AI debate · Claude Opus + ${selectedPartnerIds.length} connected partner${selectedPartnerIds.length === 1 ? "" : "s"}`,
+        "Starting this debate sends one paid request per participant.",
+      ),
     );
     if (!authorization.authorized) return;
 
@@ -139,7 +163,14 @@ export function MultiAiActions() {
         inputTokens: Math.ceil(lastQuestion.length / 4) + 600,
         maxOutputTokens: 1_200,
       }) * (selectedPartnerIds.length + 1);
-      const authorization = await authorizeEstimatedCost(estimate, "Retry debate participant");
+      const authorization = await authorizeEstimatedCost(
+        estimate,
+        "Retry debate participant",
+        explicitMultiAiPolicy(
+          "Multi-AI debate retry · Claude Opus + connected partners",
+          "Retrying sends the debate requests again.",
+        ),
+      );
       if (!authorization.authorized) return;
       setRetrying(sideIndex);
       setActionError(null);
@@ -192,7 +223,14 @@ export function MultiAiActions() {
       inputTokens: Math.ceil((transcript.claudeText.length + transcript.partnerText.length) / 4) + 700,
       maxOutputTokens: 1_300,
     });
-    const authorization = await authorizeEstimatedCost(estimate, "Multi-AI consensus");
+    const authorization = await authorizeEstimatedCost(
+      estimate,
+      "Multi-AI consensus",
+      explicitMultiAiPolicy(
+        "Multi-AI consensus · Anthropic · Claude Opus",
+        "Consensus uses a new paid AI call to compare the completed debate.",
+      ),
+    );
     if (!authorization.authorized) return;
     setPhase("consensus");
     setActionError(null);
@@ -211,7 +249,14 @@ export function MultiAiActions() {
       inputTokens: Math.ceil((transcript.claudeText.length + transcript.partnerText.length) / 4) + 700,
       maxOutputTokens: 1_600,
     });
-    const authorization = await authorizeEstimatedCost(estimate, "Multi-AI synthesis");
+    const authorization = await authorizeEstimatedCost(
+      estimate,
+      "Multi-AI synthesis",
+      explicitMultiAiPolicy(
+        "Multi-AI synthesis · Anthropic · Claude Opus",
+        "Synthesis uses a new paid AI call to combine the completed debate.",
+      ),
+    );
     if (!authorization.authorized) return;
     setPhase("synthesis");
     setActionError(null);
