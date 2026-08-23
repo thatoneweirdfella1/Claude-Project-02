@@ -15,6 +15,8 @@ import type {
   TranslatorEngine,
 } from "./types";
 
+export const DEFAULT_MAX_REQUEST_COST = 0.25;
+
 /* Session store (CANON "STORES AND PERSISTENCE") — cleared when a session
    closes. Holds the live working state of one conversation: model,
    directness, technique(s), loaded context, conversation history, and the
@@ -34,7 +36,7 @@ export function createInitialSessionState(): SessionState {
     translatorEngine: "auto-free-first",
     reviewBeforeSend: true,
     paidFallbackEnabled: false,
-    maxRequestCost: 0,
+    maxRequestCost: DEFAULT_MAX_REQUEST_COST,
     directness: 2, // CANON Feature 3: Level 2 balanced is the default
     techniques: ["auto-detect"], // CANON Feature 4: Auto-detect is the default mode (Step 4.5)
     context: [],
@@ -158,7 +160,9 @@ export const useSessionStore = create<SessionStore>((set) => ({
   setTranslatorEngine: (translatorEngine) => set({ translatorEngine }),
   setReviewBeforeSend: (reviewBeforeSend) => set({ reviewBeforeSend }),
   setPaidFallbackEnabled: (paidFallbackEnabled) => set({ paidFallbackEnabled }),
-  setMaxRequestCost: (maxRequestCost) => set({ maxRequestCost: Math.max(0, maxRequestCost) }),
+  setMaxRequestCost: (maxRequestCost) => set({
+    maxRequestCost: Number.isFinite(maxRequestCost) ? Math.max(0, maxRequestCost) : 0,
+  }),
   setDirectness: (directness) => set({ directness }),
   setTechniques: (techniques) => set({ techniques }),
   addContextItem: (item) => set((s) => ({ context: [...s.context, item] })),
@@ -200,7 +204,7 @@ export const useSessionStore = create<SessionStore>((set) => ({
       translatorEngine: record.translatorEngine ?? "legacy-claude",
       reviewBeforeSend: record.reviewBeforeSend ?? true,
       paidFallbackEnabled: false,
-      maxRequestCost: 0,
+      maxRequestCost: DEFAULT_MAX_REQUEST_COST,
       directness: record.directness,
       techniques: record.techniques,
       context: record.context,

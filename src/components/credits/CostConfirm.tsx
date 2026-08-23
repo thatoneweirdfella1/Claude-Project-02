@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { AlertTriangle, Sparkles, X } from "lucide-react";
 import {
   registerCostConfirmationHost,
+  type CostConfirmationChoice,
   type CostConfirmationRequest,
 } from "../../services/creditAuthorization";
 
@@ -19,10 +20,28 @@ export function CostConfirm() {
 
   if (!request) return null;
 
-  const finish = (confirmed: boolean) => {
-    request.resolve(confirmed);
+  const finish = (choice: CostConfirmationChoice) => {
+    request.resolve(choice);
     setRequest(null);
   };
+
+  const blocked = request.blockedReason !== null || !request.affordable;
+  const title = request.blockedReason === "paid-fallback-disabled"
+    ? "Paid Fallback Is Off"
+    : request.blockedReason === "request-cap-exceeded" || request.blockedReason === "invalid-request-cap"
+      ? "Request Is Above Your Cap"
+      : request.affordable
+        ? "Confirm AI Cost"
+        : "More Credits Needed";
+  const note = request.blockedReason === "paid-fallback-disabled"
+    ? "This automatic crossover stays blocked until you enable paid fallback. No paid AI request has been sent."
+    : request.blockedReason === "request-cap-exceeded"
+      ? "The estimate is higher than your hard maximum. No paid AI request has been sent."
+      : request.blockedReason === "invalid-request-cap"
+        ? "Set a valid maximum per request before using a paid route. No paid AI request has been sent."
+        : request.affordable
+          ? "Nothing is sent until you explicitly approve this charge."
+          : "Your current plan or balance cannot cover this request. No paid AI request has been sent.";
 
   return (
     <div className="cost-confirm-backdrop" role="presentation">
@@ -36,34 +55,34 @@ export function CostConfirm() {
           type="button"
           className="cost-confirm__close"
           aria-label="Cancel"
-          onClick={() => finish(false)}
+          onClick={() => finish("cancelled")}
         >
           <X size={18} />
         </button>
-        <div className={`cost-confirm__icon ${request.affordable ? "" : "cost-confirm__icon--warning"}`}>
-          {request.affordable ? <Sparkles size={24} /> : <AlertTriangle size={24} />}
+        <div className={`cost-confirm__icon ${blocked ? "cost-confirm__icon--warning" : ""}`}>
+          {blocked ? <AlertTriangle size={24} /> : <Sparkles size={24} />}
         </div>
-        <h2 id="cost-confirm-title">
-          {request.affordable ? "Confirm AI Cost" : "More Credits Needed"}
-        </h2>
+        <h2 id="cost-confirm-title">{title}</h2>
         <p className="cost-confirm__label">{request.label}</p>
-        <p className="cost-confirm__amount">${request.amount.toFixed(4)} credits</p>
-        <p className="cost-confirm__note">
-          {request.developerMode
-            ? "Developer Mode is unlimited. This estimate is shown so you can test the customer experience; no credits will be deducted."
-            : request.affordable
-              ? "This estimate covers the complete action before any AI request begins."
-              : "This tier cannot cover the action (Free is UI-only, or the balance is too low), so no AI request will be sent."}
-        </p>
+        <p className="cost-confirm__amount">Estimated: up to ${request.amount.toFixed(4)}</p>
+        <div className="cost-confirm__note">
+          <p><strong>Route:</strong> {request.policy.routeLabel}</p>
+          <p><strong>Payer:</strong> {request.policy.payerLabel}</p>
+          <p><strong>Hard maximum:</strong> ${Number.isFinite(request.policy.maximum) ? request.policy.maximum.toFixed(2) : "not set"}</p>
+          <p><strong>Balance:</strong> {request.availableBalance === null ? "developer workspace" : `$${request.availableBalance.toFixed(4)}`}</p>
+          <p><strong>Why:</strong> {request.policy.reasonLabel}</p>
+          <p><strong>Free alternative:</strong> {request.policy.freeAlternativeLabel}</p>
+          <p>{note}</p>
+        </div>
         <div className="cost-confirm__actions">
-          <button type="button" className="cost-confirm__secondary" onClick={() => finish(false)}>
-            {request.affordable ? "Cancel" : "Close"}
+          <button type="button" className="cost-confirm__secondary" onClick={() => finish("free-route")}>
+            Use free route
           </button>
-          {request.affordable && (
-            <button type="button" className="cost-confirm__primary" onClick={() => finish(true)} autoFocus>
-              Continue
+          {!blocked ? (
+            <button type="button" className="cost-confirm__primary" onClick={() => finish("paid")} autoFocus>
+              Continue for up to ${request.policy.maximum.toFixed(2)}
             </button>
-          )}
+          ) : null}
         </div>
       </section>
     </div>

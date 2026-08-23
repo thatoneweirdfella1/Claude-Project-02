@@ -1,6 +1,17 @@
-import { useAccountStore, canAffordCredits } from "../stores/accountStore";
+import {
+  useAccountStore,
+  canAffordCredits,
+  getCreditsRemaining,
+} from "../stores/accountStore";
 import { emitCreditDeducted } from "./costTracking";
 import { saveNow } from "./persistence";
+import {
+  evaluatePaidRoutePolicy,
+  type PaidRouteBlockReason,
+  type PaidRoutePolicy,
+} from "./paidRoutePolicy";
+
+export type CostConfirmationChoice = "paid" | "free-route" | "cancelled";
 
 export interface CostConfirmationRequest {
   id: string;
@@ -8,14 +19,21 @@ export interface CostConfirmationRequest {
   label: string;
   developerMode: boolean;
   affordable: boolean;
-  resolve: (confirmed: boolean) => void;
+  availableBalance: number | null;
+  policy: PaidRoutePolicy;
+  blockedReason: Exclude<PaidRouteBlockReason, "invalid-estimate"> | null;
+  resolve: (choice: CostConfirmationChoice) => void;
 }
 
 export interface CreditAuthorizationResult {
   authorized: boolean;
   amount: number;
   referenceId: string;
-  reason?: "cancelled" | "insufficient-credits" | "invalid-estimate";
+  reason?:
+    | "cancelled"
+    | "free-route-selected"
+    | "insufficient-credits"
+    | PaidRouteBlockReason;
 }
 
 let mountedConfirmationHosts = 0;
@@ -29,12 +47,18 @@ export function registerCostConfirmationHost(): () => void {
 
 function requestConfirmation(
   detail: Omit<CostConfirmationRequest, "resolve">,
-): Promise<boolean> {
+): Promise<CostConfirmationChoice> {
   if (mountedConfirmationHosts === 0) {
+    if (detail.blockedReason || !detail.affordable || typeof window.confirm !== "function") {
+      return Promise.resolve("cancelled");
+    }
     return Promise.resolve(
-      typeof window.confirm === "function"
-        ? window.confirm(`This action is estimated to cost $${detail.amount.toFixed(4)} credits. Continue?`)
-        : false,
+      window.confirm(
+        `${detail.policy.routeLabel} is estimated to cost up to $${detail.amount.toFixed(4)}. ` +
+          `Your hard maximum is $${detail.policy.maximum.toFixed(2)}. Continue?`,
+      )
+        ? "paid"
+        : "cancelled",
     );
   }
   return new Promise((resolve) => {
@@ -52,24 +76,36 @@ function requestConfirmation(
 export async function authorizeEstimatedCost(
   amount: number,
   label: string,
+  policy: PaidRoutePolicy,
 ): Promise<CreditAuthorizationResult> {
   const referenceId = `authorization-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-  if (!Number.isFinite(amount) || amount <= 0) {
-    return { authorized: false, amount, referenceId, reason: "invalid-estimate" };
+  const blockedReason = evaluatePaidRoutePolicy(amount, policy);
+  if (blockedReason === "invalid-estimate") {
+    return { authorized: false, amount, referenceId, reason: blockedReason };
   }
 
   const state = useAccountStore.getState();
   const developerMode = state.appMode === "developer";
   const affordable = canAffordCredits(amount);
-  const confirmed = await requestConfirmation({
+  const remaining = getCreditsRemaining();
+  const choice = await requestConfirmation({
     id: referenceId,
     amount,
     label,
     developerMode,
     affordable,
+    availableBalance: Number.isFinite(remaining) ? remaining : null,
+    policy,
+    blockedReason,
   });
 
-  if (!confirmed) {
+  if (choice === "free-route") {
+    return { authorized: false, amount, referenceId, reason: "free-route-selected" };
+  }
+  if (blockedReason) {
+    return { authorized: false, amount, referenceId, reason: blockedReason };
+  }
+  if (choice !== "paid") {
     return {
       authorized: false,
       amount,

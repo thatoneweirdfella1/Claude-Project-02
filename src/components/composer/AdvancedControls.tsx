@@ -59,7 +59,7 @@ export function AdvancedControls() {
         <input type="checkbox" checked={paidFallbackEnabled} onChange={(event) => setPaidFallbackEnabled(event.target.checked)} />
         Allow paid fallback (off by default)
       </label>
-      <label className="advanced-controls__field"><span>Maximum per request</span><input type="number" min="0" step="0.01" value={maxRequestCost} onChange={(event) => setMaxRequestCost(Number(event.target.value))} /></label>
+      <label className="advanced-controls__field"><span>Maximum per paid request ($)</span><input type="number" min="0" step="0.01" value={maxRequestCost} onChange={(event) => setMaxRequestCost(Number(event.target.value))} /></label>
       <button type="button" className="advanced-controls__defaults">Set as defaults</button>
     </div>}
   </section>;

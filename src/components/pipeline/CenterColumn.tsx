@@ -32,6 +32,7 @@ import { StreamingAnswer } from "../streaming";
 import { usePipelineRun, type ActivePipelineRun } from "./usePipelineRun";
 import { authorizeEstimatedCost } from "../../services/creditAuthorization";
 import { addTokenUsage, getEstimatedCostForPipeline } from "../../services/costTracking";
+import type { PaidRoutePolicy } from "../../services/paidRoutePolicy";
 
 /* CenterColumn (Step 5.2) — the live center column: the real ConversationArea
    over the real Composer, joined by the pipeline orchestrator. This replaces
@@ -183,6 +184,41 @@ export function CenterColumn() {
     setPendingStateReview(null);
   }
 
+  function queueFreeFlow(request: TranslateAskRequest) {
+    const result = detectStateLocally(request.rawInput);
+    setDetection(result);
+    setPendingStateReview({ request, result });
+  }
+
+  function paidRoutePolicy(
+    request: TranslateAskRequest,
+    selectedModel: string,
+    reasonLabel: string,
+  ): PaidRoutePolicy {
+    const session = useSessionStore.getState();
+    const account = useAccountStore.getState();
+    const routeLabel = request.translatorEngine === "destination-one-pass"
+      ? `Connected ${destinationLabel(request.destination)} · ${selectedModel}`
+      : request.translatorEngine === "managed-translator"
+        ? `Managed translator · Anthropic · ${selectedModel}`
+        : `Legacy or automatic Claude translator · Anthropic · ${selectedModel}`;
+
+    return {
+      maximum: session.maxRequestCost,
+      paidFallbackEnabled: session.paidFallbackEnabled,
+      requiresPaidFallback:
+        request.translatorEngine === "auto-free-first" ||
+        request.translatorEngine === "legacy-claude",
+      routeLabel,
+      payerLabel: account.appMode === "developer"
+        ? "Divergence developer workspace"
+        : "Your Divergence credits",
+      reasonLabel,
+      freeAlternativeLabel:
+        `Prepare an AI-ready request for ${destinationLabel(request.destination)} without a new charge`,
+    };
+  }
+
   async function handleSubmit(request: TranslateAskRequest): Promise<boolean> {
     if (!request.rawInput.trim()) return false;
 
@@ -190,16 +226,28 @@ export function CenterColumn() {
       isFreeTranslator(request.translatorEngine) ||
       (request.translatorEngine === "destination-one-pass" && request.destination.providerId !== "anthropic")
     ) {
-      const result = detectStateLocally(request.rawInput);
-      setDetection(result);
-      setPendingStateReview({ request, result });
+      queueFreeFlow(request);
       return true;
     }
 
     const selectedModel = request.model === "auto" ? "claude-haiku-4-5" : request.model;
     const estimate = getEstimatedCostForPipeline(request.rawInput, selectedModel);
-    const authorization = await authorizeEstimatedCost(estimate, "Connected Claude translator");
-    if (!authorization.authorized) return false;
+    const authorization = await authorizeEstimatedCost(
+      estimate,
+      "Connected Claude translator",
+      paidRoutePolicy(
+        request,
+        selectedModel,
+        "This request uses a connected paid AI instead of the no-new-charge handoff.",
+      ),
+    );
+    if (!authorization.authorized) {
+      if (authorization.reason === "free-route-selected") {
+        queueFreeFlow(request);
+        return true;
+      }
+      return false;
+    }
     addMessage({ id: newMessageId(), role: "user", content: request.rawInput, timestamp: Date.now() });
     startRun(request);
     return true;
@@ -219,12 +267,32 @@ export function CenterColumn() {
     );
     const combinedInput = `${lastRawRef.current}\n\n${substitutedAddition}`;
     const selectedModel = s.model === "auto" ? "claude-haiku-4-5" : s.model;
+    const rerunRequest = buildTranslateAskRequest(
+      combinedInput,
+      {
+        model: s.model,
+        destination: s.destination,
+        translatorEngine: s.translatorEngine,
+        reviewBeforeSend: s.reviewBeforeSend,
+        directness: s.directness,
+        techniques: s.techniques,
+      },
+      s.context,
+    );
     const estimate = getEstimatedCostForPipeline(combinedInput, selectedModel);
     const authorization = await authorizeEstimatedCost(
       estimate,
       "Refine and rerun the answer",
+      paidRoutePolicy(
+        rerunRequest,
+        selectedModel,
+        "Refining reruns the connected paid AI pipeline.",
+      ),
     );
-    if (!authorization.authorized) return;
+    if (!authorization.authorized) {
+      if (authorization.reason === "free-route-selected") queueFreeFlow(rerunRequest);
+      return;
+    }
     addMessage({
       id: newMessageId(),
       role: "user",
@@ -234,20 +302,7 @@ export function CenterColumn() {
     // Original + addition, so translation sees the whole thought; settings are
     // read fresh from the store (the user may have changed a dropdown since).
     // startRun also re-fires detection on this same combined text.
-    startRun(
-      buildTranslateAskRequest(
-        combinedInput,
-        {
-          model: s.model,
-          destination: s.destination,
-          translatorEngine: s.translatorEngine,
-          reviewBeforeSend: s.reviewBeforeSend,
-          directness: s.directness,
-          techniques: s.techniques,
-        },
-        s.context,
-      ),
-    );
+    startRun(rerunRequest);
   }
 
   const handleDone = useCallback(

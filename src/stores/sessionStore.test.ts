@@ -48,8 +48,10 @@ describe("createInitialSessionState", () => {
     expect(state.draftInput).toBe("");
     expect(state.model).toBe("auto");
     expect(state.destination).toEqual({ providerId: "universal", modelId: "universal" });
-    expect(state.translatorEngine).toBe("local-rules");
+    expect(state.translatorEngine).toBe("auto-free-first");
     expect(state.reviewBeforeSend).toBe(true);
+    expect(state.paidFallbackEnabled).toBe(false);
+    expect(state.maxRequestCost).toBe(0.25);
     expect(state.directness).toBe(2);
     expect(state.techniques).toEqual(["auto-detect"]);
     expect(state.context).toEqual([]);
@@ -79,6 +81,8 @@ describe("SESSION_PERSISTED_KEYS", () => {
         "destination",
         "translatorEngine",
         "reviewBeforeSend",
+        "paidFallbackEnabled",
+        "maxRequestCost",
         "directness",
         "techniques",
         "context",
