@@ -1,84 +1,40 @@
-/* context-snapshot.css — Context Snapshot's list content (Step 7.5). Since
-   Step 9.5, the outer panel/header shell lives in AccordionStack
-   (accordion.css's accordion-panel styles); only the list/row/empty-state
-   rules below still apply. Tokens only. */
+/* Context Snapshot, composer chips, and shared context-management surfaces. */
+.context-snapshot-panel__empty { margin:0; color:var(--text-secondary); font-family:var(--font-family-base); font-size:var(--font-size-label-secondary); opacity:var(--text-metadata-opacity); }
+.context-snapshot-panel__summary { display:grid; gap:5px; margin-bottom:8px; color:var(--text-secondary); font-size:var(--font-size-metadata); }
+.context-snapshot-panel__summary strong { color:var(--text-primary); }
+.context-snapshot-panel__summary > div { display:flex; gap:6px; flex-wrap:wrap; }
+.context-snapshot-panel__summary button,.context-manager-dialog button,.context-chip-preview button { min-height:28px; border:1px solid var(--surface-smoked-glass-border); border-radius:7px; background:transparent; color:var(--text-primary); cursor:pointer; }
+.context-snapshot-panel__list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px; }
+.context-snapshot-panel__row { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; padding:6px 0; border-bottom:1px solid var(--surface-smoked-glass-border); }
+.context-snapshot-panel__row:last-child { border-bottom:none; }
+.context-snapshot-panel__row-text { min-width:0; display:flex; flex-direction:column; gap:2px; }
+.context-snapshot-panel__row-kind { color:var(--accent-cyan); font-size:var(--font-size-metadata); text-transform:uppercase; letter-spacing:.03em; }
+.context-snapshot-panel__row-label { color:var(--text-primary); font-size:var(--font-size-label-secondary); overflow-wrap:break-word; }
+.context-snapshot-panel__row-detail { color:var(--text-secondary); font-size:var(--font-size-metadata); opacity:var(--text-metadata-opacity); overflow-wrap:break-word; }
+.context-snapshot-panel__row-remove { flex-shrink:0; min-width:24px; min-height:24px; border:none; background:transparent; color:var(--text-secondary); font-size:14px; cursor:pointer; }
+.context-snapshot-panel__row-remove:hover { color:var(--action-destructive); }
 
-.context-snapshot-panel__empty {
-  margin: 0;
-  color: var(--text-secondary);
-  font-family: var(--font-family-base);
-  font-size: var(--font-size-label-secondary);
-  font-weight: var(--font-weight-label-secondary);
-  opacity: var(--text-metadata-opacity);
-}
+.active-context-chips { display:flex; gap:5px; flex-wrap:wrap; align-items:center; max-height:70px; overflow:auto; padding:2px 0; }
+.active-context-chip { display:flex; align-items:stretch; max-width:220px; border:1px solid var(--surface-smoked-glass-border); border-radius:8px; background:var(--surface-smoked-glass); overflow:hidden; }
+.active-context-chip.is-excluded { opacity:.55; }
+.active-context-chip__preview { display:flex; align-items:center; gap:6px; min-width:0; padding:4px 7px; border:0; background:transparent; color:var(--text-primary); cursor:pointer; }
+.active-context-chip__preview span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.active-context-chip__preview small { color:var(--text-secondary); text-transform:uppercase; font-size:9px; }
+.active-context-chip__remove { width:26px; border:0; border-left:1px solid var(--surface-smoked-glass-border); background:transparent; color:var(--text-secondary); cursor:pointer; }
 
-.context-snapshot-panel__list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
+.context-chip-preview { position:absolute; z-index:115; left:14px; right:14px; bottom:110px; max-height:260px; overflow:auto; padding:12px; border:1px solid var(--surface-smoked-glass-border); border-radius:10px; box-shadow:var(--shadow-elevation-medium); }
+.context-chip-preview header { display:flex; justify-content:space-between; gap:8px; }
+.context-chip-preview pre,.context-manager-preview pre { white-space:pre-wrap; overflow-wrap:anywhere; max-height:190px; overflow:auto; margin:8px 0; font:inherit; color:var(--text-primary); }
 
-.context-snapshot-panel__row {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 6px 0;
-  border-bottom: 1px solid var(--surface-smoked-glass-border);
-}
-
-.context-snapshot-panel__row:last-child {
-  border-bottom: none;
-}
-
-.context-snapshot-panel__row-text {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.context-snapshot-panel__row-kind {
-  color: var(--accent-cyan);
-  font-family: var(--font-family-base);
-  font-size: var(--font-size-metadata);
-  font-weight: var(--font-weight-metadata);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-}
-
-.context-snapshot-panel__row-label {
-  color: var(--text-primary);
-  font-family: var(--font-family-base);
-  font-size: var(--font-size-label-secondary);
-  font-weight: var(--font-weight-label-secondary);
-  overflow-wrap: break-word;
-}
-
-.context-snapshot-panel__row-detail {
-  color: var(--text-secondary);
-  font-family: var(--font-family-base);
-  font-size: var(--font-size-metadata);
-  font-weight: var(--font-weight-metadata);
-  opacity: var(--text-metadata-opacity);
-  overflow-wrap: break-word;
-}
-
-.context-snapshot-panel__row-remove {
-  flex-shrink: 0;
-  min-width: 24px;
-  min-height: 24px;
-  border: none;
-  background: transparent;
-  color: var(--text-secondary);
-  font-size: 14px;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.context-snapshot-panel__row-remove:hover {
-  color: var(--action-destructive);
-}
+.context-manager-dialog { width:min(760px,calc(100vw - 32px)); max-height:min(760px,calc(100vh - 48px)); overflow:auto; }
+.context-manager-list { display:grid; gap:6px; margin:10px 0; }
+.context-manager-row { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:center; padding:8px; border:1px solid var(--surface-smoked-glass-border); border-radius:8px; }
+.context-manager-row label,.context-manager-row > div:first-child { display:flex; gap:8px; min-width:0; align-items:flex-start; }
+.context-manager-row span { display:grid; min-width:0; }
+.context-manager-row small { color:var(--text-secondary); }
+.context-manager-row > div:last-child { display:flex; gap:5px; }
+.context-manager-preview { grid-column:1/-1; padding:10px; border:1px solid var(--surface-smoked-glass-border); border-radius:8px; background:var(--surface-raised,rgba(0,0,0,.08)); }
+.context-manager-preview > div { display:flex; gap:8px; justify-content:space-between; flex-wrap:wrap; }
+.context-variable-list { display:grid; gap:4px; max-height:140px; overflow:auto; }
+.context-variable-list label { display:flex; gap:8px; align-items:flex-start; }
+.context-variable-list span { display:grid; }
