@@ -2,8 +2,13 @@ import { useLayoutEffect, useRef } from "react";
 import { useSessionStore } from "../../stores/sessionStore";
 
 const MAX_TEXTAREA_HEIGHT_PX = 280;
+export const MAX_COMPOSER_CHARACTERS = 20_000;
 
-export function InputBox() {
+export interface InputBoxProps {
+  onSubmit?: () => void;
+}
+
+export function InputBox({ onSubmit }: InputBoxProps) {
   const draftInput = useSessionStore((s) => s.draftInput);
   const draftSelectionStart = useSessionStore((s) => s.draftSelectionStart);
   const draftSelectionEnd = useSessionStore((s) => s.draftSelectionEnd);
@@ -34,15 +39,26 @@ export function InputBox() {
         ref={textareaRef}
         className="input-box__textarea"
         value={draftInput}
+        maxLength={MAX_COMPOSER_CHARACTERS}
         onChange={(event) => {
-          setDraftInput(event.target.value);
+          setDraftInput(event.target.value.slice(0, MAX_COMPOSER_CHARACTERS));
           rememberSelection(event.currentTarget);
         }}
         onSelect={(event) => rememberSelection(event.currentTarget)}
+        onKeyDown={(event) => {
+          if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+            event.preventDefault();
+            if (draftInput.trim()) onSubmit?.();
+          }
+        }}
         placeholder={"Type your thoughts here...\nRaw ideas, questions, context, anything you want to communicate to AI"}
         aria-label="What's on your mind?"
+        aria-describedby="composer-character-count"
         rows={6}
       />
+      <div id="composer-character-count" className="input-box__counter" aria-live="polite">
+        {draftInput.length.toLocaleString()} / {MAX_COMPOSER_CHARACTERS.toLocaleString()}
+      </div>
     </div>
   );
 }
