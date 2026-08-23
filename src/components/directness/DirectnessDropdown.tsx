@@ -1,17 +1,16 @@
 import { isDirectnessLevel } from "../../services/directness";
 import { useSessionStore } from "../../stores/sessionStore";
+import { useSettingsDefaultsStore } from "../../stores/settingsDefaultsStore";
 import { Dropdown } from "../primitives";
 import { DIRECTNESS_DROPDOWN_OPTIONS } from "./directnessOptions";
 
-/* Directness dropdown (Step 4.4) — CANON LAYOUT's center-column "Directness"
-   control. Bound directly to the session store's `directness` field
-   (DirectnessLevel, default 2, built at Step 1.7, autosaved since Step 1.8) —
-   no new store state. The chosen level feeds the composition engine's TONE
-   section (Step 4.3) via whoever composes the prompt (the demo here, the
-   Step 5.2 orchestrator in production). */
+/* Directness is a persistent reply-style choice. It updates the active
+   request immediately and becomes the default used after a full session
+   reset, so the selected style stays in effect until the user changes it. */
 export function DirectnessDropdown() {
   const directness = useSessionStore((s) => s.directness);
   const setDirectness = useSessionStore((s) => s.setDirectness);
+  const setDefaultDirectness = useSettingsDefaultsStore((s) => s.setDirectness);
 
   return (
     <div className="directness-field">
@@ -24,7 +23,9 @@ export function DirectnessDropdown() {
         value={String(directness)}
         onChange={(event) => {
           const next = Number(event.target.value);
-          if (isDirectnessLevel(next)) setDirectness(next);
+          if (!isDirectnessLevel(next)) return;
+          setDirectness(next);
+          setDefaultDirectness(next);
         }}
       />
     </div>
