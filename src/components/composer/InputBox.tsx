@@ -2,7 +2,6 @@ import { useLayoutEffect, useRef } from "react";
 import { useSessionStore } from "../../stores/sessionStore";
 import { ActiveContextChips } from "../context/ActiveContextChips";
 
-const MAX_TEXTAREA_HEIGHT_PX = 280;
 export const MAX_COMPOSER_CHARACTERS = 20_000;
 
 export interface InputBoxProps { onSubmit?: () => void; }
@@ -18,8 +17,6 @@ export function InputBox({ onSubmit }: InputBoxProps) {
   useLayoutEffect(() => {
     const element = textareaRef.current;
     if (!element) return;
-    element.style.height = "auto";
-    element.style.height = `${Math.min(element.scrollHeight, MAX_TEXTAREA_HEIGHT_PX)}px`;
     if (document.activeElement !== element) element.setSelectionRange(draftSelectionStart, draftSelectionEnd);
   }, [draftInput, draftSelectionStart, draftSelectionEnd]);
 

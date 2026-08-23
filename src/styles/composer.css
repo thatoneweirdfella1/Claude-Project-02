@@ -13,6 +13,13 @@
   gap: 8px;
 }
 
+.input-box__field-shell {
+  position: relative;
+  height: 122px;
+  min-height: 122px;
+  max-height: 122px;
+}
+
 /* First real consumer of the section-header tokens (Step 1.2 built these,
    unused until now) — MATERIALS.md: cyan is used for "section headers". */
 .input-box__label {
@@ -31,9 +38,11 @@
 .input-box__textarea {
   width: 100%;
   box-sizing: border-box;
-  min-height: 96px;
-  max-height: 480px;
+  height: 122px;
+  min-height: 122px;
+  max-height: 122px;
   padding: var(--space-input-padding);
+  padding-bottom: 32px;
   border-radius: var(--radius-card);
   border: 1px solid var(--surface-smoked-glass-border);
   background: var(--surface-smoked-glass);
@@ -44,7 +53,7 @@
   font-size: var(--font-size-body);
   font-weight: var(--font-weight-body);
   line-height: var(--line-height-body);
-  resize: none; /* height is JS-driven (auto-grow); a manual resize handle would fight it */
+  resize: none;
   overflow-y: auto;
 }
 
