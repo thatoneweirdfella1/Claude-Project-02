@@ -10,7 +10,6 @@ import type { PillDimension } from "../detection";
 import { StateDetectionStatusBar } from "../detection/StateDetectionStatusBar";
 import { MultiAiActions } from "../multiAi";
 import { TransparencyCard } from "../transparency";
-import { ActiveContextChips } from "../context/ActiveContextChips";
 import { MethodologyDropdown } from "../methodology/MethodologyDropdown";
 import { AttachContextControls } from "./AttachContextControls";
 import { AdvancedControls } from "./AdvancedControls";
@@ -59,7 +58,6 @@ export function Composer({ onSubmit, onAttach, onContext, detection, detecting =
   return <section className="composer frozen-composer" data-testid="composer">
     <div className="frozen-composer__heading"><h2>What&apos;s on your mind?</h2><AttachContextControls onAttach={onAttach} onContext={onContext} /></div>
     <InputBox onSubmit={() => void handleTranslate()} />
-    <ActiveContextChips />
     <StateDetectionStatusBar detection={detection} detecting={detecting} suggestedDirectness={suggestedDirectness} onCorrectState={onCorrectState} onApplyDirectness={onApplyDirectness} />
     <div className="frozen-composer__controls">
       <DestinationAiDropdown />
