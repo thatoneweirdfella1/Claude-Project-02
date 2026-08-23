@@ -10,7 +10,7 @@ import { AppearanceSettings } from "../settings/AppearanceSettings";
 import { COMPOSABLE_TECHNIQUE_IDS, MAX_TECHNIQUE_STACK, getTechnique } from "../../services/techniques";
 import { buildSessionRecord } from "../../services/sessionLifecycle";
 import { saveNow } from "../../services/persistence";
-import type { TechniqueId } from "../../stores/types";
+import type { ModelSelection, TechniqueId } from "../../stores/types";
 
 function HomeScreen() {
   const sessions = useAccountStore((s) => s.sessions);
@@ -971,7 +971,7 @@ function TemplatesScreen() {
   const [selectedTemplateIds, setSelectedTemplateIds] = useState<Set<string>>(new Set());
   const [formData, setFormData] = useState({
     title: "",
-    model: "auto" as "auto" | "claude-haiku-4-5" | "claude-sonnet-5" | "claude-opus-4-8",
+    model: "auto" as ModelSelection,
     directness: 2,
     techniques: [] as string[],
   });
