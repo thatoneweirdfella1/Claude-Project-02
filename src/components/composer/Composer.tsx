@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { buildTranslateAskRequest, type TranslateAskRequest } from "../../services/composer";
 import { mergeVariables, substituteVariables } from "../../services/context";
 import { useAccountStore } from "../../stores/accountStore";
@@ -22,14 +23,17 @@ export interface ComposerProps {
   onCorrectState?: (dimension: PillDimension, value: string) => void;
   suggestedDirectness?: DirectnessLevel | null;
   onApplyDirectness?: () => void;
+  statusMessage?: string;
+  submitDisabled?: boolean;
 }
 
 export function Composer({
   onSubmit, onAttach, onContext, detection, detecting = false,
   onCorrectState, suggestedDirectness, onApplyDirectness,
+  statusMessage = "", submitDisabled = false,
 }: ComposerProps) {
+  const [validationMessage, setValidationMessage] = useState("");
   const draftInput = useSessionStore((s) => s.draftInput);
-  const setDraftInput = useSessionStore((s) => s.setDraftInput);
   const model = useSessionStore((s) => s.model);
   const destination = useSessionStore((s) => s.destination);
   const translatorEngine = useSessionStore((s) => s.translatorEngine);
@@ -42,13 +46,19 @@ export function Composer({
   const hasConversation = useSessionStore((s) => s.conversation.length > 0);
 
   async function handleTranslate() {
-    if (!draftInput.trim()) return;
+    if (submitDisabled) return;
+    if (!draftInput.trim()) {
+      setValidationMessage("Type something first. Your draft has not been changed.");
+      return;
+    }
     const substituted = substituteVariables(draftInput, mergeVariables(accountVariables, sessionVariables));
     const accepted = await onSubmit(buildTranslateAskRequest(substituted, {
       model, destination, translatorEngine, reviewBeforeSend, directness, techniques,
     }, context));
-    if (accepted !== false) setDraftInput("");
+    setValidationMessage(accepted === false ? "Not sent. Your draft is still here." : "");
   }
+
+  const feedback = validationMessage || statusMessage;
 
   return (
     <section className="composer frozen-composer" data-testid="composer">
@@ -56,12 +66,15 @@ export function Composer({
         <h2>What&apos;s on your mind?</h2>
         <AttachContextControls onAttach={onAttach} onContext={onContext} />
       </div>
-      <InputBox />
+      <InputBox onSubmit={() => void handleTranslate()} />
       {detecting && !detection && <p className="state-detection-panel__detecting" role="status">Reading your message…</p>}
       {detection && <StateDetectionPanel result={detection} onCorrect={onCorrectState} suggestedDirectness={suggestedDirectness} onApplyDirectness={onApplyDirectness} />}
       <div className="frozen-composer__controls">
         <DestinationAiDropdown />
-        <TranslateAskButton onClick={() => void handleTranslate()} disabled={!draftInput.trim()} />
+        <TranslateAskButton onClick={() => void handleTranslate()} disabled={submitDisabled || !draftInput.trim()} />
+      </div>
+      <div className="composer-inline-feedback" role="status" aria-live="polite" aria-atomic="true">
+        {feedback || "\u00a0"}
       </div>
       <AdvancedControls />
       {hasConversation && <div className="composer__footer-row frozen-post-submit-tools"><TransparencyCard /><MultiAiActions /></div>}
