@@ -458,3 +458,14 @@
 .destination-field__provider small, .destination-field__group small, .destination-field__option small { color: var(--frozen-muted); }
 .destination-field__option { display: flex !important; justify-content: space-between; gap: 10px; width: 100%; }
 .advanced-controls__connection { display: grid; gap: 5px; padding: 10px; border: 1px solid var(--frozen-line); border-radius: 8px; }
+
+.directness-field { position: relative; min-width: 0; }
+.directness-field__label { display: block; margin-bottom: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.directness-field__trigger { width: 100%; min-height: 40px; padding: 7px 10px; border: 1px solid var(--surface-smoked-glass-border); border-radius: var(--radius-button); color: var(--text-primary); text-align: left; cursor: pointer; }
+.directness-popover { position: absolute; left: 0; bottom: calc(100% + 6px); z-index: 45; width: 300px; max-width: min(300px, 80vw); padding: 8px; box-shadow: var(--shadow-modal); }
+.directness-popover__option { display: grid; grid-template-columns: 18px 1fr; gap: 7px; width: 100%; padding: 8px; border: 0; border-radius: var(--radius-button); background: transparent; color: var(--text-primary); text-align: left; cursor: pointer; }
+.directness-popover__option:hover, .directness-popover__option:focus-visible, .directness-popover__option.is-selected { background: color-mix(in srgb, var(--accent-cyan) 12%, transparent); }
+.directness-popover__option strong, .directness-popover__option small { display: block; }
+.directness-popover__option small { margin-top: 2px; color: var(--frozen-muted); }
+.advanced-controls__remember { margin-top: 4px; font-weight: 400; }
+.methodology-suggestion__actions { display: flex; gap: 6px; }

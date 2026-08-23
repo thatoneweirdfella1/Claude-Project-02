@@ -1,6 +1,6 @@
 import type { TranslateAskRequest } from "../composer";
 import {
-  autoDetectTechniques,
+  autoDetectWithPinned,
   getTechnique,
   isAutoMode,
   selectManualTechnique,
@@ -54,8 +54,9 @@ export function buildStateRecommendation(
   let techniqueCandidates: TechniqueId[] = [];
   if (feeds.techniqueCandidates.length > 0) {
     if (isAutoMode(request.techniques)) {
-      const baseline = autoDetectTechniques(request.rawInput).selected;
-      const withState = autoDetectTechniques(request.rawInput, {
+      const pinned = request.techniques.filter((id) => id !== "auto-detect");
+      const baseline = autoDetectWithPinned(request.rawInput, pinned).selected;
+      const withState = autoDetectWithPinned(request.rawInput, pinned, {
         stateTechniques: feeds.techniqueCandidates,
       }).selected;
       if (!sameTechniques(baseline, withState)) {

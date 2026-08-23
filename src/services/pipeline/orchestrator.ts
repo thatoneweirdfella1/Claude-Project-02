@@ -47,7 +47,7 @@ import {
 import { overrideFromSelection, route, type RouteResult } from "../routingService";
 import {
   MAX_TECHNIQUE_STACK,
-  autoDetectTechniques,
+  autoDetectWithPinned,
   getTechnique,
   isTechniqueId,
   type TechniqueSelection,
@@ -136,12 +136,11 @@ export function resolveTechniqueSelection(
     // persisted array, keeping the ≤4 guarantee unconditional.
     .slice(0, MAX_TECHNIQUE_STACK);
   if (stored.includes("auto-detect") || manual.length === 0) {
-    return autoDetectTechniques(question, {
+    return autoDetectWithPinned(question, manual, {
       complexity: routeResult.complexity,
       domain: routeResult.dimensions.domain,
-      // Step 6.5: state-derived candidates only ever apply in AUTO mode —
-      // same reasoning as Step 4.2's manual-selection decision (the user's
-      // explicit literal choice is honored as-is, never augmented).
+      // State-derived candidates may fill open Auto slots. Manually checked
+      // techniques were seeded first and cannot be displaced.
       stateTechniques,
     });
   }

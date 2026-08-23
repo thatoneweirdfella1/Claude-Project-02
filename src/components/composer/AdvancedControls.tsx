@@ -11,6 +11,7 @@ const OVERLAY_EVENT = "divergence:composer-overlay";
 export function AdvancedControls() {
   const [open, setOpen] = useState(false);
   const [defaultsSaved, setDefaultsSaved] = useState(false);
+  const [rememberReviewChoice, setRememberReviewChoice] = useState(false);
   const destination = useSessionStore((s) => s.destination);
   const translatorEngine = useSessionStore((s) => s.translatorEngine);
   const setTranslatorEngine = useSessionStore((s) => s.setTranslatorEngine);
@@ -46,10 +47,14 @@ export function AdvancedControls() {
       ? "local-rules"
       : translatorEngine;
 
-  function rememberReview(next: boolean) {
-    setReviewBeforeSend(next);
+  function persistReviewDefault(next: boolean) {
     const defaults = useSettingsDefaultsStore.getState().requestDefaults;
     setRequestDefaults({ ...defaults, reviewBeforeSend: next });
+  }
+
+  function selectReview(next: boolean) {
+    setReviewBeforeSend(next);
+    if (rememberReviewChoice) persistReviewDefault(next);
   }
 
   function saveDefaults() {
@@ -76,12 +81,24 @@ export function AdvancedControls() {
       <fieldset className="advanced-controls__field">
         <legend>Review before sending</legend>
         <label className="advanced-controls__check">
-          <input type="radio" name="review-before-sending" checked={reviewBeforeSend} onChange={() => rememberReview(true)} />
+          <input type="radio" name="review-before-sending" checked={reviewBeforeSend} onChange={() => selectReview(true)} />
           Review first
         </label>
         <label className="advanced-controls__check">
-          <input type="radio" name="review-before-sending" checked={!reviewBeforeSend} onChange={() => rememberReview(false)} />
+          <input type="radio" name="review-before-sending" checked={!reviewBeforeSend} onChange={() => selectReview(false)} />
           Send automatically
+        </label>
+        <label className="advanced-controls__check advanced-controls__remember">
+          <input
+            type="checkbox"
+            checked={rememberReviewChoice}
+            onChange={(event) => {
+              const remember = event.target.checked;
+              setRememberReviewChoice(remember);
+              if (remember) persistReviewDefault(reviewBeforeSend);
+            }}
+          />
+          Remember this choice
         </label>
       </fieldset>
       <label className="advanced-controls__field">

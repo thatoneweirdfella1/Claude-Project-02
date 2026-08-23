@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useSessionStore } from "../../stores/sessionStore";
 import { useSettingsDefaultsStore } from "../../stores/settingsDefaultsStore";
 import type { MethodologyType } from "../../stores/types";
@@ -14,12 +15,15 @@ export interface MethodologyDropdownProps {
 }
 
 export function MethodologyDropdown({ showPinControl = true, showSuggestion = true }: MethodologyDropdownProps) {
+  const [dismissedSuggestionFor, setDismissedSuggestionFor] = useState("");
   const methodology = useSessionStore((s) => s.methodology);
   const setMethodology = useSessionStore((s) => s.setMethodology);
   const draft = useSessionStore((s) => s.draftInput);
   const pinned = useSettingsDefaultsStore((s) => s.methodologyPinned);
   const setPinned = useSettingsDefaultsStore((s) => s.setMethodologyPinned);
-  const suggestion = methodology === "standard" && (draft.length > 700 || /\b(audit|compare|validate|debug|complex|multi-step|test assumptions|stress test)\b/i.test(draft));
+  const suggestion = methodology === "standard"
+    && draft !== dismissedSuggestionFor
+    && (draft.length > 700 || /\b(audit|compare|validate|debug|complex|multi-step|test assumptions|stress test)\b/i.test(draft));
 
   return <div className="methodology-dropdown-field">
     <label htmlFor="methodology-dropdown" className="methodology-dropdown-field__label">Methodology</label>
@@ -35,11 +39,14 @@ export function MethodologyDropdown({ showPinControl = true, showSuggestion = tr
     />
     {showSuggestion && suggestion && <div className="methodology-suggestion" role="status">
       <span>3-State may help here: Define → Test → Stabilize. It will not be applied automatically.</span>
-      <button type="button" onClick={() => setMethodology("3-state")}>Use 3-State</button>
+      <span className="methodology-suggestion__actions">
+        <button type="button" onClick={() => setMethodology("3-state")}>Accept</button>
+        <button type="button" onClick={() => setDismissedSuggestionFor(draft)}>Dismiss</button>
+      </span>
     </div>}
     {showPinControl && <label className="methodology-pin-control">
       <input type="checkbox" checked={pinned} onChange={(event) => setPinned(event.target.checked)} />
-      Pin Methodology to composer
+      Pin to composer
     </label>}
   </div>;
 }

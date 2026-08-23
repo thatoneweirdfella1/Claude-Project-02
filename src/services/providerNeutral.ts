@@ -7,7 +7,7 @@ import type {
   TechniqueId,
   TranslatorEngine,
 } from "../stores/types";
-import { autoDetectTechniques, isAutoMode } from "./techniques";
+import { autoDetectWithPinned, isAutoMode } from "./techniques";
 
 export interface DestinationModel { id: string; label: string; cost: "Free handoff" | "Provider account" | "Local" | "Custom"; }
 export interface DestinationProvider {
@@ -68,7 +68,11 @@ export function compileMeaningPacket(input: {
   const original = input.rawInput.trim();
   const sentences = original.split(/(?<=[.!?])\s+/).filter(Boolean);
   const techniques = isAutoMode(input.techniques)
-    ? autoDetectTechniques(original, { stateTechniques: input.stateTechniques }).selected
+    ? autoDetectWithPinned(
+        original,
+        input.techniques.filter((id) => id !== "auto-detect"),
+        { stateTechniques: input.stateTechniques },
+      ).selected
     : input.techniques.filter((id) => id !== "auto-detect");
   return {
     version: 1,

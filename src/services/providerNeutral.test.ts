@@ -106,3 +106,18 @@ describe("provider-neutral frozen flow", () => {
     expect(next.conversation).toEqual([]);
   });
 });
+
+
+describe("provider-neutral Auto recommend with checked choices", () => {
+  it("carries checked techniques through Auto recommend into the neutral packet", () => {
+    const packet = compileMeaningPacket({
+      rawInput: "Explain this in simple terms",
+      directness: 2,
+      techniques: ["auto-detect", "examples"],
+      context: [],
+    });
+    expect(packet.techniques).toContain("examples");
+    expect(packet.techniques).toContain("simplify");
+    expect(packet.techniques.length).toBeLessThanOrEqual(4);
+  });
+});

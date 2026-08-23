@@ -379,3 +379,19 @@ describe("resolveTechniqueSelection", () => {
     expect(fromAuto.selected).toEqual(fromEmpty.selected);
   });
 });
+
+
+describe("resolveTechniqueSelection — Auto recommend with checked choices", () => {
+  it("keeps manually checked techniques while Auto recommend fills compatible open slots", () => {
+    const routed = route({ prompt: "Explain this in simple terms", confidence: 95, plan: "free" });
+    const selection = resolveTechniqueSelection(
+      ["auto-detect", "examples"],
+      "Explain this in simple terms",
+      routed,
+    );
+    expect(selection.selected).toContain("examples");
+    expect(selection.selected).toContain("simplify");
+    expect(selection.selected.length).toBeLessThanOrEqual(4);
+    expect(selection.mode).toBe("auto-detect");
+  });
+});

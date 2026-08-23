@@ -46,7 +46,7 @@ export function InputBox({ onSubmit }: InputBoxProps) {
             if (draftInput.trim()) onSubmit?.();
           }
         }}
-        placeholder={"Type your thoughts here...\nRaw ideas, questions, context, anything you want to communicate to AI"}
+        placeholder="Type how you actually think…"
         aria-label="What's on your mind?"
         aria-describedby="composer-character-count"
         rows={6}

@@ -1,33 +1,88 @@
+import { useEffect, useRef, useState } from "react";
 import { isDirectnessLevel } from "../../services/directness";
+import { useDismissableLayer } from "../../keyboard";
 import { useSessionStore } from "../../stores/sessionStore";
-import { useSettingsDefaultsStore } from "../../stores/settingsDefaultsStore";
-import { Dropdown } from "../primitives";
 import { DIRECTNESS_DROPDOWN_OPTIONS } from "./directnessOptions";
 
-/* Directness is a persistent reply-style choice. It updates the active
-   request immediately and becomes the default used after a full session
-   reset, so the selected style stays in effect until the user changes it. */
 export function DirectnessDropdown() {
   const directness = useSessionStore((s) => s.directness);
   const setDirectness = useSessionStore((s) => s.setDirectness);
-  const setDefaultDirectness = useSettingsDefaultsStore((s) => s.setDirectness);
+  const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const selected = DIRECTNESS_DROPDOWN_OPTIONS.find((option) => Number(option.value) === directness)
+    ?? DIRECTNESS_DROPDOWN_OPTIONS[1];
+
+  useDismissableLayer(open, () => setOpen(false));
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (panelRef.current?.contains(target) || triggerRef.current?.contains(target)) return;
+      setOpen(false);
+    };
+    document.addEventListener("mousedown", onPointerDown);
+    return () => document.removeEventListener("mousedown", onPointerDown);
+  }, [open]);
+
+  function choose(value: string) {
+    const next = Number(value);
+    if (!isDirectnessLevel(next)) return;
+    setDirectness(next);
+    setOpen(false);
+    triggerRef.current?.focus();
+  }
+
+  function moveFocus(direction: 1 | -1) {
+    const options = [...(panelRef.current?.querySelectorAll<HTMLButtonElement>("[role=radio]") ?? [])];
+    if (!options.length) return;
+    const current = options.indexOf(document.activeElement as HTMLButtonElement);
+    options[(current + direction + options.length) % options.length]?.focus();
+  }
 
   return (
     <div className="directness-field">
-      <label htmlFor="directness-dropdown" className="directness-field__label">
+      <span id="directness-dropdown-label" className="directness-field__label">
         Directness
-      </label>
-      <Dropdown
-        id="directness-dropdown"
-        options={DIRECTNESS_DROPDOWN_OPTIONS}
-        value={String(directness)}
-        onChange={(event) => {
-          const next = Number(event.target.value);
-          if (!isDirectnessLevel(next)) return;
-          setDirectness(next);
-          setDefaultDirectness(next);
+      </span>
+      <button
+        ref={triggerRef}
+        type="button"
+        className="surface-smoked-glass directness-field__trigger"
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        aria-labelledby="directness-dropdown-label"
+        title={selected.preview}
+        onClick={() => setOpen((current) => !current)}
+      >
+        {selected.label}
+      </button>
+      {open && <div
+        ref={panelRef}
+        className="surface-smoked-glass directness-popover"
+        role="radiogroup"
+        aria-label="Directness"
+        onKeyDown={(event) => {
+          if (event.key === "ArrowDown") { event.preventDefault(); moveFocus(1); }
+          if (event.key === "ArrowUp") { event.preventDefault(); moveFocus(-1); }
         }}
-      />
+      >
+        {DIRECTNESS_DROPDOWN_OPTIONS.map((option) => {
+          const checked = Number(option.value) === directness;
+          return <button
+            key={option.value}
+            type="button"
+            role="radio"
+            aria-checked={checked}
+            className={`directness-popover__option ${checked ? "is-selected" : ""}`}
+            onClick={() => choose(option.value)}
+          >
+            <span aria-hidden="true">{checked ? "●" : "○"}</span>
+            <span><strong>{option.label}</strong><small>{option.preview}</small></span>
+          </button>;
+        })}
+      </div>}
     </div>
   );
 }
