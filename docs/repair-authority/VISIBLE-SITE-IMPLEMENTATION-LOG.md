@@ -41,9 +41,12 @@ Implementation files:
 
 ## Verification
 
-- The current branch source plus the deployment overlay produces a successful Vite production bundle.
-- The visible-navigation code introduces no additional TypeScript errors. Three pre-existing model-registry typing errors remain outside this batch; they do not block the Vite bundle and are not claimed fixed here.
-- The commit containing this log is the source checkpoint for this visible-site batch. Confirm its matching branch deployment before calling the batch deployed.
+- App code checkpoint: `76cd104cd43e109d868e7f9928827cc317d15a78`.
+- Matching Vercel deployment: `dpl_2L7TA5Nr9TfrvE6VzBDM1iJfYrXU` — READY.
+- Vercel ran 67 test files / 635 tests successfully, then passed the full TypeScript and Vite production build.
+- The deployed root returned HTTP 200.
+- The deployed JavaScript contains the expected Saved Tools, Variables, Checkpoints, All Tools search, and shortcuts-bridge markers.
+- An unauthenticated cloud-browser click-through stops at the app's intentional password gate; this is not a source or deployment failure.
 
 ## Deferred and not claimed complete
 
