@@ -1,12 +1,11 @@
 import { useLayoutEffect, useRef } from "react";
 import { useSessionStore } from "../../stores/sessionStore";
+import { ActiveContextChips } from "../context/ActiveContextChips";
 
 const MAX_TEXTAREA_HEIGHT_PX = 280;
 export const MAX_COMPOSER_CHARACTERS = 20_000;
 
-export interface InputBoxProps {
-  onSubmit?: () => void;
-}
+export interface InputBoxProps { onSubmit?: () => void; }
 
 export function InputBox({ onSubmit }: InputBoxProps) {
   const draftInput = useSessionStore((s) => s.draftInput);
@@ -21,20 +20,16 @@ export function InputBox({ onSubmit }: InputBoxProps) {
     if (!element) return;
     element.style.height = "auto";
     element.style.height = `${Math.min(element.scrollHeight, MAX_TEXTAREA_HEIGHT_PX)}px`;
-    if (document.activeElement !== element) {
-      element.setSelectionRange(draftSelectionStart, draftSelectionEnd);
-    }
+    if (document.activeElement !== element) element.setSelectionRange(draftSelectionStart, draftSelectionEnd);
   }, [draftInput, draftSelectionStart, draftSelectionEnd]);
 
-  const rememberSelection = (element: HTMLTextAreaElement) => {
-    setDraftSelection(
-      element.selectionStart ?? element.value.length,
-      element.selectionEnd ?? element.value.length,
-    );
-  };
+  const rememberSelection = (element: HTMLTextAreaElement) => setDraftSelection(
+    element.selectionStart ?? element.value.length,
+    element.selectionEnd ?? element.value.length,
+  );
 
-  return (
-    <div className="input-box">
+  return <div className="input-box">
+    <div className="input-box__field-shell">
       <textarea
         ref={textareaRef}
         className="input-box__textarea"
@@ -56,9 +51,10 @@ export function InputBox({ onSubmit }: InputBoxProps) {
         aria-describedby="composer-character-count"
         rows={6}
       />
-      <div id="composer-character-count" className="input-box__counter" aria-live="polite">
-        {draftInput.length.toLocaleString()} / {MAX_COMPOSER_CHARACTERS.toLocaleString()}
-      </div>
+      <ActiveContextChips />
     </div>
-  );
+    <div id="composer-character-count" className="input-box__counter" aria-live="polite">
+      {draftInput.length.toLocaleString()} / {MAX_COMPOSER_CHARACTERS.toLocaleString()}
+    </div>
+  </div>;
 }
