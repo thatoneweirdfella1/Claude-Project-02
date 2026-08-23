@@ -53,6 +53,7 @@ const repairedSourcePaths = [
   "src/services/routingService.test.ts",
   "src/services/composer.test.ts",
   "src/components/routing/modelDropdownOptions.ts",
+  "src/components/routing/modelDropdownOptions.test.ts",
   "src/components/composer/InputBox.tsx",
   "src/components/directness/DirectnessDropdown.tsx",
   "src/components/techniques/TechniqueDropdown.tsx",
