@@ -5,6 +5,7 @@ import {
   compileMeaningPacket,
   DESTINATION_PROVIDERS,
   isFreeTranslator,
+  TRANSLATOR_ENGINES,
 } from "./providerNeutral";
 import { useSessionStore } from "../stores/sessionStore";
 
@@ -19,10 +20,13 @@ describe("provider-neutral frozen flow", () => {
     expect(DESTINATION_PROVIDERS[0].label).toBe("Any AI — Universal");
   });
 
-  it("keeps free engines local and paid engines explicit", () => {
+  it("keeps the corrected translator engine set free-first and explicit", () => {
+    expect(TRANSLATOR_ENGINES.map((engine) => engine.id)).toEqual([
+      "auto-free-first", "local-rules", "destination-one-pass", "managed-translator",
+    ]);
     expect(isFreeTranslator("auto-free-first")).toBe(true);
     expect(isFreeTranslator("local-rules")).toBe(true);
-    expect(isFreeTranslator("local-ai")).toBe(true);
+    expect(isFreeTranslator("local-ai")).toBe(false);
     expect(isFreeTranslator("managed-translator")).toBe(false);
     expect(isFreeTranslator("destination-one-pass")).toBe(false);
   });
