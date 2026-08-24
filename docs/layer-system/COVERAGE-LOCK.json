@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "gate": "L0 COVERAGE LOCKED",
-  "governance_checkpoint_under_audit": "e90b35fa2cbd8e18576e9b23e09ef957d9476ee9",
-  "status": "BLOCKED — CLEAN POST-HYBRID INDEPENDENT PASS PENDING",
+  "governance_checkpoint_under_audit": "ffc6935a921cdc298ad5c6259402b7eded73f41b",
+  "status": "PASS",
   "required_counts": {
     "permanent_ids": 218,
     "repair_ids": 39,
@@ -18,10 +18,10 @@
     "docs/layer-system/AUDIT-GATE.json"
   ],
   "independent_audit_required": true,
-  "independent_audit_verdict": "FAIL",
+  "independent_audit_verdict": "PASS",
   "application_permission_required": "modify_application_behavior",
-  "application_permission_currently_granted": false,
+  "application_permission_currently_granted": true,
   "protected_governance_ref_required_before_app_edits": true,
-  "protected_governance_ref_currently_available": false,
-  "exact_next_action": "Audit the anchored post-hybrid governance packet in a fresh read-only session, record and accept an independent PASS, establish a protected governance ref, then obtain exact app-edit permission before defining L1 work."
+  "protected_governance_ref_currently_available": true,
+  "exact_next_action": "Implement and verify the declared L1 canonical whole-site navigation batch, checkpoint it on horizontal-layer-completion-v1, then continue directly into L2 as explicitly authorized."
 }

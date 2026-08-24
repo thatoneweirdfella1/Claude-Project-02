@@ -1,15 +1,15 @@
 # Current horizontal-layer status
 
-**Governance state:** 23-DEFECT HYBRID CLOSURE APPLIED — CLEAN FULL INDEPENDENT AUDIT PENDING  
+**Governance state:** POST-CORRECTION INDEPENDENT AUDIT PASSED AND USER ACCEPTED  
 **Verified through app source commit:** `16beca26c305bd9bdae088eb8e977ca1e9730747`  
 **Last completed horizontal layer:** `NONE`  
-**Active layer:** `NONE`  
-**Active coherent batch:** `NONE`  
-**Application edits permitted:** `NO`  
+**Active layer:** `L1`  
+**Active coherent batch:** `canonical-whole-site-navigation-and-visible-shell`  
+**Application edits permitted:** `YES — L1 AND L2, BRANCH PREVIEW ONLY`  
 
 ## Exact next action
 
-Audit the new post-hybrid evidence packet against all 23 canonical defects and `INDEPENDENT-AUDIT-CHECKLIST.md` in a clean read-only session. The changes materially alter validators, layer obligations, evidence/permission semantics, and packet scope, so the Hybrid Protocol requires a full audit rather than delta-only verification. Do not change application behavior. A clean `PASS`, user acceptance, an immutable protected governance ref, and a dated `modify_application_behavior` grant are all required before the first L1 batch can be defined.
+Finish deterministic verification, checkpoint and verify the L1 branch preview, then continue directly into L2. Do not merge or promote to production.
 
 ## Honest initial state
 

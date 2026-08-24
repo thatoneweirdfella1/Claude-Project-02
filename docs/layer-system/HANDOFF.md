@@ -5,10 +5,10 @@
 - Repository: `thatoneweirdfella1/Claude-Project-02`
 - Branch: `horizontal-layer-completion-v1`
 - Source: `16beca26c305bd9bdae088eb8e977ca1e9730747`
-- Governance: the 23-defect hybrid closure is applied; clean full independent audit pending because validator/layer/evidence/permission/packet semantics materially changed
+- Governance: the 23-defect hybrid closure passed the final independent post-correction audit and the user accepted it
 - Last completed horizontal layer: none
-- Active layer/batch: none
-- App behavior changes: not authorized
+- Active layer/batch: L1 / canonical-whole-site-navigation-and-visible-shell
+- App behavior changes: authorized for L1 and L2 on the continuation branch and branch preview only
 
 ## Preserved completed work
 
@@ -16,7 +16,7 @@ The source handoff records V2-RQ-001 through V2-RQ-003 as completed/verified and
 
 ## Exact next action
 
-From a real checkout, run `node scripts/governance/preflight.mjs --action=read-only`, return its certificate, then audit the new post-hybrid evidence packet against the 23 canonical defects and full checklist in a clean independent session without app edits. After audit `PASS`, record the result and user acceptance, establish an immutable protected governance ref, request a dated `modify_application_behavior` grant, and only then define one L1 batch.
+Finish deterministic L1 verification, push its checkpoint to `horizontal-layer-completion-v1`, verify the branch preview, then continue directly into L2 without requesting another audit or permission. Do not merge or promote to production.
 
 The governance installer's local staging directory had no `.git`, so it could not issue a local Resume Certificate. This is an environment limitation, not a preflight pass. A real checkout/CI must supply that proof.
 

@@ -43,6 +43,16 @@ Only dated, scoped, exact user corrections belong here. They supersede older aut
 - Layer 1 result: not authorized and not begun.
 - App implementation authority: not granted.
 
+### 2026-08-24 — Implement Layer 1 and Layer 2 consecutively
+
+- Exact user wording: `do layer 1, then 2, consequtively, without stopping`
+- Contextual scope: implement and verify the first two horizontal whole-site layers on `horizontal-layer-completion-v1`, checkpointing Layer 1 before continuing directly into Layer 2.
+- Affected scope: application behavior, application tests, governance status/evidence, branch commits, and branch-preview deployment required to verify L1 and L2.
+- Product intent: unchanged; only already-settled v2 decisions and the audited horizontal plan govern implementation.
+- External-effects boundary: no merge, production promotion, real payments, provider calls, credentials, identity creation, remote data writes, or other external side effects are authorized.
+- Audit state: the user supplied and accepted the final independent GPT-5 Thinking `PASS` for governance checkpoint `ffc6935a921cdc298ad5c6259402b7eded73f41b`.
+- App implementation authority: granted for L1 and L2 only.
+
 ## Required format for future entries
 
 - Date

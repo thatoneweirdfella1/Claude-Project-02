@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "audited_commit": "7c2a123b7622e00638285d67d0ccb6121dd805df",
+  "audited_commit": "ffc6935a921cdc298ad5c6259402b7eded73f41b",
   "audited_layer": "L0",
-  "verdict": "FAIL",
+  "verdict": "PASS",
   "reports": [
     {"source":"ChatGPT Library","library_file_id":"libfile_a79e833717f481919773871ffe318af7","model":"claude-sonnet-4-6","verdict":"PASS WITH REQUIRED CORRECTIONS"},
     {"source":"ChatGPT Library","library_file_id":"libfile_ad98c2c6cdc48191a25832b314bf1d01","model":"gpt-5.6-sol","verdict":"FAIL"}
@@ -11,9 +11,9 @@
   "reconciliation_record": "AUDIT-RESULTS/2026-08-24-hybrid-reconciled.md",
   "closure_record": "docs/layer-system/AUDIT-RESULTS/2026-08-24-post-correction-hybrid.md",
   "implementation_session_may_self_certify": false,
-  "post_correction_audit": "PENDING",
-  "post_correction_report_path": null,
-  "post_correction_report_sha256": null,
-  "post_correction_audited_commit": null,
-  "user_acceptance_of_independent_result": "PENDING"
+  "post_correction_audit": "PASS",
+  "post_correction_report_path": "docs/layer-system/AUDIT-RESULTS/2026-08-24-final-gpt5-thinking-pass-user-supplied.md",
+  "post_correction_report_sha256": "e6cf94e82c823affcb3ef4251b2ca082e507e250626d3d61923b7873449f3a1c",
+  "post_correction_audited_commit": "ffc6935a921cdc298ad5c6259402b7eded73f41b",
+  "user_acceptance_of_independent_result": "ACCEPTED"
 }
