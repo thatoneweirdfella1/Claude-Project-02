@@ -26,6 +26,12 @@
       "reason": "Close canonical defects 9 and 11 by protecting the baseline and governance safety controls"
     },
     {
+      "path": "docs/layer-system/PROTECTED-PATH-EXCEPTIONS.yml",
+      "authorized": true,
+      "authorization": "2026-08-24 user instruction to finish implementing the hybrid audit corrections",
+      "reason": "Record the exact fail-closed exceptions required for this authorized governance-only correction batch"
+    },
+    {
       "path": "docs/layer-system/RECOVERY.md",
       "authorized": true,
       "authorization": "2026-08-24 user instruction to finish implementing the hybrid audit corrections",
