@@ -212,8 +212,8 @@ Create the control system that prevents work from fragmenting again. This is not
 6. Record the last verified checkpoint separately from any in-progress work.
 7. Pass the machine L0 gate: manifest hashes, derived registries and obligations, protected paths, secret globs, audit gate, coverage lock, permissions, batch scope, and handoff/status consistency.
 8. Establish an immutable protected governance ref. Without it, read-only audit and governance correction may continue, but application or external-effect actions remain blocked.
-7. Mark all current completion claims `UNKNOWN — INSPECTION REQUIRED` unless matching evidence already supports a stronger closed status.
-8. Install the governance test registry, layer-scoped evidence format, and reporting definitions before Layer 1 changes begin. Application-test or application-behavior changes require the later app-change permission and are not L0 work.
+9. Mark all current completion claims `UNKNOWN — INSPECTION REQUIRED` unless matching evidence already supports a stronger closed status.
+10. Install the governance test registry, layer-scoped evidence format, and reporting definitions before Layer 1 changes begin. Application-test or application-behavior changes require the later app-change permission and are not L0 work.
 
 ### Exit gate
 
