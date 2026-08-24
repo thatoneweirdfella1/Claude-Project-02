@@ -4,6 +4,14 @@ import { verifyLedger } from './verify-ledger.mjs'
 import { verifyEvidence } from './verify-evidence.mjs'
 import { verifyProtectedPaths } from './verify-protected-paths.mjs'
 
+const EXTERNAL_EFFECT_PERMISSIONS = [
+  'connect_free_provider','connect_paid_provider','execute_provider_request',
+  'create_or_modify_identity','write_remote_user_data','synchronize_remote_user_data',
+  'create_payment_or_checkout','charge_or_reserve_funds','issue_credit_or_refund',
+  'modify_allowance_or_entitlement','read_secrets','write_or_rotate_secrets',
+  'deploy_preview','deploy_production','merge','configure_repository_rules'
+]
+
 export function runPreflight({ print = true } = {}) {
   const errors = []
   const warnings = []
@@ -12,7 +20,12 @@ export function runPreflight({ print = true } = {}) {
     'docs/layer-system/AUTHORITY-MANIFEST.yml','docs/layer-system/SOURCE-CHECKPOINT.json',
     'docs/layer-system/CURRENT-LAYER-STATUS.md','docs/layer-system/PERMISSIONS.yml',
     'docs/layer-system/HANDOFF.md','docs/layer-system/LAYER-COVERAGE-LEDGER.csv',
-    'docs/layer-system/LAYER-EVIDENCE-INDEX.jsonl'
+    'docs/layer-system/LAYER-EVIDENCE-INDEX.jsonl','docs/layer-system/LAYER-DEFINITIONS.yml',
+    'docs/layer-system/EVIDENCE-RECORD-SCHEMA.json','docs/layer-system/CHANGE-RECORD-SCHEMA.json',
+    'docs/layer-system/GOVERNANCE-BASELINE.json','docs/layer-system/BASELINE-AUDIT-PROCEDURE.md',
+    'docs/layer-system/RECOVERY.md','docs/layer-system/PROTECTED-PATHS.yml',
+    'docs/layer-system/PROTECTED-PATH-EXCEPTIONS.yml','docs/layer-system/INDEPENDENT-AUDIT-CHECKLIST.md',
+    'docs/layer-system/HYBRID-INDEPENDENT-AUDIT-PROTOCOL.md'
   ]
   for (const file of required) if (!exists(file)) errors.push(`missing required file: ${file}`)
 
@@ -26,6 +39,7 @@ export function runPreflight({ print = true } = {}) {
 
   if (source.repository !== 'thatoneweirdfella1/Claude-Project-02') errors.push('repository identity mismatch')
   if (branch !== source.continuation_branch) errors.push(`wrong branch: ${branch || '<none>'}`)
+  if (permissions.branch_scope !== source.continuation_branch) errors.push('permission branch scope differs from continuation branch')
   if (remote && !remote.includes('thatoneweirdfella1/Claude-Project-02')) errors.push(`wrong origin: ${remote}`)
   if (!/^[0-9a-f]{40}$/.test(head)) errors.push('runtime HEAD is not a full SHA')
   if (git(['merge-base','--is-ancestor',source.source_commit,'HEAD'], { allowFailure: true }).status !== 0) errors.push('source checkpoint is not an ancestor of HEAD')
@@ -66,8 +80,16 @@ export function runPreflight({ print = true } = {}) {
     if (body.includes('__REQUIRED_VALUE__')) errors.push(`unresolved template marker in ${file}`)
   }
 
+  if (permissions.schema_version !== 2) errors.push('permissions schema is not v2 granular fail-closed format')
   if (permissions.default !== 'deny') errors.push('permissions default is not deny')
+  for (const permission of EXTERNAL_EFFECT_PERMISSIONS) {
+    if (!Object.hasOwn(permissions.grants || {}, permission)) errors.push(`missing explicit external-effect permission: ${permission}`)
+  }
   if (permissions.grants?.modify_application_behavior?.allowed) warnings.push('application behavior permission is active')
+  for (const permission of EXTERNAL_EFFECT_PERMISSIONS) {
+    if (permissions.grants?.[permission]?.allowed) warnings.push(`external-effect permission is active: ${permission}`)
+  }
+
   const baseline = readJson('docs/layer-system/GOVERNANCE-BASELINE.json')
   if (!baseline.protected_ref) warnings.push(baseline.server_protection)
 
