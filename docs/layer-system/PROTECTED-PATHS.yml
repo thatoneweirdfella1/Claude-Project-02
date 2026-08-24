@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "source_checkpoint": "16beca26c305bd9bdae088eb8e977ca1e9730747",
   "governance_baseline_file": "docs/layer-system/GOVERNANCE-BASELINE.json",
   "source_protected": [
@@ -25,6 +25,11 @@
     "docs/layer-system/PROTECTED-PATHS.yml",
     "docs/layer-system/PROTECTED-PATH-EXCEPTIONS.yml",
     "docs/layer-system/SOURCE-CHECKPOINT.json",
+    "docs/layer-system/GOVERNANCE-BASELINE.json",
+    "docs/layer-system/BASELINE-AUDIT-PROCEDURE.md",
+    "docs/layer-system/RECOVERY.md",
+    "docs/layer-system/INDEPENDENT-AUDIT-CHECKLIST.md",
+    "docs/layer-system/HYBRID-INDEPENDENT-AUDIT-PROTOCOL.md",
     "docs/layer-system/TEMPLATE-MARKER-ALLOWLIST.txt",
     "scripts/governance/**"
   ],
