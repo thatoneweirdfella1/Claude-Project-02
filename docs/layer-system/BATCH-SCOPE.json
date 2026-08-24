@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "active_layer": "NONE",
+  "subsystem": null,
+  "permanent_ids": [],
+  "allowed_paths": [],
+  "required_tests": [],
+  "entry_head": null,
+  "start_remote_head": null,
+  "exact_next_action": "Complete and independently audit L0 governance corrections before defining an L1 batch."
+}

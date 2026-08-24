@@ -12,9 +12,9 @@
 4. `DIVERGENCE-AI-DECISION-QUEUE-v2.md` — only the genuinely unresolved choices.
 5. `DIVERGENCE-AI-ACCEPTANCE-TESTS-v2-ADDITIONS.md` plus the original acceptance registry for carried-forward controls.
 
-## Implementation target
+## Historical implementation target — non-operational
 
-- Work on the isolated `cowork-complete-preview-20260823` branch unless the user explicitly names another non-production branch.
+- The old target was `cowork-complete-preview-20260823`. Governed continuation now occurs only on `horizontal-layer-completion-v1` from the verified source checkpoint, subject to preflight, batch scope, and permissions.
 - **Never modify `build`.**
 - Do not merge/deploy to production unless separately authorized.
 
@@ -90,7 +90,7 @@ FIX ALL is not complete until:
 
 ```text
 Use DIVERGENCE-AI-FIX-ALL-IMPLEMENTATION-AUTHORITY-v2.md as the controlling implementation instruction.
-Implement every V2-RQ repair on the isolated cowork-complete-preview-20260823 branch.
+Historical instruction only: the former sequential workflow targeted `cowork-complete-preview-20260823`. Do not execute it; use the active horizontal-layer branch and exact declared batch.
 Do not use Cowork's old RQ numbering and do not use the superseded v1 Contract/FIX ALL denominator.
 Do not modify build.
 Do not stop because live verification, CI, provider credentials, or a different decision item is unavailable.

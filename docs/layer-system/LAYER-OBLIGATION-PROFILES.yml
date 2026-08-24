@@ -1,0 +1,203 @@
+{
+  "schema_version": 1,
+  "purpose": "Resolve every permanent requirement to one exact obligation at each web layer without inventing product behavior.",
+  "default_profile": "visible_local",
+  "assignment_rules": [
+    {"profile":"governance_only","prefixes":["SPEC-GV-"]},
+    {"profile":"desktop_only","ids":["SPEC-DS-01"]},
+    {"profile":"evaluation_security","ids":["SPEC-EG-01"]},
+    {"profile":"evaluation_injection","ids":["SPEC-EG-02"]},
+    {"profile":"evaluation_interaction","ids":["SPEC-EG-03","SPEC-EG-04"]},
+    {"profile":"evaluation_migration","ids":["SPEC-EG-05"]},
+    {"profile":"backend_money","ids":["SPEC-CC-03","SPEC-CC-04","SPEC-CC-06","SPEC-CC-07","SPEC-CC-09","SRC-COST-01"]},
+    {"profile":"backend_durable_security","ids":["SRC-SEC-01"]},
+    {"profile":"backend_connected","ids":["SPEC-PN-14"]},
+    {"profile":"blocked_local_task","ids":["SPEC-LS-01"]},
+    {"profile":"blocked_connected_task","ids":["SPEC-FB-01"]},
+    {"profile":"visible_money","ids":["SPEC-CC-01","SPEC-CC-02","SPEC-CC-05","SPEC-CC-08","USR-ALLOW-01","USR-CREDIT-01","USR-PLAN-01"]},
+    {"profile":"visible_connected","prefixes":["SPEC-CN-","SPEC-PN-","SPEC-TR-","SPEC-TS-"],"ids":["SPEC-MC-08","SPEC-DV-08","SPEC-DV-09"],"exclude_ids":["SPEC-PN-14"]},
+    {"profile":"visible_durable","prefixes":["SPEC-CW-","SPEC-LJ-","SPEC-ST-","USR-SC-"],"ids":["USR-ACCOUNT-01","USR-DATA-01","USR-OPT-01","SPEC-SE-09","SPEC-QA-05","SPEC-QA-09","SPEC-QA-10"]}
+  ],
+  "profiles": {
+    "visible_local": {
+      "final_proof_layer":"L3",
+      "layers": {
+        "L1":{"code":"SURFACE","status":"APPLICABLE","obligation":"The approved surface, label, route, or destination exists and is honestly reachable.","evidence_types":["route_or_shell_test","matching_deployment_identity"]},
+        "L2":{"code":"INTERACTION","status":"APPLICABLE","obligation":"The approved control states, focus, keyboard, cancel, and recovery behavior react honestly.","evidence_types":["control_state_test","interaction_accessibility_result","matching_deployment_identity"]},
+        "L3":{"code":"LOCAL_FUNCTION","status":"APPLICABLE","obligation":"The approved basic local or manual function completes without claiming an external effect.","evidence_types":["local_end_to_end_result","no_fake_external_success_check","matching_deployment_identity"]},
+        "L4":{"code":"DURABILITY_REGRESSION","status":"APPLICABLE","obligation":"The proven local behavior remains correct across the durability changes that can affect it.","evidence_types":["scoped_regression_result","matching_deployment_identity"]},
+        "L5":{"code":"MONEY_REGRESSION","status":"APPLICABLE","obligation":"The proven behavior remains correct and cannot bypass money-safety boundaries.","evidence_types":["scoped_regression_result","money_boundary_result","matching_deployment_identity"]},
+        "L6":{"code":"CONNECTION_REGRESSION","status":"APPLICABLE","obligation":"The proven behavior remains correct when real adapters and external failures are present.","evidence_types":["scoped_regression_result","matching_deployment_identity"]},
+        "L7":{"code":"PRODUCTION_REGRESSION","status":"APPLICABLE","obligation":"The approved behavior passes its scoped assertions on the immutable production-candidate deployment.","evidence_types":["production_scoped_result","deployment_identity"]}
+      }
+    },
+    "visible_durable": {
+      "final_proof_layer":"L4",
+      "layers": {
+        "L1":{"code":"SURFACE","status":"APPLICABLE","obligation":"The approved surface, label, route, or destination exists and is honestly reachable.","evidence_types":["route_or_shell_test","matching_deployment_identity"]},
+        "L2":{"code":"INTERACTION","status":"APPLICABLE","obligation":"The approved states, controls, focus, cancel, and recovery behavior react honestly.","evidence_types":["control_state_test","interaction_accessibility_result","matching_deployment_identity"]},
+        "L3":{"code":"LOCAL_FUNCTION","status":"APPLICABLE","obligation":"The approved local or manual behavior works without claiming durable or external success.","evidence_types":["local_end_to_end_result","no_fake_external_success_check","matching_deployment_identity"]},
+        "L4":{"code":"DURABLE_FUNCTION","status":"APPLICABLE","obligation":"Approved data and state save, reload, resume, migrate, and respect identity and privacy boundaries.","evidence_types":["persistence_result","recovery_or_migration_result","matching_deployment_identity"]},
+        "L5":{"code":"MONEY_REGRESSION","status":"APPLICABLE","obligation":"The durable behavior remains correct and cannot bypass money-safety boundaries.","evidence_types":["scoped_regression_result","money_boundary_result","matching_deployment_identity"]},
+        "L6":{"code":"CONNECTION_REGRESSION","status":"APPLICABLE","obligation":"The durable behavior remains correct through adapter failures and retries.","evidence_types":["scoped_regression_result","matching_deployment_identity"]},
+        "L7":{"code":"PRODUCTION_REGRESSION","status":"APPLICABLE","obligation":"The approved durable behavior passes its scoped assertions on the immutable production-candidate deployment.","evidence_types":["production_scoped_result","deployment_identity"]}
+      }
+    },
+    "visible_money": {
+      "final_proof_layer":"L5",
+      "layers": {
+        "L1":{"code":"SURFACE","status":"APPLICABLE","obligation":"The approved money or allowance surface is reachable and does not claim a completed transaction.","evidence_types":["route_or_shell_test","matching_deployment_identity"]},
+        "L2":{"code":"INTERACTION","status":"APPLICABLE","obligation":"The approved estimates, choices, confirmations, cancellations, and blocked states react honestly.","evidence_types":["control_state_test","matching_deployment_identity"]},
+        "L3":{"code":"LOCAL_SIMULATION","status":"APPLICABLE","obligation":"A deterministic local or test-only flow demonstrates the interaction without mutating authoritative money or allowance state.","evidence_types":["local_end_to_end_result","no_fake_external_success_check","matching_deployment_identity"]},
+        "L4":{"code":"NONAUTHORITATIVE_DURABLE_INTERFACE","status":"APPLICABLE","obligation":"Identity and storage interfaces are durable, but authoritative allowance, credit, entitlement, and payment mutations remain disabled until L5.","evidence_types":["persistence_result","authoritative_mutation_disabled_result","matching_deployment_identity"]},
+        "L5":{"code":"AUTHORITATIVE_MONEY","status":"APPLICABLE","obligation":"Authoritative money, entitlement, credit, cap, receipt, and allowance behavior is fail-closed, bounded, idempotent, and sandbox-proven.","evidence_types":["sandbox_money_result","concurrency_idempotency_result","money_gate_checkpoint","matching_deployment_identity"]},
+        "L6":{"code":"CONNECTION_REGRESSION","status":"APPLICABLE","obligation":"Real provider connections cannot bypass the proven money and allowance boundary.","evidence_types":["scoped_regression_result","money_boundary_result","matching_deployment_identity"]},
+        "L7":{"code":"PRODUCTION_REGRESSION","status":"APPLICABLE","obligation":"The approved money or allowance behavior passes scoped production-candidate assertions without live-charge improvisation.","evidence_types":["production_scoped_result","deployment_identity"]}
+      }
+    },
+    "visible_connected": {
+      "final_proof_layer":"L6",
+      "layers": {
+        "L1":{"code":"SURFACE","status":"APPLICABLE","obligation":"The approved provider, connection, or routing surface is reachable and does not claim connection success.","evidence_types":["route_or_shell_test","matching_deployment_identity"]},
+        "L2":{"code":"INTERACTION","status":"APPLICABLE","obligation":"Connection, routing, consent, unavailable, cancel, and retry states react honestly.","evidence_types":["control_state_test","matching_deployment_identity"]},
+        "L3":{"code":"MANUAL_OR_MOCK_FUNCTION","status":"APPLICABLE","obligation":"The approved manual handoff or deterministic adapter boundary works without claiming a live provider result.","evidence_types":["local_end_to_end_result","no_fake_external_success_check","matching_deployment_identity"]},
+        "L4":{"code":"CONNECTION_CONFIG_DURABILITY","status":"APPLICABLE","obligation":"Approved non-secret connection configuration and recovery state persist within identity and privacy boundaries.","evidence_types":["persistence_result","secret_boundary_result","matching_deployment_identity"]},
+        "L5":{"code":"CONNECTION_COST_BOUNDARY","status":"APPLICABLE","obligation":"Any potentially paid connected route is blocked behind the proven money-safety boundary.","evidence_types":["money_boundary_result","scoped_regression_result","matching_deployment_identity"]},
+        "L6":{"code":"LIVE_CONNECTED_FUNCTION","status":"APPLICABLE","obligation":"A real authorized adapter proves the approved provider behavior, including secret, retry, failure, and prompt-injection boundaries.","evidence_types":["provider_adapter_result","prompt_injection_result","matching_deployment_identity"]},
+        "L7":{"code":"PRODUCTION_REGRESSION","status":"APPLICABLE","obligation":"The approved connected behavior passes scoped assertions on the immutable production-candidate deployment.","evidence_types":["production_scoped_result","deployment_identity"]}
+      }
+    },
+    "backend_money": {
+      "final_proof_layer":"L5",
+      "layers": {
+        "L1":{"code":"NOT_AT_THIS_DEPTH","status":"N/A","reason":"authoritative money infrastructure begins at L5"},
+        "L2":{"code":"NOT_AT_THIS_DEPTH","status":"N/A","reason":"authoritative money infrastructure begins at L5"},
+        "L3":{"code":"NOT_AT_THIS_DEPTH","status":"N/A","reason":"authoritative money infrastructure begins at L5"},
+        "L4":{"code":"NOT_AT_THIS_DEPTH","status":"N/A","reason":"authoritative money mutations remain disabled until the L5 money-safety gate"},
+        "L5":{"code":"AUTHORITATIVE_MONEY","status":"APPLICABLE","obligation":"The approved authoritative money invariant is fail-closed, bounded, concurrent-safe, idempotent, and sandbox-proven.","evidence_types":["sandbox_money_result","concurrency_idempotency_result","money_gate_checkpoint"]},
+        "L6":{"code":"CONNECTION_REGRESSION","status":"APPLICABLE","obligation":"Real adapters cannot bypass the proven authoritative money invariant.","evidence_types":["money_boundary_result","scoped_regression_result"]},
+        "L7":{"code":"PRODUCTION_REGRESSION","status":"APPLICABLE","obligation":"The invariant passes scoped assertions on the immutable production-candidate deployment.","evidence_types":["production_scoped_result","deployment_identity"]}
+      }
+    },
+    "backend_durable_security": {
+      "final_proof_layer":"L4",
+      "layers": {
+        "L1":{"code":"NOT_AT_THIS_DEPTH","status":"N/A","reason":"real protected identity and secret infrastructure begins at L4"},
+        "L2":{"code":"NOT_AT_THIS_DEPTH","status":"N/A","reason":"real protected identity and secret infrastructure begins at L4"},
+        "L3":{"code":"NOT_AT_THIS_DEPTH","status":"N/A","reason":"real protected identity and secret infrastructure begins at L4"},
+        "L4":{"code":"DURABLE_SECURITY","status":"APPLICABLE","obligation":"The approved protected identity, authorization, privacy, and secret boundary fails closed and persists correctly.","evidence_types":["identity_privacy_security_result","persistence_result"]},
+        "L5":{"code":"MONEY_REGRESSION","status":"APPLICABLE","obligation":"Money operations preserve the proven identity and authorization boundary.","evidence_types":["scoped_regression_result","money_boundary_result"]},
+        "L6":{"code":"CONNECTION_REGRESSION","status":"APPLICABLE","obligation":"External adapters preserve the proven identity, authorization, privacy, and secret boundary.","evidence_types":["secret_boundary_result","scoped_regression_result"]},
+        "L7":{"code":"PRODUCTION_REGRESSION","status":"APPLICABLE","obligation":"The security boundary passes scoped assertions on the immutable production-candidate deployment.","evidence_types":["production_scoped_result","deployment_identity"]}
+      }
+    },
+    "backend_connected": {
+      "final_proof_layer":"L6",
+      "layers": {
+        "L1":{"code":"NOT_AT_THIS_DEPTH","status":"N/A","reason":"provider adapter execution begins at L6"},
+        "L2":{"code":"NOT_AT_THIS_DEPTH","status":"N/A","reason":"provider adapter execution begins at L6"},
+        "L3":{"code":"NOT_AT_THIS_DEPTH","status":"N/A","reason":"provider adapter execution begins at L6"},
+        "L4":{"code":"NOT_AT_THIS_DEPTH","status":"N/A","reason":"provider adapter execution begins at L6"},
+        "L5":{"code":"NOT_AT_THIS_DEPTH","status":"N/A","reason":"provider adapter execution begins after the L5 money-safety gate"},
+        "L6":{"code":"LIVE_CONNECTED_FUNCTION","status":"APPLICABLE","obligation":"The approved provider adapter executes through real authorized boundaries with retry, failure, secret, cost, and injection proof.","evidence_types":["provider_adapter_result","secret_boundary_result","prompt_injection_result"]},
+        "L7":{"code":"PRODUCTION_REGRESSION","status":"APPLICABLE","obligation":"The adapter passes scoped assertions on the immutable production-candidate deployment.","evidence_types":["production_scoped_result","deployment_identity"]}
+      }
+    },
+    "evaluation_security": {
+      "final_proof_layer":"L4",
+      "layers": {
+        "L1":{"code":"NOT_AT_THIS_DEPTH","status":"N/A","reason":"the security/privacy release gate begins when real identity and stored data begin at L4"},
+        "L2":{"code":"NOT_AT_THIS_DEPTH","status":"N/A","reason":"the security/privacy release gate begins when real identity and stored data begin at L4"},
+        "L3":{"code":"NOT_AT_THIS_DEPTH","status":"N/A","reason":"the security/privacy release gate begins when real identity and stored data begin at L4"},
+        "L4":{"code":"SECURITY_GATE","status":"APPLICABLE","obligation":"The explicit security/privacy gate passes for identity, stored data, credentials, and data flow.","evidence_types":["security_privacy_gate_result"]},
+        "L5":{"code":"SECURITY_REGRESSION","status":"APPLICABLE","obligation":"Money-safety changes pass the explicit security/privacy regression gate.","evidence_types":["security_privacy_gate_result"]},
+        "L6":{"code":"SECURITY_REGRESSION","status":"APPLICABLE","obligation":"Connected-service changes pass the explicit security/privacy regression gate.","evidence_types":["security_privacy_gate_result"]},
+        "L7":{"code":"PRODUCTION_GATE","status":"APPLICABLE","obligation":"The complete web production candidate passes the explicit security/privacy gate.","evidence_types":["security_privacy_gate_result","deployment_identity"]}
+      }
+    },
+    "evaluation_injection": {
+      "final_proof_layer":"L3",
+      "layers": {
+        "L1":{"code":"NOT_AT_THIS_DEPTH","status":"N/A","reason":"prompt-injection evaluation begins when untrusted imported content becomes usable at L3"},
+        "L2":{"code":"NOT_AT_THIS_DEPTH","status":"N/A","reason":"prompt-injection evaluation begins when untrusted imported content becomes usable at L3"},
+        "L3":{"code":"INJECTION_GATE","status":"APPLICABLE","obligation":"Imported files, URLs, pasted AI output, and other untrusted content pass data-versus-instruction tests.","evidence_types":["prompt_injection_result"]},
+        "L4":{"code":"INJECTION_REGRESSION","status":"APPLICABLE","obligation":"Durability and migration changes preserve the prompt-injection boundary.","evidence_types":["prompt_injection_result"]},
+        "L5":{"code":"INJECTION_REGRESSION","status":"APPLICABLE","obligation":"Money flows preserve the prompt-injection boundary.","evidence_types":["prompt_injection_result"]},
+        "L6":{"code":"INJECTION_REGRESSION","status":"APPLICABLE","obligation":"Real connected flows preserve the prompt-injection boundary.","evidence_types":["prompt_injection_result"]},
+        "L7":{"code":"PRODUCTION_GATE","status":"APPLICABLE","obligation":"The complete web production candidate passes the prompt-injection gate.","evidence_types":["prompt_injection_result","deployment_identity"]}
+      }
+    },
+    "evaluation_interaction": {
+      "final_proof_layer":"L2",
+      "layers": {
+        "L1":{"code":"NOT_AT_THIS_DEPTH","status":"N/A","reason":"interaction evaluation begins at L2"},
+        "L2":{"code":"INTERACTION_GATE","status":"APPLICABLE","obligation":"The supported web surface passes the named accessibility or ADHD-friction gate.","evidence_types":["interaction_gate_result"]},
+        "L3":{"code":"INTERACTION_REGRESSION","status":"APPLICABLE","obligation":"Local-function changes preserve the interaction gate.","evidence_types":["interaction_gate_result"]},
+        "L4":{"code":"INTERACTION_REGRESSION","status":"APPLICABLE","obligation":"Durability changes preserve the interaction gate.","evidence_types":["interaction_gate_result"]},
+        "L5":{"code":"INTERACTION_REGRESSION","status":"APPLICABLE","obligation":"Money changes preserve the interaction gate.","evidence_types":["interaction_gate_result"]},
+        "L6":{"code":"INTERACTION_REGRESSION","status":"APPLICABLE","obligation":"Connected changes preserve the interaction gate.","evidence_types":["interaction_gate_result"]},
+        "L7":{"code":"PRODUCTION_GATE","status":"APPLICABLE","obligation":"The complete web production candidate passes the interaction gate.","evidence_types":["interaction_gate_result","deployment_identity"]}
+      }
+    },
+    "evaluation_migration": {
+      "final_proof_layer":"L4",
+      "layers": {
+        "L1":{"code":"NOT_AT_THIS_DEPTH","status":"N/A","reason":"historical-session migration evaluation begins at L4"},
+        "L2":{"code":"NOT_AT_THIS_DEPTH","status":"N/A","reason":"historical-session migration evaluation begins at L4"},
+        "L3":{"code":"NOT_AT_THIS_DEPTH","status":"N/A","reason":"historical-session migration evaluation begins at L4"},
+        "L4":{"code":"MIGRATION_GATE","status":"APPLICABLE","obligation":"Historical stored sessions and schema changes pass migration, rehydration, rollback, and provenance tests.","evidence_types":["migration_result"]},
+        "L5":{"code":"MIGRATION_REGRESSION","status":"APPLICABLE","obligation":"Money-schema changes preserve historical migration and rollback behavior.","evidence_types":["migration_result"]},
+        "L6":{"code":"MIGRATION_REGRESSION","status":"APPLICABLE","obligation":"Connected-service changes preserve historical migration and rollback behavior.","evidence_types":["migration_result"]},
+        "L7":{"code":"PRODUCTION_GATE","status":"APPLICABLE","obligation":"The complete web production candidate passes historical migration and rehydration tests.","evidence_types":["migration_result","deployment_identity"]}
+      }
+    },
+    "blocked_local_task": {
+      "final_proof_layer":"L3",
+      "layers": {
+        "L1":{"code":"NOT_AT_THIS_DEPTH","status":"N/A","reason":"the recovered Learnable Signal Patterns task begins at local-function depth"},
+        "L2":{"code":"NOT_AT_THIS_DEPTH","status":"N/A","reason":"the recovered Learnable Signal Patterns task begins at local-function depth"},
+        "L3":{"code":"PROJECT_TASK","status":"APPLICABLE","obligation":"The documented Learnable Signal Patterns source and acceptance contract are recovered before implementation or completion is claimed.","evidence_types":["project_task_source_and_acceptance"]},
+        "L4":{"code":"PROJECT_TASK_REGRESSION","status":"APPLICABLE","obligation":"The resolved task passes its durability assertions.","evidence_types":["scoped_regression_result"]},
+        "L5":{"code":"PROJECT_TASK_REGRESSION","status":"APPLICABLE","obligation":"The resolved task passes its money-boundary assertions.","evidence_types":["scoped_regression_result"]},
+        "L6":{"code":"PROJECT_TASK_REGRESSION","status":"APPLICABLE","obligation":"The resolved task passes its connected-flow assertions.","evidence_types":["scoped_regression_result"]},
+        "L7":{"code":"PRODUCTION_REGRESSION","status":"APPLICABLE","obligation":"The resolved task passes scoped assertions on the immutable production-candidate deployment.","evidence_types":["production_scoped_result","deployment_identity"]}
+      }
+    },
+    "blocked_connected_task": {
+      "final_proof_layer":"L6",
+      "layers": {
+        "L1":{"code":"NOT_AT_THIS_DEPTH","status":"N/A","reason":"the recovered Fable task is not a web reachability obligation"},
+        "L2":{"code":"NOT_AT_THIS_DEPTH","status":"N/A","reason":"the recovered Fable task is not a generic interaction obligation"},
+        "L3":{"code":"NOT_AT_THIS_DEPTH","status":"N/A","reason":"the recovered Fable task requires its missing documented source before a local obligation can be derived"},
+        "L4":{"code":"NOT_AT_THIS_DEPTH","status":"N/A","reason":"the recovered Fable task requires its missing documented source before a durability obligation can be derived"},
+        "L5":{"code":"NOT_AT_THIS_DEPTH","status":"N/A","reason":"the recovered Fable task requires its missing documented source before a money obligation can be derived"},
+        "L6":{"code":"PROJECT_TASK","status":"APPLICABLE","obligation":"The documented Fable recommendation and translation source and acceptance contract are recovered before implementation or completion is claimed.","evidence_types":["project_task_source_and_acceptance"]},
+        "L7":{"code":"PRODUCTION_REGRESSION","status":"APPLICABLE","obligation":"The resolved task passes scoped assertions on the immutable production-candidate deployment.","evidence_types":["production_scoped_result","deployment_identity"]}
+      }
+    },
+    "governance_only": {
+      "final_proof_layer":"L0",
+      "layers": {
+        "L1":{"code":"PROCESS_ONLY","status":"N/A","reason":"this is an L0 governance control, not an application behavior"},
+        "L2":{"code":"PROCESS_ONLY","status":"N/A","reason":"this is an L0 governance control, not an application behavior"},
+        "L3":{"code":"PROCESS_ONLY","status":"N/A","reason":"this is an L0 governance control, not an application behavior"},
+        "L4":{"code":"PROCESS_ONLY","status":"N/A","reason":"this is an L0 governance control, not an application behavior"},
+        "L5":{"code":"PROCESS_ONLY","status":"N/A","reason":"this is an L0 governance control, not an application behavior"},
+        "L6":{"code":"PROCESS_ONLY","status":"N/A","reason":"this is an L0 governance control, not an application behavior"},
+        "L7":{"code":"PROCESS_ONLY","status":"N/A","reason":"this is an L0 governance control, not an application behavior"}
+      }
+    },
+    "desktop_only": {
+      "final_proof_layer":"DESKTOP_TRACK",
+      "layers": {
+        "L1":{"code":"SEPARATE_PLATFORM","status":"N/A","reason":"desktop/Windows is retained in the denominator and governed by the separate desktop track"},
+        "L2":{"code":"SEPARATE_PLATFORM","status":"N/A","reason":"desktop/Windows is retained in the denominator and governed by the separate desktop track"},
+        "L3":{"code":"SEPARATE_PLATFORM","status":"N/A","reason":"desktop/Windows is retained in the denominator and governed by the separate desktop track"},
+        "L4":{"code":"SEPARATE_PLATFORM","status":"N/A","reason":"desktop/Windows is retained in the denominator and governed by the separate desktop track"},
+        "L5":{"code":"SEPARATE_PLATFORM","status":"N/A","reason":"desktop/Windows is retained in the denominator and governed by the separate desktop track"},
+        "L6":{"code":"SEPARATE_PLATFORM","status":"N/A","reason":"desktop/Windows is retained in the denominator and governed by the separate desktop track"},
+        "L7":{"code":"SEPARATE_PLATFORM","status":"N/A","reason":"desktop/Windows is retained in the denominator and governed by the separate desktop track"}
+      }
+    }
+  }
+}

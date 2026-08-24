@@ -2,7 +2,7 @@
 
 **Status:** Active process authority. This document does not by itself authorize application edits, deployment, purchases, provider connections, or production changes.  
 **Created:** August 23, 2026  
-**Corrected:** August 24, 2026, after independent Sonnet 5, Opus 4.8, Opus 5, and Haiku 4.5 audits were reconciled against the governing packet.  
+**Corrected:** August 24, 2026, after the earlier multi-model findings and the fresh Sonnet 4.6 / GPT-5.6 Sol post-correction audits were reconciled against the governing packet.  
 **Verified source checkpoint:** `cowork-complete-preview-20260823@16beca26c305bd9bdae088eb8e977ca1e9730747`  
 **Governed continuation branch:** `horizontal-layer-completion-v1`  
 **Protected unless separately authorized:** `build` and `frozen-implementation-v1`
@@ -19,7 +19,7 @@ The site will not be completed one feature, panel, payment system, or screen at 
 | Layer 4 — Durable | Identity, saved data, recovery, synchronization, and resumable work function across the whole site. |
 | Layer 5 — Money-Safe | Every allowance, entitlement, payment, cap, receipt, and potentially paid path is controlled by an authoritative fail-closed system. |
 | Layer 6 — Connected | Real provider registries, connections, adapters, translations, AI routes, Multi-AI, and large jobs function through the already-safe foundation. |
-| Layer 7 — Production-Verified | The entire supported site passes matching-deployment, security, recovery, accessibility, ADHD-friction, migration, and failure testing. |
+| Layer 7 — Web Production-Verified | The supported web product passes matching-deployment, security, recovery, accessibility, ADHD-friction, migration, and failure testing. Desktop remains a separately governed track. |
 
 If usage ends after Layer 2, the correct summary is: **“The entire site is Reachable and Interactive; deeper functionality has not yet been claimed.”** It is not: “the top panel works, payments are half-built, and nobody knows what else is usable.”
 
@@ -78,7 +78,7 @@ Backend-only requirements do not need invented screens. They must still receive 
 A layer is not complete because its easiest screens passed. It earns its layer label only after **every one of the 218 IDs** is marked for that layer as either:
 
 - `PROVEN`; or
-- `N/A AT THIS DEPTH — <exact allowlist clause>` where that ID and clause are pre-enumerated for that layer in `LAYER-DEFINITIONS.yml`.
+- `N/A AT THIS DEPTH — <exact matrix reason>` where that exact ID/layer reason is resolved in `LAYER-OBLIGATION-MATRIX.csv` from the versioned `LAYER-OBLIGATION-PROFILES.yml`.
 
 `PASS` and `FAIL` are process-gate results only; they are never coverage-ledger statuses. Any applicable `IMPLEMENTED — NOT FULLY PROVEN`, `PARTIAL`, `NOT STARTED`, `BLOCKED — <reason>`, `CONFLICT — UNRESOLVED`, or `UNKNOWN — INSPECTION REQUIRED` keeps the layer incomplete. A decision, project task, permission, credential, or external blocker must be named exactly; it cannot be converted to `N/A`. Unrelated implementation may continue only when it cannot depend on or silently decide the blocker, and the last stable product-depth claim remains the prior completed layer.
 
@@ -112,7 +112,7 @@ Repair IDs are coverage obligations, not the work sequence. Do not perform 39 se
 
 ### 4.7 Stable-checkpoint rule
 
-The last completed layer must always remain identifiable and usable. Partial next-layer work must not erase the last completed checkpoint or become the stable preview. Record the exact commit and matching preview for every layer gate.
+The last completed layer must always remain identifiable and usable. Every layer gate uses an immutable deployment bound to its exact commit. A stable alias may move only after the gate passes, an independent audit record is valid, the user accepts it, and `promote_stable_preview` is explicitly granted. Partial next-layer work must never replace the stable alias. Rollback moves the alias to the prior immutable deployment; it never rewrites evidence.
 
 ### 4.8 Testing-efficiency rule
 
@@ -141,9 +141,11 @@ After the first usage-limit warning or when remaining usage is clearly near exha
 4. Commit only coherent work.
 5. Update the layer ledger and handoff before doing anything else.
 
+There is no invented fixed token or percentage reserve. If coherent work cannot be committed, run `stopping-checkpoint.mjs`: it must mark the state unsafe, capture a hash-bound recovery patch and untracked-file snapshot, and refuse to call the handoff safe until the work is restored, tested, committed, and remote-head verified.
+
 ### 4.12 Evidence rule
 
-Every `PROVEN` cell has a matching record in `LAYER-EVIDENCE-INDEX.jsonl` containing the commit, matching preview/deployment identity where live behavior is claimed, layer-scoped test IDs/results, workflow results where applicable, actual result, and reproducible artifact locations. Source inspection, unit tests, screenshots, and deployment status are useful evidence but do not individually establish complete end-to-end behavior.
+Every `PROVEN` cell has a matching record in `LAYER-EVIDENCE-INDEX.jsonl` containing its exact resolved obligation code and assertion, commit, matching preview/deployment identity where live behavior is claimed, layer-scoped test/workflow results, hash-bound artifacts, actual result, and a separate accepted independent-audit record. The implementation session cannot certify its own work. Source inspection, unit tests, screenshots, and deployment status are useful evidence but do not individually establish complete end-to-end behavior.
 
 ### 4.13 Regression, demotion, and failed-gate rule
 
@@ -162,7 +164,7 @@ Use these product-depth labels exactly:
 | `L4 DURABLE` | Approved identity, persistence, recovery, sync, and resumability are proven. |
 | `L5 MONEY-SAFE` | Real monetary and allowance effects are authoritative, bounded, idempotent, and fail-closed. |
 | `L6 CONNECTED` | Real provider/connection/execution behavior is proven through the safe foundations. |
-| `L7 PRODUCTION-VERIFIED` | Complete supported behavior is proven end to end on the matching deployment. |
+| `L7 WEB PRODUCTION-VERIFIED` | Complete supported web behavior is proven end to end on the matching deployment; desktop is not claimed. |
 
 Never replace these with the vague words `done`, `finished`, or `working` without naming the depth.
 
@@ -178,7 +180,7 @@ Before implementation, maintain one canonical RFC 4180 ledger with one row for e
 | `decision_ids` | Exact `V2-DQ-*` IDs or blank. |
 | `workflow_ids` | Every related workflow ID. |
 | `test_ids` | Permanent-control and workflow acceptance handles. |
-| `L1` through `L7` | One exact allowed ledger status. |
+| `L1` through `L7` | One exact allowed ledger status, checked against that ID's resolved obligation matrix row. |
 | `last_verified_commit` | Full commit for the most recent current proof, or blank. |
 
 Implementation paths, test results, deployment identity, artifacts, actual result, and auditor result belong in `LAYER-EVIDENCE-INDEX.jsonl`, not multiline CSV cells. `CURRENT-LAYER-STATUS.md` and `HANDOFF.md` hold the one bounded next action.
@@ -190,7 +192,7 @@ Required reconciliation after every layer:
 - every `V2-RQ-*` versus at least one ledger row;
 - every `PROVEN` cell versus complete layer-appropriate evidence;
 - every registered workflow and all 266 acceptance handles versus at least one ledger/evidence mapping;
-- every `N/A` versus the exact layer allowlist entry and clause;
+- every `N/A` versus the exact resolved matrix entry and reason;
 - every unresolved item versus an exact blocker or next action; and
 - zero unexplained differences.
 
@@ -205,9 +207,11 @@ Create the control system that prevents work from fragmenting again. This is not
 1. Snapshot repository, active branch, commit, preview URL, deployment identity, environment, and current test counts.
 2. Load the v2 authority, Control & Behavior Map, Repair Queue, Decision Queue, acceptance tests, workflow ledger, traceability matrix, and later explicit user corrections.
 3. Reconcile the selected source checkpoint against `frozen-implementation-v1`, `build`, and every plausible work-bearing branch; re-derive inherited implementation classifications wherever the chosen source differs.
-4. Populate the 218-row layer ledger and the exact per-layer applicability/`N/A` allowlists.
+4. Generate and validate the 218-row per-layer obligation matrix, then populate the ledger against its exact applicability and `N/A` reasons.
 5. Map every current file/route/control/API/store/test to an ID or explicit authority-supported exclusion.
 6. Record the last verified checkpoint separately from any in-progress work.
+7. Pass the machine L0 gate: manifest hashes, derived registries and obligations, protected paths, secret globs, audit gate, coverage lock, permissions, batch scope, and handoff/status consistency.
+8. Establish an immutable protected governance ref. Without it, read-only audit and governance correction may continue, but application or external-effect actions remain blocked.
 7. Mark all current completion claims `UNKNOWN — INSPECTION REQUIRED` unless matching evidence already supports a stronger closed status.
 8. Install the governance test registry, layer-scoped evidence format, and reporting definitions before Layer 1 changes begin. Application-test or application-behavior changes require the later app-change permission and are not L0 work.
 
@@ -218,7 +222,7 @@ Create the control system that prevents work from fragmenting again. This is not
 - All seven open decisions are visible and scoped.
 - Exact branch/commit/preview are recorded.
 - The selected implementation source has been reconciled against the audited frozen baseline and every surviving branch classification.
-- One closed ledger vocabulary and every exact `N/A` allowlist validate mechanically.
+- One closed ledger vocabulary and every exact resolved-matrix `N/A` validate mechanically.
 - No code or deployment was changed during preflight.
 
 ### Repair coverage
@@ -350,20 +354,21 @@ Approved data survives reload, interruption, sign-out boundaries, and cross-devi
 
 ### This layer does
 
+- derive and freeze the authoritative data ownership, local/remote source-of-truth, migration, deletion, export, rollback, synchronization, concurrent-edit, and recovery contracts from existing authority before writing the affected system; if authority is silent, record a scoped blocker instead of inventing policy;
 - implement real web signup, login, session, signout, role, and operator authorization boundaries;
 - disclose and enforce actual data location;
 - migrate/preserve appropriate existing browser-local data without destroying it on signout;
 - persist conversations, branches, drafts, context metadata/content where approved, sessions, Saved Tools, projects, settings, defaults, variables, optimization state, and recovery state;
 - implement automatic recovery, New Session Undo, Finish Session choices, Trash/restore, and destructive recovery rules;
 - provide two-device continuity for approved user data;
-- implement server-enforced managed-free allowance identity/reset storage using deterministic translation adapters;
+- implement durable account identity plus the storage and service interface required by the later managed-free allowance, while keeping authoritative allowance/credit/entitlement/payment mutations disabled and non-authoritative until Layer 5;
 - provide complete dataset export and round-trip restore;
 - persist large-job checkpoints/evidence references and Developer async-testing drafts; and
 - make real dependency health and truthful current data available to the shell/right rail where those dependencies now exist.
 
 ### This layer does not do
 
-It does not enable ungoverned paid execution or claim real provider connectivity. Allowance behavior can be proven through deterministic managed-translation adapters before real models are enabled.
+It does not enable authoritative allowance, credit, entitlement, payment, or ungoverned paid execution, and it does not claim real provider connectivity. Layer 4 proves the durable interface and explicitly proves that those mutations remain disabled; Layer 5 proves their authoritative behavior.
 
 ### Exit gate
 
@@ -373,6 +378,8 @@ It does not enable ungoverned paid execution or claim real provider connectivity
 4. Operator-only Developer entry is authenticated and ordinary users cannot reach it, subject to the approved location decision.
 5. Export/restore reconstructs the approved dataset.
 6. Authentication, authorization, privacy, stored-data, migration, and recovery checks for the newly real identity/data boundaries pass before Layer 4 is promoted.
+7. The data and cross-device conflict contracts are cited to existing authority; any unresolved behavior remains a scoped blocker.
+8. Tests prove authoritative allowance, credit, entitlement, and payment mutations are still disabled.
 
 ### User’s simple check
 
@@ -386,7 +393,7 @@ Primary durability work: `V2-RQ-001`, `003`, `010`, `011`, `014`, `017`, `019`, 
 
 ### Honest outcome: `L5 MONEY-SAFE`
 
-Every place in the site that can display, authorize, reserve, spend, reconcile, refund, top up, or report money/credits/allowance uses one authoritative fail-closed system. This layer is completed with sandbox/deterministic execution before real AI provider execution is enabled.
+Every place in the site that can display, authorize, reserve, spend, reconcile, release, top up, or report money/credits/allowance uses one authoritative fail-closed system. This layer is completed with sandbox/deterministic execution before real AI provider execution is enabled. This wording does not invent a refund feature not present in product authority.
 
 ### This layer does
 
@@ -449,6 +456,7 @@ The real provider/connection layer now replaces deterministic execution adapters
 5. Retries/cancellation do not duplicate calls or lose the draft.
 6. Large-job interruption/resume avoids redoing completed bounded units.
 7. Prompt-injection/data-vs-instruction checks pass for URL ingestion, imported responses, provider output, and Multi-AI synthesis before Layer 6 is promoted.
+8. A missing credential, unavailable provider, or ungranted external-effect permission is recorded as `BLOCKED`; it is never accepted as proof and prevents Layer 6 promotion for the affected applicable rows.
 
 ### User’s simple check
 
@@ -458,11 +466,11 @@ Complete one Universal/manual journey and one authorized connected journey. Conf
 
 Primary: `V2-RQ-004`–`009`, `027`–`029`, `031`, `034`, and `038`. Provider/data portions of `V2-RQ-001`, `002`, `005`, `007`, `020`–`022`, and `030` are re-proven.
 
-## 14. Layer 7 — Whole-Site Production Proof and Hardening
+## 14. Layer 7 — Whole-Site Web Production Proof and Hardening
 
-### Honest outcome: `L7 PRODUCTION-VERIFIED`
+### Honest outcome: `L7 WEB PRODUCTION-VERIFIED`
 
-Every supported requirement is tested end to end on a deployment proven to match the recorded commit. The product is evaluated as complete workflows, not merely as controls or green unit tests.
+Every supported web requirement is tested end to end on a deployment proven to match the recorded commit. The web product is evaluated as complete workflows, not merely as controls or green unit tests. This outcome does not claim the separate Desktop/Windows track is complete.
 
 ### This layer does
 
@@ -479,7 +487,7 @@ Every supported requirement is tested end to end on a deployment proven to match
 
 ### Exit gate
 
-1. Every supported ID is `PROVEN` with matching evidence or is `N/A AT THIS DEPTH — <exact allowlist clause>`; any unresolved or blocked row keeps Layer 7 incomplete.
+1. Every supported web ID is `PROVEN` with matching evidence or is `N/A AT THIS DEPTH — <exact matrix reason>`; any unresolved or blocked web row keeps Layer 7 incomplete.
 2. Every repair group is closed or names its exact remaining decision/external blocker.
 3. No `WORKING` claim relies only on source, unit tests, screenshots, or deployment success.
 4. The stable preview/deployment matches the recorded commit.
@@ -529,7 +537,7 @@ This table prevents a repair from being “closed” at the first shallow layer 
 | `V2-RQ-008` conversation/branching | L2 interactions | L3 behavior + L4 recovery | L7 |
 | `V2-RQ-009` Multi-AI | L2 full staged states | L6 real providers | L7 |
 | `V2-RQ-010` account identity | L1 account destinations | L4 real identity/sync | L7 |
-| `V2-RQ-011` free allowance | L1/L2 displays/states | L4 ledger + L5 enforcement | L7 |
+| `V2-RQ-011` free allowance | L1/L2 displays/states | L4 non-authoritative identity/storage interface + L5 authoritative ledger/enforcement | L7 |
 | `V2-RQ-012` plans/credits | L1 destinations | L5 real sandboxed payment/entitlement | L7 |
 | `V2-RQ-013` routes | L1 canonical navigation | L1 | L7 regression |
 | `V2-RQ-014` Sessions screen | L1 destination | L2 controls + L4 durable data | L7 |
@@ -564,15 +572,16 @@ This table prevents a repair from being “closed” at the first shallow layer 
 Each layer follows the same bounded operating cycle:
 
 1. **Resume:** Read the governing instructions, current layer status, exact checkpoint, and active blockers before inspecting code.
-2. **Snapshot:** Record branch, commit, preview, test counts, dirty files, and last completed layer.
-3. **Select coverage:** Load every ledger row applicable to the active layer across all site domains.
-4. **Group shared work:** Batch by shared router, state machine, service, store, or adapter—not by repair-row number or screen.
-5. **Implement one coherent batch:** Preserve all prior layer contracts and keep later external effects disabled.
-6. **Focused proof:** Run affected tests and inspect the actual rendered/behavioral result where appropriate.
-7. **Checkpoint:** Commit coherent work and update the ledger; do not label the layer complete.
-8. **Repeat:** Continue the next site-wide batch until every applicable ledger row is resolved.
-9. **Whole-layer gate:** Run full tests/build, matching preview, whole-layer acceptance suite, coverage reconciliation, and one independent read-only audit.
-10. **Promote the checkpoint:** Record the exact layer-complete commit/preview and only then begin the next layer.
+2. **Preflight:** Run `node scripts/governance/preflight.mjs --action=modify_application_behavior`; a `FAIL` is a stop condition, not advice.
+3. **Snapshot:** Record branch, exact local and remote lease commits, preview, test counts, dirty files, and last completed layer.
+4. **Select coverage:** Resolve the exact permanent IDs, obligation codes/assertions, allowed paths, and tests in `BATCH-SCOPE.json`.
+5. **Group shared work:** Batch by shared router, state machine, service, store, or adapter—not by repair-row number or screen.
+6. **Implement one coherent batch:** Preserve all prior layer contracts and keep later external effects disabled.
+7. **Focused proof:** Run affected tests and inspect the actual rendered/behavioral result where appropriate.
+8. **Checkpoint:** Commit coherent work and update the ledger; do not label the layer complete.
+9. **Repeat:** Continue the next site-wide batch until every applicable ledger row is resolved.
+10. **Whole-layer gate:** Run full tests/build, immutable matching preview, whole-layer acceptance suite, coverage reconciliation, and one independent read-only audit whose session differs from implementation.
+11. **Promote the checkpoint:** After the audit passes, the user accepts it, and the promotion permission is granted, record the exact layer-complete commit/preview and only then begin the next layer.
 
 If step 9 fails, do not promote. Record the failing IDs/tests/evidence, preserve the last stable layer checkpoint, define one bounded corrective batch, and rerun the gate only after the recorded failures are addressed.
 

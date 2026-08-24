@@ -2,7 +2,7 @@
 
 **Supersedes:** the old 26-item repair queue as a complete repair universe.
 
-**Current safe implementation target:** `cowork-complete-preview-20260823` for isolated repair/testing.  
+**Verified historical source checkpoint:** `cowork-complete-preview-20260823@16beca26c305bd9bdae088eb8e977ca1e9730747`. **Active governed work branch:** `horizontal-layer-completion-v1`; this register does not authorize edits by itself.  
 **Do not modify:** `build`.  
 **Do not modify/merge into:** `frozen-implementation-v1` unless separately authorized.
 
@@ -60,7 +60,7 @@
 - Old carried-forward repair groups: **26**.
 - New decision-recovery repair groups: **13**.
 - Total v2 repair groups: **39**.
-- Deterministic new/expanded defects mapped: **61 / 60**.
+- Deterministic new/expanded defects mapped: **60 / 60**.
 - `SPEC-DV-09` remains UNDECIDED and is deliberately not implementation-forced.
 - `SPEC-DS-01` is platform-scoped rather than used to block the web preview.
 

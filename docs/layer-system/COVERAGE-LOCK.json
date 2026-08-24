@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "gate": "L0 COVERAGE LOCKED",
+  "governance_checkpoint_under_audit": "7c2a123b7622e00638285d67d0ccb6121dd805df",
+  "status": "BLOCKED — CLEAN POST-HYBRID INDEPENDENT PASS PENDING",
+  "required_counts": {
+    "permanent_ids": 218,
+    "repair_ids": 39,
+    "decision_ids": 7,
+    "workflow_ids": 48,
+    "acceptance_test_ids": 266
+  },
+  "required_artifacts": [
+    "docs/layer-system/LAYER-OBLIGATION-PROFILES.yml",
+    "docs/layer-system/LAYER-OBLIGATION-MATRIX.csv",
+    "docs/layer-system/LAYER-COVERAGE-LEDGER.csv",
+    "docs/layer-system/LAYER-EVIDENCE-INDEX.jsonl",
+    "docs/layer-system/AUDIT-GATE.json"
+  ],
+  "independent_audit_required": true,
+  "independent_audit_verdict": "FAIL",
+  "application_permission_required": "modify_application_behavior",
+  "application_permission_currently_granted": false,
+  "protected_governance_ref_required_before_app_edits": true,
+  "protected_governance_ref_currently_available": false,
+  "exact_next_action": "Audit the anchored post-hybrid governance packet in a fresh read-only session, record and accept an independent PASS, establish a protected governance ref, then obtain exact app-edit permission before defining L1 work."
+}

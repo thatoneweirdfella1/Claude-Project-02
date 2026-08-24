@@ -3,8 +3,8 @@
 **Status:** Planning strategy only. It supersedes v1 as the recommended handoff strategy; v1 remains unchanged as audit history.  
 **Created:** August 23, 2026  
 **Repository named by the existing authority:** `thatoneweirdfella1/Claude-Project-02`  
-**Source candidate named by the existing authority:** `cowork-complete-preview-20260823`  
-**Proposed isolated continuation branch:** `horizontal-layer-completion-v1`  
+**Verified source checkpoint:** `cowork-complete-preview-20260823@16beca26c305bd9bdae088eb8e977ca1e9730747`  
+**Governed isolated continuation branch:** `horizontal-layer-completion-v1`  
 **Protected branch names already identified:** `build`, `frozen-implementation-v1`  
 
 This document does **not** authorize branch creation, repository writes, commits, pushes, ruleset changes, pull requests, merges, deployments, paid services, secret access, or app-code changes. Each capability requires a separate, dated user grant recorded in `PERMISSIONS.yml` before it is used.
@@ -13,7 +13,7 @@ This document does **not** authorize branch creation, repository writes, commits
 
 ## Read this first — the answer in one screen
 
-Use the existing repository, not a second repository. Continue on one isolated branch created from a source commit that has first been verified against every plausible work-bearing branch. Do not assume the named source candidate is complete merely because an earlier plan named it.
+Use the existing repository, not a second repository. Continue on the installed isolated branch from the verified source checkpoint above. Re-verify repository/remote/branch/commit and the remote lease mechanically; do not replace the recorded checkpoint from memory.
 
 The repository must carry the complete continuation state. A context-free AI receives one startup instruction, reads the repository routers, runs a read-only preflight, and may edit only when the preflight and its effective permissions allow the exact action.
 
@@ -92,9 +92,9 @@ It prevents:
 
 - The intended existing repository name is `thatoneweirdfella1/Claude-Project-02`.
 - `build` and `frozen-implementation-v1` are protected unless the user separately authorizes a change.
-- `cowork-complete-preview-20260823` is a **source candidate**, not yet a proven source checkpoint.
-- `horizontal-layer-completion-v1` is the proposed continuation branch name.
-- The horizontal strategy has seven layers, from `L1 REACHABLE` through `L7 PRODUCTION-VERIFIED`.
+- `cowork-complete-preview-20260823@16beca26c305bd9bdae088eb8e977ca1e9730747` is the verified source checkpoint recorded by the installed governance.
+- `horizontal-layer-completion-v1` is the governed continuation branch.
+- The web strategy has seven layers, from `L1 REACHABLE` through `L7 WEB PRODUCTION-VERIFIED`; Desktop/Windows remains a separate retained track.
 
 ### 4.2 Counts are expected claims until derived
 
@@ -147,7 +147,7 @@ Coverage-ledger status cells may contain only:
 
 `PASS` and `FAIL` are reserved for process gates such as preflight, CI, focused tests, and independent audit outcomes. They are never ledger-cell synonyms for `PROVEN` or `NOT PROVEN`.
 
-`UNKNOWN` must be inspected. If it cannot be resolved, record the exact missing evidence and keep the layer incomplete. `N/A AT THIS DEPTH` must cite a pre-enumerated allowlist entry and clause from `LAYER-DEFINITIONS.yml`; it remains in denominator reporting and cannot be used ad hoc.
+`UNKNOWN` must be inspected. If it cannot be resolved, record the exact missing evidence and keep the layer incomplete. `N/A AT THIS DEPTH` must equal the reason generated for that exact ID/layer in `LAYER-OBLIGATION-MATRIX.csv`; it remains in denominator reporting and cannot be used ad hoc.
 
 ## 5. Repository, source, branch, and dirty-work discovery
 
@@ -168,7 +168,7 @@ Before selecting a source checkpoint, compare the named candidate with:
 For each candidate record:
 
 - full ref and full SHA;
-- merge base with the named source candidate;
+- merge base with the verified source checkpoint;
 - ahead/behind counts;
 - commits and material paths absent from the candidate;
 - available test/deployment evidence; and
@@ -252,13 +252,22 @@ Install this structure on the authorized continuation branch before app behavior
 │   │   ├── BASELINE-AUDIT-PROCEDURE.md
 │   │   ├── CURRENT-LAYER-STATUS.md
 │   │   ├── LAYER-DEFINITIONS.yml
+│   │   ├── LAYER-OBLIGATION-PROFILES.yml
+│   │   ├── LAYER-OBLIGATION-MATRIX.csv
 │   │   ├── LAYER-COVERAGE-LEDGER.csv
 │   │   ├── LAYER-EVIDENCE-INDEX.jsonl
 │   │   ├── EVIDENCE-RECORD-SCHEMA.json
+│   │   ├── LAYER-AUDIT-RECORD-SCHEMA.json
+│   │   ├── AUDIT-GATE.json
+│   │   ├── COVERAGE-LOCK.json
+│   │   ├── BATCH-SCOPE.json
+│   │   ├── PLATFORM-TRACKS.yml
 │   │   ├── LAYER-DECISION-BLOCKERS.md
+│   │   ├── GOVERNANCE-BASELINE.json
 │   │   ├── PROTECTED-PATHS.yml
 │   │   ├── PROTECTED-PATH-EXCEPTIONS.yml
 │   │   ├── PERMISSIONS.yml
+│   │   ├── UNSAFE-PATCH-RECORD-SCHEMA.json
 │   │   ├── TEMPLATE-MARKER-ALLOWLIST.txt
 │   │   ├── PATH-RECONCILIATION.md
 │   │   ├── UNRESOLVED-FINDINGS.md
@@ -276,8 +285,11 @@ Install this structure on the authorized continuation branch before app behavior
     └── governance/
         ├── preflight.mjs
         ├── derive-registries.mjs
+        ├── derive-obligations.mjs
         ├── verify-ledger.mjs
+        ├── verify-evidence.mjs
         ├── verify-protected-paths.mjs
+        └── stopping-checkpoint.mjs
         ├── verify-evidence.mjs
         └── stopping-checkpoint.mjs
 ```
@@ -480,18 +492,17 @@ If server-side protection is unavailable, record `SERVER PROTECTION UNAVAILABLE 
 | L4 | `DURABLE` | Data saves, reloads, resumes, migrates, and recovers across the app. |
 | L5 | `MONEY-SAFE` | Accounts, allowances, costs, billing, and ledgers are safe under sandbox/concurrency/idempotency proof. |
 | L6 | `CONNECTED` | Approved providers and external services operate through real adapters with honest credential blockers. |
-| L7 | `PRODUCTION-VERIFIED` | Matching deployed code passes full, security, accessibility, recovery, migration, and live-flow gates. |
+| L7 | `WEB PRODUCTION-VERIFIED` | Matching deployed web code passes full, security, accessibility, recovery, migration, and live-flow gates; desktop is not claimed. |
 
-For each layer, the YAML must enumerate:
+For each layer, `LAYER-DEFINITIONS.yml` and the generated obligation matrix must enumerate:
 
 - entry and exit gates;
-- applicable ID rules;
-- the exact allowed `N/A AT THIS DEPTH` IDs/clauses;
-- required evidence types per applicable row;
+- the exact per-ID obligation code, applicability, assertion, and evidence types;
+- the exact `N/A AT THIS DEPTH` reason where nonapplicable;
 - allowable blocker classes; and
 - the user’s simple whole-site verification walkthrough.
 
-A completed layer cannot contain `UNKNOWN`, `IMPLEMENTED — NOT FULLY PROVEN`, `PARTIAL`, `NOT STARTED`, `CONFLICT`, `BLOCKED`, or any other nonterminal status among applicable IDs. Only `PROVEN` or an exact allowlisted `N/A AT THIS DEPTH — <clause>` closes a row. An allowed `N/A` remains visible in totals.
+A completed layer cannot contain `UNKNOWN`, `IMPLEMENTED — NOT FULLY PROVEN`, `PARTIAL`, `NOT STARTED`, `CONFLICT`, `BLOCKED`, or any other nonterminal status among applicable IDs. Only `PROVEN` or the exact resolved-matrix `N/A AT THIS DEPTH — <reason>` closes a row. An allowed `N/A` remains visible in totals.
 
 The old standalone `FIX ALL` trigger is superseded. Under this governance, `FIX ALL` means only: execute the next declared coherent batch of the current horizontal layer after preflight and permission gates pass. It never means process all 39 repair groups sequentially or bypass the layer ledger.
 
@@ -517,21 +528,28 @@ Every registered repair ID maps to at least one permanent ID, and every repair r
 {
   "permanent_id": "__REQUIRED_VALUE__",
   "layer": "L1",
+  "obligation_code": "__REQUIRED_VALUE__",
+  "obligation_assertions": ["__REQUIRED_VALUE__"],
   "authority_citations": [],
   "implementation_paths": [],
+  "evidence_types": [],
   "test_results": [],
+  "workflow_results": [],
   "manual_or_live_results": [],
-  "artifact_paths": [],
-  "artifact_sha256": [],
+  "artifact_paths": ["__REQUIRED_VALUE__"],
+  "artifact_sha256": ["__REQUIRED_VALUE__"],
   "implementation_commit": "__REQUIRED_VALUE__",
   "evidence_commit": "__REQUIRED_VALUE__",
+  "implementation_session_id": "__REQUIRED_VALUE__",
+  "audit_record_path": "__REQUIRED_VALUE__",
+  "audit_record_sha256": "__REQUIRED_VALUE__",
   "deployment_identity": null,
   "actual_result": "__REQUIRED_VALUE__",
   "auditor_result": "__REQUIRED_VALUE__"
 }
 ```
 
-Active files may not retain the template markers. `PROVEN` requires a complete, schema-valid, layer-appropriate evidence record whose commits are ancestors of the current head and whose relevant implementation/test paths have not changed since verification.
+The block above is documentation and is allowlisted; active records may not retain template markers. `PROVEN` requires a complete, schema-valid, obligation-specific evidence record, hash-bound artifacts, passing scoped results, and a separate accepted independent-audit record whose session reference differs from implementation.
 
 If relevant paths change after `evidence_commit`, the record becomes stale. The cell falls to `IMPLEMENTED — NOT FULLY PROVEN` when implementation still appears conforming, or `UNKNOWN — INSPECTION REQUIRED` when conformance can no longer be established.
 
@@ -542,7 +560,7 @@ If relevant paths change after `evidence_commit`, the record becomes stale. The 
 - **L3:** real local/manual end-to-end behavior with no fake provider success.
 - **L4:** persistence, reload, resume, migration, and recovery proof.
 - **L5:** sandbox payment/cost evidence, concurrency, atomicity, replay, and idempotency.
-- **L6:** real adapter/provider evidence or an exact credential-dependent blocker; mocks cannot prove connected behavior.
+- **L6:** real adapter/provider evidence is required; an exact credential-dependent blocker is recorded honestly but keeps the affected row and layer incomplete. Mocks cannot prove connected behavior.
 - **L7:** matching deployment identity plus full regression, security, accessibility, recovery, migration, and representative live flows.
 
 Scripts may validate file presence, schema, hashes, ancestry, mappings, and declared results. They cannot establish that a screenshot, manual observation, provider response, or behavioral claim is truthful and adequate. That judgment belongs to tests, live/manual checks, and an independent auditor.
@@ -644,7 +662,7 @@ Tracked status files use `verified_through_commit` to identify the evidence targ
 - governance files against the protected governance baseline;
 - exact derived registry sets and manifest metadata;
 - closed status vocabulary;
-- `N/A` allowlist membership and clause citations;
+- exact resolved-matrix `N/A` membership and reason;
 - RFC 4180 CSV validity;
 - evidence JSONL schema, uniqueness, mappings, hashes, ancestry, and staleness;
 - protected paths against the correct source/governance baseline;
@@ -662,14 +680,14 @@ Preflight reads registry counts and sets; it does not hardcode 218, 39, 7, 48, o
 
 The required CI check:
 
-1. obtains trusted validator code from the protected governance ref/base;
+1. obtains trusted validator code from the protected governance ref/base before app changes are permitted;
 2. validates the proposed branch tree rather than trusting modified validators within it;
 3. runs preflight, registry, ledger, protected-path, evidence, and batch-scope checks;
 4. runs the focused tests declared for the batch;
 5. rejects unsupported status promotion and weakened authority tests; and
 6. publishes a process `PASS` or `FAIL` without rewriting evidence.
 
-Repository rules should prevent force-push/deletion of protected branches and governance refs and require the trusted status check where supported. An independent reviewer writes `AUDIT-RESULTS/<date>.md`; no planted defects or deliberate sabotage are used to test the auditor.
+Until an immutable protected governance ref exists, CI may validate governance corrections structurally but cannot authorize application work; preflight blocks those actions. Once the ref exists, repository rules should prevent force-push/deletion of protected branches and governance refs and require the trusted status check where supported. An independent reviewer writes a governed JSON audit record plus its report; no planted defects or deliberate sabotage are used to test the auditor.
 
 ## 18. Deployment identity
 
@@ -802,7 +820,7 @@ Governance installation is complete only when all of these are true:
 - exact ID registries are mechanically derived and mutually reconciled;
 - expected count mismatches are explicit conflicts, not hidden;
 - one closed product-status vocabulary is enforced;
-- all `N/A` values cite layer allowlist clauses;
+- all `N/A` values equal the exact resolved-matrix reasons;
 - permissions default to deny and reflect dated user grants;
 - authority/user-correction replacement has a versioned protocol;
 - protected paths use defined source/governance baselines;

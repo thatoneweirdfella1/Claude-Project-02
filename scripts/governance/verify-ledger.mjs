@@ -1,4 +1,5 @@
 import { parseCsv, read, readJson, registryIds, sameSet, validStatus, printResult } from './lib.mjs'
+import { verifyObligationMatrix } from './derive-obligations.mjs'
 
 const REFERENCE_COLUMNS = {
   repair_ids: 'docs/authority/REPAIR-ID-REGISTRY.txt',
@@ -12,7 +13,7 @@ function splitIds(value) {
 }
 
 export function verifyLedger() {
-  const errors = []
+  const errors = [...verifyObligationMatrix()]
   let rows
   try { rows = parseCsv(read('docs/layer-system/LAYER-COVERAGE-LEDGER.csv')) }
   catch (error) { return [String(error.message || error)] }
@@ -27,10 +28,20 @@ export function verifyLedger() {
   const layers = definitions.layers || []
   const layerIds = layers.map((layer) => layer.id)
   if (!sameSet(layerIds, ['L1','L2','L3','L4','L5','L6','L7'])) errors.push('layer definitions do not contain exactly L1 through L7')
-  const allowedNa = new Map(layers.map((layer) => [
-    layer.id,
-    new Map((layer.allowed_na || []).map((entry) => [entry.id, `N/A AT THIS DEPTH — ${entry.clause}`]))
-  ]))
+  let obligationRows = []
+  try { obligationRows = parseCsv(read(definitions.resolved_obligation_matrix)) }
+  catch (error) { errors.push(`cannot read resolved obligation matrix: ${error.message}`) }
+  const obligationHeader = obligationRows[0] || []
+  const obligations = new Map(obligationRows.slice(1).filter((row) => row.some(Boolean)).map((row) => [row[0], row]))
+  if (!sameSet([...obligations.keys()], registryIds('docs/authority/PERMANENT-ID-REGISTRY.txt'))) errors.push('resolved obligation matrix permanent ID set differs from registry')
+  function matrixCell(id, layer) {
+    const row = obligations.get(id)
+    if (!row) return null
+    const status = row[obligationHeader.indexOf(`${layer}_status`)]
+    const assertion = row[obligationHeader.indexOf(`${layer}_obligation`)]
+    const code = row[obligationHeader.indexOf(`${layer}_code`)]
+    return { status, assertion, code, exactNa: status === 'N/A' ? `N/A AT THIS DEPTH — ${assertion}` : null }
+  }
   const unresolved = read('docs/layer-system/LAYER-DECISION-BLOCKERS.md')
   const blockers = [...(definitions.decision_blockers || []), ...(definitions.project_task_blockers || [])]
   const registries = Object.fromEntries(Object.entries(REFERENCE_COLUMNS).map(([column, file]) => [column, new Set(registryIds(file))]))
@@ -49,9 +60,10 @@ export function verifyLedger() {
       const status = row[index] || ''
       if (!validStatus(status)) errors.push(`${row[0]} has invalid ${layer} status: ${status}`)
       if (status.startsWith('N/A AT THIS DEPTH — ')) {
-        const exact = allowedNa.get(layer)?.get(row[0])
+        const exact = matrixCell(row[0], layer)?.exactNa
         if (!exact || status !== exact) errors.push(`${row[0]} has an unapproved or inexact ${layer} N/A clause`)
       }
+      if (matrixCell(row[0], layer)?.status === 'APPLICABLE' && status.startsWith('N/A AT THIS DEPTH — ')) errors.push(`${row[0]} is applicable at ${layer} and cannot be N/A`)
       if (status === 'PROVEN') {
         for (const blocker of blockers.filter((entry) => entry.affected_ids?.includes(row[0]) && entry.blocks_from)) {
           const blockedFrom = Number(blocker.blocks_from.slice(1))
@@ -77,7 +89,7 @@ export function verifyLedger() {
       for (let layerNumber = 1; layerNumber <= last; layerNumber += 1) {
         const status = row[5 + layerNumber]
         const layer = `L${layerNumber}`
-        const exactNa = allowedNa.get(layer)?.get(row[0])
+        const exactNa = matrixCell(row[0], layer)?.exactNa
         if (status !== 'PROVEN' && status !== exactNa) errors.push(`${row[0]} does not satisfy claimed completed layer ${layer}`)
       }
     }

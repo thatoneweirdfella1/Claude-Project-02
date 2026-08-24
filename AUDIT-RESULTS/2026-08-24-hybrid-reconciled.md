@@ -5,24 +5,15 @@
 **Reconciliation method:** `docs/layer-system/HYBRID-INDEPENDENT-AUDIT-PROTOCOL.md`  
 **Implementation performed by source auditors:** NO
 
-## VERDICT
+## Verdict
 
-`VERDICT: FAIL`
+`FAIL — 23 UNIQUE REQUIRED DEFECTS AT AUDITED CHECKPOINT 7c2a123b7622e00638285d67d0ccb6121dd805df`
 
-The two completed audits are cumulative evidence. Their findings are merged by underlying failure mode. Claude's two required defects overlap GPT findings rather than creating two additional unique defects. The reconciled set therefore contains **23 unique required defects**.
+Claude's baseline and packet findings overlap GPT findings 9 and 1. The union therefore remains 23, and the stricter supported verdict controls.
 
-Claude independently corroborates two important areas:
+## Canonical defect set
 
-1. the mutable/unprotected governance-baseline failure mode; and
-2. audit-packet incompleteness preventing router verification.
-
-Because the GPT audit contains multiple supported Critical findings, the stricter reconciled verdict is FAIL. Claude's more permissive overall verdict cannot erase supported blocking findings that it did not address.
-
-## Canonical required-defect set
-
-The following 23 GPT findings are the canonical unique defect set for this audit cycle, with Claude evidence merged into items 1 and 9:
-
-1. Audit packet omits mandatory governance components. Claude DEFECT-02 independently corroborates missing router coverage and packet incompleteness.
+1. Audit packet omits mandatory governance components.
 2. L0 Coverage Lock is not machine-enforced.
 3. No accurate per-ID, per-layer obligation matrix exists.
 4. L6 treats a credential blocker as required completion evidence.
@@ -30,7 +21,7 @@ The following 23 GPT findings are the canonical unique defect set for this audit
 6. Acceptance handles lack frozen layer-specific assertions.
 7. Independent audit status can be self-declared.
 8. Preflight does not implement its claimed contract.
-9. Governance baseline can be rewritten to bless governance changes. Claude DEFECT-01 independently corroborates and strengthens this failure mode.
+9. Governance baseline can be rewritten to bless governance changes.
 10. Secret-file detection does not evaluate configured wildcard patterns.
 11. Protected-path policy omits safety-critical code and ignores exceptions.
 12. Permissions are not granular enough for later external effects.
@@ -46,18 +37,8 @@ The following 23 GPT findings are the canonical unique defect set for this audit
 22. `refund` remains an invented payment obligation.
 23. Repair coverage contains an impossible denominator.
 
-## Closure rule
+## Current closure state
 
-These findings remain open until individually verified corrected or explicitly disproved by stronger governing evidence.
+The second hybrid reconciliation changes validator architecture, layer obligations, evidence/permission semantics, protected paths, and audit-packet scope. Under the hybrid protocol this requires a clean full independent audit of the new checkpoint. This historical `FAIL` is not rewritten; closure is recorded in a new audit result.
 
-Silence from another auditor does not close a finding.
-
-After corrections, use **delta verification** against these 23 defects and any directly affected governance behavior. Do not require another full audit of the unchanged original packet merely to repeat work already completed.
-
-A new full audit is required only after a material change to authority, denominator, layer semantics, validator architecture, evidence/permission semantics, or packet scope as defined by the hybrid protocol.
-
-## SAFE FOR CONTEXTLESS AI
-
-`SAFE FOR A CONTEXTLESS AI NOW: NO`
-
-`SAFE AFTER ALL REQUIRED DEFECTS ARE VERIFIED CLOSED: YES, subject to delta verification finding no new blocking defect.`
+`SAFE FOR A CONTEXTLESS AI AT 7c2a123: NO`

@@ -105,6 +105,27 @@ export function validStatus(value) {
     || /^N\/A AT THIS DEPTH — .+/.test(value)
 }
 
+export function globToRegExp(pattern) {
+  let output = '^'
+  for (let index = 0; index < pattern.length; index += 1) {
+    const char = pattern[index]
+    if (char === '*' && pattern[index + 1] === '*') {
+      index += 1
+      if (pattern[index + 1] === '/') {
+        index += 1
+        output += '(?:.*/)?'
+      } else output += '.*'
+    } else if (char === '*') output += '[^/]*'
+    else if (char === '?') output += '[^/]'
+    else output += char.replace(/[|\\{}()[\]^$+?.]/g, '\\$&')
+  }
+  return new RegExp(`${output}$`)
+}
+
+export function matchesAnyGlob(file, patterns) {
+  return patterns.some((pattern) => globToRegExp(pattern).test(file))
+}
+
 export function requireCondition(condition, message, errors) {
   if (!condition) errors.push(message)
 }

@@ -15,5 +15,7 @@ These are not `V2-DQ-*` product choices and therefore must not disappear from th
 
 | Task | Affected IDs | Blocks from | Status |
 |---|---|---|---|
-| Learnable Signal Patterns verification/integration | SPEC-LS-01 / V2-RQ-033 | L3 | OPEN — documented task acceptance required before the row can be `PROVEN` at L3 or deeper |
-| Fable recommendation/prompt-translation integration | SPEC-FB-01 / V2-RQ-034 | L6 | OPEN — documented task acceptance required before the row can be `PROVEN` at L6 or L7 |
+| `PROJECT-TASK-DATA-CONTRACT` | USR-ACCOUNT-01, USR-DATA-01, USR-OPT-01, USR-SC-01–09, SPEC-SE-09 | L4 | OPEN — derive the authoritative ownership, local/remote source-of-truth, migration, deletion, export, and rollback contract from existing authority; if authority is silent, return a scoped blocker instead of inventing behavior |
+| `PROJECT-TASK-CROSS-DEVICE-CONFLICT` | USR-ACCOUNT-01, USR-DATA-01, USR-OPT-01, USR-SC-01–09 | L4 | OPEN — derive synchronization, concurrent-edit, deletion, and recovery behavior from existing authority; no default conflict policy is authorized |
+| Learnable Signal Patterns verification/integration | SPEC-LS-01 / V2-RQ-033 | L3 | OPEN — the cited documented task source is not present in the governed packet; recover the source and exact acceptance contract before the row can be `PROVEN` at L3 or deeper |
+| Fable recommendation/prompt-translation integration | SPEC-FB-01 / V2-RQ-034 | L6 | OPEN — the cited documented task source is not present in the governed packet; recover the source and exact acceptance contract before the row can be `PROVEN` at L6 or L7 |

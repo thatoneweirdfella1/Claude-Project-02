@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["base_sha","observed_head_sha","paths","untracked_paths","binary_paths","patch_path","patch_sha256","test_state","safety_classification","exact_recovery_action"],
+  "properties": {
+    "base_sha":{"type":"string","pattern":"^[0-9a-f]{40}$"},
+    "observed_head_sha":{"type":"string","pattern":"^[0-9a-f]{40}$"},
+    "paths":{"type":"array","items":{"type":"string"}},
+    "untracked_paths":{"type":"array","items":{"type":"string"}},
+    "binary_paths":{"type":"array","items":{"type":"string"}},
+    "patch_path":{"type":"string","minLength":1},
+    "patch_sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "test_state":{"enum":["NOT RUN","PASS","FAIL","INTERRUPTED"]},
+    "safety_classification":{"enum":["UNSAFE UNCOMMITTED","RECOVERABLE — NOT VERIFIED"]},
+    "exact_recovery_action":{"type":"string","minLength":1}
+  }
+}

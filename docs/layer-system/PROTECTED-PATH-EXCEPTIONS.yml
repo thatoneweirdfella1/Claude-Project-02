@@ -1,41 +1,11 @@
 {
   "schema_version": 2,
-  "exceptions": [
-    {
-      "path": "docs/layer-system/PERMISSIONS.yml",
-      "authorized": true,
-      "authorization": "2026-08-24 user instruction to finish implementing the hybrid audit corrections",
-      "reason": "Close canonical defect 12 by making external-effect permissions granular and fail-closed"
-    },
-    {
-      "path": "scripts/governance/preflight.mjs",
-      "authorized": true,
-      "authorization": "2026-08-24 user instruction to finish implementing the hybrid audit corrections",
-      "reason": "Close canonical defects 8 and 12 by enforcing complete preflight dependencies and granular permissions"
-    },
-    {
-      "path": "scripts/governance/verify-protected-paths.mjs",
-      "authorized": true,
-      "authorization": "2026-08-24 user instruction to finish implementing the hybrid audit corrections",
-      "reason": "Close canonical defects 10 and 11 by enforcing wildcard detection and protected-path exceptions"
-    },
-    {
-      "path": "docs/layer-system/PROTECTED-PATHS.yml",
-      "authorized": true,
-      "authorization": "2026-08-24 user instruction to finish implementing the hybrid audit corrections",
-      "reason": "Close canonical defects 9 and 11 by protecting the baseline and governance safety controls"
-    },
-    {
-      "path": "docs/layer-system/PROTECTED-PATH-EXCEPTIONS.yml",
-      "authorized": true,
-      "authorization": "2026-08-24 user instruction to finish implementing the hybrid audit corrections",
-      "reason": "Record the exact fail-closed exceptions required for this authorized governance-only correction batch"
-    },
-    {
-      "path": "docs/layer-system/RECOVERY.md",
-      "authorized": true,
-      "authorization": "2026-08-24 user instruction to finish implementing the hybrid audit corrections",
-      "reason": "Close canonical defect 19 with executable interruption and unsafe-patch recovery"
-    }
-  ]
+  "rule": "Every exception is exact, user-authorized, batch-scoped, and hash-bounded. Wildcard exceptions are forbidden.",
+  "required_fields": ["path","old_blob_sha","new_blob_sha","affected_permanent_ids","authorization_date","user_attestation","expires_after_commit"],
+  "superseded_unbounded_entries": {
+    "source_commit":"3871b160b7ab217216e100149061058382c1bf2f",
+    "paths":["docs/layer-system/PERMISSIONS.yml","scripts/governance/preflight.mjs","scripts/governance/verify-protected-paths.mjs","docs/layer-system/PROTECTED-PATHS.yml","docs/layer-system/PROTECTED-PATH-EXCEPTIONS.yml","docs/layer-system/RECOVERY.md"],
+    "status":"REJECTED AS ACTIVE EXCEPTIONS — authorization prose without old/new blob hashes, affected IDs, batch scope, and expiry cannot bypass protection"
+  },
+  "exceptions": []
 }

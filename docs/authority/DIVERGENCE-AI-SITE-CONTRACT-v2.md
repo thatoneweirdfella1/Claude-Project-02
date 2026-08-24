@@ -4,7 +4,7 @@
 **Supersedes:** `DIVERGENCE-AI-SITE-CONTRACT.md` and `DIVERGENCE-AI-FIX-ALL-IMPLEMENTATION-AUTHORITY.md` as claims of complete coverage.  
 **Production protection:** `build` is not an implementation target for this repair contract.  
 **Audited frozen baseline:** `frozen-implementation-v1@18e4345f703bfe62c8a5fca87b1b2a11a549be4c`.  
-**Current isolated implementation candidate:** `cowork-complete-preview-20260823`; its prior completion claims are not accepted as evidence of v2 compliance.
+**Verified historical source checkpoint:** `cowork-complete-preview-20260823@16beca26c305bd9bdae088eb8e977ca1e9730747`. **Active governed work branch:** `horizontal-layer-completion-v1`; prior completion claims are not accepted as evidence of v2 compliance.
 
 ## 0. What changed from v1
 
@@ -1888,7 +1888,7 @@ Only genuinely unresolved choices live here. Missing live evidence is not a deci
 
 **Supersedes:** the old 26-item repair queue as a complete repair universe.
 
-**Current safe implementation target:** `cowork-complete-preview-20260823` for isolated repair/testing.  
+**Verified historical source checkpoint:** `cowork-complete-preview-20260823@16beca26c305bd9bdae088eb8e977ca1e9730747`. **Active governed work branch:** `horizontal-layer-completion-v1`; this embedded register does not authorize edits by itself.  
 **Do not modify:** `build`.  
 **Do not modify/merge into:** `frozen-implementation-v1` unless separately authorized.
 
@@ -1946,7 +1946,7 @@ Only genuinely unresolved choices live here. Missing live evidence is not a deci
 - Old carried-forward repair groups: **26**.
 - New decision-recovery repair groups: **13**.
 - Total v2 repair groups: **39**.
-- Deterministic new/expanded defects mapped: **61 / 60**.
+- Deterministic new/expanded defects mapped: **60 / 60**.
 - `SPEC-DV-09` remains UNDECIDED and is deliberately not implementation-forced.
 - `SPEC-DS-01` is platform-scoped rather than used to block the web preview.
 
