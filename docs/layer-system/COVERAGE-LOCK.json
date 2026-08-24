@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "gate": "L0 COVERAGE LOCKED",
-  "governance_checkpoint_under_audit": "0f92b249d96f265f9e9423d64e202449f8488a81",
+  "governance_checkpoint_under_audit": "e90b35fa2cbd8e18576e9b23e09ef957d9476ee9",
   "status": "BLOCKED — CLEAN POST-HYBRID INDEPENDENT PASS PENDING",
   "required_counts": {
     "permanent_ids": 218,

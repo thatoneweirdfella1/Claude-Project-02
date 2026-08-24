@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "baseline_commit": "0f92b249d96f265f9e9423d64e202449f8488a81",
+  "baseline_commit": "e90b35fa2cbd8e18576e9b23e09ef957d9476ee9",
   "protected_ref": null,
   "server_protection": "UNAVAILABLE — protected tag/ruleset changes were not authorized during installation",
   "replacement_protocol": "A user-authorized governance-only commit must update authority, manifest, affected ledger status, change record, and this baseline; app behavior cannot share that commit."
