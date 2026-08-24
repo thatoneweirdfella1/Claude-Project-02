@@ -1,5 +1,18 @@
 import { git, readJson, printResult } from './lib.mjs'
 
+function escapeRegex(text) {
+  return text.replace(/[.+^${}()|[\]\\]/g, '\\$&')
+}
+
+function globToRegex(glob) {
+  const marker = '__DOUBLE_STAR__'
+  const normalized = glob.replace(/\\/g, '/').replace(/\*\*/g, marker)
+  const escaped = escapeRegex(normalized)
+    .replace(/\*/g, '[^/]*')
+    .replace(new RegExp(marker, 'g'), '.*')
+  return new RegExp(`^${escaped}$`)
+}
+
 export function verifyProtectedPaths() {
   const errors = []
   const checkout = git(['rev-parse','--is-inside-work-tree'], { allowFailure: true })
@@ -20,10 +33,13 @@ export function verifyProtectedPaths() {
 
   const trackedResult = git(['ls-files'], { allowFailure: true })
   if (trackedResult.status !== 0) errors.push(`tracked-file inspection failed: ${trackedResult.stderr || 'not a Git checkout'}`)
-  const tracked = new Set((trackedResult.stdout || '').split(/\r?\n/))
-  for (const secret of config.secret_patterns) {
-    if (!secret.path.includes('*') && tracked.has(secret.path)) errors.push(`secret path is tracked: ${secret.path}`)
-    if (secret.hash !== 'NOT_RECORDED_SECRET') errors.push(`secret pattern ${secret.path} records a forbidden hash`)
+  const tracked = (trackedResult.stdout || '').split(/\r?\n/).filter(Boolean).map(p => p.replace(/\\/g, '/'))
+  for (const pattern of config.secret_patterns) {
+    const matcher = globToRegex(pattern.path)
+    for (const trackedPath of tracked) {
+      if (matcher.test(trackedPath)) errors.push(`restricted path is tracked: ${trackedPath}`)
+    }
+    if (pattern.hash !== 'NOT_RECORDED_SECRET') errors.push(`restricted pattern ${pattern.path} records a forbidden hash`)
   }
   return errors
 }
