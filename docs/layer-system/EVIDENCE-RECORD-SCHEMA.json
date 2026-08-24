@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DIVERGENCE.AI layer evidence record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["permanent_id","layer","authority_citations","implementation_paths","test_results","manual_or_live_results","artifact_paths","artifact_sha256","implementation_commit","evidence_commit","actual_result","auditor_result"],
+  "properties": {
+    "permanent_id": {"type":"string"},
+    "layer": {"enum":["L1","L2","L3","L4","L5","L6","L7"]},
+    "authority_citations": {"type":"array","items":{"type":"string"},"minItems":1},
+    "implementation_paths": {"type":"array","items":{"type":"string"}},
+    "test_results": {"type":"array","items":{"type":"object"}},
+    "manual_or_live_results": {"type":"array","items":{"type":"object"}},
+    "artifact_paths": {"type":"array","items":{"type":"string"}},
+    "artifact_sha256": {"type":"array","items":{"type":"string"}},
+    "implementation_commit": {"type":"string","pattern":"^[0-9a-f]{40}$"},
+    "evidence_commit": {"type":"string","pattern":"^[0-9a-f]{40}$"},
+    "deployment_identity": {"type":["object","null"]},
+    "actual_result": {"type":"string","minLength":1},
+    "auditor_result": {"enum":["PROVEN","IMPLEMENTED — NOT FULLY PROVEN","PARTIAL","BLOCKED","CONFLICT","UNKNOWN"]}
+  }
+}

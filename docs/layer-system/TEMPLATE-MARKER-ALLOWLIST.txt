@@ -1,0 +1,4 @@
+# Active repository files may not contain unresolved template markers.
+# The blueprint contains examples, not active configuration.
+docs/layer-system/HANDOFF-BLUEPRINT-v2.md
+docs/layer-system/TEMPLATE-MARKER-ALLOWLIST.txt

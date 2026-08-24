@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "source": "docs/layer-system/HORIZONTAL-LAYER-COMPLETION-SYSTEM.md",
+  "closed_statuses": [
+    "PROVEN",
+    "IMPLEMENTED — NOT FULLY PROVEN",
+    "PARTIAL",
+    "NOT STARTED",
+    "BLOCKED — <reason>",
+    "CONFLICT — UNRESOLVED",
+    "UNKNOWN — INSPECTION REQUIRED",
+    "N/A AT THIS DEPTH — <reason>"
+  ],
+  "platform_scoped_ids": ["SPEC-DS-01"],
+  "layers": [
+    {"id":"L1","name":"REACHABLE","entry":"governance audit PASS and app-change permission","exit":"every applicable screen, route, link, label, and destination is reachable","required_evidence":["route_or_shell_test","visual_destination_evidence"],"allowed_na":[]},
+    {"id":"L2","name":"INTERACTIVE","entry":"L1 complete","exit":"every applicable control reacts and exposes correct states","required_evidence":["control_state_test","keyboard_focus_accessibility_result"],"allowed_na":[]},
+    {"id":"L3","name":"LOCALLY USEFUL","entry":"L2 complete","exit":"every applicable feature performs its approved basic local function","required_evidence":["local_end_to_end_result","no_fake_external_success_check"],"allowed_na":[]},
+    {"id":"L4","name":"DURABLE","entry":"L3 complete","exit":"applicable data saves, reloads, resumes, migrates, and recovers","required_evidence":["persistence_test","reload_recovery_result"],"allowed_na":[]},
+    {"id":"L5","name":"MONEY-SAFE","entry":"L4 complete","exit":"accounts, allowances, costs, billing, and ledgers are safe","required_evidence":["sandbox_result","concurrency_idempotency_result"],"allowed_na":[]},
+    {"id":"L6","name":"CONNECTED","entry":"L5 complete","exit":"approved providers and services operate through real adapters","required_evidence":["provider_adapter_result","connection_or_exact_credential_blocker"],"allowed_na":[]},
+    {"id":"L7","name":"PRODUCTION-VERIFIED","entry":"L6 complete","exit":"matching deployed code passes all release gates","required_evidence":["deployment_identity","full_regression","security_accessibility_recovery_migration"],"allowed_na":[]}
+  ]
+}

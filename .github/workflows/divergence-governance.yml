@@ -1,0 +1,31 @@
+name: Divergence governance
+
+on:
+  push:
+    branches: [horizontal-layer-completion-v1]
+  pull_request:
+    branches: [build, frozen-implementation-v1, main]
+
+permissions:
+  contents: read
+
+jobs:
+  structural-governance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Derived registries
+        run: node scripts/governance/derive-registries.mjs --check
+      - name: Ledger
+        run: node scripts/governance/verify-ledger.mjs
+      - name: Evidence
+        run: node scripts/governance/verify-evidence.mjs
+      - name: Protected paths
+        run: node scripts/governance/verify-protected-paths.mjs
+      - name: Full structural preflight
+        run: node scripts/governance/preflight.mjs --ci

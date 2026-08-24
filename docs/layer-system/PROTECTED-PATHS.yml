@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "source_checkpoint": "16beca26c305bd9bdae088eb8e977ca1e9730747",
+  "governance_baseline_file": "docs/layer-system/GOVERNANCE-BASELINE.json",
+  "source_protected": [
+    "FROZEN-LAYOUT.md",
+    "docs/frozen-layout/**",
+    "docs/frozen-implementation-v1/**",
+    "src/styles/frozen-reference.css",
+    "cowork-preview/parts/**",
+    "scripts/apply-cowork-preview.cjs"
+  ],
+  "governance_protected": [
+    "AGENTS.md",
+    "CLAUDE.md",
+    "START-HERE-DIVERGENCE.md",
+    ".github/CODEOWNERS",
+    ".github/workflows/divergence-governance.yml",
+    "docs/authority/**",
+    "docs/layer-system/AUTHORITY-MANIFEST.yml",
+    "docs/layer-system/LAYER-DEFINITIONS.yml",
+    "docs/layer-system/EVIDENCE-RECORD-SCHEMA.json",
+    "docs/layer-system/CHANGE-RECORD-SCHEMA.json",
+    "docs/layer-system/PERMISSIONS.yml",
+    "docs/layer-system/PROTECTED-PATHS.yml",
+    "docs/layer-system/PROTECTED-PATH-EXCEPTIONS.yml",
+    "docs/layer-system/SOURCE-CHECKPOINT.json",
+    "docs/layer-system/TEMPLATE-MARKER-ALLOWLIST.txt",
+    "scripts/governance/**"
+  ],
+  "mutable_governance_state": [
+    "docs/layer-system/CURRENT-LAYER-STATUS.md",
+    "docs/layer-system/LAYER-COVERAGE-LEDGER.csv",
+    "docs/layer-system/LAYER-EVIDENCE-INDEX.jsonl",
+    "docs/layer-system/HANDOFF.md",
+    "docs/layer-system/CHANGE-RECORD.jsonl",
+    "docs/layer-system/UNRESOLVED-FINDINGS.md",
+    "AUDIT-RESULTS/**"
+  ],
+  "secret_patterns": [
+    {"path":".env*","hash":"NOT_RECORDED_SECRET"},
+    {"path":"**/*.pem","hash":"NOT_RECORDED_SECRET"},
+    {"path":"**/*secret*","hash":"NOT_RECORDED_SECRET"}
+  ]
+}

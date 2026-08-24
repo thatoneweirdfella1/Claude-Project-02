@@ -1,0 +1,38 @@
+{
+  "schema_version": 2,
+  "repository": "thatoneweirdfella1/Claude-Project-02",
+  "canonical_remote": "https://github.com/thatoneweirdfella1/Claude-Project-02.git",
+  "source_branch": "cowork-complete-preview-20260823",
+  "source_commit": "16beca26c305bd9bdae088eb8e977ca1e9730747",
+  "source_commit_message": "Checkpoint verified visible repair work",
+  "source_commit_time": "2026-08-23T23:32:09Z",
+  "continuation_branch": "horizontal-layer-completion-v1",
+  "selection": "INCLUDE",
+  "test_evidence": {
+    "rerun_this_installation": false,
+    "reason": "The connected repository interface does not provide a local executable checkout.",
+    "latest_recorded_source_evidence": "68 test files / 643 tests, TypeScript and Vite production build, matching READY deployment for app commit 91feb54684326b53d0db56968b5307771dea5a32; later source checkpoint changes documentation only.",
+    "independent_reverification_required": true
+  },
+  "protected_comparisons": {
+    "build": {
+      "head": "ebbda8c0ab16c556b7920239765dde8d4432e322",
+      "merge_base": "0de85b93328eebf55f2cf7a68e2938960c60a02d",
+      "source_ahead_by": 98,
+      "source_behind_by": 5,
+      "classification": "EXCLUDE FROM SOURCE BASELINE — five build-only commits remain recorded for later authority audit; no app cherry-pick is allowed during governance installation"
+    },
+    "frozen-implementation-v1": {
+      "head": "18e4345f703bfe62c8a5fca87b1b2a11a549be4c",
+      "source_ahead_by": 78,
+      "source_behind_by": 0,
+      "classification": "INCLUDED — ancestor of selected source"
+    },
+    "backup-reference-do-not-touch": {
+      "head": "2a1be17a2d9703127f6255c2c6c0e7ed7956a3df",
+      "classification": "REFERENCE ONLY — untouched"
+    }
+  },
+  "selected_by": "authority plus complete surviving-branch comparison",
+  "selected_at": "2026-08-23"
+}

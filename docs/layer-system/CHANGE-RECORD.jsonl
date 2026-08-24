@@ -1,0 +1,1 @@
+{"date":"2026-08-23","type":"governance_installation","scope":"Governance-only branch creation and control-system installation; no app behavior, merge, or deployment","authorization":"User: build it","commit":null,"result":"Installed files prepared; commit filled by Git history rather than self-referential content"}
