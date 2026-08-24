@@ -30,6 +30,19 @@ Only dated, scoped, exact user corrections belong here. They supersede older aut
 - Applied commit: `ef7534ab8427eeeec0f828a6388ad8bb31f8d9f1`; baseline anchor `7c2a123b7622e00638285d67d0ccb6121dd805df`.
 - App implementation authority: not granted.
 
+### 2026-08-24 — Rate and hybridize the fresh post-correction audits
+
+- Exact user wording: `rate, then hybridize`
+- Contextual scope: rate the fresh Sonnet 4.6 and GPT-5.6 Sol audits, reconcile the optimum evidence-supported corrections, install the hybrid governance, produce a new audit document, and stop before Layer 1.
+- Audit sources: Sonnet `1.md` (`libfile_a79e833717f481919773871ffe318af7`) and GPT-5.6 Sol `2.md` (`libfile_ad98c2c6cdc48191a25832b314bf1d01`).
+- Affected scope: governance, validators, layer obligations, evidence/permission semantics, audit packet, and provenance only.
+- Product IDs changed: none; the 218-ID denominator is unchanged.
+- Prior authority/checkpoint affected: audited checkpoint `7c2a123b7622e00638285d67d0ccb6121dd805df`; the 14 intervening governance commits through `3871b160b7ab217216e100149061058382c1bf2f` were inspected and preserved/reconciled before this correction.
+- Conflict resolution: GPT supplied the stronger adversarial enforcement findings; Sonnet supplied the cleaner baseline/router/packet corroboration. Unsupported refund scope, fixed usage reserves, and guessed data/conflict behavior were rejected.
+- Applied correction commit: `7a9afc3aa17527c3af9a958dc5e1742698ca8e16` (`Governance: implement post-correction audit hybrid`).
+- Layer 1 result: not authorized and not begun.
+- App implementation authority: not granted.
+
 ## Required format for future entries
 
 - Date
