@@ -1,7 +1,7 @@
 # source: docs/authority/DIVERGENCE-AI-CONTROL-BEHAVIOR-MAP-v2.md
 # source_sha256: bb8f28907c23b7d6ad85c3b7cc1c8c83028a8b960fa834049e027b065f7e5439
-# extraction: scripts/governance/derive-registries.mjs v1 permanent
-# generated: 2026-08-23
+# extraction: scripts/governance/derive-registries.mjs v2 permanent
+# generated: deterministic; rerun after any source change
 ADV-01
 ADV-02
 ADV-03
@@ -220,4 +220,3 @@ USR-SC-06
 USR-SC-07
 USR-SC-08
 USR-SC-09
-

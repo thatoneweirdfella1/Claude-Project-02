@@ -1,7 +1,7 @@
 # source: docs/authority/DIVERGENCE-AI-DECISION-QUEUE-v2.md
 # source_sha256: bd9d04f3f9144cdbf706679f55b77e3ec80d432d6b4d90647d7c7760fafc60af
-# extraction: scripts/governance/derive-registries.mjs v1 decision
-# generated: 2026-08-23
+# extraction: scripts/governance/derive-registries.mjs v2 decision
+# generated: deterministic; rerun after any source change
 V2-DQ-001|DS-01
 V2-DQ-002|DS-01
 V2-DQ-003|DS-01
@@ -9,4 +9,3 @@ V2-DQ-004|DS-01
 V2-DQ-005|DS-02
 V2-DQ-006|DS-03
 V2-DQ-007|DS-04
-

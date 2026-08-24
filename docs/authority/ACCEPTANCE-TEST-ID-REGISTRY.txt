@@ -1,7 +1,7 @@
 # source: docs/authority/DIVERGENCE-AI-SITE-CONTRACT-v2.md
-# source_sha256: 6b0c5f6e6f5ea4bf8b4d27b0dd7a9f83814a80993fa3a17407914b8b0e843677
-# extraction: scripts/governance/derive-registries.mjs v1 acceptance_test
-# generated: 2026-08-23
+# source_sha256: 061acd843119ba7a2a530dcb18b48d69c146b23b87c89ee940905d57e722b62c
+# extraction: scripts/governance/derive-registries.mjs v2 acceptance_test
+# generated: deterministic; rerun after any source change
 ACC-ADV-01
 ACC-ADV-02
 ACC-ADV-03

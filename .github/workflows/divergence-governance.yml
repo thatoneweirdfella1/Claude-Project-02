@@ -21,11 +21,13 @@ jobs:
           node-version: 22
       - name: Derived registries
         run: node scripts/governance/derive-registries.mjs --check
+      - name: Derived per-ID layer obligations
+        run: node scripts/governance/derive-obligations.mjs --check
       - name: Ledger
         run: node scripts/governance/verify-ledger.mjs
       - name: Evidence
         run: node scripts/governance/verify-evidence.mjs
       - name: Protected paths
-        run: node scripts/governance/verify-protected-paths.mjs
+        run: node scripts/governance/verify-protected-paths.mjs --action=read-only
       - name: Full structural preflight
-        run: node scripts/governance/preflight.mjs --ci
+        run: node scripts/governance/preflight.mjs --action=read-only

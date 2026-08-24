@@ -1,5 +1,5 @@
 import fs from 'node:fs'
-import { at, extract, read, registryIds, sameSet, printResult } from './lib.mjs'
+import { at, extract, read, sha256, printResult } from './lib.mjs'
 
 const sources = {
   permanent: {
@@ -43,13 +43,21 @@ if (writeMode && process.env.DIVERGENCE_GOVERNANCE_WRITE !== '1') {
 
 for (const [name, config] of Object.entries(sources)) {
   const derived = extract(read(config.path), config.regex)
-  const installed = registryIds(config.registry)
-  if (!sameSet(derived, installed)) errors.push(`${name} registry differs from derived source set`)
-  if (writeMode && !errors.length) {
-    const body = name === 'decision'
-      ? derived.map((id) => `${id}|${sessions[id]}`).join('\n')
-      : derived.join('\n')
-    fs.writeFileSync(at(config.registry), `# mechanically derived from ${config.path}\n${body}\n`)
+  const body = name === 'decision'
+    ? derived.map((id) => `${id}|${sessions[id]}`).join('\n')
+    : derived.join('\n')
+  const expected = [
+    `# source: ${config.path}`,
+    `# source_sha256: ${sha256(read(config.path))}`,
+    `# extraction: scripts/governance/derive-registries.mjs v2 ${name}`,
+    '# generated: deterministic; rerun after any source change',
+    body,
+    '',
+  ].join('\n')
+
+  if (writeMode) fs.writeFileSync(at(config.registry), expected)
+  else if (read(config.registry) !== expected) {
+    errors.push(`${name} registry or its source-hash metadata is stale; regenerate with the authorized --write command`)
   }
 }
 
