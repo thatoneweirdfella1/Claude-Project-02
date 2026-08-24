@@ -22,7 +22,9 @@ This branch contains the durable context for an AI with no prior conversation.
 7. `docs/authority/DIVERGENCE-AI-CANONICAL-DECISION-AUTHORITY-v2.md`
 8. `docs/authority/DIVERGENCE-AI-CONTROL-BEHAVIOR-MAP-v2.md`
 9. `docs/layer-system/HORIZONTAL-LAYER-COMPLETION-SYSTEM.md`
-10. Only the repair, decision, workflow, test, and evidence rows relevant to the one active batch.
+10. `docs/layer-system/HYBRID-INDEPENDENT-AUDIT-PROTOCOL.md`
+11. `AUDIT-RESULTS/2026-08-24-hybrid-reconciled.md`
+12. Only the repair, decision, workflow, test, evidence, and defect rows relevant to the one active batch.
 
 ## Required first action
 
@@ -36,7 +38,9 @@ Return its Resume Certificate verbatim. A structural `PASS` does not prove produ
 
 ## Current exact next action
 
-Perform a clean post-correction independent, read-only governance audit using `docs/layer-system/INDEPENDENT-AUDIT-CHECKLIST.md`. The previous independent audits identified defects; their supported findings have been reconciled into the governance files, but the installer cannot certify its own corrections. Do not change app behavior. If the clean audit passes, record the result and ask the user for a separate grant before beginning Layer 1.
+Continue governance defect closure against the 23 canonical required defects in `AUDIT-RESULTS/2026-08-24-hybrid-reconciled.md`. Preserve the completed GPT-5.6 Sol and Claude Sonnet 4.6 source audits; do not replace them with another mandatory full audit of the unchanged original packet. After corrections, perform delta verification under `HYBRID-INDEPENDENT-AUDIT-PROTOCOL.md`.
+
+Do not change application behavior while governance-only defect closure is active.
 
 ## Conflict rule
 
