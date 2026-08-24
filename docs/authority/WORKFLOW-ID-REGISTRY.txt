@@ -1,5 +1,5 @@
 # source: docs/authority/DIVERGENCE-AI-SITE-CONTRACT-v2.md
-# source_sha256: a6fd88e6b5d3800956fd02ddabf35852ed3370dd923c6d40cdf8d885a435fe79
+# source_sha256: 6b0c5f6e6f5ea4bf8b4d27b0dd7a9f83814a80993fa3a17407914b8b0e843677
 # extraction: scripts/governance/derive-registries.mjs v1 workflow
 # generated: 2026-08-23
 V2-WF-35
@@ -50,4 +50,3 @@ WF-31
 WF-32
 WF-33
 WF-34
-

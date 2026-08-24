@@ -5,7 +5,7 @@
 - Repository: `thatoneweirdfella1/Claude-Project-02`
 - Branch: `horizontal-layer-completion-v1`
 - Source: `16beca26c305bd9bdae088eb8e977ca1e9730747`
-- Governance: installed; independent audit pending
+- Governance: corrected from independent findings; clean post-correction independent audit pending
 - Last completed horizontal layer: none
 - Active layer/batch: none
 - App behavior changes: not authorized
@@ -16,7 +16,9 @@ The source handoff records V2-RQ-001 through V2-RQ-003 as completed/verified and
 
 ## Exact next action
 
-Run `node scripts/governance/preflight.mjs --mode=read-only`, return its certificate, then complete `INDEPENDENT-AUDIT-CHECKLIST.md` without app edits. After audit `PASS`, request a dated user grant for `modify_application_behavior` and define one L1 batch.
+From a real checkout, run `node scripts/governance/preflight.mjs --mode=read-only`, return its certificate, then complete `INDEPENDENT-AUDIT-CHECKLIST.md` in a clean independent session without app edits. After audit `PASS`, record the result, request a dated user grant for `modify_application_behavior`, and define one L1 batch.
+
+The governance installer's local staging directory had no `.git`, so it could not issue a local Resume Certificate. This is an environment limitation, not a preflight pass. A real checkout/CI must supply that proof.
 
 ## Stop conditions
 

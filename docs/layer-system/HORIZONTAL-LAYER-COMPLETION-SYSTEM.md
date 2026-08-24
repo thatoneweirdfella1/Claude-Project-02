@@ -1,8 +1,10 @@
-# DIVERGENCE.AI — Horizontal Layer Completion System v1
+# DIVERGENCE.AI — Horizontal Layer Completion System v2
 
-**Status:** Operating plan only. This document does not authorize implementation, commits, branch changes, deployment, purchases, provider connections, or production changes.  
+**Status:** Active process authority. This document does not by itself authorize application edits, deployment, purchases, provider connections, or production changes.  
 **Created:** August 23, 2026  
-**Current safe implementation target named by the v2 authority:** `cowork-complete-preview-20260823`  
+**Corrected:** August 24, 2026, after independent Sonnet 5, Opus 4.8, Opus 5, and Haiku 4.5 audits were reconciled against the governing packet.  
+**Verified source checkpoint:** `cowork-complete-preview-20260823@16beca26c305bd9bdae088eb8e977ca1e9730747`  
+**Governed continuation branch:** `horizontal-layer-completion-v1`  
 **Protected unless separately authorized:** `build` and `frozen-implementation-v1`
 
 ## Read this first — the whole method in one minute
@@ -40,14 +42,14 @@ The 39 v2 repair groups remain the defect/evidence register. They are **not** 39
 
 Implementation must obey this order:
 
-1. Latest explicit user correction, limited to the scope it actually changed.
+1. A dated, explicit user correction that names or unambiguously changes the affected scope; it supersedes older authority only inside that scope.
 2. Approved/frozen requirements and GREEN decisions.
 3. Approved architecture and implementation decisions.
 4. Current source code as implementation evidence.
 5. Matching deployed behavior as live evidence.
 6. Clearly labeled inference only when the above are silent.
 
-Code, an old commit, a test, or current live behavior cannot create or replace a product decision merely because it exists. Unresolved choices remain unresolved and block only their exact affected behavior.
+Code, an old commit, a test, current live behavior, or timestamp alone cannot create or replace a product decision merely because it exists. Unresolved choices remain unresolved and block only their exact affected behavior. If two controlling-looking sources still conflict after scoped precedence and supersession are applied, record `CONFLICT — UNRESOLVED`; do not choose by recency.
 
 The corrected denominator is the v2 authority: **218 permanent requirement/control IDs**. No layer may define its own smaller universe and then claim 100% coverage of it.
 
@@ -65,6 +67,7 @@ Every layer must account for every applicable item in these domains:
 8. Operator-only Developer Mode, async testing, dry-run preview, recoverable drafts, and personal heavy-use goal.
 9. Security, privacy, prompt-injection defense, accessibility, keyboard behavior, interruption recovery, migration, and ADHD-friction.
 10. Desktop/Windows scope accounting, even while desktop implementation remains a separate later platform track.
+11. Documentation governance, denominator integrity, authority resolution, layer evidence, and handoff safety.
 
 Backend-only requirements do not need invented screens. They must still receive a layer status, evidence target, and an explicit `NOT USER-FACING` designation so they cannot disappear.
 
@@ -72,7 +75,12 @@ Backend-only requirements do not need invented screens. They must still receive 
 
 ### 4.1 Horizontal completion rule
 
-A layer is not complete because its easiest screens passed. It earns its layer label only after **every one of the 218 IDs** is marked for that layer as `PASS` or `NOT APPLICABLE AT THIS DEPTH` with a written reason. A decision or external blocker must be named exactly, but the layer remains `INCOMPLETE — BLOCKED BY ...`; it cannot be promoted by redefining the blocked row as complete. Unrelated implementation may continue only when doing so cannot depend on or silently decide the blocker, and the last stable product-depth claim remains the prior completed layer.
+A layer is not complete because its easiest screens passed. It earns its layer label only after **every one of the 218 IDs** is marked for that layer as either:
+
+- `PROVEN`; or
+- `N/A AT THIS DEPTH — <exact allowlist clause>` where that ID and clause are pre-enumerated for that layer in `LAYER-DEFINITIONS.yml`.
+
+`PASS` and `FAIL` are process-gate results only; they are never coverage-ledger statuses. Any applicable `IMPLEMENTED — NOT FULLY PROVEN`, `PARTIAL`, `NOT STARTED`, `BLOCKED — <reason>`, `CONFLICT — UNRESOLVED`, or `UNKNOWN — INSPECTION REQUIRED` keeps the layer incomplete. A decision, project task, permission, credential, or external blocker must be named exactly; it cannot be converted to `N/A`. Unrelated implementation may continue only when it cannot depend on or silently decide the blocker, and the last stable product-depth claim remains the prior completed layer.
 
 ### 4.2 Additive-code rule
 
@@ -92,7 +100,7 @@ It may not pretend that a purchase, provider call, remote save, allowance change
 
 ### 4.4 Safe external-effects rule
 
-No real paid/provider execution is enabled before the Layer 5 money-safety gate passes. Before that gate, external-effect code remains disabled, sandboxed, dry-run, or manual-only. Universal/manual handoff remains the genuine no-key route.
+No real paid/provider execution is enabled before the Layer 5 money-safety gate passes. Before that gate, external-effect code remains disabled, sandboxed, dry-run, or manual-only. The Layer 5 gate must record its exact commit and matching evidence before Layer 6 work may enable real execution; no invented feature-flag name or unapproved mechanism is required. Universal/manual handoff remains the genuine no-key route.
 
 ### 4.5 Shared-system rule
 
@@ -113,6 +121,7 @@ The last completed layer must always remain identifiable and usable. Partial nex
 - Run the complete whole-layer suite and independent audit once at layer exit.
 - Do not redeploy after every repair-row edit.
 - A green build proves compilation/tests only; it does not prove the layer or product works live.
+- A test result used for layer promotion must name the acceptance-test handle, the layer, the assertions exercised at that depth, the environment, and the actual result. One undifferentiated full-depth verdict cannot be reused as proof for every layer.
 
 ### 4.9 User-decision rule
 
@@ -134,7 +143,11 @@ After the first usage-limit warning or when remaining usage is clearly near exha
 
 ### 4.12 Evidence rule
 
-Every `PASS` records the commit, matching preview/deployment, test ID, actual result, and evidence location. Source inspection, unit tests, screenshots, and deployment status are useful evidence but do not individually establish complete end-to-end behavior.
+Every `PROVEN` cell has a matching record in `LAYER-EVIDENCE-INDEX.jsonl` containing the commit, matching preview/deployment identity where live behavior is claimed, layer-scoped test IDs/results, workflow results where applicable, actual result, and reproducible artifact locations. Source inspection, unit tests, screenshots, and deployment status are useful evidence but do not individually establish complete end-to-end behavior.
+
+### 4.13 Regression, demotion, and failed-gate rule
+
+If a later change touches implementation or evidence on which a completed layer depended, the affected evidence becomes stale. The working branch may not claim that layer until it is re-proven; the separately recorded last stable layer checkpoint remains the rollback/reference point. A failed layer gate leaves the layer `INCOMPLETE`, records every failing or blocked row and one exact next action, and never promotes a partial layer.
 
 ## 5. Layer-status vocabulary
 
@@ -155,26 +168,29 @@ Never replace these with the vague words `done`, `finished`, or `working` withou
 
 ## 6. Required coverage ledger
 
-Before implementation, create one canonical ledger with one row for each of the 218 permanent IDs and these columns:
+Before implementation, maintain one canonical RFC 4180 ledger with one row for each of the 218 permanent IDs and these columns:
 
 | Column | Required content |
 |---|---|
-| Permanent ID | Existing or v2 permanent requirement/control ID. |
-| Domain and surface | Where the behavior belongs, including backend-only or platform-only. |
-| Authority | Exact controlling source and approval status. |
-| Decision dependency | Exact `V2-DQ-*` ID or none. |
-| L1 through L7 | `NOT STARTED`, `IN PROGRESS`, `PASS`, `FAIL`, `BLOCKED — reason`, or `N/A AT THIS DEPTH — reason`. |
-| Repair mappings | Every related `V2-RQ-*` ID. |
-| Source files | Implementing components, routes, stores, services, endpoints, and tests. |
-| Evidence | Commit, preview/deployment, test/evidence IDs, and actual result. |
-| Next action | One bounded action only. |
+| `permanent_id` | Existing or v2 permanent requirement/control ID. |
+| `authority_citation` | Exact controlling source. |
+| `repair_ids` | Every related `V2-RQ-*` ID. |
+| `decision_ids` | Exact `V2-DQ-*` IDs or blank. |
+| `workflow_ids` | Every related workflow ID. |
+| `test_ids` | Permanent-control and workflow acceptance handles. |
+| `L1` through `L7` | One exact allowed ledger status. |
+| `last_verified_commit` | Full commit for the most recent current proof, or blank. |
+
+Implementation paths, test results, deployment identity, artifacts, actual result, and auditor result belong in `LAYER-EVIDENCE-INDEX.jsonl`, not multiline CSV cells. `CURRENT-LAYER-STATUS.md` and `HANDOFF.md` hold the one bounded next action.
 
 Required reconciliation after every layer:
 
 - 218 authority IDs versus 218 ledger rows;
 - every current route/control/API/store action versus a permanent ID or explicit exclusion;
 - every `V2-RQ-*` versus at least one ledger row;
-- every `PASS` versus appropriate evidence;
+- every `PROVEN` cell versus complete layer-appropriate evidence;
+- every registered workflow and all 266 acceptance handles versus at least one ledger/evidence mapping;
+- every `N/A` versus the exact layer allowlist entry and clause;
 - every unresolved item versus an exact blocker or next action; and
 - zero unexplained differences.
 
@@ -188,11 +204,12 @@ Create the control system that prevents work from fragmenting again. This is not
 
 1. Snapshot repository, active branch, commit, preview URL, deployment identity, environment, and current test counts.
 2. Load the v2 authority, Control & Behavior Map, Repair Queue, Decision Queue, acceptance tests, workflow ledger, traceability matrix, and later explicit user corrections.
-3. Populate the 218-row layer ledger.
-4. Map every current file/route/control/API/store/test to an ID or exclusion.
-5. Record the last verified checkpoint separately from any in-progress work.
-6. Mark all current completion claims `UNPROVEN` unless matching evidence already supports them.
-7. Install the layer exit tests and reporting format before Layer 1 changes begin.
+3. Reconcile the selected source checkpoint against `frozen-implementation-v1`, `build`, and every plausible work-bearing branch; re-derive inherited implementation classifications wherever the chosen source differs.
+4. Populate the 218-row layer ledger and the exact per-layer applicability/`N/A` allowlists.
+5. Map every current file/route/control/API/store/test to an ID or explicit authority-supported exclusion.
+6. Record the last verified checkpoint separately from any in-progress work.
+7. Mark all current completion claims `UNKNOWN — INSPECTION REQUIRED` unless matching evidence already supports a stronger closed status.
+8. Install the governance test registry, layer-scoped evidence format, and reporting definitions before Layer 1 changes begin. Application-test or application-behavior changes require the later app-change permission and are not L0 work.
 
 ### Exit gate
 
@@ -200,6 +217,8 @@ Create the control system that prevents work from fragmenting again. This is not
 - All 39 repair groups are mapped.
 - All seven open decisions are visible and scoped.
 - Exact branch/commit/preview are recorded.
+- The selected implementation source has been reconciled against the audited frozen baseline and every surviving branch classification.
+- One closed ledger vocabulary and every exact `N/A` allowlist validate mechanically.
 - No code or deployment was changed during preflight.
 
 ### Repair coverage
@@ -210,7 +229,7 @@ Primary: `V2-RQ-039`. Test-registry preparation begins for `V2-RQ-032`. Desktop 
 
 ### Honest outcome: `L1 REACHABLE`
 
-Every approved user-facing destination exists under the approved name and location. Every global, top-bar, left-nav, Quick Action, Quick Tool, right-rail, screen-level, account, billing, connection, and operator-entry navigation control lands on the correct destination or opens the correct container. Obsolete duplicate destinations are unreachable. Frozen geometry and visual identity are preserved.
+Every user-facing destination required by the v2 permanent-ID registry and Control & Behavior Map exists under the approved name and location. Every global, top-bar, left-nav, Quick Action, Quick Tool, right-rail, screen-level, account, billing, connection, and operator-entry navigation control lands on the exact required destination or opens the exact required container. The destination renders its required shell without a router error, blank screen, or false-success state; gated or unconfigured destinations show an honest labeled state. Obsolete duplicate destinations are unreachable. Frozen geometry and visual identity are preserved.
 
 ### This layer does
 
@@ -235,6 +254,7 @@ It does not claim that controls inside the destination perform their job, data p
 4. No obsolete duplicate route remains reachable.
 5. Light/dark shell screenshots match the frozen visual authority at the approved desktop canvas.
 6. Every non-navigational control is visibly classified for Layer 2 rather than silently assumed functional.
+7. Any live `PROVEN` claim names a working preview and its deployment identity matches the tested commit. Missing deployment permission or identity blocks promotion, not unrelated source work.
 
 ### User’s simple check
 
@@ -242,7 +262,7 @@ Click every visible link or navigation control once and confirm: **“It goes wh
 
 ### Repair groups first exposed here
 
-`V2-RQ-010`, `012`–`022`, `024`, `026`–`031`, and `033`–`038`. Route/shell portions may pass here; deeper portions remain open in later layers.
+`V2-RQ-010`–`022`, `024`, `026`–`031`, and `033`–`038`. Route/shell portions may be proven here; deeper portions remain independently open in later layers. Section 17 and the machine definitions control if a prose summary differs.
 
 ## 9. Layer 2 — Whole-Site Interaction and State Contract
 
@@ -258,6 +278,7 @@ Every visible control across every screen reacts correctly at the UI/state-machi
 - implement immediate State Detection choices without silently changing settings;
 - implement review, context, session, Saved Tools, settings, provider/connection, cost, large-job, and Developer control states;
 - implement accessibility names, Tab order, Enter/Space/Escape/arrows, focus return, and typing-target shortcut protection; and
+- apply the approved accessibility and ADHD-friction requirements to the controls introduced at this depth rather than postponing all usability safeguards to Layer 7; and
 - prove destructive actions always request the approved confirmation or offer the approved Undo.
 
 ### This layer does not do
@@ -299,6 +320,7 @@ Every workflow that can produce a genuine result without real remote identity, p
 - export a locally restorable dataset for all locally available data;
 - run Developer Preview Request, Mark Sent/simulated completion, and recoverable scenario switching without an external AI call; and
 - exercise large-job orchestration with deterministic synthetic workers so batching, progress, stop/resume interfaces, and evidence references exist before provider cost is involved.
+- prove that imported files, pasted content, and imported AI responses are treated as untrusted data rather than executable instructions before those local/manual paths are promoted.
 
 ### This layer does not do
 
@@ -350,6 +372,7 @@ It does not enable ungoverned paid execution or claim real provider connectivity
 3. Signout does not destroy local work contrary to approval.
 4. Operator-only Developer entry is authenticated and ordinary users cannot reach it, subject to the approved location decision.
 5. Export/restore reconstructs the approved dataset.
+6. Authentication, authorization, privacy, stored-data, migration, and recovery checks for the newly real identity/data boundaries pass before Layer 4 is promoted.
 
 ### User’s simple check
 
@@ -388,6 +411,7 @@ It does not claim a real provider adapter works merely because the money system 
 3. Every paid-looking control is backed by the authoritative ledger or remains disabled.
 4. Manual/no-charge routes remain usable when allowance, payment, or caps block managed execution.
 5. Cost state is consistent in composer, Settings, account/plan screens, right rail, receipts, large jobs, Multi-AI, and Developer Mode.
+6. The exact Layer 5 gate commit and evidence are recorded; real provider execution remains disabled until that record is `PROVEN`.
 
 ### User’s simple check
 
@@ -424,6 +448,7 @@ The real provider/connection layer now replaces deterministic execution adapters
 4. Paid execution can occur only through the Layer 5 authorization/ledger path.
 5. Retries/cancellation do not duplicate calls or lose the draft.
 6. Large-job interruption/resume avoids redoing completed bounded units.
+7. Prompt-injection/data-vs-instruction checks pass for URL ingestion, imported responses, provider output, and Multi-AI synthesis before Layer 6 is promoted.
 
 ### User’s simple check
 
@@ -454,11 +479,12 @@ Every supported requirement is tested end to end on a deployment proven to match
 
 ### Exit gate
 
-1. Every supported ID is `PASS` with matching evidence or is explicitly unresolved/out of scope without being hidden.
+1. Every supported ID is `PROVEN` with matching evidence or is `N/A AT THIS DEPTH — <exact allowlist clause>`; any unresolved or blocked row keeps Layer 7 incomplete.
 2. Every repair group is closed or names its exact remaining decision/external blocker.
 3. No `WORKING` claim relies only on source, unit tests, screenshots, or deployment success.
 4. The stable preview/deployment matches the recorded commit.
 5. A context-free independent auditor cannot find an unmapped requirement, unexplained total, false success, or scope expansion.
+6. `SPEC-LS-01` and `SPEC-FB-01` have their documented project-task acceptance evidence; neither can be hidden by proving only a learning surface or Fable model label.
 
 ### User’s simple check
 
@@ -481,7 +507,7 @@ The seven current decisions become four short decision sessions:
 | Decision session | Existing decision IDs | Needed by | Rule |
 |---|---|---|---|
 | Browser-reserved shortcuts as one policy | `V2-DQ-001`–`004` | Layer 2 exit | Ask once; do not let current code decide. |
-| Mobile/reflow versus desktop/fixed-canvas v1 | `V2-DQ-005` | Layer 1 exit | Until decided, test only the approved desktop/fixed-canvas shell. |
+| Mobile/reflow versus desktop/fixed-canvas v1 | `V2-DQ-005` | First relevant at Layer 1; not a blocker for the approved fixed-desktop scope | Until decided, test only the approved desktop/fixed-canvas shell. |
 | Developer operator entry location | `V2-DQ-007` | Layer 1 shell / Layer 4 authorization exit | Build no ordinary-user exposure; do not invent permanent placement. |
 | Developer personal heavy-use routing/cost strategy | `V2-DQ-006` | Layer 6 exit | Implement noncontroversial infrastructure; do not invent the final economic/routing strategy. |
 
@@ -525,8 +551,8 @@ This table prevents a repair from being “closed” at the first shallow layer 
 | `V2-RQ-030` cost ledger/caps/receipts | L1 surfaces + L2 states | L5 authoritative backend | L7 |
 | `V2-RQ-031` large jobs | L1 destination | L3 synthetic + L4 checkpoints + L5 cost + L6 providers | L7 |
 | `V2-RQ-032` evaluation gates | L0 test registry | L7 execution | L7 |
-| `V2-RQ-033` learning signals | L1 accounted surface | L3 logic + L4 persistence | L7 |
-| `V2-RQ-034` Fable integration | L1 correct placement | L2 states + L6 integration | L7 |
+| `V2-RQ-033` learning signals | L1 accounted surface | L3 logic + L4 persistence; `SPEC-LS-01` remains `BLOCKED` from L3 until its documented task acceptance is resolved | L7 cannot close while task is open |
+| `V2-RQ-034` Fable integration | L1 correct placement | L2 states + L6 integration; `SPEC-FB-01` remains `BLOCKED` from L6 until its documented task acceptance is resolved | L7 cannot close while task is open |
 | `V2-RQ-035` desktop scope | L0 scope register | Separate desktop track | Desktop proof |
 | `V2-RQ-036` Developer entry | L1 entry destination | L4 authorization | L7 |
 | `V2-RQ-037` Developer async testing | L2 controls | L3 dry run + L4 recovery | L7 |
@@ -548,6 +574,8 @@ Each layer follows the same bounded operating cycle:
 9. **Whole-layer gate:** Run full tests/build, matching preview, whole-layer acceptance suite, coverage reconciliation, and one independent read-only audit.
 10. **Promote the checkpoint:** Record the exact layer-complete commit/preview and only then begin the next layer.
 
+If step 9 fails, do not promote. Record the failing IDs/tests/evidence, preserve the last stable layer checkpoint, define one bounded corrective batch, and rerun the gate only after the recorded failures are addressed.
+
 The active task name should always be the layer, for example `complete-layer-2-interaction`, never a growing list of unrelated repair tasks.
 
 ## 19. Required stopping-point report
@@ -568,17 +596,7 @@ No narrative reconstruction, hidden to-do list, or “continue fixing things” 
 
 ## 20. Required project files when this system is installed in the repository
 
-The later installation/enforcement phase should create or update these repository-controlled files:
-
-- `docs/layer-system/HORIZONTAL-LAYER-COMPLETION-SYSTEM.md` — this operating authority.
-- `docs/layer-system/LAYER-COVERAGE-LEDGER.md` or a machine-readable equivalent — the 218-row canonical status matrix.
-- `docs/layer-system/CURRENT-LAYER-STATUS.md` — one-screen resume state.
-- `docs/layer-system/LAYER-EVIDENCE-INDEX.md` — commits, deployments, tests, and proof.
-- `docs/layer-system/LAYER-DECISION-BLOCKERS.md` — only unresolved decisions.
-- `docs/layer-system/HANDOFF.md` — exact continuation instructions.
-- Repository-level agent instructions such as `CLAUDE.md`, `AGENTS.md`, or the strongest compatible equivalent that forces every new account/agent to read and obey these files before changing code.
-
-This document designs that requirement. **Installing and enforcing the handoff governance is the required next phase and is not performed by this planning task.**
+The canonical repository control tree is the one enumerated in `HANDOFF-BLUEPRINT-v2.md` §6. In particular, the status ledger is `LAYER-COVERAGE-LEDGER.csv`, evidence is `LAYER-EVIDENCE-INDEX.jsonl`, and `LAYER-DEFINITIONS.yml`, `AUTHORITY-MANIFEST.yml`, `PERMISSIONS.yml`, protected-path controls, schemas, validators, routers, recovery, handoff, and audit results are required parts of the system. A partial Markdown-only substitute is not equivalent.
 
 ## 21. What success looks like under a usage cutoff
 
@@ -609,4 +627,4 @@ This plan is ready to install only if all answers below are yes:
 - Can another account resume from one short status file without reconstructing chat history?
 - Is no implementation, commit, merge, or deployment authorized by approving this plan alone?
 
-**Plan verdict:** Structurally ready for a separate repository-governance installation/audit phase. No application work has been authorized or begun by this document.
+**Plan verdict:** Corrected process authority installed for governance-only validation. Application work remains unauthorized until the corrected governance receives a clean independent audit, the exact Layer 1 batch is declared, and `PERMISSIONS.yml` records the required user grant.

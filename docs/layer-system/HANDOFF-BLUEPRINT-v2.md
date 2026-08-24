@@ -491,7 +491,9 @@ For each layer, the YAML must enumerate:
 - allowable blocker classes; and
 - the user’s simple whole-site verification walkthrough.
 
-A completed layer cannot contain `UNKNOWN`, `PARTIAL`, `NOT STARTED`, `CONFLICT`, or unapproved blockers among applicable IDs. An allowed `N/A` remains visible in totals.
+A completed layer cannot contain `UNKNOWN`, `IMPLEMENTED — NOT FULLY PROVEN`, `PARTIAL`, `NOT STARTED`, `CONFLICT`, `BLOCKED`, or any other nonterminal status among applicable IDs. Only `PROVEN` or an exact allowlisted `N/A AT THIS DEPTH — <clause>` closes a row. An allowed `N/A` remains visible in totals.
+
+The old standalone `FIX ALL` trigger is superseded. Under this governance, `FIX ALL` means only: execute the next declared coherent batch of the current horizontal layer after preflight and permission gates pass. It never means process all 39 repair groups sequentially or bypass the layer ledger.
 
 ## 11. Ledger and evidence model
 

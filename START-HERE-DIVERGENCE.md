@@ -36,7 +36,7 @@ Return its Resume Certificate verbatim. A structural `PASS` does not prove produ
 
 ## Current exact next action
 
-Perform the independent, read-only governance audit in `docs/layer-system/INDEPENDENT-AUDIT-CHECKLIST.md`. Do not change app behavior. If the audit passes, record the result and ask the user for a separate grant before beginning Layer 1.
+Perform a clean post-correction independent, read-only governance audit using `docs/layer-system/INDEPENDENT-AUDIT-CHECKLIST.md`. The previous independent audits identified defects; their supported findings have been reconciled into the governance files, but the installer cannot certify its own corrections. Do not change app behavior. If the clean audit passes, record the result and ask the user for a separate grant before beginning Layer 1.
 
 ## Conflict rule
 

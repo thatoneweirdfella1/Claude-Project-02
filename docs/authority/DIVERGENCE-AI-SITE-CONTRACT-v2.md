@@ -2633,17 +2633,12 @@ The v1 audit proved one-to-one coverage of its own inventory, but did not indepe
 - Do not modify `build`.
 - Do not use Cowork's old `RQ-*` meanings as this Contract's repair identifiers.
 
-## 16. Standalone FIX ALL command
+## 16. Retired standalone FIX ALL command
+
+The standalone command formerly stored here is superseded. Repair IDs remain coverage obligations, but they are not the work sequence. Any future `FIX ALL` instruction means: execute the next declared coherent batch of the current horizontal layer after the governed preflight and exact permission gates pass.
 
 ```text
-Use DIVERGENCE-AI-SITE-CONTRACT-v2.md and DIVERGENCE-AI-FIX-ALL-IMPLEMENTATION-AUTHORITY-v2.md as the controlling authority.
-Work only on the isolated non-production implementation branch unless I explicitly authorize a different branch.
-Implement every V2-RQ repair. The approved behavior in the v2 Control & Behavior Map wins over current code.
-Do not use the superseded v1 156-ID denominator or Cowork's unrelated RQ numbering to decide that work is complete.
-BLOCKED/UNTESTED/live-unavailable only limits verification; it does not block source implementation.
-Only a specific v2 Decision Queue item may pause its own affected decision. Continue everything else.
-Never modify build or deploy to production without separate authorization.
-At completion, report each V2-RQ with files changed, tests run, pass/fail, live pending, external pending, and decision pending.
+Open the governed continuation repository in read-only mode. Read START-HERE-DIVERGENCE.md and run the structural preflight. If and only if the preflight passes, PERMISSIONS.yml authorizes the exact action, and CURRENT-LAYER-STATUS.md declares one coherent batch, execute that batch under HORIZONTAL-LAYER-COMPLETION-SYSTEM.md. Do not process repair groups sequentially and do not begin another layer without its gate and user authorization.
 ```
 
 ## 17. Global v2 self-audit

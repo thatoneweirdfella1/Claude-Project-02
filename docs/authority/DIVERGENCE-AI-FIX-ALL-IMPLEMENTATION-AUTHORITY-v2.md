@@ -1,6 +1,8 @@
 # DIVERGENCE.AI — FIX ALL IMPLEMENTATION AUTHORITY v2
 
-**This supersedes the old FIX ALL file.** The old file was derived from an incomplete decision denominator.
+> **SUPERSEDED AS A STANDALONE IMPLEMENTATION TRIGGER.** This file is retained as historical repair-register evidence only. Do not execute the command or sequential workflow below. Under the active horizontal governance, `FIX ALL` means: execute the next declared coherent batch of the current horizontal layer, only after repository preflight and exact permissions pass. `HORIZONTAL-LAYER-COMPLETION-SYSTEM.md`, `LAYER-DEFINITIONS.yml`, `CURRENT-LAYER-STATUS.md`, and `PERMISSIONS.yml` control execution.
+
+**Historical note:** This file superseded an older FIX ALL denominator, but its own sequential command was later superseded by the horizontal layer system.
 
 ## Controlling sources
 
@@ -16,7 +18,7 @@
 - **Never modify `build`.**
 - Do not merge/deploy to production unless separately authorized.
 
-## FIX ALL command semantics
+## Historical FIX ALL command semantics — non-operational
 
 When the user says `FIX ALL`, execute every v2 repair group in order.
 
@@ -84,7 +86,7 @@ FIX ALL is not complete until:
 - `build` remains untouched;
 - the final report names every changed file and separates implemented, tested, live-pending, external-pending and decision-pending states.
 
-## Copy-paste command
+## Retired copy-paste command — do not execute
 
 ```text
 Use DIVERGENCE-AI-FIX-ALL-IMPLEMENTATION-AUTHORITY-v2.md as the controlling implementation instruction.

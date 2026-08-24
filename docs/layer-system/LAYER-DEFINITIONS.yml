@@ -1,7 +1,7 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "source": "docs/layer-system/HORIZONTAL-LAYER-COMPLETION-SYSTEM.md",
-  "closed_statuses": [
+  "allowed_statuses": [
     "PROVEN",
     "IMPLEMENTED — NOT FULLY PROVEN",
     "PARTIAL",
@@ -11,14 +11,196 @@
     "UNKNOWN — INSPECTION REQUIRED",
     "N/A AT THIS DEPTH — <reason>"
   ],
-  "platform_scoped_ids": ["SPEC-DS-01"],
+  "completion_predicate": {
+    "completes_applicable_row": ["PROVEN"],
+    "completes_nonapplicable_row": ["N/A AT THIS DEPTH — <exact allowlist clause>"],
+    "gate_only_statuses": ["PASS", "FAIL"],
+    "all_218_rows_required": true,
+    "blocked_or_unresolved_rows_complete_layer": false
+  },
+  "platform_scope": {
+    "web_layers": ["L1", "L2", "L3", "L4", "L5", "L6", "L7"],
+    "separate_track_ids": ["SPEC-DS-01"],
+    "separate_track": "Desktop/Windows",
+    "clause": "desktop/Windows requirement is retained in the master denominator but is proven only on the separate desktop track"
+  },
+  "decision_blockers": [
+    {"id":"V2-DQ-001","affected_ids":["KB-01"],"blocks_from":"L2"},
+    {"id":"V2-DQ-002","affected_ids":["KB-04"],"blocks_from":"L2"},
+    {"id":"V2-DQ-003","affected_ids":["KB-05"],"blocks_from":"L2"},
+    {"id":"V2-DQ-004","affected_ids":["KB-07"],"blocks_from":"L2"},
+    {"id":"V2-DQ-005","affected_ids":["SRC-VIS-01","SPEC-SE-02"],"blocks_from":null,"rule":"approved fixed-desktop scope remains provable while mobile/reflow is unresolved"},
+    {"id":"V2-DQ-006","affected_ids":["SPEC-DV-08","SPEC-DV-09"],"blocks_from":"L6"},
+    {"id":"V2-DQ-007","affected_ids":["SPEC-DV-01","SPEC-DV-02"],"blocks_from":"L1"}
+  ],
+  "project_task_blockers": [
+    {"id":"SPEC-LS-01","affected_ids":["SPEC-LS-01"],"blocks_from":"L3","reason":"documented Learnable Signal Patterns task acceptance remains unresolved"},
+    {"id":"SPEC-FB-01","affected_ids":["SPEC-FB-01"],"blocks_from":"L6","reason":"documented Fable recommendation/translation task acceptance remains unresolved"}
+  ],
+  "test_result_contract": {
+    "required_fields": ["test_id", "layer", "assertions", "environment", "result"],
+    "result_values": ["PASS", "FAIL", "BLOCKED"],
+    "rule": "a test verdict proves only the named layer assertions and environment; an undifferentiated full-depth verdict cannot promote multiple layers"
+  },
   "layers": [
-    {"id":"L1","name":"REACHABLE","entry":"governance audit PASS and app-change permission","exit":"every applicable screen, route, link, label, and destination is reachable","required_evidence":["route_or_shell_test","visual_destination_evidence"],"allowed_na":[]},
-    {"id":"L2","name":"INTERACTIVE","entry":"L1 complete","exit":"every applicable control reacts and exposes correct states","required_evidence":["control_state_test","keyboard_focus_accessibility_result"],"allowed_na":[]},
-    {"id":"L3","name":"LOCALLY USEFUL","entry":"L2 complete","exit":"every applicable feature performs its approved basic local function","required_evidence":["local_end_to_end_result","no_fake_external_success_check"],"allowed_na":[]},
-    {"id":"L4","name":"DURABLE","entry":"L3 complete","exit":"applicable data saves, reloads, resumes, migrates, and recovers","required_evidence":["persistence_test","reload_recovery_result"],"allowed_na":[]},
-    {"id":"L5","name":"MONEY-SAFE","entry":"L4 complete","exit":"accounts, allowances, costs, billing, and ledgers are safe","required_evidence":["sandbox_result","concurrency_idempotency_result"],"allowed_na":[]},
-    {"id":"L6","name":"CONNECTED","entry":"L5 complete","exit":"approved providers and services operate through real adapters","required_evidence":["provider_adapter_result","connection_or_exact_credential_blocker"],"allowed_na":[]},
-    {"id":"L7","name":"PRODUCTION-VERIFIED","entry":"L6 complete","exit":"matching deployed code passes all release gates","required_evidence":["deployment_identity","full_regression","security_accessibility_recovery_migration"],"allowed_na":[]}
+    {
+      "id":"L1",
+      "name":"REACHABLE",
+      "entry":"corrected governance independently audited PASS and app-change permission granted",
+      "exit":"every applicable screen, route, link, label, and destination is reachable on a matching identifiable preview",
+      "applicable_id_rule":"all registered IDs except the exact allowed_na entries below",
+      "required_evidence":["route_or_shell_test","visual_destination_evidence","matching_deployment_identity"],
+      "allowable_blocker_classes":["decision","permission","deployment_identity","project_task"],
+      "walkthrough":"Click every visible navigation control once and confirm that it reaches the destination named by its approved label.",
+      "allowed_na":[
+        {"id":"ADV-01","clause":"advanced-control behavior begins at L2 interaction depth"},
+        {"id":"ADV-02","clause":"advanced-control behavior begins at L2 interaction depth"},
+        {"id":"ADV-03","clause":"advanced-control behavior begins at L2 interaction depth"},
+        {"id":"ADV-04","clause":"advanced-control behavior begins at L2 interaction depth"},
+        {"id":"ADV-05","clause":"advanced-control behavior begins at L2 interaction depth"},
+        {"id":"KB-01","clause":"keyboard-command behavior begins at L2 interaction depth"},
+        {"id":"KB-02","clause":"keyboard-command behavior begins at L2 interaction depth"},
+        {"id":"KB-03","clause":"keyboard-command behavior begins at L2 interaction depth"},
+        {"id":"KB-04","clause":"keyboard-command behavior begins at L2 interaction depth"},
+        {"id":"KB-05","clause":"keyboard-command behavior begins at L2 interaction depth"},
+        {"id":"KB-06","clause":"keyboard-command behavior begins at L2 interaction depth"},
+        {"id":"KB-07","clause":"keyboard-command behavior begins at L2 interaction depth"},
+        {"id":"KB-08","clause":"keyboard-command behavior begins at L2 interaction depth"},
+        {"id":"KB-09","clause":"keyboard-command behavior begins at L2 interaction depth"},
+        {"id":"SPEC-CC-03","clause":"authoritative credit reservation begins at L5 money-safety depth"},
+        {"id":"SPEC-CC-04","clause":"authoritative cost reconciliation begins at L5 money-safety depth"},
+        {"id":"SPEC-CC-06","clause":"concurrent balance invariant begins at L5 money-safety depth"},
+        {"id":"SPEC-CC-07","clause":"charge and credit idempotency begins at L5 money-safety depth"},
+        {"id":"SPEC-CC-09","clause":"production Developer billing boundary begins at L5 money-safety depth"},
+        {"id":"SPEC-EG-01","clause":"security/privacy release gate first applies when real identity and stored data begin at L4"},
+        {"id":"SPEC-EG-02","clause":"prompt-injection gate first applies when untrusted imported content becomes locally usable at L3"},
+        {"id":"SPEC-EG-03","clause":"accessibility gate begins at L2 interaction depth"},
+        {"id":"SPEC-EG-04","clause":"ADHD-friction gate begins at L2 interaction depth"},
+        {"id":"SPEC-EG-05","clause":"historical-data migration gate begins at L4 durability depth"},
+        {"id":"SPEC-PN-01","clause":"refreshable provider registry behavior begins at L2 state depth and becomes real at L6"},
+        {"id":"SPEC-PN-02","clause":"registry stale/deprecated behavior begins at L2 state depth and becomes real at L6"},
+        {"id":"SPEC-PN-14","clause":"provider adapter execution begins at L6 connected depth"},
+        {"id":"SPEC-TR-01","clause":"Translator Engine option behavior begins at L2 interaction depth"},
+        {"id":"SPEC-TS-01","clause":"Translate and Ask state-machine behavior begins at L2 interaction depth"},
+        {"id":"SPEC-TS-02","clause":"Translate and Ask state-machine behavior begins at L2 interaction depth"},
+        {"id":"SPEC-TS-03","clause":"Translate and Ask state-machine behavior begins at L2 interaction depth"},
+        {"id":"SPEC-TS-04","clause":"Translate and Ask state-machine behavior begins at L2 interaction depth"},
+        {"id":"SPEC-TS-05","clause":"Translate and Ask state-machine behavior begins at L2 interaction depth"},
+        {"id":"SPEC-TS-06","clause":"Translate and Ask state-machine behavior begins at L2 interaction depth"},
+        {"id":"SPEC-TS-07","clause":"Translate and Ask state-machine behavior begins at L2 interaction depth"},
+        {"id":"SPEC-TS-08","clause":"Translate and Ask state-machine behavior begins at L2 interaction depth"},
+        {"id":"SPEC-TS-09","clause":"Translate and Ask state-machine behavior begins at L2 interaction depth"},
+        {"id":"SRC-COST-01","clause":"authoritative cost execution begins at L5 money-safety depth"},
+        {"id":"SRC-SEC-01","clause":"real protected-API credential flow begins at L4 identity depth"},
+        {"id":"SPEC-DS-01","clause":"desktop/Windows requirement is retained in the master denominator but is proven only on the separate desktop track"}
+      ]
+    },
+    {
+      "id":"L2",
+      "name":"INTERACTIVE",
+      "entry":"L1 complete",
+      "exit":"every applicable control reacts and exposes correct states, keyboard behavior, focus, accessibility, and ADHD-safe recovery",
+      "applicable_id_rule":"all registered IDs except the exact allowed_na entries below",
+      "required_evidence":["control_state_test","keyboard_focus_accessibility_result","adhd_friction_result","matching_deployment_identity"],
+      "allowable_blocker_classes":["decision","permission","deployment_identity","project_task"],
+      "walkthrough":"Click through every screen and confirm that each control reacts honestly without claiming an external success.",
+      "allowed_na":[
+        {"id":"SPEC-CC-03","clause":"authoritative credit reservation begins at L5 money-safety depth"},
+        {"id":"SPEC-CC-04","clause":"authoritative cost reconciliation begins at L5 money-safety depth"},
+        {"id":"SPEC-CC-06","clause":"concurrent balance invariant begins at L5 money-safety depth"},
+        {"id":"SPEC-CC-07","clause":"charge and credit idempotency begins at L5 money-safety depth"},
+        {"id":"SPEC-CC-09","clause":"production Developer billing boundary begins at L5 money-safety depth"},
+        {"id":"SPEC-EG-01","clause":"security/privacy release gate first applies when real identity and stored data begin at L4"},
+        {"id":"SPEC-EG-02","clause":"prompt-injection gate first applies when untrusted imported content becomes locally usable at L3"},
+        {"id":"SPEC-EG-05","clause":"historical-data migration gate begins at L4 durability depth"},
+        {"id":"SPEC-PN-14","clause":"provider adapter execution begins at L6 connected depth"},
+        {"id":"SRC-COST-01","clause":"authoritative cost execution begins at L5 money-safety depth"},
+        {"id":"SRC-SEC-01","clause":"real protected-API credential flow begins at L4 identity depth"},
+        {"id":"SPEC-DS-01","clause":"desktop/Windows requirement is retained in the master denominator but is proven only on the separate desktop track"}
+      ]
+    },
+    {
+      "id":"L3",
+      "name":"LOCALLY USEFUL",
+      "entry":"L2 complete",
+      "exit":"every applicable feature performs its approved basic local/manual function without fake external success",
+      "applicable_id_rule":"all registered IDs except the exact allowed_na entries below",
+      "required_evidence":["local_end_to_end_result","no_fake_external_success_check","untrusted_content_boundary_result","matching_deployment_identity"],
+      "allowable_blocker_classes":["decision","permission","deployment_identity","project_task"],
+      "walkthrough":"Complete one local/manual session from context through request handoff, response import, save, and export.",
+      "allowed_na":[
+        {"id":"SPEC-CC-03","clause":"authoritative credit reservation begins at L5 money-safety depth"},
+        {"id":"SPEC-CC-04","clause":"authoritative cost reconciliation begins at L5 money-safety depth"},
+        {"id":"SPEC-CC-06","clause":"concurrent balance invariant begins at L5 money-safety depth"},
+        {"id":"SPEC-CC-07","clause":"charge and credit idempotency begins at L5 money-safety depth"},
+        {"id":"SPEC-CC-09","clause":"production Developer billing boundary begins at L5 money-safety depth"},
+        {"id":"SPEC-EG-01","clause":"security/privacy release gate first applies when real identity and stored data begin at L4"},
+        {"id":"SPEC-EG-05","clause":"historical-data migration gate begins at L4 durability depth"},
+        {"id":"SPEC-PN-14","clause":"provider adapter execution begins at L6 connected depth"},
+        {"id":"SRC-COST-01","clause":"authoritative cost execution begins at L5 money-safety depth"},
+        {"id":"SRC-SEC-01","clause":"real protected-API credential flow begins at L4 identity depth"},
+        {"id":"SPEC-DS-01","clause":"desktop/Windows requirement is retained in the master denominator but is proven only on the separate desktop track"}
+      ]
+    },
+    {
+      "id":"L4",
+      "name":"DURABLE",
+      "entry":"L3 complete",
+      "exit":"applicable data saves, reloads, resumes, migrates, recovers, and respects real identity/privacy boundaries",
+      "applicable_id_rule":"all registered IDs except the exact allowed_na entries below",
+      "required_evidence":["persistence_test","reload_recovery_result","identity_privacy_security_result","migration_result","matching_deployment_identity"],
+      "allowable_blocker_classes":["decision","permission","deployment_identity","credential","project_task"],
+      "walkthrough":"Create work, close and reopen, then verify approved work and settings restore in the correct state.",
+      "allowed_na":[
+        {"id":"SPEC-CC-03","clause":"authoritative credit reservation begins at L5 money-safety depth"},
+        {"id":"SPEC-CC-04","clause":"authoritative cost reconciliation begins at L5 money-safety depth"},
+        {"id":"SPEC-CC-06","clause":"concurrent balance invariant begins at L5 money-safety depth"},
+        {"id":"SPEC-CC-07","clause":"charge and credit idempotency begins at L5 money-safety depth"},
+        {"id":"SPEC-CC-09","clause":"production Developer billing boundary begins at L5 money-safety depth"},
+        {"id":"SPEC-PN-14","clause":"provider adapter execution begins at L6 connected depth"},
+        {"id":"SRC-COST-01","clause":"authoritative cost execution begins at L5 money-safety depth"},
+        {"id":"SPEC-DS-01","clause":"desktop/Windows requirement is retained in the master denominator but is proven only on the separate desktop track"}
+      ]
+    },
+    {
+      "id":"L5",
+      "name":"MONEY-SAFE",
+      "entry":"L4 complete",
+      "exit":"accounts, allowances, costs, billing, and ledgers are safe and the exact money-safety gate checkpoint is recorded",
+      "applicable_id_rule":"all registered IDs except the exact allowed_na entries below",
+      "required_evidence":["sandbox_result","concurrency_idempotency_result","money_gate_checkpoint","matching_deployment_identity"],
+      "allowable_blocker_classes":["decision","permission","deployment_identity","external_payment_sandbox","project_task"],
+      "walkthrough":"Using test money only, verify an allowed, cancelled, and over-cap request each disclose payer, maximum, and no-charge alternative.",
+      "allowed_na":[
+        {"id":"SPEC-PN-14","clause":"provider adapter execution begins at L6 connected depth"},
+        {"id":"SPEC-DS-01","clause":"desktop/Windows requirement is retained in the master denominator but is proven only on the separate desktop track"}
+      ]
+    },
+    {
+      "id":"L6",
+      "name":"CONNECTED",
+      "entry":"L5 complete with recorded money-safety gate checkpoint",
+      "exit":"approved providers and services operate through real adapters with secret, cost, retry, and prompt-injection boundaries proven",
+      "applicable_id_rule":"all registered IDs except the exact allowed_na entries below",
+      "required_evidence":["provider_adapter_result","connection_or_exact_credential_blocker","prompt_injection_result","matching_deployment_identity"],
+      "allowable_blocker_classes":["decision","permission","deployment_identity","credential","provider_availability","project_task"],
+      "walkthrough":"Complete one Universal/manual and one authorized connected journey and verify both preserve meaning and recover safely from provider failure.",
+      "allowed_na":[
+        {"id":"SPEC-DS-01","clause":"desktop/Windows requirement is retained in the master denominator but is proven only on the separate desktop track"}
+      ]
+    },
+    {
+      "id":"L7",
+      "name":"PRODUCTION-VERIFIED",
+      "entry":"L6 complete",
+      "exit":"matching deployed code passes all complete-product release gates and no supported row remains blocked or unresolved",
+      "applicable_id_rule":"all registered IDs except the exact allowed_na entries below",
+      "required_evidence":["deployment_identity","full_regression","security_privacy","prompt_injection","accessibility","adhd_friction","recovery","migration","representative_live_flows"],
+      "allowable_blocker_classes":[],
+      "walkthrough":"Use the supported product end to end once; formal promotion still requires the complete automated and independent evidence set.",
+      "allowed_na":[
+        {"id":"SPEC-DS-01","clause":"desktop/Windows requirement is retained in the master denominator but is proven only on the separate desktop track"}
+      ]
+    }
   ]
 }

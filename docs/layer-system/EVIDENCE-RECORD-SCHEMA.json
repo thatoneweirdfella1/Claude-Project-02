@@ -3,20 +3,60 @@
   "title": "DIVERGENCE.AI layer evidence record",
   "type": "object",
   "additionalProperties": false,
-  "required": ["permanent_id","layer","authority_citations","implementation_paths","test_results","manual_or_live_results","artifact_paths","artifact_sha256","implementation_commit","evidence_commit","actual_result","auditor_result"],
+  "required": ["permanent_id","layer","authority_citations","implementation_paths","evidence_types","test_results","workflow_results","manual_or_live_results","artifact_paths","artifact_sha256","implementation_commit","evidence_commit","actual_result","auditor_result"],
   "properties": {
     "permanent_id": {"type":"string"},
     "layer": {"enum":["L1","L2","L3","L4","L5","L6","L7"]},
     "authority_citations": {"type":"array","items":{"type":"string"},"minItems":1},
     "implementation_paths": {"type":"array","items":{"type":"string"}},
-    "test_results": {"type":"array","items":{"type":"object"}},
+    "evidence_types": {"type":"array","items":{"type":"string"},"uniqueItems":true},
+    "test_results": {"type":"array","items":{"$ref":"#/$defs/layerResult"}},
+    "workflow_results": {"type":"array","items":{"$ref":"#/$defs/workflowResult"}},
     "manual_or_live_results": {"type":"array","items":{"type":"object"}},
     "artifact_paths": {"type":"array","items":{"type":"string"}},
     "artifact_sha256": {"type":"array","items":{"type":"string"}},
     "implementation_commit": {"type":"string","pattern":"^[0-9a-f]{40}$"},
     "evidence_commit": {"type":"string","pattern":"^[0-9a-f]{40}$"},
-    "deployment_identity": {"type":["object","null"]},
+    "deployment_identity": {
+      "type":["object","null"],
+      "required":["url","commit_sha"],
+      "properties": {
+        "url":{"type":"string","minLength":1},
+        "commit_sha":{"type":"string","pattern":"^[0-9a-f]{40}$"},
+        "provider":{"type":"string"},
+        "observed_at":{"type":"string"}
+      },
+      "additionalProperties":false
+    },
     "actual_result": {"type":"string","minLength":1},
     "auditor_result": {"enum":["PROVEN","IMPLEMENTED — NOT FULLY PROVEN","PARTIAL","BLOCKED","CONFLICT","UNKNOWN"]}
+  },
+  "$defs": {
+    "layerResult": {
+      "type":"object",
+      "additionalProperties":false,
+      "required":["test_id","layer","assertions","environment","result"],
+      "properties": {
+        "test_id":{"type":"string"},
+        "layer":{"enum":["L1","L2","L3","L4","L5","L6","L7"]},
+        "assertions":{"type":"array","items":{"type":"string"},"minItems":1},
+        "environment":{"type":"string","minLength":1},
+        "result":{"enum":["PASS","FAIL","BLOCKED"]},
+        "artifact_paths":{"type":"array","items":{"type":"string"}}
+      }
+    },
+    "workflowResult": {
+      "type":"object",
+      "additionalProperties":false,
+      "required":["workflow_id","layer","assertions","environment","result"],
+      "properties": {
+        "workflow_id":{"type":"string"},
+        "layer":{"enum":["L1","L2","L3","L4","L5","L6","L7"]},
+        "assertions":{"type":"array","items":{"type":"string"},"minItems":1},
+        "environment":{"type":"string","minLength":1},
+        "result":{"enum":["PASS","FAIL","BLOCKED"]},
+        "artifact_paths":{"type":"array","items":{"type":"string"}}
+      }
+    }
   }
 }

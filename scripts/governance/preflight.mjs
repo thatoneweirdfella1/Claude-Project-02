@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process'
-import { exists, git, read, readJson, registryIds, trackedFiles } from './lib.mjs'
+import { exists, git, read, readJson, registryIds, sha256 } from './lib.mjs'
 import { verifyLedger } from './verify-ledger.mjs'
 import { verifyEvidence } from './verify-evidence.mjs'
 import { verifyProtectedPaths } from './verify-protected-paths.mjs'
@@ -30,6 +30,15 @@ export function runPreflight({ print = true } = {}) {
   if (!/^[0-9a-f]{40}$/.test(head)) errors.push('runtime HEAD is not a full SHA')
   if (git(['merge-base','--is-ancestor',source.source_commit,'HEAD'], { allowFailure: true }).status !== 0) errors.push('source checkpoint is not an ancestor of HEAD')
 
+  for (const authority of manifest.authorities || []) {
+    if (!exists(authority.canonical_path)) {
+      errors.push(`manifest authority is missing: ${authority.canonical_path}`)
+      continue
+    }
+    const actual = sha256(read(authority.canonical_path))
+    if (actual !== authority.content_sha256) errors.push(`manifest hash mismatch: ${authority.canonical_path}`)
+  }
+
   const derive = spawnSync(process.execPath, ['scripts/governance/derive-registries.mjs','--check'], { cwd: new URL('../..', import.meta.url), encoding:'utf8' })
   if (derive.status !== 0) errors.push(`registry derivation failed: ${(derive.stderr || derive.stdout).trim()}`)
 
@@ -38,10 +47,19 @@ export function runPreflight({ print = true } = {}) {
   for (const [name, denominator] of Object.entries(manifest.denominators || {})) {
     const count = registryIds(denominator.registry_path).length
     if (count !== denominator.verified_count) errors.push(`${name} registry count ${count} differs from manifest ${denominator.verified_count}`)
+    for (let index = 0; index < (denominator.source_paths || []).length; index += 1) {
+      const sourcePath = denominator.source_paths[index]
+      const expectedHash = denominator.source_sha256?.[index]
+      if (!exists(sourcePath)) errors.push(`${name} denominator source is missing: ${sourcePath}`)
+      else if (sha256(read(sourcePath)) !== expectedHash) errors.push(`${name} denominator source hash mismatch: ${sourcePath}`)
+    }
   }
 
   const allowlisted = new Set(read('docs/layer-system/TEMPLATE-MARKER-ALLOWLIST.txt').split(/\r?\n/).filter((line) => line && !line.startsWith('#')))
-  for (const file of trackedFiles()) {
+  const trackedResult = git(['ls-files'], { allowFailure: true })
+  if (trackedResult.status !== 0) errors.push(`tracked-file scan unavailable: ${trackedResult.stderr || 'not a Git checkout'}`)
+  const tracked = (trackedResult.stdout || '').split(/\r?\n/).filter(Boolean)
+  for (const file of tracked) {
     if (allowlisted.has(file)) continue
     let body
     try { body = read(file) } catch { continue }
