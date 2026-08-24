@@ -13,22 +13,43 @@ function globToRegex(glob) {
   return new RegExp(`^${escaped}$`)
 }
 
+function changedPaths(result) {
+  return (result.stdout || '').split(/\r?\n/).filter(Boolean).map((p) => p.replace(/\\/g, '/'))
+}
+
+function validException(entry, path) {
+  if (!entry || entry.authorized !== true || !entry.path || !entry.authorization || !entry.reason) return false
+  return globToRegex(entry.path).test(path)
+}
+
+function rejectUnexceptedChanges(errors, label, result, exceptions) {
+  if (result.status !== 0) {
+    errors.push(`${label} comparison failed: ${result.stderr}`)
+    return
+  }
+  const unexcepted = changedPaths(result).filter((path) => !exceptions.some((entry) => validException(entry, path)))
+  if (unexcepted.length) errors.push(`${label} paths changed without an authorized exception: ${unexcepted.join(', ')}`)
+}
+
 export function verifyProtectedPaths() {
   const errors = []
   const checkout = git(['rev-parse','--is-inside-work-tree'], { allowFailure: true })
   if (checkout.status !== 0 || checkout.stdout !== 'true') return ['protected-path verification requires a real Git checkout']
   const config = readJson('docs/layer-system/PROTECTED-PATHS.yml')
   const baseline = readJson(config.governance_baseline_file)
+  const exceptionDoc = readJson('docs/layer-system/PROTECTED-PATH-EXCEPTIONS.yml')
+  const exceptions = exceptionDoc.exceptions || []
   if (!/^[0-9a-f]{40}$/.test(baseline.baseline_commit || '')) errors.push('governance baseline commit is not set')
+  for (const entry of exceptions) {
+    if (!entry.path || entry.authorized !== true || !entry.authorization || !entry.reason) errors.push('protected-path exception is incomplete or not explicitly authorized')
+  }
 
   const sourceDiff = git(['diff','--name-only',config.source_checkpoint,'--',...config.source_protected], { allowFailure: true })
-  if (sourceDiff.status !== 0) errors.push(`source protected-path comparison failed: ${sourceDiff.stderr}`)
-  else if (sourceDiff.stdout) errors.push(`source-protected paths changed: ${sourceDiff.stdout.replace(/\n/g, ', ')}`)
+  rejectUnexceptedChanges(errors, 'source-protected', sourceDiff, exceptions)
 
   if (/^[0-9a-f]{40}$/.test(baseline.baseline_commit || '')) {
     const governanceDiff = git(['diff','--name-only',baseline.baseline_commit,'--',...config.governance_protected], { allowFailure: true })
-    if (governanceDiff.status !== 0) errors.push(`governance baseline comparison failed: ${governanceDiff.stderr}`)
-    else if (governanceDiff.stdout) errors.push(`governance-protected paths changed: ${governanceDiff.stdout.replace(/\n/g, ', ')}`)
+    rejectUnexceptedChanges(errors, 'governance-protected', governanceDiff, exceptions)
   }
 
   const trackedResult = git(['ls-files'], { allowFailure: true })
