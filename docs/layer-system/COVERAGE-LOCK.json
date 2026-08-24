@@ -20,8 +20,8 @@
   "independent_audit_required": true,
   "independent_audit_verdict": "PASS",
   "application_permission_required": "modify_application_behavior",
-  "application_permission_currently_granted": true,
+  "application_permission_currently_granted": false,
   "protected_governance_ref_required_before_app_edits": true,
   "protected_governance_ref_currently_available": true,
-  "exact_next_action": "Implement and verify the declared L1 canonical whole-site navigation batch, checkpoint it on horizontal-layer-completion-v1, then continue directly into L2 as explicitly authorized."
+  "exact_next_action": "Create horizontal-layer-3-implementation-v1 from the verified current tip of the read-only Layer 1–2 checkpoint branch, switch to it, and run read-only preflight."
 }

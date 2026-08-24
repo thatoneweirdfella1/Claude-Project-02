@@ -4,7 +4,8 @@
 **Created:** August 23, 2026  
 **Corrected:** August 24, 2026, after the earlier multi-model findings and the fresh Sonnet 4.6 / GPT-5.6 Sol post-correction audits were reconciled against the governing packet.  
 **Verified source checkpoint:** `cowork-complete-preview-20260823@16beca26c305bd9bdae088eb8e977ca1e9730747`  
-**Governed continuation branch:** `horizontal-layer-completion-v1`  
+**Completed Layer 1–2 checkpoint branch:** `horizontal-layer-completion-v1`  
+**Required Layer 3 working branch:** `horizontal-layer-3-implementation-v1`  
 **Protected unless separately authorized:** `build` and `frozen-implementation-v1`
 
 ## Read this first — the whole method in one minute
@@ -569,6 +570,12 @@ This table prevents a repair from being “closed” at the first shallow layer 
 
 ## 18. Execution workflow used inside every layer
 
+### Mandatory branch transition between layers
+
+Every completed horizontal depth is an immutable source checkpoint for the next account. The next layer must use a new, explicitly named branch created from the verified current remote tip of the completed-layer branch. The completed branch may never be advanced by the next layer. Startup documents, `SOURCE-CHECKPOINT.json`, `PERMISSIONS.yml`, and preflight must all agree on the source branch and required new branch; a prompt cannot override a mismatch.
+
+For the current transition, `horizontal-layer-completion-v1` is read-only and Layer 3 may be developed only on `horizontal-layer-3-implementation-v1`. Later transitions repeat the same rule with a newly recorded exact source and destination branch.
+
 Each layer follows the same bounded operating cycle:
 
 1. **Resume:** Read the governing instructions, current layer status, exact checkpoint, and active blockers before inspecting code.
@@ -581,7 +588,7 @@ Each layer follows the same bounded operating cycle:
 8. **Checkpoint:** Commit coherent work and update the ledger; do not label the layer complete.
 9. **Repeat:** Continue the next site-wide batch until every applicable ledger row is resolved.
 10. **Whole-layer gate:** Run full tests/build, immutable matching preview, whole-layer acceptance suite, coverage reconciliation, and one independent read-only audit whose session differs from implementation.
-11. **Promote the checkpoint:** After the audit passes, the user accepts it, and the promotion permission is granted, record the exact layer-complete commit/preview and only then begin the next layer.
+11. **Promote and isolate the checkpoint:** After the audit passes, the user accepts it, and the promotion permission is granted, record the exact layer-complete commit/preview, mark that branch read-only, update the branch router and permissions in a governance-only checkpoint, and require the next layer to begin on its own new branch.
 
 If step 9 fails, do not promote. Record the failing IDs/tests/evidence, preserve the last stable layer checkpoint, define one bounded corrective batch, and rerun the gate only after the recorded failures are addressed.
 

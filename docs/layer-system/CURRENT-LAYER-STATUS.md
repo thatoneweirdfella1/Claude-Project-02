@@ -3,9 +3,12 @@
 **Governance state:** POST-CORRECTION INDEPENDENT AUDIT PASSED AND USER ACCEPTED  
 **Verified through app source commit:** `16beca26c305bd9bdae088eb8e977ca1e9730747`  
 **Last implemented horizontal depth:** `L2 — IMPLEMENTED, NOT INDEPENDENTLY PROVEN`  
+**Last completed horizontal layer:** `NONE`  
 **Active layer:** `NONE`  
 **Active coherent batch:** `NONE`  
 **Application edits permitted:** `NO FURTHER LAYER — L1/L2 AUTHORIZATION CONSUMED`  
+**Completed checkpoint branch:** `horizontal-layer-completion-v1 — READ ONLY`  
+**Required next working branch:** `horizontal-layer-3-implementation-v1`  
 
 **L1 implementation checkpoint:** `5f90a8014bffd573fd1aa2207405077d72765f1c` — 70 test files / 650 deployed tests passed, Vercel preview `dpl_9nNhEATfhjMHJre2GRE2BDVygV99` is READY and returned HTTP 200. The implementation session records this as implemented evidence, not an independent `PROVEN` certification.
 
@@ -13,7 +16,7 @@
 
 ## Exact next action
 
-Stop and wait for the user's next exact instruction. Do not begin L3, merge, or promote to production.
+Create `horizontal-layer-3-implementation-v1` from the verified current remote tip of `horizontal-layer-completion-v1`, switch to the new branch, and run read-only preflight there. Do not edit the completed branch. Do not begin L3 application work until its grant is recorded on the new branch.
 
 ## Honest initial state
 

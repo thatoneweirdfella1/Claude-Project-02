@@ -4,7 +4,8 @@
 **Created:** August 23, 2026  
 **Repository named by the existing authority:** `thatoneweirdfella1/Claude-Project-02`  
 **Verified source checkpoint:** `cowork-complete-preview-20260823@16beca26c305bd9bdae088eb8e977ca1e9730747`  
-**Governed isolated continuation branch:** `horizontal-layer-completion-v1`  
+**Initial governed continuation branch:** `horizontal-layer-completion-v1`  
+**Current required next-layer branch:** `horizontal-layer-3-implementation-v1`  
 **Protected branch names already identified:** `build`, `frozen-implementation-v1`  
 
 This document does **not** authorize branch creation, repository writes, commits, pushes, ruleset changes, pull requests, merges, deployments, paid services, secret access, or app-code changes. Each capability requires a separate, dated user grant recorded in `PERMISSIONS.yml` before it is used.
@@ -13,7 +14,7 @@ This document does **not** authorize branch creation, repository writes, commits
 
 ## Read this first — the answer in one screen
 
-Use the existing repository, not a second repository. Continue on the installed isolated branch from the verified source checkpoint above. Re-verify repository/remote/branch/commit and the remote lease mechanically; do not replace the recorded checkpoint from memory.
+Use the existing repository, not a second repository. Use a new branch for each deeper horizontal layer. A completed-layer branch becomes read-only; the incoming account must create the exact next-layer branch recorded by the repository router from the verified current remote tip of the completed branch, switch to it, and only then seek application permission. Re-verify repository/remote/branch/commit and the remote lease mechanically; do not replace the recorded checkpoint from memory.
 
 The repository must carry the complete continuation state. A context-free AI receives one startup instruction, reads the repository routers, runs a read-only preflight, and may edit only when the preflight and its effective permissions allow the exact action.
 
@@ -85,6 +86,7 @@ It prevents:
 10. Do not let a working-branch edit weaken its own validator or protected baseline.
 11. Do not expose, record, or hash secret values.
 12. Do not merge or deploy merely because implementation and tests pass.
+13. Never implement a deeper layer on the branch that contains the completed previous layer. Branch-per-layer isolation is mandatory and must be mechanically enforced by startup routing, source identity, permissions, and preflight.
 
 ## 4. Facts, claims, and derived registries
 
@@ -93,7 +95,8 @@ It prevents:
 - The intended existing repository name is `thatoneweirdfella1/Claude-Project-02`.
 - `build` and `frozen-implementation-v1` are protected unless the user separately authorizes a change.
 - `cowork-complete-preview-20260823@16beca26c305bd9bdae088eb8e977ca1e9730747` is the verified source checkpoint recorded by the installed governance.
-- `horizontal-layer-completion-v1` is the governed continuation branch.
+- `horizontal-layer-completion-v1` is the completed Layer 1–2 checkpoint and is read-only for deeper work.
+- `horizontal-layer-3-implementation-v1` is the exact required Layer 3 branch.
 - The web strategy has seven layers, from `L1 REACHABLE` through `L7 WEB PRODUCTION-VERIFIED`; Desktop/Windows remains a separate retained track.
 
 ### 4.2 Counts are expected claims until derived

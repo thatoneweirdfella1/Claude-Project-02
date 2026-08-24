@@ -7,7 +7,7 @@
   "required_tests": [
     "npm test", "npm run build", "safe interaction component tests", "visible native-control contract", "remote branch-preview availability and deployment identity"
   ],
-  "entry_head": "e10ee9f1c64fee5f8faccd1832ef19703bc65f33",
-  "start_remote_head": "e10ee9f1c64fee5f8faccd1832ef19703bc65f33",
-  "exact_next_action": "Stop. Layers 1 and 2 are checkpointed. Do not begin L3, merge, or promote without a new exact user instruction."
+  "entry_head": "52273d6a5f07fcde0dd4353f2d2b1599a3e332ff",
+  "start_remote_head": "52273d6a5f07fcde0dd4353f2d2b1599a3e332ff",
+  "exact_next_action": "Create horizontal-layer-3-implementation-v1 from the verified current tip of the read-only horizontal-layer-completion-v1 checkpoint, then switch to it and run read-only preflight. Do not begin L3 application work until a new exact grant is recorded on that branch."
 }

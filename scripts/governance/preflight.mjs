@@ -90,7 +90,18 @@ export function runPreflight({ print = true, action = 'read-only' } = {}) {
   const permission = ACTION_TO_PERMISSION[action]
 
   if (source.repository !== 'thatoneweirdfella1/Claude-Project-02') errors.push('repository identity mismatch')
-  if (branch !== source.continuation_branch) errors.push(`wrong branch: ${branch || '<none>'}`)
+  const creatingContinuation = action === 'create_continuation_branch'
+  if (creatingContinuation) {
+    if (branch !== source.source_branch) errors.push(`branch creation must run from completed source branch ${source.source_branch}, not ${branch || '<none>'}`)
+    const sourceLease = remoteHead(source.source_branch)
+    if (sourceLease.error) errors.push(sourceLease.error)
+    else if (sourceLease.sha !== head) errors.push(`completed source branch local/remote tip mismatch: local ${head || '<none>'}, remote ${sourceLease.sha || '<none>'}`)
+    const targetLease = remoteHead(source.continuation_branch)
+    if (targetLease.error) errors.push(targetLease.error)
+    else if (targetLease.sha) errors.push(`required next-layer branch already exists at ${targetLease.sha}; switch to it and run read-only preflight instead of recreating it`)
+  } else if (branch !== source.continuation_branch) {
+    errors.push(`wrong working branch: ${branch || '<none>'}; ${source.source_branch} is read-only and work requires ${source.continuation_branch}`)
+  }
   if (canonicalRemote(remote) !== canonicalRemote(source.canonical_remote)) errors.push(`wrong or missing origin: ${remote || '<none>'}`)
   if (!/^[0-9a-f]{40}$/.test(head)) errors.push('runtime HEAD is not a full SHA')
   if (git(['merge-base','--is-ancestor',source.source_commit,'HEAD'], { allowFailure: true }).status !== 0) errors.push('source checkpoint is not an ancestor of HEAD')
@@ -141,7 +152,7 @@ export function runPreflight({ print = true, action = 'read-only' } = {}) {
 
   if (permissions.schema_version !== 2) errors.push('permissions schema is not v2')
   if (permissions.default !== 'deny') errors.push('permissions default is not deny')
-  if (permissions.branch_scope !== source.continuation_branch) errors.push('permission branch scope differs from continuation branch')
+  if (permissions.branch_scope !== source.continuation_branch) errors.push('permission branch scope differs from required next-layer branch')
   for (const name of EXTERNAL_EFFECT_PERMISSIONS) if (!Object.hasOwn(permissions.grants || {}, name)) errors.push(`missing explicit external-effect permission: ${name}`)
   if (!baseline.protected_ref) warnings.push(baseline.server_protection)
   const lastMatch = /\*\*Last completed horizontal layer:\*\* `?(L[1-7]|NONE)`?/.exec(statusText)

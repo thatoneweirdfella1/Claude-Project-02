@@ -2,17 +2,17 @@
   "schema_version": 2,
   "repository": "thatoneweirdfella1/Claude-Project-02",
   "canonical_remote": "https://github.com/thatoneweirdfella1/Claude-Project-02.git",
-  "source_branch": "cowork-complete-preview-20260823",
-  "source_commit": "16beca26c305bd9bdae088eb8e977ca1e9730747",
-  "source_commit_message": "Checkpoint verified visible repair work",
-  "source_commit_time": "2026-08-23T23:32:09Z",
-  "continuation_branch": "horizontal-layer-completion-v1",
+  "source_branch": "horizontal-layer-completion-v1",
+  "source_commit": "52273d6a5f07fcde0dd4353f2d2b1599a3e332ff",
+  "source_commit_message": "Governance: checkpoint completed Layer 1 and Layer 2 work",
+  "source_commit_time": "2026-08-24T18:24:13Z",
+  "continuation_branch": "horizontal-layer-3-implementation-v1",
   "selection": "INCLUDE",
   "test_evidence": {
     "rerun_this_installation": false,
     "reason": "The connected repository interface does not provide a local executable checkout.",
-    "latest_recorded_source_evidence": "68 test files / 643 tests, TypeScript and Vite production build, matching READY deployment for app commit 91feb54684326b53d0db56968b5307771dea5a32; later source checkpoint changes documentation only.",
-    "independent_reverification_required": true
+    "latest_recorded_source_evidence": "73 test files / 655 deployed tests, TypeScript and Vite production build, matching READY deployment dpl_G1rSrrtgnLaD82ojH1ga57L9NTjt for Layer 2 app commit e10ee9f1c64fee5f8faccd1832ef19703bc65f33; checkpoint commit 52273d6a5f07fcde0dd4353f2d2b1599a3e332ff changes governance status only.",
+    "independent_reverification_required": false
   },
   "protected_comparisons": {
     "build": {
@@ -34,5 +34,5 @@
     }
   },
   "selected_by": "authority plus complete surviving-branch comparison",
-  "selected_at": "2026-08-23"
+  "selected_at": "2026-08-24"
 }

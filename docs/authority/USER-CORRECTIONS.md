@@ -53,6 +53,15 @@ Only dated, scoped, exact user corrections belong here. They supersede older aut
 - Audit state: the user supplied and accepted the final independent GPT-5 Thinking `PASS` for governance checkpoint `ffc6935a921cdc298ad5c6259402b7eded73f41b`.
 - App implementation authority: granted for L1 and L2 only.
 
+### 2026-08-24 — Enforce a separate branch for every deeper layer
+
+- Exact user correction: the handoff plan was intended to make each incoming account clone the last completed work into a different branch; instructions that tell the next AI to edit the completed branch are invalid.
+- Scope: repository governance, startup routing, branch identity, permissions, and mechanical preflight enforcement.
+- Completed checkpoint: `horizontal-layer-completion-v1` is read-only after Layers 1 and 2.
+- Required next branch: `horizontal-layer-3-implementation-v1`, created from the verified current remote tip of the completed branch before any Layer 3 edit.
+- Conflict resolution: this scoped correction supersedes every general instruction to continue all seven layers on `horizontal-layer-completion-v1`.
+- App implementation authority: not granted by this correction; it governs branch creation and isolation only.
+
 ## Required format for future entries
 
 - Date
