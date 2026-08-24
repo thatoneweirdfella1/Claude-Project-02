@@ -8,6 +8,7 @@ import type {
   MethodologyType,
   ModelSelection,
   ScreenId,
+  ScreenSectionId,
   SessionRecord,
   SessionState,
   StatePills,
@@ -49,6 +50,7 @@ export function createInitialSessionState(): SessionState {
     statePills: { emotion: null, rsd: null, interest: null, cognitive: null },
     variables: {},
     currentScreen: "translate",
+    currentSection: null,
     methodology: defaults.methodology,
     methodologyPhase: "define",
     lockedProblemStatement: "",
@@ -60,7 +62,7 @@ export const SESSION_PERSISTED_KEYS: (keyof SessionState)[] = [
   "draftSelectionStart", "draftSelectionEnd", "conversationScrollTop", "model",
   "destination", "translatorEngine", "reviewBeforeSend", "paidFallbackEnabled",
   "maxRequestCost", "directness", "techniques", "context", "conversation",
-  "statePills", "variables", "currentScreen", "methodology", "methodologyPhase",
+  "statePills", "variables", "currentScreen", "currentSection", "methodology", "methodologyPhase",
   "lockedProblemStatement",
 ];
 
@@ -87,6 +89,7 @@ interface SessionActions {
   resetSession: () => void;
   newSession: () => void;
   setCurrentScreen: (screen: ScreenId) => void;
+  setScreenLocation: (screen: ScreenId, section?: ScreenSectionId | null) => void;
   loadSessionRecord: (record: SessionRecord) => void;
   setMethodology: (methodology: MethodologyType) => void;
   setMethodologyPhase: (phase: MethodologyPhase) => void;
@@ -97,10 +100,33 @@ interface SessionActions {
 export type SessionStore = SessionState & SessionActions;
 
 const VALID_SCREENS = new Set<ScreenId>([
-  "translate", "home", "dashboard", "messages", "archive", "resources",
-  "projects", "integrations", "tasks", "customize", "sessions", "templates",
-  "saved-prompts", "settings", "trash",
+  "translate", "insights", "projects", "techniques", "variables", "sessions",
+  "saved-tools", "settings", "checkpoints", "large-jobs", "trash",
 ]);
+
+const VALID_SECTIONS = new Set<ScreenSectionId>([
+  "active", "saved", "archived", "trash", "templates", "saved-prompts",
+  "overview", "usage", "activity", "patterns", "tasks", "resources",
+  "integrations", "account", "plan", "connections", "personalization",
+  "appearance", "data", "status",
+]);
+
+function resolvePersistedLocation(value: unknown): { currentScreen: ScreenId; currentSection: ScreenSectionId | null } {
+  if (typeof value === "string" && VALID_SCREENS.has(value as ScreenId)) return { currentScreen: value as ScreenId, currentSection: null };
+  const migrated: Record<string, { currentScreen: ScreenId; currentSection: ScreenSectionId | null }> = {
+    home: { currentScreen: "translate", currentSection: null },
+    dashboard: { currentScreen: "insights", currentSection: "overview" },
+    messages: { currentScreen: "sessions", currentSection: "active" },
+    archive: { currentScreen: "sessions", currentSection: "archived" },
+    resources: { currentScreen: "techniques", currentSection: null },
+    integrations: { currentScreen: "projects", currentSection: "integrations" },
+    tasks: { currentScreen: "projects", currentSection: "tasks" },
+    customize: { currentScreen: "variables", currentSection: null },
+    templates: { currentScreen: "saved-tools", currentSection: "templates" },
+    "saved-prompts": { currentScreen: "saved-tools", currentSection: "saved-prompts" },
+  };
+  return migrated[String(value)] ?? { currentScreen: "translate", currentSection: null };
+}
 
 export const useSessionStore = create<SessionStore>((set) => ({
   ...createInitialSessionState(),
@@ -164,7 +190,8 @@ export const useSessionStore = create<SessionStore>((set) => ({
       statePills: { emotion: null, rsd: null, interest: null, cognitive: null },
     });
   },
-  setCurrentScreen: (currentScreen) => set({ currentScreen }),
+  setCurrentScreen: (currentScreen) => set({ currentScreen, currentSection: null }),
+  setScreenLocation: (currentScreen, currentSection = null) => set({ currentScreen, currentSection }),
   loadSessionRecord: (record) => set({
     sessionId: record.id,
     sessionCreatedAt: record.createdAt,
@@ -221,7 +248,10 @@ export const useSessionStore = create<SessionStore>((set) => ({
     ...(state.paidFallbackEnabled !== undefined ? { paidFallbackEnabled: Boolean(state.paidFallbackEnabled) } : {}),
     ...(state.maxRequestCost !== undefined ? { maxRequestCost: Math.max(0, Number(state.maxRequestCost) || 0) } : {}),
     ...(state.currentScreen !== undefined
-      ? { currentScreen: VALID_SCREENS.has(state.currentScreen) ? state.currentScreen : "translate" }
+      ? resolvePersistedLocation(state.currentScreen)
+      : {}),
+    ...(state.currentSection !== undefined
+      ? { currentSection: state.currentSection && VALID_SECTIONS.has(state.currentSection) ? state.currentSection : null }
       : {}),
   })),
 }));

@@ -26,18 +26,17 @@ interface PopoverProps {
 }
 
 function QuickReferencePopover({ open, setOpen, rootRef }: PopoverProps) {
+  const openReference = () => {
+    const next = !open;
+    setOpen(next);
+    window.dispatchEvent(new CustomEvent("divergence:right-rail-panel", { detail: next ? "reference" : null }));
+  };
   return (
     <div ref={rootRef} className="topbar-popover-wrapper">
-      <GlassButton aria-label="Quick Reference" onClick={() => setOpen(!open)}>
+      <GlassButton aria-label="Quick Reference" aria-expanded={open} onClick={openReference}>
         <Sparkles size={19} aria-hidden="true" />
         Quick Reference
       </GlassButton>
-      {open && (
-        <div className="surface-smoked-glass topbar-popover" role="region" aria-label="Quick Reference">
-          <p className="topbar-popover__title">Quick Reference</p>
-          <p className="topbar-popover__text">Ctrl + Enter translates your message. Escape closes the current menu.</p>
-        </div>
-      )}
     </div>
   );
 }
@@ -48,7 +47,7 @@ function SearchPopover({ open, setOpen, rootRef }: PopoverProps) {
   const templates = useAccountStore((s) => s.templates);
   const savedPrompts = useAccountStore((s) => s.savedPrompts);
   const loadSessionRecord = useSessionStore((s) => s.loadSessionRecord);
-  const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
+  const setScreenLocation = useSessionStore((s) => s.setScreenLocation);
 
   const matches = [
     ...sessions
@@ -98,20 +97,21 @@ function SearchPopover({ open, setOpen, rootRef }: PopoverProps) {
                   if (match.type === "session") {
                     const session = sessions.find((item) => item.id === match.id);
                     if (session) loadSessionRecord(session);
-                    setCurrentScreen("translate");
+                    setScreenLocation("translate");
                   } else if (match.type === "template") {
-                    setCurrentScreen("templates");
+                    setScreenLocation("saved-tools", "templates");
                   } else if (match.type === "saved-prompt") {
-                    setCurrentScreen("saved-prompts");
+                    setScreenLocation("saved-tools", "saved-prompts");
                   } else if (match.type === "projects") {
-                    setCurrentScreen("projects");
+                    setScreenLocation("projects", "overview");
                   } else if (match.type === "settings") {
-                    setCurrentScreen("settings");
+                    setScreenLocation("settings");
                   } else if (match.type === "insights") {
-                    setCurrentScreen("dashboard");
+                    setScreenLocation("insights", "overview");
                   } else {
-                    setCurrentScreen("customize");
+                    setScreenLocation("variables");
                   }
+                  window.dispatchEvent(new CustomEvent("divergence:focus-search-result", { detail: match }));
                   setOpen(false);
                 }}
               >
@@ -127,16 +127,22 @@ function SearchPopover({ open, setOpen, rootRef }: PopoverProps) {
 
 function SimplePopover({ open, setOpen, rootRef, kind }: PopoverProps & { kind: "notifications" | "help" }) {
   const isHelp = kind === "help";
+  const currentScreen = useSessionStore((s) => s.currentScreen);
+  const toggle = () => {
+    const next = !open;
+    setOpen(next);
+    if (isHelp) window.dispatchEvent(new CustomEvent("divergence:right-rail-panel", { detail: next ? `help:${currentScreen}` : null }));
+  };
   return (
     <div ref={rootRef} className="topbar-popover-wrapper">
-      <GlassButton aria-label={isHelp ? "Help" : "Notifications"} onClick={() => setOpen(!open)}>
+      <GlassButton aria-label={isHelp ? "Help" : "Notifications"} aria-expanded={open} onClick={toggle}>
         {isHelp ? <CircleHelp size={20} /> : <Bell size={20} />}
         {isHelp ? "Help" : "Notifications"}
       </GlassButton>
-      {open && (
+      {open && !isHelp && (
         <div className="surface-smoked-glass topbar-popover topbar-popover--right" role="region">
-          <p className="topbar-popover__title">{isHelp ? "Help" : "Notifications"}</p>
-          <p className="topbar-popover__text">{isHelp ? "Type what you are thinking, then press Translate." : "No notifications"}</p>
+          <p className="topbar-popover__title">Notifications</p>
+          <p className="topbar-popover__text">No notifications. New notices will link to their exact destination here.</p>
         </div>
       )}
     </div>
@@ -144,7 +150,7 @@ function SimplePopover({ open, setOpen, rootRef, kind }: PopoverProps & { kind: 
 }
 
 function UserMenu({ open, setOpen, rootRef }: PopoverProps) {
-  const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
+  const setScreenLocation = useSessionStore((s) => s.setScreenLocation);
   const [desktopUser, setDesktopUser] = useState<DesktopUser | null>(null);
   useEffect(() => {
     const desktop = desktopBridge();
@@ -160,8 +166,8 @@ function UserMenu({ open, setOpen, rootRef }: PopoverProps) {
       {open && (
         <div className="surface-smoked-glass topbar-popover topbar-popover--right" role="menu" aria-label="Profile menu">
           {desktopUser && <p className="topbar-popover__text">{desktopUser.email}</p>}
-          <button type="button" className="topbar-popover__menu-item" onClick={() => { setCurrentScreen("settings"); setOpen(false); }}>Profile</button>
-          <button type="button" className="topbar-popover__menu-item" onClick={() => { setCurrentScreen("settings"); setOpen(false); }}>Account and plan</button>
+          <button type="button" className="topbar-popover__menu-item" onClick={() => { setScreenLocation("settings", "account"); setOpen(false); }}>Profile</button>
+          <button type="button" className="topbar-popover__menu-item" onClick={() => { setScreenLocation("settings", "plan"); setOpen(false); }}>Account and plan</button>
           <button type="button" className="topbar-popover__menu-item" onClick={() => { window.dispatchEvent(new CustomEvent("divergence:open-shortcuts")); setOpen(false); }}>Keyboard shortcuts</button>
           <button type="button" className="topbar-popover__menu-item" onClick={() => void logOutCurrentAccount()}>
             <LogOut size={16} /> Logout
@@ -173,7 +179,7 @@ function UserMenu({ open, setOpen, rootRef }: PopoverProps) {
 }
 
 export function TopBar() {
-  const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
+  const setScreenLocation = useSessionStore((s) => s.setScreenLocation);
   const [searchOpen, setSearchOpen] = useState(false);
   const [referenceOpen, setReferenceOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -190,19 +196,29 @@ export function TopBar() {
   useDismissableLayer(notificationsOpen, () => setNotificationsOpen(false));
   useDismissableLayer(helpOpen, () => setHelpOpen(false));
   useDismissableLayer(userOpen, () => setUserOpen(false));
+  useEffect(() => {
+    const openSearch = () => setSearchOpen(true);
+    const openReference = () => { setReferenceOpen(true); window.dispatchEvent(new CustomEvent("divergence:right-rail-panel", { detail: "reference" })); };
+    window.addEventListener("divergence:open-search", openSearch);
+    window.addEventListener("divergence:open-reference", openReference);
+    return () => {
+      window.removeEventListener("divergence:open-search", openSearch);
+      window.removeEventListener("divergence:open-reference", openReference);
+    };
+  }, []);
 
   return (
     <div className="topbar-content">
-      <button type="button" className="topbar-logo" data-testid="logo-slot" aria-label="Go to Talk to AI" onClick={() => setCurrentScreen("translate")} style={{ border: 0, background: "transparent", padding: 0 }}><Logo /></button>
+      <button type="button" className="topbar-logo" data-testid="logo-slot" aria-label="Go to Talk to AI" onClick={() => setScreenLocation("translate")} style={{ border: 0, background: "transparent", padding: 0 }}><Logo /></button>
       <div className="topbar-center">
         <QuickReferencePopover open={referenceOpen} setOpen={setReferenceOpen} rootRef={referenceRef} />
         <SearchPopover open={searchOpen} setOpen={setSearchOpen} rootRef={searchRef} />
-        <GlassButton onClick={() => setCurrentScreen("templates")}><ClipboardList size={20} /> Templates</GlassButton>
+        <GlassButton onClick={() => setScreenLocation("saved-tools", "templates")}><ClipboardList size={20} /> Templates</GlassButton>
       </div>
       <div className="topbar-right">
         <SimplePopover kind="notifications" open={notificationsOpen} setOpen={setNotificationsOpen} rootRef={notificationsRef} />
         <SimplePopover kind="help" open={helpOpen} setOpen={setHelpOpen} rootRef={helpRef} />
-        <GlassButton aria-label="Settings" onClick={() => setCurrentScreen("settings")}>
+        <GlassButton aria-label="Settings" onClick={() => setScreenLocation("settings")}>
           <Settings size={20} /> Settings
         </GlassButton>
         <UserMenu open={userOpen} setOpen={setUserOpen} rootRef={userRef} />

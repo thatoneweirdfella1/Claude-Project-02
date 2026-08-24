@@ -110,7 +110,7 @@ export function AdvancedControls() {
       <div className="advanced-controls__connection">
         <strong>Connection summary</strong>
         <span>Manual handoff needs no connection. Connected and managed routes require approval before any charge.</span>
-        <button type="button" onClick={() => useSessionStore.getState().setCurrentScreen("settings")}>Manage connections</button>
+        <button type="button" onClick={() => useSessionStore.getState().setScreenLocation("settings", "connections")}>Manage connections</button>
       </div>
       <label className="advanced-controls__check">
         <input type="checkbox" checked={paidFallbackEnabled} onChange={(event) => setPaidFallbackEnabled(event.target.checked)} />

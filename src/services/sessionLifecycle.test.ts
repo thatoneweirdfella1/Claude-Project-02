@@ -24,6 +24,7 @@ function session(overrides: Partial<SessionState> = {}): SessionState {
     statePills: { emotion: "calm", rsd: "low", interest: "medium", cognitive: "analytical" },
     variables: { name: "value" },
     currentScreen: "translate",
+    currentSection: null,
     methodology: "standard",
     methodologyPhase: "define",
     lockedProblemStatement: "",
@@ -43,6 +44,8 @@ describe("buildSessionRecord", () => {
     expect(record.draftSelectionStart).toBe(3);
     expect(record.conversationScrollTop).toBe(42);
     expect(record.statePills?.emotion).toBe("calm");
+    expect(record.currentScreen).toBe("translate");
+    expect(record.currentSection).toBeNull();
     expect(record.maxRequestCost).toBe(0.25);
   });
 

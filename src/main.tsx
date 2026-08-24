@@ -1,6 +1,5 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { AccessGate } from "./components/layout/AccessGate";
 import { AccountGate } from "./components/layout/AccountGate";
 import { AppShell } from "./components/layout/AppShell";
 import { MarbleSlab } from "./components/layout/MarbleSlab";
@@ -37,10 +36,6 @@ import "./styles/access-gate.css";
 import "./styles/desktop-product.css";
 import "./styles/frozen-reference.css";
 import "./styles/restore-dialog.css";
-import "./styles/draft-queue.css";
-import "./styles/preview-modal.css";
-import "./styles/cost-confirmation.css";
-import "./styles/review-modal.css";
 
 /* RQ-003 FIX: Show restore choice dialog on startup if we have a saved session */
 async function showRestoreDialog(): Promise<"restore" | "fresh"> {
@@ -154,11 +149,9 @@ async function bootstrap() {
       <MarbleSlab />
       <CustomBackgroundController />
       <AppErrorBoundary resetKey="application">
-        <AccessGate>
-          <AccountGate>
-            <AppShell />
-          </AccountGate>
-        </AccessGate>
+        <AccountGate>
+          <AppShell />
+        </AccountGate>
       </AppErrorBoundary>
     </StrictMode>,
   );

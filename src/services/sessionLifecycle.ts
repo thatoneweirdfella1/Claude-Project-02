@@ -65,6 +65,7 @@ export function buildSessionRecord(
     | "conversation"
     | "statePills"
     | "currentScreen"
+    | "currentSection"
     | "methodology"
     | "methodologyPhase"
     | "lockedProblemStatement"
@@ -104,6 +105,7 @@ export function buildSessionRecord(
     conversationScrollTop: session.conversationScrollTop,
     statePills: session.statePills,
     currentScreen: session.currentScreen,
+    currentSection: session.currentSection,
     methodology: session.methodology,
     methodologyPhase: session.methodologyPhase,
     lockedProblemStatement: session.lockedProblemStatement,

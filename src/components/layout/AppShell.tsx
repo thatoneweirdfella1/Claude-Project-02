@@ -6,9 +6,11 @@ import { TopBar } from "./TopBar";
 import { useThemeEffect } from "./useThemeEffect";
 import { useDesignLayoutEffect } from "./useDesignLayoutEffect";
 import { ScreenRouter } from "./ScreenRouter";
-import { KeyboardShortcutsModal } from "../KeyboardShortcutsModal";
-import { useKeyboardShortcuts } from "../../keyboard/useKeyboardShortcuts";
+import { ApprovedKeyboardShortcutsModal } from "../ApprovedKeyboardShortcutsModal";
+import { useApprovedKeyboardShortcuts } from "../../keyboard/useApprovedKeyboardShortcuts";
 import { CostConfirm } from "../credits";
+import { OperatorWorkspaceBar } from "../credits/OperatorWorkspaceBar";
+import { DevAdminPanel } from "../settings/DevAdminPanel";
 import { useAccountStore } from "../../stores/accountStore";
 import { useSessionStore } from "../../stores/sessionStore";
 import { destinationLabel } from "../../services/providerNeutral";
@@ -32,6 +34,7 @@ export function AppShell() {
   const destination = useSessionStore((s) => s.destination);
   const quickTools = useAccountStore((s) => s.visibility.quickTools);
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const [rightRailPanel, setRightRailPanel] = useState<string | null>(null);
   const canvasScaleForViewport = () => {
     if (typeof window === "undefined") return 0.72;
     const edgeGutter = 48;
@@ -40,12 +43,17 @@ export function AppShell() {
     return Math.max(0.1, Math.min(0.72, widthScale, heightScale));
   };
   const [canvasScale, setCanvasScale] = useState(canvasScaleForViewport);
-  useThemeEffect(); useDesignLayoutEffect(); useKeyboardShortcuts(() => setShowShortcuts(true));
+  useThemeEffect(); useDesignLayoutEffect(); useApprovedKeyboardShortcuts();
   useEffect(() => {
     const resize = () => setCanvasScale(canvasScaleForViewport());
     window.addEventListener("resize", resize);
     resize();
     return () => window.removeEventListener("resize", resize);
+  }, []);
+  useEffect(() => {
+    const updatePanel = (event: Event) => setRightRailPanel((event as CustomEvent<string | null>).detail ?? null);
+    window.addEventListener("divergence:right-rail-panel", updatePanel);
+    return () => window.removeEventListener("divergence:right-rail-panel", updatePanel);
   }, []);
   useEffect(() => {
     const openShortcuts = () => setShowShortcuts(true);
@@ -58,8 +66,13 @@ export function AppShell() {
     <div className="app-shell app-layer" style={{ transform: `scale(${canvasScale})` }} data-layout-authority="frozen-reference-1600x1024">
       <header className="topbar" aria-label="Top bar" data-testid="topbar"><TopBar /></header>
       <nav className="col-left" aria-label="Primary navigation" data-testid="col-left"><LeftNav /></nav>
-      <main className="col-center" data-testid="col-center"><div className="frozen-center-stack"><AppErrorBoundary resetKey={currentScreen}><ScreenRouter /></AppErrorBoundary></div></main>
+      <main className="col-center" data-testid="col-center"><div className="frozen-center-stack"><OperatorWorkspaceBar /><AppErrorBoundary resetKey={currentScreen}><ScreenRouter /></AppErrorBoundary><DevAdminPanel /></div></main>
       <aside className="col-right" aria-label="Sidebar panels" data-testid="col-right">
+        {rightRailPanel && <section className="right-rail-reference surface-smoked-glass" aria-label={rightRailPanel.startsWith("help:") ? "Help" : "Quick Reference"}>
+          <header><strong>{rightRailPanel.startsWith("help:") ? "Help" : "Quick Reference"}</strong><button type="button" aria-label="Close reference" onClick={() => setRightRailPanel(null)}>×</button></header>
+          <p>{currentScreen === "translate" ? "Write naturally. Ctrl/Cmd + Enter submits. Add Context keeps source material attached to the request." : `You are in ${currentScreen.replaceAll("-", " ")}. Use the visible tabs and controls; unavailable external actions say so before doing anything.`}</p>
+          <small>Ctrl/Cmd + K opens Search. Press ? outside a text field to reopen this reference.</small>
+        </section>}
         <div className="right-rail-helpful surface-smoked-glass"><strong>Ready for {destinationLabel(destination)}</strong><span>Local preparation uses no Divergence credits.</span></div>
         <VisibilityMenu />
         {quickTools && <QuickToolsGrid />}
@@ -68,7 +81,7 @@ export function AppShell() {
       <FrozenReferenceConnectors />
     </div>
     </div>
-    <KeyboardShortcutsModal open={showShortcuts} onClose={() => setShowShortcuts(false)} />
+    <ApprovedKeyboardShortcutsModal open={showShortcuts} onClose={() => setShowShortcuts(false)} />
     <CostConfirm />
   </>;
 }

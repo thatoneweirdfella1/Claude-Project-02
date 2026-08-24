@@ -28,6 +28,7 @@ export function QuickActionsRow() {
   const moveSessionToTrash = useAccountStore((s) => s.moveSessionToTrash);
   const restoreSessionFromTrash = useAccountStore((s) => s.restoreSessionFromTrash);
   const setScreen = useSessionStore((s) => s.setCurrentScreen);
+  const setScreenLocation = useSessionStore((s) => s.setScreenLocation);
   const newSession = useSessionStore((s) => s.newSession);
   const resetSession = useSessionStore((s) => s.resetSession);
   const loadSession = useSessionStore((s) => s.loadSessionRecord);
@@ -190,7 +191,7 @@ export function QuickActionsRow() {
     try {
       setLifecycleError("");
       await saveNow({ reason: "navigation" });
-      setScreen(screen);
+      setScreenLocation("saved-tools", screen);
     } catch {
       setLifecycleError("Recovery save failed. Navigation was stopped so your work stays here.");
     }

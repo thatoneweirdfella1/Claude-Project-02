@@ -13,14 +13,9 @@ export { SessionsScreen } from "./SessionsScreen";
 export { TranslateScreen } from "./TranslateScreen";
 
 import type { ScreenId } from "../stores/types";
-import { HomeScreen } from "./HomeScreen";
 import { DashboardScreen } from "./DashboardScreen";
-import { MessagesScreen } from "./MessagesScreen";
-import { ArchiveScreen } from "./ArchiveScreen";
 import { ResourcesScreen } from "./ResourcesScreen";
 import { ProjectsScreen } from "./ProjectsScreen";
-import { IntegrationsScreen } from "./IntegrationsScreen";
-import { TasksScreen } from "./TasksScreen";
 import { TemplatesScreen } from "./TemplatesScreen";
 import { CustomizeScreen } from "./CustomizeScreen";
 import { SettingsScreen } from "./SettingsScreen";
@@ -31,16 +26,11 @@ import { TranslateScreen } from "./TranslateScreen";
     screens. AppShell now routes through ScreenRouter; saved-prompts and trash
     live there, so this secondary registry is intentionally partial. */
 export const SCREENS: Partial<Record<ScreenId, React.FC>> = {
-  home: HomeScreen,
-  dashboard: DashboardScreen,
-  messages: MessagesScreen,
-  archive: ArchiveScreen,
-  resources: ResourcesScreen,
+  insights: DashboardScreen,
+  techniques: ResourcesScreen,
   projects: ProjectsScreen,
-  integrations: IntegrationsScreen,
-  tasks: TasksScreen,
-  templates: TemplatesScreen,
-  customize: CustomizeScreen,
+  variables: CustomizeScreen,
+  "saved-tools": TemplatesScreen,
   settings: SettingsScreen,
   sessions: SessionsScreen,
   translate: TranslateScreen,

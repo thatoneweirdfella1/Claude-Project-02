@@ -8,11 +8,12 @@ import { PersonalOptimization } from "../optimization";
 import { ProviderNeutralSettings } from "../settings/ProviderNeutralSettings";
 import { AppearanceSettings } from "../settings/AppearanceSettings";
 import { COMPOSABLE_TECHNIQUE_IDS, MAX_TECHNIQUE_STACK, getTechnique } from "../../services/techniques";
-import { buildSessionRecord } from "../../services/sessionLifecycle";
+import { buildSessionRecord, sessionRecordStatus } from "../../services/sessionLifecycle";
 import { saveNow } from "../../services/persistence";
 import type { ModelSelection, TechniqueId } from "../../stores/types";
+import "./LayerScreens.css";
 
-function HomeScreen() {
+export function RetiredHomeScreen() {
   const sessions = useAccountStore((s) => s.sessions);
   const templates = useAccountStore((s) => s.templates);
   const loadSessionRecord = useSessionStore((s) => s.loadSessionRecord);
@@ -174,6 +175,9 @@ function DashboardScreen() {
   const templates = useAccountStore((s) => s.templates);
   const ratings = useAccountStore((s) => s.ratings);
   const archivedPairs = useAccountStore((s) => s.archivedPairs);
+  const currentSection = useSessionStore((s) => s.currentSection);
+  const setScreenLocation = useSessionStore((s) => s.setScreenLocation);
+  const section = currentSection === "usage" || currentSection === "activity" || currentSection === "patterns" ? currentSection : "overview";
 
   const totalSessions = sessions.length;
   const totalArchivedSessions = sessions.filter((s) => s.archived).length;
@@ -217,9 +221,10 @@ function DashboardScreen() {
     <div className="screen screen-dashboard">
       <div className="screen__header">
         <h1>Insights</h1>
-        <p>Overview · Usage · Activity · Communication Patterns</p>
+        <nav className="screen-tabs" aria-label="Insight sections">{(["overview", "usage", "activity", "patterns"] as const).map((id) => <button type="button" key={id} aria-current={section === id ? "page" : undefined} className={section === id ? "is-active" : ""} onClick={() => setScreenLocation("insights", id)}>{id === "patterns" ? "Communication Patterns" : id[0].toUpperCase() + id.slice(1)}</button>)}</nav>
       </div>
       <div className="screen__content">
+        <p className="settings-section__note" role="status">Showing {section === "patterns" ? "communication patterns" : section}. Values reflect locally available data only.</p>
         <div className="dashboard-grid">
           <div className="dashboard-card">
             <h3 className="dashboard-card__title">Sessions</h3>
@@ -311,7 +316,7 @@ function DashboardScreen() {
   );
 }
 
-function MessagesScreen() {
+export function RetiredMessagesScreen() {
   const sessions = useAccountStore((s) => s.sessions);
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState<"all" | "user" | "assistant">("all");
@@ -417,7 +422,7 @@ function MessagesScreen() {
   );
 }
 
-function ArchiveScreen() {
+export function RetiredArchiveScreen() {
   const sessions = useAccountStore((s) => s.sessions);
   const loadSessionRecord = useSessionStore((s) => s.loadSessionRecord);
   const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
@@ -752,6 +757,9 @@ function ResourcesScreen() {
 
 function ProjectsScreen() {
   const sessions = useAccountStore((s) => s.sessions);
+  const currentSection = useSessionStore((s) => s.currentSection);
+  const setScreenLocation = useSessionStore((s) => s.setScreenLocation);
+  const section = currentSection === "tasks" || currentSection === "resources" || currentSection === "integrations" ? currentSection : "overview";
 
   const projectsMap = new Map<string, typeof sessions>();
   const defaultProject = "Unsorted";
@@ -770,26 +778,14 @@ function ProjectsScreen() {
     return a.localeCompare(b);
   });
 
-  if (projects.length === 0 || (projects.length === 1 && projects[0][0] === defaultProject && projects[0][1].length === 0)) {
-    return (
-      <div className="screen screen-projects">
-        <div className="screen__header">
-          <h1>Projects</h1>
-        </div>
-        <div className="screen__content">
-          <p>No projects yet. Sessions tagged with a project name will appear here. Use "Close Session → Archive Tagged" to tag sessions with a project name (e.g., "MyProject: Description").</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="screen screen-projects">
       <div className="screen__header">
         <h1>Projects</h1>
+        <nav className="screen-tabs" aria-label="Project sections">{(["overview", "tasks", "resources", "integrations"] as const).map((id) => <button type="button" key={id} aria-current={section === id ? "page" : undefined} className={section === id ? "is-active" : ""} onClick={() => setScreenLocation("projects", id)}>{id[0].toUpperCase() + id.slice(1)}</button>)}</nav>
       </div>
       <div className="screen__content">
-        <div className="projects-list">
+        {section === "overview" && (projects.length === 0 ? <p>No projects yet. Create or tag a session to place it in a project.</p> : <div className="projects-list">
           {projects.map(([projectName, projectSessions]) => (
             <div key={projectName} className="project-group">
               <h3 className="project-group__title">
@@ -810,13 +806,16 @@ function ProjectsScreen() {
               </div>
             </div>
           ))}
-        </div>
+        </div>)}
+        {section === "tasks" && <div className="settings-section"><h3>Project Tasks</h3><p className="settings-section__note">Select or create a project before adding tasks. No task has been created.</p><button type="button" disabled>Create task</button></div>}
+        {section === "resources" && <div className="settings-section"><h3>Project Resources</h3><p className="settings-section__note">Project resources will appear here after a project is selected. No external source is connected.</p><button type="button" disabled>Add resource</button></div>}
+        {section === "integrations" && <div className="settings-section"><h3>Project Integrations</h3><p className="settings-section__note">No project integration is configured. Connection controls are available in Settings → AI Connections.</p><button type="button" onClick={() => setScreenLocation("settings", "connections")}>Open AI Connections</button></div>}
       </div>
     </div>
   );
 }
 
-function IntegrationsScreen() {
+export function RetiredIntegrationsScreen() {
   const integrations = [
     {
       name: "Email",
@@ -889,7 +888,7 @@ function IntegrationsScreen() {
   );
 }
 
-function TasksScreen() {
+export function RetiredTasksScreen() {
   const sessions = useAccountStore((s) => s.sessions);
 
   const extractedTasks: Array<{
@@ -985,6 +984,7 @@ function TemplatesScreen() {
   const setDirectness = useSessionStore((s) => s.setDirectness);
   const setTechniques = useSessionStore((s) => s.setTechniques);
   const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
+  const setScreenLocation = useSessionStore((s) => s.setScreenLocation);
 
   const allTemplates = templates.filter((t) => {
     const searchLower = searchTerm.toLowerCase();
@@ -1087,7 +1087,7 @@ function TemplatesScreen() {
     <div className="screen screen-templates">
       <div className="screen__header">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div><h1>Saved Tools</h1><p><strong>Templates</strong> · <button type="button" onClick={() => setCurrentScreen("saved-prompts")}>Saved Prompts</button></p></div>
+          <div><h1>Saved Tools</h1><p><strong>Templates</strong> · <button type="button" onClick={() => setScreenLocation("saved-tools", "saved-prompts")}>Saved Prompts</button></p></div>
           <button
             type="button"
             className="settings-btn"
@@ -1462,7 +1462,7 @@ function SavedPromptsScreen() {
   const savedPrompts = useAccountStore((s) => s.savedPrompts);
   const removeSavedPrompt = useAccountStore((s) => s.removeSavedPrompt);
   const toggleSavedPromptStar = useAccountStore((s) => s.toggleSavedPromptStar);
-  const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
+  const setScreenLocation = useSessionStore((s) => s.setScreenLocation);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<"recent" | "title">("recent");
@@ -1489,7 +1489,7 @@ function SavedPromptsScreen() {
     <div className="screen screen-saved-prompts">
       <div className="screen__header">
         <h1>Saved Tools</h1>
-        <p><button type="button" onClick={() => setCurrentScreen("templates")}>Templates</button> · <strong>Saved Prompts</strong></p>
+        <p><button type="button" onClick={() => setScreenLocation("saved-tools", "templates")}>Templates</button> · <strong>Saved Prompts</strong></p>
       </div>
       <div className="screen__content">
         {savedPrompts.length === 0 ? (
@@ -1659,40 +1659,29 @@ function SettingsScreen() {
   const plan = useAccountStore((s) => s.plan);
   const sessions = useAccountStore((s) => s.sessions);
   const trashed = useAccountStore((s) => s.trashed);
+  const currentSection = useSessionStore((s) => s.currentSection);
+  const setScreenLocation = useSessionStore((s) => s.setScreenLocation);
+  const [exportOpen, setExportOpen] = useState(false);
+  const section = currentSection ?? "account";
 
   const totalSessions = sessions.length;
   const totalTrashed = trashed.length;
   const totalMessages = sessions.reduce((sum, s) => sum + s.conversation.length, 0);
 
-  const handleExportData = () => {
-    const accountData = {
-      version: 1,
-      exportedAt: new Date().toISOString(),
-      plan,
-      stats: {
-        totalSessions,
-        totalTrashed,
-        totalMessages,
-      },
-      // Note: Full data export would include all sessions, templates, etc.
-      // For now, just showing that the feature exists and could be built
-    };
-    const dataStr = JSON.stringify(accountData, null, 2);
-    const dataBlob = new Blob([dataStr], { type: "application/json" });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `divergence-ai-backup-${new Date().toISOString().slice(0, 10)}.json`;
-    link.click();
-  };
+  const sections = [
+    ["account", "Account"], ["plan", "Plan & credits"], ["connections", "AI Connections"],
+    ["personalization", "Personal Optimization"], ["appearance", "Appearance"],
+    ["data", "Data & sync"], ["status", "System status"],
+  ] as const;
 
   return (
     <div className="screen screen-settings">
       <div className="screen__header">
         <h1>Settings</h1>
+        <nav className="screen-tabs" aria-label="Settings sections">{sections.map(([id, label]) => <button type="button" key={id} aria-current={section === id ? "page" : undefined} className={section === id ? "is-active" : ""} onClick={() => setScreenLocation("settings", id)}>{label}</button>)}</nav>
       </div>
       <div className="screen__content">
-        <div className="settings-section">
+        {section === "account" && <div className="settings-section">
           <h3>Account</h3>
           <div className="settings-item">
             <div className="settings-item__label">Plan</div>
@@ -1704,17 +1693,17 @@ function SettingsScreen() {
             <div className="settings-item__label">Profile</div>
             <div className="settings-item__value">Local workspace</div>
           </div>
-        </div>
+        </div>}
 
-        <SubscriptionUI />
+        {section === "plan" && <SubscriptionUI />}
 
-        <PersonalOptimization />
+        {section === "personalization" && <PersonalOptimization />}
 
-        <ProviderNeutralSettings />
+        {section === "connections" && <><div className="settings-section"><h3>Connection status</h3><p className="settings-section__note">No external provider is connected. Provider setup controls prepare configuration only; they do not claim a successful connection or send data.</p></div><ProviderNeutralSettings /></>}
 
-        <AppearanceSettings />
+        {section === "appearance" && <AppearanceSettings />}
 
-        <div className="settings-section">
+        {section === "data" && <div className="settings-section">
           <h3>Storage & Sync</h3>
           <div className="settings-item">
             <div className="settings-item__label">Sessions Saved</div>
@@ -1731,23 +1720,28 @@ function SettingsScreen() {
           <button
             type="button"
             className="settings-btn"
-            onClick={handleExportData}
+            onClick={() => setExportOpen(true)}
           >
-            Export Data as JSON
+            Review data export
           </button>
-        </div>
+        </div>}
 
-        <div className="settings-section">
-          <h3>About Divergence.AI</h3>
+        {section === "status" && <div className="settings-section">
+          <h3>System Status</h3>
           <div className="settings-item">
-            <div className="settings-item__label">Version</div>
-            <div className="settings-item__value">0.1.2</div>
+            <div className="settings-item__label">Local preparation and storage</div>
+            <div className="settings-item__value">Available</div>
+          </div>
+          <div className="settings-item">
+            <div className="settings-item__label">External providers</div>
+            <div className="settings-item__value">Not configured</div>
           </div>
           <p className="settings-section__note">
-            Divergence.AI is an ADHD-friendly AI translator that helps you communicate your thoughts clearly.
+            Version 0.1.2 · No remote provider success is being claimed.
           </p>
-        </div>
+        </div>}
       </div>
+      {exportOpen && <div className="workflow-dialog" role="dialog" aria-modal="true" aria-labelledby="data-export-title"><div className="workflow-dialog__card surface-smoked-glass"><header><h2 id="data-export-title">Complete data export</h2><p>Complete round-trip dataset export is not available at this layer. No file has been created and no data was sent.</p></header><div className="workflow-dialog__summary"><strong>Currently stored locally</strong><p>{totalSessions} sessions · {totalTrashed} trashed items · {totalMessages} messages</p></div><footer className="workflow-dialog__actions"><button type="button" className="primary" autoFocus onClick={() => setExportOpen(false)}>Close</button></footer></div></div>}
     </div>
   );
 }
@@ -1784,6 +1778,8 @@ function SessionsScreen() {
   const sessions = useAccountStore((s) => s.sessions);
   const loadSessionRecord = useSessionStore((s) => s.loadSessionRecord);
   const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
+  const currentSection = useSessionStore((s) => s.currentSection);
+  const setScreenLocation = useSessionStore((s) => s.setScreenLocation);
   const moveSessionToTrash = useAccountStore((s) => s.moveSessionToTrash);
   const updateSessionTag = useAccountStore((s) => s.updateSessionTag);
   const toggleSessionStar = useAccountStore((s) => s.toggleSessionStar);
@@ -1879,7 +1875,11 @@ function SessionsScreen() {
     }
   };
 
+  const section = currentSection === "saved" || currentSection === "archived" || currentSection === "trash" ? currentSection : "active";
+  if (section === "trash") return <TrashScreen />;
+
   const filteredSessions = sessions.filter((session) => {
+    if (sessionRecordStatus(session) !== section) return false;
     const searchLower = searchTerm.toLowerCase();
     const tag = (session.tag || `Session ${session.id.slice(0, 6)}`).toLowerCase();
     return tag.includes(searchLower) || session.id.includes(searchTerm);
@@ -1902,10 +1902,11 @@ function SessionsScreen() {
     <div className="screen screen-sessions">
       <div className="screen__header">
         <h1>Sessions</h1>
+        <nav className="screen-tabs" aria-label="Session states">{(["active", "saved", "archived", "trash"] as const).map((id) => <button type="button" key={id} aria-current={section === id ? "page" : undefined} className={section === id ? "is-active" : ""} onClick={() => setScreenLocation("sessions", id)}>{id[0].toUpperCase() + id.slice(1)}</button>)}</nav>
       </div>
       <div className="screen__content">
-        {sessions.length === 0 ? (
-          <p>No saved sessions yet. Create one in the Translate screen.</p>
+        {filteredSessions.length === 0 ? (
+          <p>No {section} sessions yet.</p>
         ) : (
           <>
             <div style={{ display: "flex", gap: "12px", marginBottom: "24px" }}>
@@ -2397,40 +2398,49 @@ function TrashScreen() {
   );
 }
 
+function LargeJobsScreen() {
+  const [showPlan, setShowPlan] = useState(false);
+  return <div className="screen screen-large-jobs">
+    <div className="screen__header"><h1>Large Jobs</h1><p>Plan resumable, cost-bounded high-volume work.</p></div>
+    <div className="screen__content">
+      <div className="settings-section">
+        <h3>No job is running</h3>
+        <p className="settings-section__note">Connected execution is not configured. Creating a plan here will not contact an AI provider or spend credits.</p>
+        <button type="button" className="settings-btn" aria-expanded={showPlan} onClick={() => setShowPlan((open) => !open)}>{showPlan ? "Hide job requirements" : "Plan a large job"}</button>
+        {showPlan && <div className="workflow-dialog__summary" role="region" aria-label="Large job requirements">
+          <p>A runnable job will require a source set, a cost ceiling, checkpoint frequency, provider authorization, and an explicit start confirmation.</p>
+          <button type="button" disabled title="Available after the Connected layer">Start remains unavailable until a provider is safely connected</button>
+        </div>}
+      </div>
+    </div>
+  </div>;
+}
+
 export function ScreenRouter() {
   const currentScreen = useSessionStore((s) => s.currentScreen);
+  const currentSection = useSessionStore((s) => s.currentSection);
 
   switch (currentScreen) {
     case "translate":
       return <CenterColumn />;
-    case "home":
-      return <HomeScreen />;
-    case "dashboard":
+    case "insights":
       return <DashboardScreen />;
-    case "messages":
-      return <MessagesScreen />;
-    case "archive":
-      return <ArchiveScreen />;
-    case "resources":
+    case "techniques":
       return <ResourcesScreen />;
     case "projects":
       return <ProjectsScreen />;
-    case "integrations":
-      return <IntegrationsScreen />;
-    case "tasks":
-      return <TasksScreen />;
-    case "customize":
+    case "variables":
       return <CustomizeScreen />;
     case "sessions":
       return <SessionsScreen />;
-    case "templates":
-      return <TemplatesScreen />;
-    case "saved-prompts":
-      return <SavedPromptsScreen />;
+    case "saved-tools":
+      return currentSection === "saved-prompts" ? <SavedPromptsScreen /> : <TemplatesScreen />;
     case "settings":
       return <SettingsScreen />;
     case "checkpoints":
       return <CheckpointsScreen />;
+    case "large-jobs":
+      return <LargeJobsScreen />;
     case "trash":
       return <TrashScreen />;
     default:

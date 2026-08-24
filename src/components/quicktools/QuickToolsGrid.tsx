@@ -9,22 +9,16 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useSessionStore } from "../../stores/sessionStore";
-import type { ScreenId } from "../../stores/types";
+import type { ScreenId, ScreenSectionId } from "../../stores/types";
+import { QUICK_TOOL_NAVIGATION } from "../layout/navigation";
 
-const TOOLS: Array<{ label: string; screen: ScreenId; Icon: LucideIcon; accent: string }> = [
-  { label: "Router", screen: "translate", Icon: Network, accent: "cyan" },
-  { label: "Techniques", screen: "resources", Icon: WandSparkles, accent: "gold" },
-  { label: "Prompt Library", screen: "saved-prompts", Icon: BookOpenText, accent: "gold" },
-  { label: "Variables", screen: "customize", Icon: Braces, accent: "gold" },
-  { label: "Checkpoints", screen: "checkpoints", Icon: Bookmark, accent: "gold" },
-  { label: "Dashboard", screen: "dashboard", Icon: BarChart3, accent: "gold" },
-];
+const ICONS: Record<string, LucideIcon> = { router: Network, techniques: WandSparkles, "prompt-library": BookOpenText, variables: Braces, checkpoints: Bookmark, insights: BarChart3 };
 
 export function QuickToolsGrid() {
-  const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
-  function openTool(label: string, screen: ScreenId) {
-    setCurrentScreen(screen);
-    if (label === "Router") window.setTimeout(() => window.dispatchEvent(new CustomEvent("divergence:composer-overlay", { detail: "advanced" })), 0);
+  const setScreenLocation = useSessionStore((s) => s.setScreenLocation);
+  function openTool(id: string, screen: ScreenId, section?: ScreenSectionId) {
+    setScreenLocation(screen, section);
+    if (id === "router") window.setTimeout(() => window.dispatchEvent(new CustomEvent("divergence:composer-overlay", { detail: "advanced" })), 0);
   }
   return (
     <section className="quick-tools">
@@ -33,12 +27,14 @@ export function QuickToolsGrid() {
         <p className="quick-tools__header-label">Quick Tools</p>
       </div>
       <div className="quick-tools-grid" data-testid="quick-tools-grid">
-        {TOOLS.map(({ label, screen, Icon, accent }) => (
-          <button type="button" className="quick-tools-tile__button" key={label} onClick={() => openTool(label, screen)}>
+        {QUICK_TOOL_NAVIGATION.map(({ id, label, screen, section }) => {
+          const Icon = ICONS[id];
+          const accent = id === "router" ? "cyan" : "gold";
+          return <button type="button" className="quick-tools-tile__button" key={id} data-screen={screen} data-section={section} onClick={() => openTool(id, screen, section)}>
             <Icon className={`quick-tools-tile__icon is-${accent}`} size={31} strokeWidth={1.55} aria-hidden="true" />
             <span className="quick-tools-tile__label">{label}</span>
-          </button>
-        ))}
+          </button>;
+        })}
       </div>
     </section>
   );

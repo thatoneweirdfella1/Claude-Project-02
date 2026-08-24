@@ -110,6 +110,7 @@ describe("SESSION_PERSISTED_KEYS", () => {
         "statePills",
         "variables",
         "currentScreen",
+        "currentSection",
         "methodology",
         "methodologyPhase",
         "lockedProblemStatement",
@@ -137,8 +138,9 @@ describe("plain setters", () => {
   });
 
   it("setCurrentScreen navigates", () => {
-    useSessionStore.getState().setCurrentScreen("archive");
-    expect(useSessionStore.getState().currentScreen).toBe("archive");
+    useSessionStore.getState().setScreenLocation("sessions", "archived");
+    expect(useSessionStore.getState().currentScreen).toBe("sessions");
+    expect(useSessionStore.getState().currentSection).toBe("archived");
   });
 
   it("setStatePills replaces the whole reading", () => {
@@ -254,7 +256,7 @@ describe("resetSession", () => {
     useSessionStore.getState().setModel("claude-opus-4-8");
     useSessionStore.getState().setDirectness(3);
     useSessionStore.getState().setTechniques(["verify"]);
-    useSessionStore.getState().setCurrentScreen("archive");
+    useSessionStore.getState().setScreenLocation("sessions", "archived");
     useSessionStore.getState().addMessage(MESSAGE);
     useSessionStore.getState().addContextItem(CONTEXT_ITEM);
     useSessionStore.getState().setSessionVariable("a", "1");
@@ -279,7 +281,7 @@ describe("newSession", () => {
     useSessionStore.getState().setModel("claude-opus-4-8");
     useSessionStore.getState().setDirectness(3);
     useSessionStore.getState().setTechniques(["verify"]);
-    useSessionStore.getState().setCurrentScreen("archive");
+    useSessionStore.getState().setScreenLocation("sessions", "archived");
     useSessionStore.getState().addMessage(MESSAGE);
     useSessionStore.getState().addContextItem(CONTEXT_ITEM);
     useSessionStore.getState().setSessionVariable("a", "1");
@@ -294,7 +296,8 @@ describe("newSession", () => {
     expect(s.model).toBe("claude-opus-4-8");
     expect(s.directness).toBe(3);
     expect(s.techniques).toEqual(["verify"]);
-    expect(s.currentScreen).toBe("archive");
+    expect(s.currentScreen).toBe("sessions");
+    expect(s.currentSection).toBe("archived");
     expect(s.sessionId).not.toBe(previousId);
     // Cleared
     expect(s.conversation).toEqual([]);
@@ -307,7 +310,7 @@ describe("newSession", () => {
 
 describe("loadSessionRecord", () => {
   it("restores complete recoverable state while leaving navigation alone", () => {
-    useSessionStore.getState().setCurrentScreen("archive");
+    useSessionStore.getState().setScreenLocation("sessions", "archived");
     useSessionStore.getState().setDraftInput("half-typed thought");
     useSessionStore.getState().setStatePills({ emotion: "calm", rsd: null, interest: null, cognitive: null });
 
@@ -334,11 +337,27 @@ describe("loadSessionRecord", () => {
     expect(s.methodologyPhase).toBe("test");
     expect(s.lockedProblemStatement).toBe("Keep the work");
     // Untouched — navigation is orthogonal to which session is loaded.
-    expect(s.currentScreen).toBe("archive");
+    expect(s.currentScreen).toBe("sessions");
+    expect(s.currentSection).toBe("archived");
   });
 });
 
 describe("hydrate", () => {
+  it("migrates every retired screen to its canonical destination", () => {
+    const cases = [
+      ["home", "translate", null], ["dashboard", "insights", "overview"],
+      ["messages", "sessions", "active"], ["archive", "sessions", "archived"],
+      ["resources", "techniques", null], ["integrations", "projects", "integrations"],
+      ["tasks", "projects", "tasks"], ["customize", "variables", null],
+      ["templates", "saved-tools", "templates"], ["saved-prompts", "saved-tools", "saved-prompts"],
+    ] as const;
+    for (const [retired, screen, section] of cases) {
+      useSessionStore.getState().hydrate({ currentScreen: retired as never });
+      expect(useSessionStore.getState().currentScreen).toBe(screen);
+      expect(useSessionStore.getState().currentSection).toBe(section);
+    }
+  });
+
   it("replaces only the given fields, leaving the rest untouched", () => {
     useSessionStore.getState().setModel("claude-opus-4-8");
     useSessionStore.getState().hydrate({ directness: 1, draftInput: "restored" });

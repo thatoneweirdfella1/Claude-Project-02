@@ -1,49 +1,50 @@
 import { useState } from "react";
 import {
-  Archive, BarChart3, Boxes, FolderKanban, Library, MessageCircle,
-  Settings, Trash2, Wrench, X, type LucideIcon,
+  Archive, BarChart3, Boxes, FolderKanban, Library, MessageCircle, Pin,
+  PinOff, Settings, Trash2, Wrench, X, type LucideIcon,
 } from "lucide-react";
 import { useSessionStore } from "../../stores/sessionStore";
-import type { ScreenId } from "../../stores/types";
+import type { ScreenId, ScreenSectionId } from "../../stores/types";
+import { isSameLocation, PRIMARY_NAVIGATION, TOOL_NAVIGATION, type NavigationEntry } from "./navigation";
 
-const NAV_ITEMS: Array<{ label: string; screen: ScreenId; Icon: LucideIcon }> = [
-  { label: "Talk to AI", screen: "translate", Icon: MessageCircle },
-  { label: "Sessions", screen: "sessions", Icon: Archive },
-  { label: "Saved Tools", screen: "templates", Icon: Library },
-  { label: "Projects", screen: "projects", Icon: FolderKanban },
-  { label: "Insights", screen: "dashboard", Icon: BarChart3 },
-  { label: "Settings", screen: "settings", Icon: Settings },
-];
-
-const ALL_TOOLS: Array<{ label: string; screen: ScreenId }> = [
-  { label: "Templates", screen: "templates" },
-  { label: "Saved Prompts", screen: "saved-prompts" },
-  { label: "Techniques", screen: "resources" },
-  { label: "Variables", screen: "customize" },
-  { label: "Checkpoints", screen: "checkpoints" },
-  { label: "AI Connections", screen: "settings" },
-];
+const ICONS: Record<string, LucideIcon> = {
+  "talk-to-ai": MessageCircle,
+  sessions: Archive,
+  "saved-tools": Library,
+  projects: FolderKanban,
+  insights: BarChart3,
+  settings: Settings,
+};
 
 export function LeftNav() {
   const currentScreen = useSessionStore((s) => s.currentScreen);
-  const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
+  const currentSection = useSessionStore((s) => s.currentSection);
+  const setScreenLocation = useSessionStore((s) => s.setScreenLocation);
   const [toolsOpen, setToolsOpen] = useState(false);
   const [toolQuery, setToolQuery] = useState("");
-  const visibleTools = ALL_TOOLS.filter((tool) => tool.label.toLowerCase().includes(toolQuery.toLowerCase()));
+  const [pinnedTool, setPinnedTool] = useState<NavigationEntry | null>(null);
+  const [statusOpen, setStatusOpen] = useState(false);
+  const visibleTools = TOOL_NAVIGATION.filter((tool) => tool.label.toLowerCase().includes(toolQuery.toLowerCase()));
 
-  function navigate(screen: ScreenId) {
-    setCurrentScreen(screen);
+  function navigate(screen: ScreenId, section?: ScreenSectionId) {
+    setScreenLocation(screen, section);
     setToolsOpen(false);
+    setStatusOpen(false);
   }
 
   return (
     <div className="leftnav-content">
       <div className="leftnav-items">
-        {NAV_ITEMS.map(({ label, screen, Icon }) => (
-          <button type="button" key={label} data-screen={screen} className={"leftnav-item " + (currentScreen === screen ? "leftnav-item--active" : "")} onClick={() => navigate(screen)}>
+        {PRIMARY_NAVIGATION.map(({ id, label, screen, section }) => {
+          const Icon = ICONS[id];
+          return <button type="button" key={id} data-screen={screen} data-section={section} className={"leftnav-item " + (isSameLocation(currentScreen, currentSection, { screen, section }) ? "leftnav-item--active" : "")} onClick={() => navigate(screen, section)}>
             <Icon size={23} strokeWidth={1.8} aria-hidden="true" /><span>{label}</span>
-          </button>
-        ))}
+          </button>;
+        })}
+        {pinnedTool && <div className="leftnav-pinned">
+          <button type="button" className={"leftnav-item " + (isSameLocation(currentScreen, currentSection, pinnedTool) ? "leftnav-item--active" : "")} onClick={() => navigate(pinnedTool.screen, pinnedTool.section)}><Pin size={20} /><span>{pinnedTool.label}</span></button>
+          <button type="button" aria-label={`Unpin ${pinnedTool.label}`} title={`Unpin ${pinnedTool.label}`} onClick={() => setPinnedTool(null)}><PinOff size={15} /></button>
+        </div>}
         <div className="leftnav-tools">
           <button type="button" className="leftnav-item" aria-haspopup="dialog" aria-expanded={toolsOpen} onClick={() => setToolsOpen((value) => !value)}>
             <Boxes size={23} strokeWidth={1.8} aria-hidden="true" /><span>All Tools</span>
@@ -58,7 +59,10 @@ export function LeftNav() {
                 onChange={(event) => setToolQuery(event.target.value)}
                 style={{ width: "100%", padding: "8px 9px", border: "1px solid var(--frozen-border)", borderRadius: 5, background: "var(--frozen-overlay-solid)", color: "var(--frozen-text)" }}
               />
-              {visibleTools.map((tool) => <button type="button" key={tool.label} onClick={() => navigate(tool.screen)}><Wrench size={15} />{tool.label}</button>)}
+              {visibleTools.map((tool) => <div className="leftnav-tools__row" key={tool.id}>
+                <button type="button" onClick={() => navigate(tool.screen, tool.section)}><Wrench size={15} />{tool.label}</button>
+                <button type="button" aria-label={`Pin ${tool.label}`} title={`Pin ${tool.label}`} onClick={() => setPinnedTool(tool)}><Pin size={14} /></button>
+              </div>)}
               {visibleTools.length === 0 && <p>No matching tools.</p>}
             </div>
           )}
@@ -68,10 +72,17 @@ export function LeftNav() {
         <button type="button" className={"leftnav-item leftnav-trash " + (currentScreen === "trash" ? "leftnav-item--active" : "")} onClick={() => navigate("trash")}>
           <Trash2 size={23} strokeWidth={1.8} aria-hidden="true" /><span>Trash</span>
         </button>
-        <button type="button" className="system-status" data-testid="system-status" onClick={() => navigate("settings")} style={{ cursor: "pointer", textAlign: "left" }}>
-          <span className="system-status-heading"><i aria-hidden="true" /> System Status</span>
-          <span className="system-status-message">Open connection and storage status</span>
-        </button>
+        <div className="system-status-wrapper">
+          <button type="button" className="system-status system-status--interactive" data-testid="system-status" aria-expanded={statusOpen} onClick={() => setStatusOpen((open) => !open)}>
+            <span className="system-status-heading"><i aria-hidden="true" /> System Status</span>
+            <span className="system-status-message">Local systems ready · providers unconfigured</span>
+          </button>
+          {statusOpen && <div className="system-status-popover surface-smoked-glass" role="status">
+            <div className="system-status-popover__item"><span className="system-status-dot system-status-dot--operational" />Local preparation and storage available</div>
+            <p className="system-status-popover__note">No external AI provider is connected. No remote call or payment will be claimed.</p>
+            <button type="button" onClick={() => navigate("settings", "connections")}>Open connection settings</button>
+          </div>}
+        </div>
       </div>
     </div>
   );

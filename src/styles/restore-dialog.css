@@ -1,0 +1,58 @@
+.restore-choice-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 13000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.68);
+  backdrop-filter: blur(7px);
+}
+
+.restore-choice-card {
+  width: min(480px, 100%);
+  padding: 28px;
+  border: 1px solid var(--surface-smoked-glass-border);
+  border-radius: 12px;
+  background: var(--surface-smoked-glass);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-modal);
+  text-align: center;
+}
+
+.restore-choice-card h2,
+.restore-choice-card p {
+  margin-top: 0;
+}
+
+.restore-choice-card p {
+  color: var(--text-secondary);
+}
+
+.restore-choice-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.restore-btn {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid var(--surface-smoked-glass-border);
+  border-radius: var(--radius-button);
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.restore-btn.primary {
+  border-color: var(--accent-cyan);
+  background: var(--accent-cyan-tint-06);
+}
+
+@media (max-width: 560px) {
+  .restore-choice-dialog { padding: 12px; }
+  .restore-choice-card { padding: 22px 16px; }
+  .restore-choice-buttons { flex-direction: column; }
+}

@@ -5,13 +5,13 @@ import { useSessionStore } from "../../stores/sessionStore";
 export function CreditCounter() {
   const balance = useAccountStore((state) => state.creditBalance);
   const mode = useAccountStore((state) => state.appMode);
-  const setCurrentScreen = useSessionStore((state) => state.setCurrentScreen);
+  const setScreenLocation = useSessionStore((state) => state.setScreenLocation);
 
   return (
     <button
       type="button"
       className="credit-counter"
-      onClick={() => setCurrentScreen("settings")}
+      onClick={() => setScreenLocation("settings", "plan")}
       title="Open subscription and credit settings"
       aria-label={mode === "developer" ? "Credits: unlimited" : `Credits: $${balance.toFixed(2)}`}
     >

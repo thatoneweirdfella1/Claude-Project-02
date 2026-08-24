@@ -360,6 +360,7 @@ export interface SessionRecord {
   conversationScrollTop?: number;
   statePills?: StatePills;
   currentScreen?: ScreenId;
+  currentSection?: ScreenSectionId | null;
   methodology?: MethodologyType;
   methodologyPhase?: MethodologyPhase;
   lockedProblemStatement?: string;
@@ -590,21 +591,41 @@ export interface MethodologyEntry {
 /** Session store — cleared when a session closes (CANON). */
 export type ScreenId =
   | "translate"
-  | "home"
-  | "dashboard"
-  | "messages"
-  | "archive"
-  | "resources"
+  | "insights"
   | "projects"
-  | "integrations"
-  | "tasks"
-  | "customize"
+  | "techniques"
+  | "variables"
   | "sessions"
-  | "templates"
-  | "saved-prompts"
+  | "saved-tools"
   | "settings"
   | "checkpoints"
+  | "large-jobs"
   | "trash";
+
+/** Optional subsection within a canonical destination. Sections are part of
+ * the location contract so navigation never substitutes a merely similar
+ * screen (for example, Account for Connections). */
+export type ScreenSectionId =
+  | "active"
+  | "saved"
+  | "archived"
+  | "trash"
+  | "templates"
+  | "saved-prompts"
+  | "overview"
+  | "usage"
+  | "activity"
+  | "patterns"
+  | "tasks"
+  | "resources"
+  | "integrations"
+  | "account"
+  | "plan"
+  | "connections"
+  | "personalization"
+  | "appearance"
+  | "data"
+  | "status";
 
 export interface SessionState {
   /** Stable identity for the live session so autosave updates one record. */
@@ -646,6 +667,7 @@ export interface SessionState {
       screen's content is shown in the center column. Defaults to "translate"
       (the composer view). */
   currentScreen: ScreenId;
+  currentSection: ScreenSectionId | null;
   /** 3-State Methodology selection. Defaults to "standard". */
   methodology: MethodologyType;
   /** Current phase in 3-State Methodology (if active). */
