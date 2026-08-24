@@ -1,1 +1,35 @@
-{"schema_version":1,"exceptions":[]}
+{
+  "schema_version": 2,
+  "exceptions": [
+    {
+      "path": "docs/layer-system/PERMISSIONS.yml",
+      "authorized": true,
+      "authorization": "2026-08-24 user instruction to finish implementing the hybrid audit corrections",
+      "reason": "Close canonical defect 12 by making external-effect permissions granular and fail-closed"
+    },
+    {
+      "path": "scripts/governance/preflight.mjs",
+      "authorized": true,
+      "authorization": "2026-08-24 user instruction to finish implementing the hybrid audit corrections",
+      "reason": "Close canonical defects 8 and 12 by enforcing complete preflight dependencies and granular permissions"
+    },
+    {
+      "path": "scripts/governance/verify-protected-paths.mjs",
+      "authorized": true,
+      "authorization": "2026-08-24 user instruction to finish implementing the hybrid audit corrections",
+      "reason": "Close canonical defects 10 and 11 by enforcing wildcard detection and protected-path exceptions"
+    },
+    {
+      "path": "docs/layer-system/PROTECTED-PATHS.yml",
+      "authorized": true,
+      "authorization": "2026-08-24 user instruction to finish implementing the hybrid audit corrections",
+      "reason": "Close canonical defects 9 and 11 by protecting the baseline and governance safety controls"
+    },
+    {
+      "path": "docs/layer-system/RECOVERY.md",
+      "authorized": true,
+      "authorization": "2026-08-24 user instruction to finish implementing the hybrid audit corrections",
+      "reason": "Close canonical defect 19 with executable interruption and unsafe-patch recovery"
+    }
+  ]
+}
