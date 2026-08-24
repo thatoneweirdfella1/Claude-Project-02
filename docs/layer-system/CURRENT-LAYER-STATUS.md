@@ -2,16 +2,18 @@
 
 **Governance state:** POST-CORRECTION INDEPENDENT AUDIT PASSED AND USER ACCEPTED  
 **Verified through app source commit:** `16beca26c305bd9bdae088eb8e977ca1e9730747`  
-**Last completed horizontal layer:** `NONE`  
-**Active layer:** `L2`  
-**Active coherent batch:** `whole-site-immediate-control-reactions-and-safe-external-boundary`  
-**Application edits permitted:** `YES — L1 AND L2, BRANCH PREVIEW ONLY`  
+**Last implemented horizontal depth:** `L2 — IMPLEMENTED, NOT INDEPENDENTLY PROVEN`  
+**Active layer:** `NONE`  
+**Active coherent batch:** `NONE`  
+**Application edits permitted:** `NO FURTHER LAYER — L1/L2 AUTHORIZATION CONSUMED`  
 
 **L1 implementation checkpoint:** `5f90a8014bffd573fd1aa2207405077d72765f1c` — 70 test files / 650 deployed tests passed, Vercel preview `dpl_9nNhEATfhjMHJre2GRE2BDVygV99` is READY and returned HTTP 200. The implementation session records this as implemented evidence, not an independent `PROVEN` certification.
 
+**L2 implementation checkpoint:** `e10ee9f1c64fee5f8faccd1832ef19703bc65f33` — 73 test files / 655 deployed tests passed, Vercel preview `dpl_G1rSrrtgnLaD82ojH1ga57L9NTjt` is READY and returned HTTP 200. Connected AI, payments, identity, and remote data effects remain closed. The implementation session records this as implemented evidence, not an independent `PROVEN` certification.
+
 ## Exact next action
 
-Finish the L2 whole-site interaction gate, checkpoint it on the continuation branch, and verify its matching branch preview. Do not merge or promote to production.
+Stop and wait for the user's next exact instruction. Do not begin L3, merge, or promote to production.
 
 ## Honest initial state
 
