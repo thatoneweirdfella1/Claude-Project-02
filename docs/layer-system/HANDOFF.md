@@ -7,7 +7,7 @@
 - Source: `16beca26c305bd9bdae088eb8e977ca1e9730747`
 - Governance: the 23-defect hybrid closure passed the final independent post-correction audit and the user accepted it
 - Last completed horizontal layer: none
-- Active layer/batch: L1 / canonical-whole-site-navigation-and-visible-shell
+- Active layer/batch: L2 / whole-site-immediate-control-reactions-and-safe-external-boundary
 - App behavior changes: authorized for L1 and L2 on the continuation branch and branch preview only
 
 ## Preserved completed work
@@ -16,7 +16,7 @@ The source handoff records V2-RQ-001 through V2-RQ-003 as completed/verified and
 
 ## Exact next action
 
-Finish deterministic L1 verification, push its checkpoint to `horizontal-layer-completion-v1`, verify the branch preview, then continue directly into L2 without requesting another audit or permission. Do not merge or promote to production.
+L1 implementation is checkpointed at `5f90a8014bffd573fd1aa2207405077d72765f1c`; its Vercel preview `dpl_9nNhEATfhjMHJre2GRE2BDVygV99` is READY and returned HTTP 200. Finish the L2 interaction gate, push its checkpoint, and verify the matching branch preview. Do not merge or promote to production.
 
 The governance installer's local staging directory had no `.git`, so it could not issue a local Resume Certificate. This is an environment limitation, not a preflight pass. A real checkout/CI must supply that proof.
 

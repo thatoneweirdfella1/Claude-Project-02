@@ -1,25 +1,30 @@
 {
   "schema_version": 1,
-  "active_layer": "L1",
-  "subsystem": "canonical-whole-site-navigation-and-visible-shell",
+  "active_layer": "L2",
+  "subsystem": "whole-site-immediate-control-reactions-and-safe-external-boundary",
   "permanent_ids": [
     "KB-01", "KB-02", "KB-03", "KB-04", "KB-05", "KB-06", "KB-07", "KB-08", "KB-09",
     "ROUTE-01", "ROUTE-02", "ROUTE-03", "ROUTE-04", "ROUTE-05", "ROUTE-06", "ROUTE-07", "ROUTE-08", "ROUTE-09", "ROUTE-10", "ROUTE-11", "ROUTE-12", "ROUTE-13", "ROUTE-14", "ROUTE-15",
     "SPEC-LN-01", "SPEC-LN-02", "SPEC-LN-03", "SPEC-LN-04", "SPEC-LN-05", "SPEC-LN-06", "SPEC-LN-07", "SPEC-LN-08", "SPEC-LN-09", "SPEC-LN-10",
     "SPEC-TB-01", "SPEC-TB-02", "SPEC-TB-03", "SPEC-TB-04", "SPEC-TB-05", "SPEC-TB-06", "SPEC-TB-07", "SPEC-TB-08",
     "SPEC-QT-01", "SPEC-QT-02", "SPEC-QT-03", "SPEC-QT-04", "SPEC-QT-05", "SPEC-QT-06",
-    "SPEC-DV-01", "SPEC-DV-02", "SRC-VIS-01", "SPEC-SE-01", "SPEC-SE-02"
+    "SPEC-DV-01", "SPEC-DV-02", "SPEC-DV-03", "SPEC-DV-04", "SPEC-DV-05", "SPEC-DV-06", "SPEC-DV-07", "SPEC-DV-08", "SPEC-DV-09",
+    "SPEC-SE-01", "SPEC-SE-02", "SPEC-SE-03", "SPEC-SE-04", "SPEC-SE-05", "SPEC-SE-06", "SPEC-SE-07", "SPEC-SE-08", "SPEC-SE-09", "SPEC-SE-10",
+    "SPEC-MA-01", "SPEC-MA-02", "SPEC-MA-03", "SPEC-MA-04", "SPEC-RR-01", "SPEC-RR-02", "SPEC-RR-03", "SPEC-RR-04", "SPEC-RR-05", "SPEC-RR-06", "SPEC-RR-07", "SPEC-RR-08", "SPEC-RR-09", "SPEC-RR-10", "SPEC-RR-11",
+    "SRC-VIS-01", "SRC-COST-01", "SRC-DEV-01", "SRC-SEC-01", "USR-ALLOW-01", "USR-CREDIT-01", "USR-OPT-01", "USR-PLAN-01"
   ],
   "allowed_paths": [
     "src/main.tsx", "src/styles/restore-dialog.css", "src/stores/types.ts", "src/stores/sessionStore.ts", "src/stores/sessionStore.test.ts",
     "src/components/layout/**", "src/components/quicktools/**", "src/components/session/QuickActionsRow.tsx", "src/components/composer/AdvancedControls.tsx",
     "src/components/credits/OperatorWorkspaceBar.tsx", "src/components/credits/CreditCounter.tsx", "src/components/ApprovedKeyboardShortcutsModal.tsx", "src/components/KeyboardShortcutsModal.css",
-    "src/keyboard/**", "src/services/approvedKeyboardPolicy.ts", "src/services/keyboardShortcuts.ts", "src/services/sessionLifecycle.ts", "src/services/sessionLifecycle.test.ts", "src/services/persistence.test.ts", "src/screens/index.ts", "e2e/horizontal-layers.spec.ts"
+    "src/keyboard/**", "src/services/approvedKeyboardPolicy.ts", "src/services/keyboardShortcuts.ts", "src/services/executionAvailability.ts", "src/services/executionAvailability.test.ts",
+    "src/services/sessionLifecycle.ts", "src/services/sessionLifecycle.test.ts", "src/services/persistence.test.ts", "src/screens/index.ts",
+    "src/components/settings/InteractivePlanControls.tsx", "src/components/settings/InteractivePersonalOptimization.tsx", "src/components/settings/layer2Interactions.test.tsx", "src/components/pipeline/CenterColumn.tsx", "src/components/composer/Composer.tsx", "src/components/visibleControlContract.test.ts", "e2e/horizontal-layers.spec.ts", "tsconfig.app.json", "vitest.config.ts"
   ],
   "required_tests": [
-    "npm test", "npm run build", "remote branch-preview whole-site navigation walkthrough"
+    "npm test", "npm run build", "safe interaction component tests", "visible native-control contract", "remote branch-preview availability and deployment identity"
   ],
-  "entry_head": "ffc6935a921cdc298ad5c6259402b7eded73f41b",
-  "start_remote_head": "ffc6935a921cdc298ad5c6259402b7eded73f41b",
-  "exact_next_action": "Finish deterministic verification, commit the L1 checkpoint to horizontal-layer-completion-v1, verify its branch preview, then begin L2 without stopping."
+  "entry_head": "5f90a8014bffd573fd1aa2207405077d72765f1c",
+  "start_remote_head": "5f90a8014bffd573fd1aa2207405077d72765f1c",
+  "exact_next_action": "Finish the whole-site L2 interaction gate, commit it to horizontal-layer-completion-v1, and verify the matching branch preview without merging or promoting."
 }

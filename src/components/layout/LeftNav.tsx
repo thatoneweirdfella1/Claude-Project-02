@@ -46,7 +46,7 @@ export function LeftNav() {
           <button type="button" aria-label={`Unpin ${pinnedTool.label}`} title={`Unpin ${pinnedTool.label}`} onClick={() => setPinnedTool(null)}><PinOff size={15} /></button>
         </div>}
         <div className="leftnav-tools">
-          <button type="button" className="leftnav-item" aria-haspopup="dialog" aria-expanded={toolsOpen} onClick={() => setToolsOpen((value) => !value)}>
+          <button type="button" className="leftnav-item" aria-haspopup="dialog" aria-expanded={toolsOpen} onClick={() => { setToolsOpen((value) => !value); setStatusOpen(false); }}>
             <Boxes size={23} strokeWidth={1.8} aria-hidden="true" /><span>All Tools</span>
           </button>
           {toolsOpen && (
@@ -73,7 +73,7 @@ export function LeftNav() {
           <Trash2 size={23} strokeWidth={1.8} aria-hidden="true" /><span>Trash</span>
         </button>
         <div className="system-status-wrapper">
-          <button type="button" className="system-status system-status--interactive" data-testid="system-status" aria-expanded={statusOpen} onClick={() => setStatusOpen((open) => !open)}>
+          <button type="button" className="system-status system-status--interactive" data-testid="system-status" aria-expanded={statusOpen} onClick={() => { setStatusOpen((open) => !open); setToolsOpen(false); }}>
             <span className="system-status-heading"><i aria-hidden="true" /> System Status</span>
             <span className="system-status-message">Local systems ready · providers unconfigured</span>
           </button>

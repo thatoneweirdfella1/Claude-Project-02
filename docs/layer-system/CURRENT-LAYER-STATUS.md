@@ -3,13 +3,15 @@
 **Governance state:** POST-CORRECTION INDEPENDENT AUDIT PASSED AND USER ACCEPTED  
 **Verified through app source commit:** `16beca26c305bd9bdae088eb8e977ca1e9730747`  
 **Last completed horizontal layer:** `NONE`  
-**Active layer:** `L1`  
-**Active coherent batch:** `canonical-whole-site-navigation-and-visible-shell`  
+**Active layer:** `L2`  
+**Active coherent batch:** `whole-site-immediate-control-reactions-and-safe-external-boundary`  
 **Application edits permitted:** `YES — L1 AND L2, BRANCH PREVIEW ONLY`  
+
+**L1 implementation checkpoint:** `5f90a8014bffd573fd1aa2207405077d72765f1c` — 70 test files / 650 deployed tests passed, Vercel preview `dpl_9nNhEATfhjMHJre2GRE2BDVygV99` is READY and returned HTTP 200. The implementation session records this as implemented evidence, not an independent `PROVEN` certification.
 
 ## Exact next action
 
-Finish deterministic verification, checkpoint and verify the L1 branch preview, then continue directly into L2. Do not merge or promote to production.
+Finish the L2 whole-site interaction gate, checkpoint it on the continuation branch, and verify its matching branch preview. Do not merge or promote to production.
 
 ## Honest initial state
 

@@ -23,5 +23,5 @@
     "noFallthroughCasesInSwitch": true
   },
   "include": ["src"],
-  "exclude": ["src/keyboard/useKeyboardShortcuts.ts"]
+  "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx", "src/keyboard/useKeyboardShortcuts.ts"]
 }

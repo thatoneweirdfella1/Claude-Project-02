@@ -3,8 +3,8 @@ import { Pencil, Star, Copy } from "lucide-react";
 import { useSessionStore } from "../../stores/sessionStore";
 import { useAccountStore } from "../../stores/accountStore";
 import { CenterColumn } from "../pipeline";
-import { SubscriptionUI } from "../credits";
-import { PersonalOptimization } from "../optimization";
+import { InteractivePlanControls } from "../settings/InteractivePlanControls";
+import { InteractivePersonalOptimization } from "../settings/InteractivePersonalOptimization";
 import { ProviderNeutralSettings } from "../settings/ProviderNeutralSettings";
 import { AppearanceSettings } from "../settings/AppearanceSettings";
 import { COMPOSABLE_TECHNIQUE_IDS, MAX_TECHNIQUE_STACK, getTechnique } from "../../services/techniques";
@@ -1695,9 +1695,9 @@ function SettingsScreen() {
           </div>
         </div>}
 
-        {section === "plan" && <SubscriptionUI />}
+        {section === "plan" && <InteractivePlanControls />}
 
-        {section === "personalization" && <PersonalOptimization />}
+        {section === "personalization" && <InteractivePersonalOptimization />}
 
         {section === "connections" && <><div className="settings-section"><h3>Connection status</h3><p className="settings-section__note">No external provider is connected. Provider setup controls prepare configuration only; they do not claim a successful connection or send data.</p></div><ProviderNeutralSettings /></>}
 

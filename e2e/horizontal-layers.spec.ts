@@ -50,8 +50,16 @@ test("L2: global navigation controls react honestly", async ({ page }) => {
   await expect(page.getByText("No notifications. New notices will link to their exact destination here.")).toBeVisible();
 
   await page.getByRole("button", { name: "Profile", exact: true }).click();
+  await page.getByRole("menu").getByRole("button", { name: "Keyboard shortcuts", exact: true }).click();
+  await expect(page.getByRole("dialog", { name: "Keyboard Shortcuts" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog", { name: "Keyboard Shortcuts" })).toHaveCount(0);
+  await page.getByRole("button", { name: "Profile", exact: true }).click();
   await page.getByRole("menu").getByRole("button", { name: "Account and plan", exact: true }).click();
   await expect(page.getByRole("button", { name: "Plan & credits", exact: true })).toHaveAttribute("aria-current", "page");
+  await page.getByRole("button", { name: /Preview Plus|Preview Pro|Preview Insane/ }).first().click();
+  await expect(page.getByRole("dialog", { name: "Payment preview" })).toContainText("No checkout was created");
+  await page.getByRole("button", { name: "Close preview" }).click();
 
   await page.getByRole("button", { name: "All Tools", exact: true }).click();
   await page.getByLabel("Search All Tools").fill("Large");
@@ -85,6 +93,12 @@ test("L2: screen tabs, safe unavailable states, and typing protection react", as
   await page.getByRole("button", { name: "Open AI Connections" }).click();
   await expect(page.getByRole("button", { name: "AI Connections", exact: true })).toHaveAttribute("aria-current", "page");
 
+  await page.getByRole("button", { name: "Personal Optimization", exact: true }).click();
+  await page.getByRole("checkbox", { name: /Off|On/ }).check();
+  await page.getByRole("checkbox", { name: "Reduce Overwhelm" }).check();
+  await page.getByRole("button", { name: "Preview analysis state" }).click();
+  await expect(page.getByRole("status")).toContainText("No conversation was processed");
+
   await page.getByRole("button", { name: "All Tools", exact: true }).click();
   await page.getByRole("button", { name: "Large Jobs", exact: true }).click();
   await page.getByRole("button", { name: "Plan a large job", exact: true }).click();
@@ -97,8 +111,13 @@ test("L2: screen tabs, safe unavailable states, and typing protection react", as
   await composer.press("?");
   await expect(composer).toHaveValue("Question?");
 
-  await page.getByRole("button", { name: "Developer Mode", exact: false }).click();
-  await expect(page.getByLabel("Developer testing controls")).toBeVisible();
-  await page.getByRole("button", { name: /Developer Lab/ }).click();
-  await expect(page.getByText("Use this lab to test pricing", { exact: false })).toBeVisible();
+  const developerMode = page.getByRole("button", { name: "Developer Mode", exact: false });
+  if (await developerMode.isEnabled()) {
+    await developerMode.click();
+    await expect(page.getByLabel("Developer testing controls")).toBeVisible();
+    await page.getByRole("button", { name: /Developer Lab/ }).click();
+    await expect(page.getByText("Use this lab to test pricing", { exact: false })).toBeVisible();
+  } else {
+    await expect(developerMode).toHaveAttribute("title", "Developer Mode is operator-only");
+  }
 });

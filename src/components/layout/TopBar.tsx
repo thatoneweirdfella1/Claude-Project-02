@@ -192,9 +192,9 @@ export function TopBar() {
   const userRef = useRef<HTMLDivElement>(null);
 
   useDismissableLayer(searchOpen, () => setSearchOpen(false));
-  useDismissableLayer(referenceOpen, () => setReferenceOpen(false));
+  useDismissableLayer(referenceOpen, () => { setReferenceOpen(false); window.dispatchEvent(new CustomEvent("divergence:right-rail-panel", { detail: null })); });
   useDismissableLayer(notificationsOpen, () => setNotificationsOpen(false));
-  useDismissableLayer(helpOpen, () => setHelpOpen(false));
+  useDismissableLayer(helpOpen, () => { setHelpOpen(false); window.dispatchEvent(new CustomEvent("divergence:right-rail-panel", { detail: null })); });
   useDismissableLayer(userOpen, () => setUserOpen(false));
   useEffect(() => {
     const openSearch = () => setSearchOpen(true);
@@ -207,21 +207,27 @@ export function TopBar() {
     };
   }, []);
 
+  const setOnlySearch = (value: boolean) => { setSearchOpen(value); if (value) { setReferenceOpen(false); setNotificationsOpen(false); setHelpOpen(false); setUserOpen(false); window.dispatchEvent(new CustomEvent("divergence:right-rail-panel", { detail: null })); } };
+  const setOnlyReference = (value: boolean) => { setReferenceOpen(value); if (value) { setSearchOpen(false); setNotificationsOpen(false); setHelpOpen(false); setUserOpen(false); } };
+  const setOnlyNotifications = (value: boolean) => { setNotificationsOpen(value); if (value) { setSearchOpen(false); setReferenceOpen(false); setHelpOpen(false); setUserOpen(false); window.dispatchEvent(new CustomEvent("divergence:right-rail-panel", { detail: null })); } };
+  const setOnlyHelp = (value: boolean) => { setHelpOpen(value); if (value) { setSearchOpen(false); setReferenceOpen(false); setNotificationsOpen(false); setUserOpen(false); } };
+  const setOnlyUser = (value: boolean) => { setUserOpen(value); if (value) { setSearchOpen(false); setReferenceOpen(false); setNotificationsOpen(false); setHelpOpen(false); window.dispatchEvent(new CustomEvent("divergence:right-rail-panel", { detail: null })); } };
+
   return (
     <div className="topbar-content">
       <button type="button" className="topbar-logo" data-testid="logo-slot" aria-label="Go to Talk to AI" onClick={() => setScreenLocation("translate")} style={{ border: 0, background: "transparent", padding: 0 }}><Logo /></button>
       <div className="topbar-center">
-        <QuickReferencePopover open={referenceOpen} setOpen={setReferenceOpen} rootRef={referenceRef} />
-        <SearchPopover open={searchOpen} setOpen={setSearchOpen} rootRef={searchRef} />
+        <QuickReferencePopover open={referenceOpen} setOpen={setOnlyReference} rootRef={referenceRef} />
+        <SearchPopover open={searchOpen} setOpen={setOnlySearch} rootRef={searchRef} />
         <GlassButton onClick={() => setScreenLocation("saved-tools", "templates")}><ClipboardList size={20} /> Templates</GlassButton>
       </div>
       <div className="topbar-right">
-        <SimplePopover kind="notifications" open={notificationsOpen} setOpen={setNotificationsOpen} rootRef={notificationsRef} />
-        <SimplePopover kind="help" open={helpOpen} setOpen={setHelpOpen} rootRef={helpRef} />
+        <SimplePopover kind="notifications" open={notificationsOpen} setOpen={setOnlyNotifications} rootRef={notificationsRef} />
+        <SimplePopover kind="help" open={helpOpen} setOpen={setOnlyHelp} rootRef={helpRef} />
         <GlassButton aria-label="Settings" onClick={() => setScreenLocation("settings")}>
           <Settings size={20} /> Settings
         </GlassButton>
-        <UserMenu open={userOpen} setOpen={setUserOpen} rootRef={userRef} />
+        <UserMenu open={userOpen} setOpen={setOnlyUser} rootRef={userRef} />
       </div>
     </div>
   );

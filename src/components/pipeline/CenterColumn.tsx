@@ -47,6 +47,7 @@ import { authorizeEstimatedCost } from "../../services/creditAuthorization";
 import { addTokenUsage, getEstimatedCostForPipeline } from "../../services/costTracking";
 import type { PaidRoutePolicy } from "../../services/paidRoutePolicy";
 import { saveNow } from "../../services/persistence";
+import { CONNECTED_EXECUTION_AVAILABLE } from "../../services/executionAvailability";
 
 const client = createProxyClient();
 const STATE_DIMENSIONS = ["emotion", "rsd", "interest", "cognitive"] as const;
@@ -477,6 +478,11 @@ export function CenterColumn() {
       return true;
     }
 
+    if (!CONNECTED_EXECUTION_AVAILABLE) {
+      queueFreeFlow({ ...request, translatorEngine: "local-rules" });
+      return true;
+    }
+
     const paidModel = resolvePaidAnswerModel(request);
     if (paidModel === null) {
       queueFreeFlow(request);
@@ -532,6 +538,10 @@ export function CenterColumn() {
       },
       s.context,
     );
+    if (!CONNECTED_EXECUTION_AVAILABLE) {
+      queueFreeFlow({ ...rerunRequest, translatorEngine: "local-rules" });
+      return;
+    }
     const estimate = getEstimatedCostForPipeline(
       combinedInput,
       selectedModel,
