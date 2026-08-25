@@ -13,15 +13,15 @@
 
 ## Implemented Layer 4 checkpoint
 
-- Application commit: `b443fc78ca90d972449f83e9b694480963de22c7`
-- Matching READY preview: `dpl_5VxnH9ZU2VXQipnW88RbtLq6CgFm`
-- Evidence: 77 test files / 668 tests passed; TypeScript and Vite production build passed
-- Implemented: durable local workspace, bounded recovery history, resumable large jobs, versioned/checksummed complete export and atomic rollback import, web account/session API, server-side password hashing and HttpOnly session cookies, conditional remote revisions, and explicit no-loss conflict choices
-- Honest preview result: `/api/account` returned `{"configured":false,"user":null}`; local durability is active, remote account storage is not provisioned, and Layer 4 is not complete
+- Application commit: `1c17d3cee8757240be1c349774ee8f6ff052eaf7`
+- Matching READY preview: `dpl_AhQknjdcuo1T4G4W6ASMojutwYsH`
+- Evidence: 78 test files / 677 tests passed; TypeScript and Vite production build passed
+- Implemented: durable local workspace, bounded recovery history, resumable large jobs, versioned/checksummed complete export and atomic rollback import, hardened web account/session API, server-side PBKDF2 password hashing, HttpOnly Strict session cookies, hashed-key rate limiting, same-origin mutation enforcement, request-size bounds, non-cacheable account/sync responses, conditional remote revisions, explicit no-loss conflict choices, and atomic account/remote-data deletion
+- Honest preview result: `/api/account` returned `{"configured":false,"user":null}`; secret-safe diagnostics found no storage variable names in Preview, so live cross-device proof remains pending while local durability stays active
 
 ## Exact next action
 
-Provision approved durable account storage and connect `UPSTASH_REDIS_REST_URL` plus `UPSTASH_REDIS_REST_TOKEN` through the hosting integration without revealing their values. Then prove account creation, login, cross-device sync, stale-revision conflict preservation, deletion, migration, recovery, and the remaining L4 regressions. Keep all earlier checkpoints read-only.
+Continue independent Layer 4 regressions. At the final dependency boundary, connect the approved Upstash resource to the Vercel Preview environment so either supported variable pair is attached, redeploy, then prove live account creation/login, cross-device sync, stale-revision conflict preservation, deletion, migration, and recovery. Keep all earlier checkpoints read-only.
 
 ## Closed effects
 
