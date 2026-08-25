@@ -3,13 +3,13 @@
   "repository": "thatoneweirdfella1/Claude-Project-02",
   "canonical_remote": "https://github.com/thatoneweirdfella1/Claude-Project-02.git",
   "source_branch": "horizontal-layer-4-implementation-v1",
-  "source_commit": "4de02805165e7264f43d990753f9a40c2937bb39",
-  "source_commit_message": "Layer 4 implemented checkpoint; live external proof deferred",
+  "source_commit": "cc0a0d541705665d454c1be3968b26af102967d2",
+  "source_commit_message": "Governance: defer external proof without halting later layers",
   "continuation_branch": "horizontal-layer-5-implementation-v1",
   "required_ancestor": "4de02805165e7264f43d990753f9a40c2937bb39",
-  "selection": "INCLUDE_WITH_DEFERRED_EXTERNAL_PROOF",
+  "selection": "INCLUDE_WITH_DEFERRED_L4_PROOF",
   "test_evidence": {
-    "latest_recorded_source_evidence": "78 test files / 677 tests, TypeScript and Vite production build, matching READY preview; Upstash live proof deferred.",
+    "latest_recorded_source_evidence": "Layer 4: 78 test files / 677 tests, TypeScript and Vite build, matching READY preview; live Upstash proof deferred.",
     "independent_reverification_required": false
   },
   "protected_branches": [
@@ -20,6 +20,6 @@
     "frozen-implementation-v1",
     "backup-reference-do-not-touch"
   ],
-  "selected_by": "User ordered all workflow-stopping defects fixed and external actions consolidated.",
+  "selected_by": "User ordered workflow defects fixed and safe progress continued without repeated external setup interruptions.",
   "selected_at": "2026-08-25"
 }

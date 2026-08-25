@@ -1,10 +1,10 @@
 {
   "schema_version": 3,
   "default": "deny",
-  "branch_scope": "horizontal-layer-4-implementation-v1",
+  "branch_scope": "horizontal-layer-5-implementation-v1",
   "authorization_date": "2026-08-25",
-  "authorization_source": "User ordered the workflow defects fixed so external owner actions no longer consume repeated handoffs or halt all safe progress.",
-  "checkpoint_state": "SEALED_APPLICATION_CHECKPOINT_PENDING_EXTERNAL_PROOF",
+  "authorization_source": "User ordered all workflow-stopping defects fixed; this grants deterministic/sandbox L5 implementation while all real external money effects remain denied.",
+  "effect_boundary": "Internal deterministic test/sandbox state only; no real provider, funds, remote entitlement, or production effect.",
   "grants": {
     "inspect_repository": {
       "allowed": true
@@ -22,10 +22,10 @@
       "allowed": true
     },
     "modify_application_behavior": {
-      "allowed": false
+      "allowed": true
     },
     "modify_application_tests": {
-      "allowed": false
+      "allowed": true
     },
     "create_protected_tag": {
       "allowed": false
@@ -49,19 +49,19 @@
       "allowed": false
     },
     "configure_auth_service": {
-      "allowed": true
+      "allowed": false
     },
     "create_or_modify_identity": {
       "allowed": false
     },
     "provision_database_or_storage": {
-      "allowed": true
+      "allowed": false
     },
     "write_remote_user_data": {
-      "allowed": true
+      "allowed": false
     },
     "synchronize_remote_user_data": {
-      "allowed": true
+      "allowed": false
     },
     "run_schema_migration": {
       "allowed": false

@@ -2,12 +2,12 @@
 
 Read `START-HERE-DIVERGENCE.md` first.
 
-`horizontal-layer-3-implementation-v1` is the completed Layer 3 source and is read-only. `horizontal-layer-4-implementation-v1` contains the implemented Layer 4 checkpoint and is sealed against further application edits while live Upstash proof remains queued. The required next working branch is `horizontal-layer-5-implementation-v1`, created from the current Layer 4 checkpoint.
+`horizontal-layer-4-implementation-v1` is the sealed Layer 4 checkpoint and is read-only for application code. Layer 5 work occurs only on `horizontal-layer-5-implementation-v1`, created from exact Layer 4 governance checkpoint `cc0a0d541705665d454c1be3968b26af102967d2`.
 
-Use `docs/layer-system/API-WORK-MODE.md` when only authenticated GitHub API access exists. A missing local checkout is never a blocker.
+Use `docs/layer-system/API-WORK-MODE.md` when no executable authenticated checkout exists. A missing local clone is never a blocker.
 
-## External-dependency deferral
+Obey `docs/layer-system/EXTERNAL-DEPENDENCY-DEFERRAL.md`: Layer 4's queued Upstash proof does not block deterministic Layer 5 implementation. Preserve honest labels and keep unavailable live effects fail-closed.
 
-Obey `docs/layer-system/EXTERNAL-DEPENDENCY-DEFERRAL.md`. An owner-only marketplace integration, credential, billing confirmation, provider approval, or live external proof may block a completion claim, but it must not block safe implementation of later layers. Preserve the honest last proven/implemented labels, keep unavailable live paths fail-closed, queue the owner action once, create the next separate layer branch, and continue non-dependent deterministic work.
+Layer 5 may implement and test only deterministic/sandbox allowance, entitlement, checkout, ledger, reservation, reconciliation, release, cap, receipt, and cost-safety behavior. Real charges, payment-provider configuration, production billing, external AI execution, secrets, merge, and production deployment remain forbidden.
 
-Never repeatedly return the same external setup task to the user. Never claim a deferred layer complete. Never modify, overwrite, rebase, force-push, merge into, or advance an earlier checkpoint branch. Never merge or deploy production unless explicitly granted.
+Never modify an earlier checkpoint branch. Record checkpoints, tests, preview identity, deferred proof, and the exact next action before yielding.
