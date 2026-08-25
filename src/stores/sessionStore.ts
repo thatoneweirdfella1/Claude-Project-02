@@ -15,6 +15,8 @@ import type {
   TechniqueId,
   TranslatorEngine,
 } from "./types";
+import { createSignal } from "../services/learningEngine";
+import { useAccountStore } from "./accountStore";
 import { useSettingsDefaultsStore } from "./settingsDefaultsStore";
 
 export const DEFAULT_MAX_REQUEST_COST = 0.25;
@@ -144,7 +146,18 @@ export const useSessionStore = create<SessionStore>((set) => ({
       ? Math.max(0, conversationScrollTop)
       : 0,
   }),
-  setModel: (model) => set({ model }),
+  setModel: (model) => set((state) => {
+    if (state.model !== model) {
+      useAccountStore.getState().recordSignal(createSignal(
+        { sessionId: state.sessionId, modelUsed: state.model, techniquesUsed: state.techniques },
+        "model_switch",
+        `${state.model}->${model}`,
+        "neutral",
+        true,
+      ));
+    }
+    return { model };
+  }),
   setDestination: (destination) => set({ destination }),
   setTranslatorEngine: (translatorEngine) => set({ translatorEngine }),
   setReviewBeforeSend: (reviewBeforeSend) => set({ reviewBeforeSend }),
@@ -153,7 +166,18 @@ export const useSessionStore = create<SessionStore>((set) => ({
     maxRequestCost: Number.isFinite(maxRequestCost) ? Math.max(0, maxRequestCost) : 0,
   }),
   setDirectness: (directness) => set({ directness }),
-  setTechniques: (techniques) => set({ techniques }),
+  setTechniques: (techniques) => set((state) => {
+    if (state.techniques.join("|") !== techniques.join("|")) {
+      useAccountStore.getState().recordSignal(createSignal(
+        { sessionId: state.sessionId, modelUsed: state.model, techniquesUsed: state.techniques },
+        "technique_switch",
+        `${state.techniques.join(",")}->${techniques.join(",")}`,
+        "neutral",
+        true,
+      ));
+    }
+    return { techniques };
+  }),
   addContextItem: (item) => set((s) => ({ context: [...s.context, item] })),
   removeContextItem: (id) => set((s) => ({ context: s.context.filter((c) => c.id !== id) })),
   addMessage: (message) => set((s) => ({ conversation: [...s.conversation, message] })),
@@ -170,11 +194,30 @@ export const useSessionStore = create<SessionStore>((set) => ({
         : m,
     ),
   })),
-  updateMessage: (messageId, patch) => set((s) => ({
-    conversation: s.conversation.map((m) => m.id === messageId ? { ...m, ...patch } : m),
-  })),
+  updateMessage: (messageId, patch) => set((s) => {
+    const existing = s.conversation.find((message) => message.id === messageId);
+    if (existing && typeof patch.content === "string" && patch.content !== existing.content) {
+      const distance = Math.abs(patch.content.length - existing.content.length);
+      useAccountStore.getState().recordSignal(createSignal(
+        { sessionId: s.sessionId, messageId, modelUsed: s.model, techniquesUsed: s.techniques },
+        "edit_distance",
+        distance,
+        distance > 0 ? "negative" : "neutral",
+        true,
+      ));
+    }
+    return { conversation: s.conversation.map((m) => m.id === messageId ? { ...m, ...patch } : m) };
+  }),
   resetSession: () => set(createInitialSessionState()),
   newSession: () => {
+    const previous = useSessionStore.getState();
+    useAccountStore.getState().recordSignal(createSignal(
+      { sessionId: previous.sessionId, modelUsed: previous.model, techniquesUsed: previous.techniques },
+      "session_close",
+      true,
+      "neutral",
+      true,
+    ));
     const now = Date.now();
     set({
       sessionId: newLiveSessionId(),
