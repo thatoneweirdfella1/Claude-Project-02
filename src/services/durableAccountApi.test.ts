@@ -36,6 +36,19 @@ function mockRedis(resolver: (command: Array<string | number>) => unknown) {
   return calls;
 }
 
+function withServerHeaders(request: Request, values: Record<string, string>): Request {
+  const original = request.headers;
+  const normalized = Object.fromEntries(Object.entries(values).map(([name, value]) => [name.toLowerCase(), value]));
+  Object.defineProperty(request, "headers", {
+    value: {
+      get(name: string) {
+        return normalized[name.toLowerCase()] ?? original.get(name);
+      },
+    },
+  });
+  return request;
+}
+
 describe("Layer 4 durable account API boundaries", () => {
   beforeEach(() => {
     process.env.UPSTASH_REDIS_REST_URL = "https://redis.example";
@@ -73,11 +86,12 @@ describe("Layer 4 durable account API boundaries", () => {
   });
 
   it("rejects cross-origin account mutations", async () => {
-    const response = await accountHandler(new Request("https://preview.example/api/account", {
+    const request = withServerHeaders(new Request("https://preview.example/api/account", {
       method: "POST",
-      headers: { origin: "https://attacker.example", "content-type": "application/json" },
+      headers: { "content-type": "application/json" },
       body: JSON.stringify({ action: "login", email: "person@example.com", password: "long-enough-password" }),
-    }));
+    }), { origin: "https://attacker.example" });
+    const response = await accountHandler(request);
     expect(response.status).toBe(403);
     expect(response.headers.get("cache-control")).toBe("no-store");
   });
@@ -104,9 +118,10 @@ describe("Layer 4 durable account API boundaries", () => {
 
   it("atomically deletes account, email mapping, remote data, and current session", async () => {
     const calls = mockRedis(() => 1);
-    await deleteAccount(account, new Request("https://preview.example/api/account", {
-      headers: { cookie: "divergence_session=session-token" },
-    }));
+    await deleteAccount(account, withServerHeaders(
+      new Request("https://preview.example/api/account"),
+      { cookie: "divergence_session=session-token" },
+    ));
     const command = calls[0];
     expect(command[0]).toBe("EVAL");
     expect(command).toContain("email:person@example.com");
@@ -137,29 +152,33 @@ describe("Layer 4 durable account API boundaries", () => {
       if (command[0] === "GET" && command[1] === "sync:account-1") return JSON.stringify(current);
       return null;
     });
-    const response = await syncHandler(new Request("https://preview.example/api/sync", {
+    const request = withServerHeaders(new Request("https://preview.example/api/sync", {
       method: "PUT",
       headers: {
-        cookie: "divergence_session=session-token",
-        origin: "https://preview.example",
         "if-match": "1",
         "content-type": "application/json",
       },
       body: JSON.stringify({
         dataset: { kind: "divergence-local-dataset", schemaVersion: 2, checksum: "stale" },
       }),
-    }));
+    }), {
+      cookie: "divergence_session=session-token",
+      origin: "https://preview.example",
+    });
+    const response = await syncHandler(request);
     expect(response.status).toBe(409);
     expect(response.headers.get("cache-control")).toBe("no-store");
     await expect(response.json()).resolves.toEqual(current);
   });
 
   it("distinguishes same-origin and cross-origin requests", () => {
-    expect(requestIsSameOrigin(new Request("https://preview.example/api/account", {
-      headers: { origin: "https://preview.example" },
-    }))).toBe(true);
-    expect(requestIsSameOrigin(new Request("https://preview.example/api/account", {
-      headers: { origin: "https://other.example" },
-    }))).toBe(false);
+    expect(requestIsSameOrigin(withServerHeaders(
+      new Request("https://preview.example/api/account"),
+      { origin: "https://preview.example" },
+    ))).toBe(true);
+    expect(requestIsSameOrigin(withServerHeaders(
+      new Request("https://preview.example/api/account"),
+      { origin: "https://other.example" },
+    ))).toBe(false);
   });
 });
