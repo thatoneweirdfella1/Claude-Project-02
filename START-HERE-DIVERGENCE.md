@@ -24,7 +24,7 @@ This branch contains the durable context for an AI with no prior conversation.
 9. `docs/layer-system/HORIZONTAL-LAYER-COMPLETION-SYSTEM.md`
 10. `docs/layer-system/HYBRID-INDEPENDENT-AUDIT-PROTOCOL.md`
 11. `docs/layer-system/LAYER-OBLIGATION-PROFILES.yml` and the L4-applicable matrix rows.
-12. `docs/layer-system/L4-DATA-AND-CONFLICT-CONTRACT.md` and only the task-specific authority/evidence rows needed by the active batch.
+12. `docs/layer-system/L4-DATA-AND-CONFLICT-CONTRACT.md`, `docs/layer-system/USER-ACTION-QUEUE.md`, and only the task-specific authority/evidence rows needed by the active batch.
 
 ## Required first action
 
@@ -32,7 +32,7 @@ Use the authenticated GitHub API gate in `docs/layer-system/API-WORK-MODE.md`. C
 
 ## Current exact action
 
-Implement and verify the active 206-row Layer 4 durability batch. Do not modify any earlier checkpoint branch.
+Continue every independent Layer 4 implementation, test, documentation, preparation, and verification task. Missing external resources belong in `USER-ACTION-QUEUE.md` and do not justify stopping while other work can proceed. Do not modify any earlier checkpoint branch.
 
 ## Conflict rule
 
