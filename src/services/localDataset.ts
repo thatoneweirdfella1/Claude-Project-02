@@ -96,13 +96,13 @@ function migrateLegacy(value: LegacyDataset): LocalDataset {
 export function parseLocalDataset(text: string): LocalDataset | null {
   if (text.length > 10_000_000) return null;
   try {
-    const value = JSON.parse(text) as Partial<LocalDataset & LegacyDataset>;
+    const value = JSON.parse(text) as Record<string, unknown>;
     if (value.kind !== "divergence-local-dataset" ||
         !value.account || typeof value.account !== "object" ||
         !value.session || typeof value.session !== "object") return null;
-    if (value.schemaVersion === 1) return migrateLegacy(value as LegacyDataset);
+    if (value.schemaVersion === 1) return migrateLegacy(value as unknown as LegacyDataset);
     if (value.schemaVersion !== 2 || !value.provenance || typeof value.checksum !== "string") return null;
-    const { checksum: claimed, ...withoutChecksum } = value as LocalDataset;
+    const { checksum: claimed, ...withoutChecksum } = value as unknown as LocalDataset;
     if (payloadChecksum(withoutChecksum) !== claimed) return null;
     return value as LocalDataset;
   } catch {

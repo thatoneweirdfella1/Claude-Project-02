@@ -2255,29 +2255,6 @@ function TrashScreen() {
   );
 }
 
-function LargeJobsScreen() {
-  const [source, setSource] = useState("");
-  const [batchSize, setBatchSize] = useState(2);
-  const [units, setUnits] = useState<SyntheticJobUnit[]>([]);
-  const [paused, setPaused] = useState(false);
-  const complete = units.filter((unit) => unit.status === "complete").length;
-  function prepare() { setUnits(planSyntheticJob(source, batchSize)); setPaused(false); }
-  function runNext() { if (!paused) setUnits((current) => runNextSyntheticBatch(current)); }
-  function downloadEvidence() {
-    const blob = new Blob([JSON.stringify({ kind: "divergence-synthetic-job", source, batchSize, units }, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = "divergence-synthetic-job-evidence.json"; link.click(); URL.revokeObjectURL(url);
-  }
-  return <div className="screen screen-large-jobs">
-    <div className="screen__header"><h1>Large Jobs</h1><p>Exercise deterministic batching, progress, stop, resume, and evidence without a provider or cost.</p></div>
-    <div className="screen__content"><div className="settings-section">
-      <label>One local item per line<textarea aria-label="Synthetic job source items" value={source} onChange={(event) => setSource(event.target.value)} /></label>
-      <label>Items per batch<input type="number" min="1" max="25" value={batchSize} onChange={(event) => setBatchSize(Number(event.target.value))} /></label>
-      <button type="button" className="primary" onClick={prepare} disabled={!source.trim()}>Prepare synthetic job</button>
-      {units.length > 0 && <div className="workflow-dialog__summary" role="region" aria-label="Synthetic job progress"><strong>{complete} of {units.length} batches complete</strong><progress max={units.length} value={complete} /><p>No provider is connected and no credits can be spent.</p><div className="screen__actions"><button type="button" onClick={runNext} disabled={paused || complete === units.length}>Run next local batch</button>{paused ? <button type="button" onClick={() => setPaused(false)}>Resume</button> : <button type="button" onClick={() => setPaused(true)} disabled={complete === units.length}>Stop</button>}<button type="button" onClick={downloadEvidence}>Download evidence</button></div>{units.map((unit) => <div className="settings-item" key={unit.id}><strong>{unit.id}</strong><span>{unit.status}</span>{unit.result && <p>{unit.result}</p>}</div>)}</div>}
-    </div></div>
-  </div>;
-}
-
 export function ScreenRouter() {
   const currentScreen = useSessionStore((s) => s.currentScreen);
   const currentSection = useSessionStore((s) => s.currentSection);
