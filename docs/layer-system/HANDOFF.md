@@ -9,7 +9,7 @@
 - Governance: the 23-defect hybrid closure passed the final independent post-correction audit and the user accepted it
 - Last implemented horizontal depth: L3 — implemented, not independently `PROVEN`
 - Active layer/batch: none
-- App behavior changes: no further layer is authorized; the Layer 3 grant has been consumed
+- App behavior changes: Layer 3 implementation is finished; no Layer 4, merge, production, or external-effect authorization
 
 ## Preserved completed work
 
@@ -17,7 +17,7 @@ The source handoff records V2-RQ-001 through V2-RQ-003 as completed/verified and
 
 ## Exact next action
 
-Layer 3 application commit `20b8271d4813579c0eda67452c0faa6ae0882111` passed 74 test files / 659 tests and the TypeScript/Vite production build on matching READY preview `dpl_7j3V83jUeedLSgfppQc9ewyGR1pd`, which returned HTTP 200. The implementation remains `IMPLEMENTED — NOT FULLY PROVEN`; `SPEC-LS-01` is blocked because its documented source and acceptance contract are unavailable. Do not begin Layer 4, merge, promote, or claim formal Layer 3 completion without a new exact instruction and the required independent evidence.
+Layer 3 implementation through `94841450b1aedb28f3d144a191ffac2301d03170` passed 75 test files / 664 tests and the TypeScript/Vite production build on matching READY preview `dpl_3CgDffYmJvBvx5ZNBY3EHJSqkpxy`. `SPEC-LS-01` is recovered, implemented, and recorded in the ledger. Layer 3 implementation is finished; an independent audit is only the separate formal `PROVEN` certification. Do not begin Layer 4, merge, or promote without a new exact instruction.
 
 The governance installer's local staging directory had no `.git`, so it could not issue a local Resume Certificate. This is an environment limitation, not a preflight pass. A real checkout/CI must supply that proof.
 
