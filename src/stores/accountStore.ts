@@ -447,9 +447,21 @@ export const useAccountStore = create<AccountStore>((set, get) => ({
         outcome: rating.stars >= 4 ? "positive" : rating.stars <= 2 ? "negative" : "neutral",
         verified: true,
       };
+      const commentSignal: SignalLearningAuditEntry | null = rating.comment?.trim()
+        ? {
+            ...signal,
+            id: `signal-comment-${rating.messageId}-${rating.timestamp}`,
+            signalType: "comment",
+            signalValue: rating.comment.trim(),
+          }
+        : null;
       return {
         ratings,
-        learningAuditLog: [...s.learningAuditLog, signal].slice(-MAX_LEARNING_AUDIT_ENTRIES),
+        learningAuditLog: [
+          ...s.learningAuditLog,
+          signal,
+          ...(commentSignal ? [commentSignal] : []),
+        ].slice(-MAX_LEARNING_AUDIT_ENTRIES),
       };
     }),
   addSavedPrompt: (prompt) => set((s) => ({ savedPrompts: [...s.savedPrompts, prompt] })),
