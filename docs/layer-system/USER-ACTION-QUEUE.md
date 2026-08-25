@@ -1,6 +1,6 @@
 # Consolidated user-action queue
 
-Do not stop ongoing work merely because an item is listed here. Continue everything that is not genuinely dependent on it.
+Items here are deferred until one consolidated owner setup-and-proof session. They do not block safe implementation of later layers.
 
 ## Pending
 
@@ -8,4 +8,4 @@ Do not stop ongoing work merely because an item is listed here. Continue everyth
 
 ## Presentation rule
 
-At the final dependency boundary, show the user only the minimum consolidated actions that still require account-owner confirmation. Do not interrupt after each layer or external dependency.
+Do not present this queue after each layer. Continue provisional later-layer work under EXTERNAL-DEPENDENCY-DEFERRAL.md. Present one minimum action list only after all authorized non-dependent work is exhausted.

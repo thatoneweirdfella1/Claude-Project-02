@@ -1,15 +1,13 @@
 # START HERE — DIVERGENCE.AI
 
-This branch contains the durable context for an AI with no prior conversation.
-
 ## Identity
 
 - Repository: `thatoneweirdfella1/Claude-Project-02`
-- Read-only source branch: `horizontal-layer-3-implementation-v1`
-- Required Layer 4 working branch: `horizontal-layer-4-implementation-v1`
-- Exact source head: `4db777514e50e011fb0887bf283a416e1a34f477`
-- Required application ancestor: `94841450b1aedb28f3d144a191ffac2301d03170`
-- Active layer: `L4 — Durable`
+- Sealed Layer 4 checkpoint branch: `horizontal-layer-4-implementation-v1`
+- Required next working branch: `horizontal-layer-5-implementation-v1`
+- Layer 4 checkpoint to inherit: `4de02805165e7264f43d990753f9a40c2937bb39`
+- Layer 4 state: `IMPLEMENTED — LIVE EXTERNAL PROOF DEFERRED`
+- Honest completed-depth claim remains unchanged until queued proof passes.
 
 ## Mandatory read order
 
@@ -17,23 +15,11 @@ This branch contains the durable context for an AI with no prior conversation.
 2. `docs/layer-system/PERMISSIONS.yml`
 3. `docs/layer-system/HANDOFF.md`
 4. `docs/layer-system/SOURCE-CHECKPOINT.json`
-5. `docs/layer-system/AUTHORITY-MANIFEST.yml`
-6. `docs/authority/USER-CORRECTIONS.md`
-7. `docs/authority/DIVERGENCE-AI-CANONICAL-DECISION-AUTHORITY-v2.md`
-8. `docs/authority/DIVERGENCE-AI-CONTROL-BEHAVIOR-MAP-v2.md`
-9. `docs/layer-system/HORIZONTAL-LAYER-COMPLETION-SYSTEM.md`
-10. `docs/layer-system/HYBRID-INDEPENDENT-AUDIT-PROTOCOL.md`
-11. `docs/layer-system/LAYER-OBLIGATION-PROFILES.yml` and the L4-applicable matrix rows.
-12. `docs/layer-system/L4-DATA-AND-CONFLICT-CONTRACT.md`, `docs/layer-system/USER-ACTION-QUEUE.md`, and only the task-specific authority/evidence rows needed by the active batch.
+5. `docs/layer-system/EXTERNAL-DEPENDENCY-DEFERRAL.md`
+6. `docs/layer-system/USER-ACTION-QUEUE.md`
+7. `docs/layer-system/HORIZONTAL-LAYER-COMPLETION-SYSTEM.md`
+8. The exact authority and obligation rows required by the active branch.
 
-## Required first action
+## Exact action
 
-Use the authenticated GitHub API gate in `docs/layer-system/API-WORK-MODE.md`. Confirm the exact branch and ancestor identities and return the Remote Resume Certificate before writing. All writes target only `horizontal-layer-4-implementation-v1`.
-
-## Current exact action
-
-Continue every independent Layer 4 implementation, test, documentation, preparation, and verification task. Missing external resources belong in `USER-ACTION-QUEUE.md` and do not justify stopping while other work can proceed. Do not modify any earlier checkpoint branch.
-
-## Conflict rule
-
-Explicit scoped authority wins. Never silently overwrite user data. Preserve recoverable versions, expose conflicts, and require an explicit resolution. Record unresolved authority conflicts and continue unrelated work.
+Create `horizontal-layer-5-implementation-v1` from the current Layer 4 checkpoint if it does not already exist. Activate and implement Layer 5 there using deterministic, fail-closed adapters. Do not wait for Upstash. Do not claim Layer 4 or Layer 5 complete until their deferred live proofs pass. Never modify an earlier checkpoint branch.

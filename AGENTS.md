@@ -1,17 +1,13 @@
 # DIVERGENCE.AI governed continuation
 
-Stop before editing. Read `START-HERE-DIVERGENCE.md` and follow its read order.
+Read `START-HERE-DIVERGENCE.md` first.
 
-`horizontal-layer-3-implementation-v1` is the completed Layer 3 source and is read-only. Layer 4 work occurs only on `horizontal-layer-4-implementation-v1`, created from exact source head `4db777514e50e011fb0887bf283a416e1a34f477`.
+`horizontal-layer-3-implementation-v1` is the completed Layer 3 source and is read-only. `horizontal-layer-4-implementation-v1` contains the implemented Layer 4 checkpoint and is sealed against further application edits while live Upstash proof remains queued. The required next working branch is `horizontal-layer-5-implementation-v1`, created from the current Layer 4 checkpoint.
 
-Use the authenticated GitHub API startup gate in `docs/layer-system/API-WORK-MODE.md` when no executable authenticated checkout is available. Return its Remote Resume Certificate before writing.
+Use `docs/layer-system/API-WORK-MODE.md` when only authenticated GitHub API access exists. A missing local checkout is never a blocker.
 
-Do not edit application behavior unless the gate passes and `docs/layer-system/PERMISSIONS.yml` grants the exact action for this branch. One horizontal layer and one coherent batch may be active.
+## External-dependency deferral
 
-Never modify, update, overwrite, rebase, force-push, merge into, or otherwise advance `horizontal-layer-completion-v1`, `horizontal-layer-3-implementation-v1`, `build`, `frozen-implementation-v1`, or any backup branch. Never access secrets, connect external AI providers, modify money/allowance/entitlement state, merge, or deploy production unless the exact capability is granted.
+Obey `docs/layer-system/EXTERNAL-DEPENDENCY-DEFERRAL.md`. An owner-only marketplace integration, credential, billing confirmation, provider approval, or live external proof may block a completion claim, but it must not block safe implementation of later layers. Preserve the honest last proven/implemented labels, keep unavailable live paths fail-closed, queue the owner action once, create the next separate layer branch, and continue non-dependent deterministic work.
 
-For Layer 4 data, obey `docs/layer-system/L4-DATA-AND-CONFLICT-CONTRACT.md`: fail closed, preserve recoverable versions, and never silently resolve a conflict.
-
-## Non-blocking external dependency rule
-
-A missing marketplace integration, credential, provider approval, billing confirmation, or other user-only external action does not end the work session while any independent code, tests, documentation, later preparation, or verification can still proceed safely. Record it in `docs/layer-system/USER-ACTION-QUEUE.md`, keep the affected live path fail-closed, and continue all non-dependent work. Consolidate user-only actions into one short final setup session. Stop early only when every remaining task is genuinely dependent on an unresolved user action; state that dependency plainly and do not dump implementation details on the user.
+Never repeatedly return the same external setup task to the user. Never claim a deferred layer complete. Never modify, overwrite, rebase, force-push, merge into, or advance an earlier checkpoint branch. Never merge or deploy production unless explicitly granted.

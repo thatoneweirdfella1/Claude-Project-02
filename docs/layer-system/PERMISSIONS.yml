@@ -1,9 +1,10 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "default": "deny",
   "branch_scope": "horizontal-layer-4-implementation-v1",
   "authorization_date": "2026-08-25",
-  "authorization_source": "User instruction `begin layer 4`, recorded in docs/authority/USER-CORRECTIONS.md at commit df22fba1b1ce9369a1244deec103a4019999a749.",
+  "authorization_source": "User ordered the workflow defects fixed so external owner actions no longer consume repeated handoffs or halt all safe progress.",
+  "checkpoint_state": "SEALED_APPLICATION_CHECKPOINT_PENDING_EXTERNAL_PROOF",
   "grants": {
     "inspect_repository": {
       "allowed": true
@@ -21,10 +22,10 @@
       "allowed": true
     },
     "modify_application_behavior": {
-      "allowed": true
+      "allowed": false
     },
     "modify_application_tests": {
-      "allowed": true
+      "allowed": false
     },
     "create_protected_tag": {
       "allowed": false
@@ -51,7 +52,7 @@
       "allowed": true
     },
     "create_or_modify_identity": {
-      "allowed": true
+      "allowed": false
     },
     "provision_database_or_storage": {
       "allowed": true
@@ -63,7 +64,7 @@
       "allowed": true
     },
     "run_schema_migration": {
-      "allowed": true
+      "allowed": false
     },
     "configure_payment_provider": {
       "allowed": false

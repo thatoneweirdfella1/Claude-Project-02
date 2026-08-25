@@ -1,32 +1,15 @@
 # Governed handoff
 
-## Current state
+## Current checkpoint
 
-- Repository: `thatoneweirdfella1/Claude-Project-02`
-- Read-only source branch: `horizontal-layer-3-implementation-v1`
-- Working branch: `horizontal-layer-4-implementation-v1`
-- Exact Layer 4 source: `4db777514e50e011fb0887bf283a416e1a34f477`
-- Layer 3 application checkpoint: `94841450b1aedb28f3d144a191ffac2301d03170`
-- Last implemented horizontal depth: L3 — implemented, not independently `PROVEN`
-- Active layer/batch: L4 / whole-site durability, identity, recovery, synchronization, and resumable work
-- Application changes: authorized for the exact 206-row L4 batch on the Layer 4 branch only
+- Branch: `horizontal-layer-4-implementation-v1`
+- Exact checkpoint: `4de02805165e7264f43d990753f9a40c2937bb39`
+- State: Layer 4 implemented; live Upstash cross-device proof deferred
+- Evidence: 78 test files / 677 tests, TypeScript, Vite build, matching READY preview
+- Safety: storage-dependent paths remain fail-closed; Layer 3 remains unchanged
 
-## Implemented Layer 4 checkpoint
+## Required continuation
 
-- Application commit: `1c17d3cee8757240be1c349774ee8f6ff052eaf7`
-- Matching READY preview: `dpl_AhQknjdcuo1T4G4W6ASMojutwYsH`
-- Evidence: 78 test files / 677 tests passed; TypeScript and Vite production build passed
-- Implemented: durable local workspace, bounded recovery history, resumable large jobs, versioned/checksummed complete export and atomic rollback import, hardened web account/session API, server-side PBKDF2 password hashing, HttpOnly Strict session cookies, hashed-key rate limiting, same-origin mutation enforcement, request-size bounds, non-cacheable account/sync responses, conditional remote revisions, explicit no-loss conflict choices, and atomic account/remote-data deletion
-- Honest preview result: `/api/account` returned `{"configured":false,"user":null}`; secret-safe diagnostics found no storage variable names in Preview, so live cross-device proof remains pending while local durability stays active
+Create or use `horizontal-layer-5-implementation-v1` from this Layer 4 checkpoint. Continue safe deterministic Layer 5 work without waiting for Upstash. Do not claim Layer 4 complete, and do not modify this branch's application code.
 
-## Exact next action
-
-Continue independent Layer 4 regressions. At the final dependency boundary, connect the approved Upstash resource to the Vercel Preview environment so either supported variable pair is attached, redeploy, then prove live account creation/login, cross-device sync, stale-revision conflict preservation, deletion, migration, and recovery. Keep all earlier checkpoints read-only.
-
-## Closed effects
-
-Payments, authoritative credit/allowance/entitlement mutation, external AI provider calls, BYOK secrets, repository rules, pull requests, merge, stable promotion, and production deployment remain denied.
-
-## Stop conditions
-
-Stop for wrong repository or branch, source-history mismatch, branch-head movement during a write, missing permission, authority conflict that changes the exact batch, silent overwrite risk, unsupported status promotion, or a required external resource that cannot be provisioned safely. Record scoped decisions and continue unrelated work.
+External user-only actions remain consolidated in `USER-ACTION-QUEUE.md` for one later setup-and-proof pass.

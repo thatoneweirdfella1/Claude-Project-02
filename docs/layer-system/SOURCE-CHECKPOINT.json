@@ -1,25 +1,25 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "repository": "thatoneweirdfella1/Claude-Project-02",
   "canonical_remote": "https://github.com/thatoneweirdfella1/Claude-Project-02.git",
-  "source_branch": "horizontal-layer-3-implementation-v1",
-  "source_commit": "4db777514e50e011fb0887bf283a416e1a34f477",
-  "source_commit_message": "Governance: checkpoint completed Layer 3 work",
-  "continuation_branch": "horizontal-layer-4-implementation-v1",
-  "required_ancestor": "94841450b1aedb28f3d144a191ffac2301d03170",
-  "selection": "INCLUDE",
+  "source_branch": "horizontal-layer-4-implementation-v1",
+  "source_commit": "4de02805165e7264f43d990753f9a40c2937bb39",
+  "source_commit_message": "Layer 4 implemented checkpoint; live external proof deferred",
+  "continuation_branch": "horizontal-layer-5-implementation-v1",
+  "required_ancestor": "4de02805165e7264f43d990753f9a40c2937bb39",
+  "selection": "INCLUDE_WITH_DEFERRED_EXTERNAL_PROOF",
   "test_evidence": {
-    "rerun_this_activation": false,
-    "latest_recorded_source_evidence": "75 test files / 664 tests, TypeScript and Vite production build, matching READY deployment dpl_3CgDffYmJvBvx5ZNBY3EHJSqkpxy for Layer 3 application checkpoint 94841450b1aedb28f3d144a191ffac2301d03170.",
+    "latest_recorded_source_evidence": "78 test files / 677 tests, TypeScript and Vite production build, matching READY preview; Upstash live proof deferred.",
     "independent_reverification_required": false
   },
   "protected_branches": [
     "horizontal-layer-completion-v1",
     "horizontal-layer-3-implementation-v1",
+    "horizontal-layer-4-implementation-v1",
     "build",
     "frozen-implementation-v1",
     "backup-reference-do-not-touch"
   ],
-  "selected_by": "explicit user instruction `begin layer 4` plus exact Layer 3 checkpoint identity",
+  "selected_by": "User ordered all workflow-stopping defects fixed and external actions consolidated.",
   "selected_at": "2026-08-25"
 }
