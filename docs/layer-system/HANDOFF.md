@@ -8,8 +8,8 @@
 - Source: `16beca26c305bd9bdae088eb8e977ca1e9730747`
 - Governance: the 23-defect hybrid closure passed the final independent post-correction audit and the user accepted it
 - Last implemented horizontal depth: L2 — implemented, not independently `PROVEN`
-- Active layer/batch: none
-- App behavior changes: no further layer is authorized; the L1/L2 grant has been consumed
+- Active layer/batch: L3 / whole-site-local-manual-usefulness
+- App behavior changes: Layer 3 local/manual application behavior and tests are authorized only on horizontal-layer-3-implementation-v1
 
 ## Preserved completed work
 
@@ -17,7 +17,7 @@ The source handoff records V2-RQ-001 through V2-RQ-003 as completed/verified and
 
 ## Exact next action
 
-L1 is checkpointed at `5f90a8014bffd573fd1aa2207405077d72765f1c`. L2 is checkpointed at `e10ee9f1c64fee5f8faccd1832ef19703bc65f33`; Vercel preview `dpl_G1rSrrtgnLaD82ojH1ga57L9NTjt` is READY, returned HTTP 200, and its deployment gate passed 73 test files / 655 tests plus the production build. `horizontal-layer-completion-v1` is now a read-only completed checkpoint. Before any Layer 3 edit, create `horizontal-layer-3-implementation-v1` from its verified current remote tip and switch to the new branch. Layer 3 application permission must then be granted and recorded on that new branch.
+Implement the whole-site Layer 3 local/manual-function batch on `horizontal-layer-3-implementation-v1`, preserving the L1/L2 checkpoint and keeping every real external effect disabled. Verify with focused tests, the full test/build gate, and a matching branch preview before recording implementation evidence.
 
 The governance installer's local staging directory had no `.git`, so it could not issue a local Resume Certificate. This is an environment limitation, not a preflight pass. A real checkout/CI must supply that proof.
 

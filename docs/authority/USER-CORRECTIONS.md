@@ -71,3 +71,13 @@ Only dated, scoped, exact user corrections belong here. They supersede older aut
 - Prior authority path/version/hash affected
 - Conflict resolution
 - Commit where applied
+
+### 2026-08-25 — Implement Layer 3 on its isolated branch
+
+- Exact user wording: `Create horizontal-layer-3-implementation-v1 from commit 52273d6a5f07fcde0dd4353f2d2b1599a3e332ff on horizontal-layer-completion-v1. Switch to the new branch before editing. Treat the source branch and commit as read-only. Never update, overwrite, rebase, or force-push horizontal-layer-completion-v1. Implement Layer 3 only on the new branch.`
+- Reaffirmation: `try agaiun on layer 3`
+- Scope: Layer 3 local/manual application behavior, application tests, governed checkpoints, and the branch preview needed for verification, only on `horizontal-layer-3-implementation-v1`.
+- Affected permanent IDs: every matrix row whose L3 status is APPLICABLE; exact IDs are frozen in `BATCH-SCOPE.json`.
+- External-effects boundary: accounts, identity, remote persistence, payments, authoritative allowance or entitlement mutation, provider calls, secrets, merge, and production remain denied.
+- Conflict resolution: this explicit scoped grant supersedes the earlier no-L3-permission state only for the isolated Layer 3 branch.
+- Commit where applied: pending Layer 3 authorization checkpoint.

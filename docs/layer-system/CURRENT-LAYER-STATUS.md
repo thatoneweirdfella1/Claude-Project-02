@@ -4,9 +4,9 @@
 **Verified through app source commit:** `16beca26c305bd9bdae088eb8e977ca1e9730747`  
 **Last implemented horizontal depth:** `L2 — IMPLEMENTED, NOT INDEPENDENTLY PROVEN`  
 **Last completed horizontal layer:** `NONE`  
-**Active layer:** `NONE`  
-**Active coherent batch:** `NONE`  
-**Application edits permitted:** `NO FURTHER LAYER — L1/L2 AUTHORIZATION CONSUMED`  
+**Active layer:** `L3`  
+**Active coherent batch:** `whole-site-local-manual-usefulness`  
+**Application edits permitted:** `YES — L3 APPLICATION AND TEST EDITS ON horizontal-layer-3-implementation-v1 ONLY`  
 **Completed checkpoint branch:** `horizontal-layer-completion-v1 — READ ONLY`  
 **Required next working branch:** `horizontal-layer-3-implementation-v1`  
 
@@ -16,7 +16,7 @@
 
 ## Exact next action
 
-Create `horizontal-layer-3-implementation-v1` from the verified current remote tip of `horizontal-layer-completion-v1`, switch to the new branch, and run read-only preflight there. Do not edit the completed branch. Do not begin L3 application work until its grant is recorded on the new branch.
+Implement and verify the complete Layer 3 local/manual-function batch on `horizontal-layer-3-implementation-v1`. Keep accounts, payments, authoritative allowance mutation, remote persistence, provider calls, secrets, merge, and production disabled.
 
 ## Honest initial state
 
