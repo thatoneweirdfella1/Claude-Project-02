@@ -4,7 +4,7 @@ Do not stop ongoing work merely because an item is listed here. Continue everyth
 
 ## Pending
 
-- **Layer 4 live cross-device storage:** Provision/connect an Upstash Redis Marketplace resource to Vercel project `claude-project-02` for the Preview environment so Vercel supplies `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`. Until configured, remote account/sync paths must remain fail-closed while local recovery, tests, adapters, and all other independent work continue.
+- **Layer 4 live cross-device storage:** User reported the Upstash Redis connection fixed on 2026-08-25. Verification is pending a fresh Preview deployment; keep the remote path fail-closed until `/api/account` confirms `configured:true`.
 
 ## Presentation rule
 
