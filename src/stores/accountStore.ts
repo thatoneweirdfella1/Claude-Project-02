@@ -8,6 +8,7 @@ import type {
   LayoutId,
   LearnedPreferences,
   LearningAuditEntry,
+  SignalLearningAuditEntry,
   ManualPaymentRequest,
   MethodologyEntry,
   OptimizationGoalId,
@@ -238,6 +239,9 @@ interface AccountActions {
       Orthogonal to theme; every layout works in both light and dark. */
   setLayout: (layout: LayoutId) => void;
   setLearnedPreferences: (prefs: LearnedPreferences) => void;
+  getLearnedPreferences: () => LearnedPreferences;
+  /** Append a primary, secondary, or tertiary learning signal, capped at 500. */
+  recordSignal: (entry: SignalLearningAuditEntry) => void;
   /** Step 10.2 — atomic write for the learning-loop applier
       (services/learningLoop/applier.ts): sets the updated
       LearnedPreferences AND appends the batch's audit entries together, so
@@ -425,10 +429,28 @@ export const useAccountStore = create<AccountStore>((set, get) => ({
   setRating: (rating) =>
     set((s) => {
       const idx = s.ratings.findIndex((r) => r.messageId === rating.messageId);
-      if (idx === -1) return { ratings: [...s.ratings, rating] };
-      const next = [...s.ratings];
-      next[idx] = rating;
-      return { ratings: next };
+      const ratings = [...s.ratings];
+      if (idx === -1) ratings.push(rating);
+      else ratings[idx] = rating;
+      const signal: SignalLearningAuditEntry = {
+        id: `signal-rating-${rating.messageId}-${rating.timestamp}`,
+        timestamp: rating.timestamp,
+        kind: "signal",
+        sessionId: "current",
+        messageId: rating.messageId,
+        signalType: "rating",
+        signalValue: rating.stars,
+        signalConfidence: 0.9,
+        hierarchy: "primary",
+        modelUsed: "auto",
+        techniquesUsed: [],
+        outcome: rating.stars >= 4 ? "positive" : rating.stars <= 2 ? "negative" : "neutral",
+        verified: true,
+      };
+      return {
+        ratings,
+        learningAuditLog: [...s.learningAuditLog, signal].slice(-MAX_LEARNING_AUDIT_ENTRIES),
+      };
     }),
   addSavedPrompt: (prompt) => set((s) => ({ savedPrompts: [...s.savedPrompts, prompt] })),
   removeSavedPrompt: (id) =>
@@ -450,6 +472,11 @@ export const useAccountStore = create<AccountStore>((set, get) => ({
   setTheme: (theme) => set({ theme }),
   setLayout: (layout) => set({ layout }),
   setLearnedPreferences: (learnedPreferences) => set({ learnedPreferences }),
+  getLearnedPreferences: () => get().learnedPreferences,
+  recordSignal: (entry) =>
+    set((s) => ({
+      learningAuditLog: [...s.learningAuditLog, entry].slice(-MAX_LEARNING_AUDIT_ENTRIES),
+    })),
   applyLearningRefinements: (updated, newAuditEntries) =>
     set((s) => {
       const nextLog = [...s.learningAuditLog, ...newAuditEntries];
