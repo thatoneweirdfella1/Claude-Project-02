@@ -195,10 +195,13 @@ describe("credits and manual payments", () => {
     expect(useAccountStore.getState().creditBalance).toBe(5);
   });
 
-  it("keeps Developer Mode unlimited without mutating the stored balance", () => {
+  it("does not let Developer Mode bypass plan, balance, or ledger safeguards", () => {
     useAccountStore.getState().setAppMode("developer");
-    expect(useAccountStore.getState().deductCredits(500, "dev test")).toBe(true);
-    expect(useAccountStore.getState().creditBalance).toBe(0);
+    expect(useAccountStore.getState().deductCredits(500, "dev test")).toBe(false);
+    useAccountStore.getState().setPlan("plus");
+    useAccountStore.getState().addCredits(1, "bounded developer credit");
+    expect(useAccountStore.getState().deductCredits(2, "over balance")).toBe(false);
+    expect(useAccountStore.getState().creditBalance).toBe(1);
   });
 
   it("requires operator resolution before a manual purchase adds credits", () => {

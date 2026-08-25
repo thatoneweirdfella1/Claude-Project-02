@@ -69,7 +69,7 @@ export function CostConfirm() {
           <p><strong>Route:</strong> {request.policy.routeLabel}</p>
           <p><strong>Payer:</strong> {request.policy.payerLabel}</p>
           <p><strong>Hard maximum:</strong> ${Number.isFinite(request.policy.maximum) ? request.policy.maximum.toFixed(2) : "not set"}</p>
-          <p><strong>Balance:</strong> {request.availableBalance === null ? "developer workspace" : `$${request.availableBalance.toFixed(4)}`}</p>
+          <p><strong>Balance:</strong> {request.availableBalance === null ? "unavailable" : `${request.availableBalance.toFixed(4)}`}</p>
           <p><strong>Why:</strong> {request.policy.reasonLabel}</p>
           <p><strong>Free alternative:</strong> {request.policy.freeAlternativeLabel}</p>
           <p>{note}</p>

@@ -204,8 +204,8 @@ interface AccountActions {
     kind?: CreditLedgerEntry["kind"],
     referenceId?: string,
   ) => boolean;
-  /** Atomically spend credits. Developer mode succeeds without changing
-      balance; User mode fails closed when the balance is insufficient. */
+  /** Atomically spend credits. Every mode fails closed when the plan or
+      balance is insufficient; Developer mode cannot bypass money safety. */
   deductCredits: (amount: number, note?: string, referenceId?: string) => boolean;
   requestManualPayment: (
     request: Omit<ManualPaymentRequest, "id" | "createdAt" | "status">,
@@ -320,7 +320,6 @@ export const useAccountStore = create<AccountStore>((set, get) => ({
   deductCredits: (amount, note = "AI usage", referenceId) => {
     if (!Number.isFinite(amount) || amount <= 0) return false;
     const state = get();
-    if (state.appMode === "developer") return true;
     if (state.plan === "free") return false;
     if (state.creditBalance + Number.EPSILON < amount) return false;
     const nextBalance = roundCredits(Math.max(0, state.creditBalance - amount));
@@ -684,18 +683,16 @@ const AUTO_SELECT_LIMITS: Record<string, number> = {
   "pro-plus": 999,
 };
 
-/** Remaining usable API credit. Developer mode is intentionally unlimited. */
+/** Remaining usable API credit. Developer mode never bypasses the ledger. */
 export function getCreditsRemaining(): number {
-  const state = useAccountStore.getState();
-  return state.appMode === "developer" ? Number.POSITIVE_INFINITY : state.creditBalance;
+  return useAccountStore.getState().creditBalance;
 }
 
 export function canAffordCredits(amount: number): boolean {
   if (!Number.isFinite(amount) || amount <= 0) return false;
   const state = useAccountStore.getState();
-  if (state.appMode !== "developer" && state.plan === "free") return false;
-  const remaining = getCreditsRemaining();
-  return remaining === Number.POSITIVE_INFINITY || remaining + Number.EPSILON >= amount;
+  if (state.plan === "free") return false;
+  return getCreditsRemaining() + Number.EPSILON >= amount;
 }
 
 /** Get the monthly auto-select limit for a given plan. */

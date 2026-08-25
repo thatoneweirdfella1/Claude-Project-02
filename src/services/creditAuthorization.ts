@@ -70,9 +70,9 @@ function requestConfirmation(
   });
 }
 
-/** Confirm and reserve an estimated amount before any provider request. The
-    persisted write completes first, so a crash immediately after dispatch
-    cannot restore already-spent credit and replay the same call for free. */
+/** Compatibility authorization for currently disconnected provider paths.
+    Every mode is charged through the bounded ledger; Developer never bypasses.
+    New Layer 5 integrations use DeterministicMoneyAuthority reservations. */
 export async function authorizeEstimatedCost(
   amount: number,
   label: string,
@@ -117,15 +117,13 @@ export async function authorizeEstimatedCost(
     return { authorized: false, amount, referenceId, reason: "insufficient-credits" };
   }
 
-  if (!developerMode) {
-    const deducted = useAccountStore
-      .getState()
-      .deductCredits(amount, label, referenceId);
-    if (!deducted) {
-      return { authorized: false, amount, referenceId, reason: "insufficient-credits" };
-    }
-    emitCreditDeducted(amount, referenceId);
-    await saveNow();
+  const deducted = useAccountStore
+    .getState()
+    .deductCredits(amount, label, referenceId);
+  if (!deducted) {
+    return { authorized: false, amount, referenceId, reason: "insufficient-credits" };
   }
+  emitCreditDeducted(amount, referenceId);
+  await saveNow();
   return { authorized: true, amount, referenceId };
 }
