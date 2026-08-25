@@ -10,7 +10,7 @@ This branch contains the durable context for an AI with no prior conversation.
 - Minimum completed checkpoint: `52273d6a5f07fcde0dd4353f2d2b1599a3e332ff`
 - Protected comparison branches: `build`, `frozen-implementation-v1`
 - Last implemented horizontal depth: `L2`
-- App implementation permission: `DENIED` until separately granted on the Layer 3 branch
+- App implementation permission: `DENIED` until the user's Layer 3 instruction is recorded as a scoped grant on the Layer 3 branch
 
 ## Mandatory read order
 
@@ -35,7 +35,7 @@ If `horizontal-layer-3-implementation-v1` does not exist, remain on `horizontal-
 node scripts/governance/preflight.mjs --action=create_continuation_branch
 ```
 
-Create the exact branch `horizontal-layer-3-implementation-v1` from that verified tip and switch to it. Do not edit or advance `horizontal-layer-completion-v1`. Then run, without changing files:
+Create the exact branch `horizontal-layer-3-implementation-v1` from that verified tip and switch to it. Do not edit or advance `horizontal-layer-completion-v1`. When an authenticated executable checkout exists, run without changing files:
 
 ```bash
 node scripts/governance/preflight.mjs --action=read-only
@@ -43,9 +43,11 @@ node scripts/governance/preflight.mjs --action=read-only
 
 Return its Resume Certificate verbatim. A structural `PASS` does not prove product behavior and does not grant permission.
 
+When the environment provides authenticated GitHub repository API access but no executable checkout, use `docs/layer-system/API-WORK-MODE.md` instead. The absence of a local clone is normal in Work mode and is not a blocker. The remote gate must verify exact repository, source branch, working branch, and commit identities before any write.
+
 ## Current exact next action
 
-Create and switch to the required Layer 3 branch if it does not already exist, then run read-only preflight there. Do not begin Layer 3 until a dated Layer 3 application grant is recorded on that new branch.
+The required Layer 3 branch already exists. Verify it through the local or API Work-mode startup gate, record the user's explicit Layer 3 instruction as a dated and scoped application grant on that branch, and implement Layer 3 there. Never modify the completed Layer 1–2 branch.
 
 ## Conflict rule
 

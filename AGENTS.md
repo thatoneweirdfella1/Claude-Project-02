@@ -10,13 +10,15 @@ If the required Layer 3 branch does not exist, the only permitted command on the
 node scripts/governance/preflight.mjs --action=create_continuation_branch
 ```
 
-After creating and switching to the exact required branch, run:
+After creating and switching to the exact required branch, use one of the two supported startup gates:
 
 ```bash
 node scripts/governance/preflight.mjs --action=read-only
 ```
 
-Return the generated Resume Certificate verbatim. Do not edit application behavior unless the structural preflight passes, the independent governance audit is recorded as `PASS`, and `docs/layer-system/PERMISSIONS.yml` explicitly grants `modify_application_behavior` for this branch.
+If the workspace has repository API access but no executable authenticated checkout, do not demand or attempt a clone. Follow `docs/layer-system/API-WORK-MODE.md` and return its Remote Resume Certificate instead. This is the required Work-mode path, not a gate bypass.
+
+Return the applicable Resume Certificate verbatim. Do not edit application behavior unless the startup gate passes, the independent governance audit is recorded as `PASS`, and `docs/layer-system/PERMISSIONS.yml` explicitly grants `modify_application_behavior` for this branch.
 
 Never modify `build`, `frozen-implementation-v1`, a backup branch, `horizontal-layer-completion-v1`, the verified source checkpoint, or another completed layer checkpoint. Never merge, deploy, access secrets, connect a paid provider, or change repository rules unless that exact capability is granted in `PERMISSIONS.yml`.
 
