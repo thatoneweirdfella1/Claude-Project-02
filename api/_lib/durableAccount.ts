@@ -19,14 +19,7 @@ function storageToken(): string | undefined {
 }
 
 export function storageConfigured(): boolean {
-  const configured = Boolean(storageUrl() && storageToken());
-  if (!configured) {
-    const candidateNames = Object.keys(process.env)
-      .filter((name) => /(?:UPSTASH|REDIS|KV_)/i.test(name))
-      .sort();
-    console.info("layer4-storage-variable-names", JSON.stringify(candidateNames));
-  }
-  return configured;
+  return Boolean(storageUrl() && storageToken());
 }
 
 async function redis<T>(command: Array<string | number>): Promise<T> {
@@ -93,6 +86,25 @@ export async function findAccount(email: string): Promise<DurableAccount | null>
   return raw ? JSON.parse(raw) as DurableAccount : null;
 }
 
+export function requestIsSameOrigin(request: Request): boolean {
+  const origin = request.headers.get("origin");
+  if (!origin) return true;
+  try {
+    return new URL(origin).origin === new URL(request.url).origin;
+  } catch {
+    return false;
+  }
+}
+
+export async function accountAttemptAllowed(request: Request, email: string): Promise<boolean> {
+  const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  const digest = await crypto.subtle.digest("SHA-256", encoder.encode(`${normalizedEmail(email)}|${forwarded}`));
+  const key = bytesToBase64(new Uint8Array(digest));
+  const script = "local count=redis.call('INCR',KEYS[1]) if count==1 then redis.call('EXPIRE',KEYS[1],ARGV[1]) end return count";
+  const count = Number(await redis(["EVAL", script, 1, `account-rate:${key}`, 600]));
+  return count <= 10;
+}
+
 export async function createSession(accountId: string): Promise<{ token: string; expires: number }> {
   const token = bytesToBase64(crypto.getRandomValues(new Uint8Array(32))).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
   const digest = await crypto.subtle.digest("SHA-256", encoder.encode(token));
@@ -130,6 +142,25 @@ export async function destroySession(request: Request): Promise<void> {
   if (!token) return;
   const digest = await crypto.subtle.digest("SHA-256", encoder.encode(token));
   await redis(["DEL", `session:${bytesToBase64(new Uint8Array(digest))}`]);
+}
+
+export async function deleteAccount(account: DurableAccount, request: Request): Promise<void> {
+  const token = cookieValue(request, "divergence_session");
+  const sessionKey = token
+    ? `session:${bytesToBase64(new Uint8Array(await crypto.subtle.digest("SHA-256", encoder.encode(token))))}`
+    : `session:deleted:${account.id}`;
+  const script = "local mapped=redis.call('GET',KEYS[1]) if mapped and mapped~=ARGV[1] then return 0 end redis.call('DEL',KEYS[1],KEYS[2],KEYS[3],KEYS[4]) return 1";
+  const deleted = Number(await redis([
+    "EVAL",
+    script,
+    4,
+    `email:${account.email}`,
+    `account:${account.id}`,
+    `sync:${account.id}`,
+    sessionKey,
+    account.id,
+  ]));
+  if (deleted !== 1) throw new Error("durable-account-delete-conflict");
 }
 
 export async function getRemoteRecord(accountId: string): Promise<string | null> {

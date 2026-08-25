@@ -230,16 +230,22 @@
   ],
   "entry_head": "df22fba1b1ce9369a1244deec103a4019999a749",
   "start_remote_head": "df22fba1b1ce9369a1244deec103a4019999a749",
-  "exact_next_action": "Build a fresh Layer 4 preview, verify configured durable storage, then run authenticated account, cross-device sync, stale-revision conflict, deletion, migration, recovery, and remaining L4 regression proof.",
+  "exact_next_action": "Continue independent Layer 4 deletion, security, recovery, migration, and regression proof. After Preview storage variables are attached, run live authenticated cross-device sync and stale-revision conflict proof.",
   "latest_application_checkpoint": "b443fc78ca90d972449f83e9b694480963de22c7",
   "latest_matching_preview": "dpl_5VxnH9ZU2VXQipnW88RbtLq6CgFm",
   "latest_test_evidence": "77 test files / 668 tests passed; TypeScript and Vite production build passed",
   "external_dependency": {
-    "state": "USER_REPORTED_CONFIGURED_PENDING_FRESH_PREVIEW",
-    "evidence": "User said `go ahead . its fixed` on 2026-08-25; prior deployment predates the configuration.",
-    "required_server_variables": [
-      "UPSTASH_REDIS_REST_URL",
-      "UPSTASH_REDIS_REST_TOKEN"
+    "state": "NOT_ATTACHED_TO_PREVIEW",
+    "evidence": "Fresh Preview deployments dpl_GGszkqtXfJ9DbSUVAFmHdemc2mTq and dpl_6gFpAbbHpYTP1Grom8EngCzq5rnw returned configured:false; secret-safe runtime diagnostics found no Upstash, Redis, or KV variable names.",
+    "required_server_variable_pairs": [
+      [
+        "UPSTASH_REDIS_REST_URL",
+        "UPSTASH_REDIS_REST_TOKEN"
+      ],
+      [
+        "KV_REST_API_URL",
+        "KV_REST_API_TOKEN"
+      ]
     ]
   }
 }
