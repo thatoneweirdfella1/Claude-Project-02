@@ -9,6 +9,7 @@ import {
   recordTertiarySignals,
 } from "./learningEngine";
 import { generateLearningReport, validateSignalWeights } from "./debug/learningAuditViewer";
+import { createInitialAccountState, useAccountStore } from "../stores/accountStore";
 
 const context = { sessionId: "s1", messageId: "m1", modelUsed: "auto" as const, techniquesUsed: ["simplify" as const] };
 
@@ -41,6 +42,19 @@ describe("Learnable Signal Patterns", () => {
     const recommendation = recommendModelAndTechniques("Explain this simply", learned, ["detailed", "simplify"]);
     expect(recommendation.techniques[0]).toBe("simplify");
     expect(recommendation.confidence).toBe(0.85);
+  });
+
+  it("persists a real rating and comment as primary audit signals", () => {
+    useAccountStore.setState(createInitialAccountState());
+    useAccountStore.getState().setRating({
+      messageId: "answer-1",
+      stars: 5,
+      comment: "Clear and useful",
+      timestamp: 10,
+    });
+    const signals = useAccountStore.getState().learningAuditLog.filter((entry) => entry.kind === "signal");
+    expect(signals.map((entry) => entry.signalType)).toEqual(["rating", "comment"]);
+    expect(useAccountStore.getState().getLearnedPreferences()).toEqual({ routing: {}, technique: {} });
   });
 
   it("produces a transparent bounded report and validates classifications", () => {
