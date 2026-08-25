@@ -1,23 +1,18 @@
-# DIVERGENCE.AI governed continuation
+# DIVERGENCE.AI — Codex verified lineage
 
-Stop before editing. Read `START-HERE-DIVERGENCE.md` and follow its read order.
+Read `START-HERE-DIVERGENCE.md` first and follow its complete read order.
 
-`horizontal-layer-completion-v1` is a completed Layer 1–2 checkpoint and is read-only. Layer 3 work must occur only on `horizontal-layer-3-implementation-v1`, created from the current remote tip of the completed checkpoint branch before any application edit.
+The only writable branch for the current audit/recovery phase is `codex-verified/layer-3-v1`. It descends from the Layer 1–2 baseline and must never merge an Account 2 branch.
 
-If the required Layer 3 branch does not exist, the only permitted command on the completed branch is:
+Before using any Account 2 result, read:
 
-```bash
-node scripts/governance/preflight.mjs --action=create_continuation_branch
-```
+- `docs/layer-system/DUAL-LINEAGE-GOVERNANCE.md`
+- `docs/layer-system/ACCOUNT2-WORK-AUDIT-2026-08-25.md`
 
-After creating and switching to the exact required branch, run:
+All `archive/account2-*`, `horizontal-layer-*-implementation-v1`, `horizontal-layer-completion-v1`, `build`, `frozen-implementation-v1`, and backup branches are read-only.
 
-```bash
-node scripts/governance/preflight.mjs --action=read-only
-```
+Account 2 code may be inspected only as donor material. It enters this lineage only by independent reimplementation or through a disposable evaluation branch followed by the complete adoption gate. Never merge, rebase, or fast-forward this branch from Account 2 ancestry.
 
-Return the generated Resume Certificate verbatim. Do not edit application behavior unless the structural preflight passes, the independent governance audit is recorded as `PASS`, and `docs/layer-system/PERMISSIONS.yml` explicitly grants `modify_application_behavior` for this branch.
+Run the repository preflight when an executable checkout exists. When it does not, use authenticated GitHub API inspection and record that limitation honestly; lack of a local clone does not authorize edits or establish a test pass.
 
-Never modify `build`, `frozen-implementation-v1`, a backup branch, `horizontal-layer-completion-v1`, the verified source checkpoint, or another completed layer checkpoint. Never merge, deploy, access secrets, connect a paid provider, or change repository rules unless that exact capability is granted in `PERMISSIONS.yml`.
-
-One horizontal layer and one declared coherent batch may be active. Missing or conflicting facts are recorded; they are not guessed.
+Do not modify application behavior until `PERMISSIONS.yml`, `BATCH-SCOPE.json`, and the governing obligation rows all explicitly authorize the exact Codex batch. Never infer permission from Account 2 records.
