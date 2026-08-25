@@ -1,38 +1,35 @@
 {
-  "schema_version": 2,
+  "schema_version": 5,
   "repository": "thatoneweirdfella1/Claude-Project-02",
   "canonical_remote": "https://github.com/thatoneweirdfella1/Claude-Project-02.git",
   "source_branch": "horizontal-layer-completion-v1",
-  "source_commit": "52273d6a5f07fcde0dd4353f2d2b1599a3e332ff",
-  "source_commit_message": "Governance: checkpoint completed Layer 1 and Layer 2 work",
-  "source_commit_time": "2026-08-24T18:24:13Z",
-  "continuation_branch": "horizontal-layer-3-implementation-v1",
-  "selection": "INCLUDE",
+  "source_commit": "df90e4bb8dea73d4ff0c7373fa5f9f7c7aea11d6",
+  "source_application_checkpoint": "e10ee9f1c64fee5f8faccd1832ef19703bc65f33",
+  "continuation_branch": "codex-verified/layer-3-v1",
+  "selection": "TRUSTED_BASELINE_WITH_INDEPENDENT_REIMPLEMENTATION",
+  "account2_selection": "DONOR_ONLY_NEVER_MERGE",
+  "account2_snapshots": {
+    "L3": "archive/account2-layer-3-20260825@4db777514e50e011fb0887bf283a416e1a34f477",
+    "L4": "archive/account2-layer-4-20260825@a27701c78af2ee2ca5744bc87d32b9e74d9e9d99",
+    "L5": "archive/account2-layer-5-20260825@92dc92f0ba0f0cf6a8095705f3251995707eca6c"
+  },
   "test_evidence": {
-    "rerun_this_installation": false,
-    "reason": "The connected repository interface does not provide a local executable checkout.",
-    "latest_recorded_source_evidence": "73 test files / 655 deployed tests, TypeScript and Vite production build, matching READY deployment dpl_G1rSrrtgnLaD82ojH1ga57L9NTjt for Layer 2 app commit e10ee9f1c64fee5f8faccd1832ef19703bc65f33; checkpoint commit 52273d6a5f07fcde0dd4353f2d2b1599a3e332ff changes governance status only.",
-    "independent_reverification_required": false
+    "latest_recorded_source_evidence": "Layer 2 application checkpoint recorded 73 test files / 655 tests, TypeScript/Vite build, and matching READY Preview. Formal per-row independent proof remains absent.",
+    "independent_reverification_required": true
   },
-  "protected_comparisons": {
-    "build": {
-      "head": "ebbda8c0ab16c556b7920239765dde8d4432e322",
-      "merge_base": "0de85b93328eebf55f2cf7a68e2938960c60a02d",
-      "source_ahead_by": 98,
-      "source_behind_by": 5,
-      "classification": "EXCLUDE FROM SOURCE BASELINE — five build-only commits remain recorded for later authority audit; no app cherry-pick is allowed during governance installation"
-    },
-    "frozen-implementation-v1": {
-      "head": "18e4345f703bfe62c8a5fca87b1b2a11a549be4c",
-      "source_ahead_by": 78,
-      "source_behind_by": 0,
-      "classification": "INCLUDED — ancestor of selected source"
-    },
-    "backup-reference-do-not-touch": {
-      "head": "2a1be17a2d9703127f6255c2c6c0e7ed7956a3df",
-      "classification": "REFERENCE ONLY — untouched"
-    }
-  },
-  "selected_by": "authority plus complete surviving-branch comparison",
-  "selected_at": "2026-08-24"
+  "protected_branches": [
+    "horizontal-layer-completion-v1",
+    "horizontal-layer-3-implementation-v1",
+    "horizontal-layer-4-implementation-v1",
+    "horizontal-layer-5-implementation-v1",
+    "horizontal-layer-6-implementation-v1",
+    "archive/account2-layer-3-20260825",
+    "archive/account2-layer-4-20260825",
+    "archive/account2-layer-5-20260825",
+    "build",
+    "frozen-implementation-v1",
+    "backup-reference-do-not-touch"
+  ],
+  "selected_by": "User authorized independent audit and a separate Codex lineage.",
+  "selected_at": "2026-08-25"
 }

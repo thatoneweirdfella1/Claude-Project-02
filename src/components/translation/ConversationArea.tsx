@@ -10,6 +10,8 @@ export interface ConversationAreaProps { children?: ReactNode; }
 export function ConversationArea({ children }: ConversationAreaProps) {
   const conversation = useSessionStore((s) => s.conversation);
   const sessionId = useSessionStore((s) => s.sessionId);
+  const modelUsed = useSessionStore((s) => s.model);
+  const techniquesUsed = useSessionStore((s) => s.techniques);
   const setMessageRating = useSessionStore((s) => s.setMessageRating);
   const setDraftInput = useSessionStore((s) => s.setDraftInput);
   const updateMessage = useSessionStore((s) => s.updateMessage);
@@ -25,7 +27,7 @@ export function ConversationArea({ children }: ConversationAreaProps) {
 
   function saveRating(messageId: string, stars: number, comment: string | undefined) {
     setMessageRating(messageId, stars, comment);
-    setRating({ messageId, stars, comment, timestamp: Date.now() });
+    setRating({ messageId, stars, comment, timestamp: Date.now(), sessionId, modelUsed, techniquesUsed });
   }
 
   const downloadMessage = conversation.find((message) => message.id === downloadMessageId) ?? null;

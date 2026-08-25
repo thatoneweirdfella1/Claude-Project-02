@@ -85,6 +85,8 @@ export interface PipelineDeps {
       "state detection" is the source, the same way it's unaware routing.js
       is a vendor scorer; it just consumes typed hints. */
   stateTechniques?: TechniqueId[];
+  /** Bounded account-level feedback weights consumed only by Auto mode. */
+  learnedTechniqueWeights?: Partial<Record<TechniqueId, number>>;
   /** Step 6.5 state bus — RSD's tone guidance
       (deriveStateFeeds().toneGuidance), fed into composition's directness
       section. Same reasoning as stateTechniques above. */
@@ -136,6 +138,7 @@ export function resolveTechniqueSelection(
   question: string,
   routeResult: RouteResult,
   stateTechniques?: TechniqueId[],
+  learnedTechniqueWeights?: Partial<Record<TechniqueId, number>>,
 ): TechniqueSelection {
   const manual = stored
     .filter((id) => isTechniqueId(id) && !getTechnique(id).isMeta)
@@ -150,6 +153,7 @@ export function resolveTechniqueSelection(
       // State-derived candidates may fill open Auto slots. Manually checked
       // techniques were seeded first and cannot be displaced.
       stateTechniques,
+      learnedTechniqueWeights,
     });
   }
   return {
@@ -237,6 +241,7 @@ export async function* runPipeline(
       result.translatedPrompt,
       routeResult,
       deps.stateTechniques,
+      deps.learnedTechniqueWeights,
     );
     composed = composeFinalPrompt({
       question: result.translatedPrompt,

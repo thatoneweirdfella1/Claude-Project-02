@@ -62,7 +62,8 @@ export function MessageBubble({ message, userInitial = "U", onRate, onRatingComm
       {(message.branchCount ?? 1) > 1 && <span className="branch-switcher"><button type="button" aria-label="Previous response branch" onClick={() => onBranchChange?.(Math.max(1, (message.branchIndex ?? 1) - 1))}><ChevronLeft size={13} /></button>{message.branchIndex ?? 1}/{message.branchCount}<button type="button" aria-label="Next response branch" onClick={() => onBranchChange?.(Math.min(message.branchCount ?? 1, (message.branchIndex ?? 1) + 1))}><ChevronRight size={13} /></button></span>}
     </div>}
     {whyOpen && <div className="why-this-worked"><strong>Why this worked</strong><p>{message.notes?.join(" · ") || "The response preserved your request, selected the active tone and techniques, and kept the next action visible."}</p></div>}
-    {isAnswer && <RatingRow stars={message.ratingStars} comment={message.ratingComment} onRate={onRate} onCommentChange={onRatingComment} onDownload={onDownload} />}
+    {isAnswer && <RatingRow messageId={message.id} stars={message.ratingStars} comment={message.ratingComment} onRate={onRate} onCommentChange={onRatingComment} onDownload={onDownload} />}
   </div>;
 }
+
 

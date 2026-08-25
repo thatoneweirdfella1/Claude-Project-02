@@ -48,6 +48,7 @@ import { addTokenUsage, getEstimatedCostForPipeline } from "../../services/costT
 import type { PaidRoutePolicy } from "../../services/paidRoutePolicy";
 import { saveNow } from "../../services/persistence";
 import { CONNECTED_EXECUTION_AVAILABLE } from "../../services/executionAvailability";
+import type { TechniqueId } from "../../stores/types";
 
 const client = createProxyClient();
 const STATE_DIMENSIONS = ["emotion", "rsd", "interest", "cognitive"] as const;
@@ -159,6 +160,10 @@ export function CenterColumn() {
       const feeds = result && recommendationApplied
         ? deriveStateFeeds(toStatePills(result))
         : { directnessSuggestion: null, techniqueCandidates: [], toneGuidance: null, transparency: [] };
+      const learnedTechniqueWeights = Object.fromEntries(
+        Object.entries(useAccountStore.getState().learnedPreferences.technique)
+          .map(([id, preference]) => [id, preference.weight]),
+      ) as Partial<Record<TechniqueId, number>>;
 
       setWorkflowMessage("Sending…");
       setRun({
@@ -169,6 +174,7 @@ export function CenterColumn() {
             plan,
             signal: controller.signal,
             stateTechniques: feeds.techniqueCandidates,
+            learnedTechniqueWeights,
             stateTone: feeds.toneGuidance,
             pretranslated,
             pretranslationUsage,

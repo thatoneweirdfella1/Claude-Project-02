@@ -1,4 +1,6 @@
-import { useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
+import { addLocalResource, addLocalTask, getLocalWorkspace, planSyntheticJob, removeLocalResource, removeLocalTask, runNextSyntheticBatch, toggleLocalTask, type SyntheticJobUnit } from "../../services/localWorkspace";
+import { restoreLocalDataset, serializeLocalDataset } from "../../services/localDataset";
 import { Pencil, Star, Copy } from "lucide-react";
 import { useSessionStore } from "../../stores/sessionStore";
 import { useAccountStore } from "../../stores/accountStore";
@@ -11,7 +13,39 @@ import { COMPOSABLE_TECHNIQUE_IDS, MAX_TECHNIQUE_STACK, getTechnique } from "../
 import { buildSessionRecord, sessionRecordStatus } from "../../services/sessionLifecycle";
 import { saveNow } from "../../services/persistence";
 import type { ModelSelection, TechniqueId } from "../../stores/types";
+import { createSignal } from "../../services/learningEngine";
 import "./LayerScreens.css";
+
+function useLearningSearchSignal(searchTerm: string) {
+  const lastRecorded = useRef("");
+  useEffect(() => {
+    const term = searchTerm.trim();
+    if (term.length < 2 || term === lastRecorded.current) return;
+    const timer = window.setTimeout(() => {
+      const session = useSessionStore.getState();
+      useAccountStore.getState().recordSignal(createSignal(
+        { sessionId: session.sessionId, modelUsed: session.model, techniquesUsed: session.techniques },
+        "search_query",
+        term,
+        "unknown",
+        false,
+      ));
+      lastRecorded.current = term;
+    }, 750);
+    return () => window.clearTimeout(timer);
+  }, [searchTerm]);
+}
+
+function recordTopicReturnSignal(messageId: string) {
+  const session = useSessionStore.getState();
+  useAccountStore.getState().recordSignal(createSignal(
+    { sessionId: session.sessionId, messageId, modelUsed: session.model, techniquesUsed: session.techniques },
+    "topic_return",
+    true,
+    "unknown",
+    false,
+  ));
+}
 
 export function RetiredHomeScreen() {
   const sessions = useAccountStore((s) => s.sessions);
@@ -29,6 +63,7 @@ export function RetiredHomeScreen() {
   const handleLoadSession = (sessionId: string) => {
     const session = sessions.find((s) => s.id === sessionId);
     if (session) {
+      recordTopicReturnSignal(session.id);
       loadSessionRecord(session);
       setCurrentScreen("translate");
     }
@@ -319,6 +354,7 @@ function DashboardScreen() {
 export function RetiredMessagesScreen() {
   const sessions = useAccountStore((s) => s.sessions);
   const [searchTerm, setSearchTerm] = useState("");
+  useLearningSearchSignal(searchTerm);
   const [roleFilter, setRoleFilter] = useState<"all" | "user" | "assistant">("all");
 
   const allMessages = sessions.flatMap((session) =>
@@ -432,6 +468,7 @@ export function RetiredArchiveScreen() {
   const duplicateSession = useAccountStore((s) => s.duplicateSession);
 
   const [searchTerm, setSearchTerm] = useState("");
+  useLearningSearchSignal(searchTerm);
   const [sortBy, setSortBy] = useState<"recent" | "oldest" | "name" | "archived">("archived");
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renamingText, setRenamingText] = useState("");
@@ -442,6 +479,7 @@ export function RetiredArchiveScreen() {
   const handleLoadSession = (sessionId: string) => {
     const session = sessions.find((s) => s.id === sessionId);
     if (session) {
+      recordTopicReturnSignal(session.id);
       loadSessionRecord(session);
       setCurrentScreen("translate");
     }
@@ -757,26 +795,31 @@ function ResourcesScreen() {
 
 function ProjectsScreen() {
   const sessions = useAccountStore((s) => s.sessions);
+  const addContextItem = useSessionStore((s) => s.addContextItem);
   const currentSection = useSessionStore((s) => s.currentSection);
   const setScreenLocation = useSessionStore((s) => s.setScreenLocation);
   const section = currentSection === "tasks" || currentSection === "resources" || currentSection === "integrations" ? currentSection : "overview";
+  const [workspace, setWorkspace] = useState(() => getLocalWorkspace());
+  const [project, setProject] = useState("Local project");
+  const [taskText, setTaskText] = useState("");
+  const [resourceLabel, setResourceLabel] = useState("");
+  const [resourceContent, setResourceContent] = useState("");
 
-  const projectsMap = new Map<string, typeof sessions>();
-  const defaultProject = "Unsorted";
+  const projectNames = Array.from(new Set([
+    ...sessions.map((session) => session.tag ? session.tag.split(":")[0].trim() : "Unsorted"),
+    ...workspace.tasks.map((task) => task.project),
+    ...workspace.resources.map((resource) => resource.project),
+  ])).filter(Boolean).sort((a, b) => a.localeCompare(b));
 
-  sessions.forEach((session) => {
-    const projectName = session.tag ? session.tag.split(":")[0].trim() : defaultProject;
-    if (!projectsMap.has(projectName)) {
-      projectsMap.set(projectName, []);
-    }
-    projectsMap.get(projectName)?.push(session);
-  });
-
-  const projects = Array.from(projectsMap.entries()).sort(([a], [b]) => {
-    if (a === defaultProject) return 1;
-    if (b === defaultProject) return -1;
-    return a.localeCompare(b);
-  });
+  function createTask() {
+    setWorkspace(addLocalTask(project, taskText));
+    setTaskText("");
+  }
+  function createResource() {
+    setWorkspace(addLocalResource(project, resourceLabel, resourceContent));
+    setResourceLabel("");
+    setResourceContent("");
+  }
 
   return (
     <div className="screen screen-projects">
@@ -785,31 +828,13 @@ function ProjectsScreen() {
         <nav className="screen-tabs" aria-label="Project sections">{(["overview", "tasks", "resources", "integrations"] as const).map((id) => <button type="button" key={id} aria-current={section === id ? "page" : undefined} className={section === id ? "is-active" : ""} onClick={() => setScreenLocation("projects", id)}>{id[0].toUpperCase() + id.slice(1)}</button>)}</nav>
       </div>
       <div className="screen__content">
-        {section === "overview" && (projects.length === 0 ? <p>No projects yet. Create or tag a session to place it in a project.</p> : <div className="projects-list">
-          {projects.map(([projectName, projectSessions]) => (
-            <div key={projectName} className="project-group">
-              <h3 className="project-group__title">
-                {projectName}
-                <span className="project-group__count">{projectSessions.length}</span>
-              </h3>
-              <div className="project-sessions">
-                {projectSessions.map((session) => (
-                  <div key={session.id} className="project-session">
-                    <div className="project-session__info">
-                      <h4>{session.tag || `Session ${session.id.slice(0, 6)}`}</h4>
-                      <span className="project-session__date">
-                        {new Date(session.createdAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>)}
-        {section === "tasks" && <div className="settings-section"><h3>Project Tasks</h3><p className="settings-section__note">Select or create a project before adding tasks. No task has been created.</p><button type="button" disabled>Create task</button></div>}
-        {section === "resources" && <div className="settings-section"><h3>Project Resources</h3><p className="settings-section__note">Project resources will appear here after a project is selected. No external source is connected.</p><button type="button" disabled>Add resource</button></div>}
-        {section === "integrations" && <div className="settings-section"><h3>Project Integrations</h3><p className="settings-section__note">No project integration is configured. Connection controls are available in Settings → AI Connections.</p><button type="button" onClick={() => setScreenLocation("settings", "connections")}>Open AI Connections</button></div>}
+        <label className="settings-section">Active local project<input aria-label="Active local project" value={project} onChange={(event) => setProject(event.target.value)} /></label>
+        {section === "overview" && <div className="projects-list">
+          {projectNames.length === 0 ? <p>No projects yet. Name one above, then add a task or resource.</p> : projectNames.map((name) => <div key={name} className="project-group"><h3 className="project-group__title">{name}</h3><p>{sessions.filter((session) => (session.tag ? session.tag.split(":")[0].trim() : "Unsorted") === name).length} sessions · {workspace.tasks.filter((task) => task.project === name).length} tasks · {workspace.resources.filter((resource) => resource.project === name).length} resources</p></div>)}
+        </div>}
+        {section === "tasks" && <div className="settings-section"><h3>Project Tasks</h3><div className="template-form"><input aria-label="New project task" placeholder="Task" value={taskText} onChange={(event) => setTaskText(event.target.value)} /><button type="button" onClick={createTask} disabled={!taskText.trim()}>Create task</button></div>{workspace.tasks.filter((task) => task.project === (project.trim() || "Local project")).map((task) => <div className="settings-item" key={task.id}><label><input type="checkbox" checked={task.completed} onChange={() => setWorkspace(toggleLocalTask(task.id))} /> {task.text}</label><button type="button" onClick={() => setWorkspace(removeLocalTask(task.id))}>Delete</button></div>)}</div>}
+        {section === "resources" && <div className="settings-section"><h3>Project Resources</h3><div className="template-form"><input aria-label="Resource label" placeholder="Label" value={resourceLabel} onChange={(event) => setResourceLabel(event.target.value)} /><textarea aria-label="Resource content" placeholder="Paste local reference text" value={resourceContent} onChange={(event) => setResourceContent(event.target.value)} /><button type="button" onClick={createResource} disabled={!resourceLabel.trim() || !resourceContent.trim()}>Add resource</button></div>{workspace.resources.filter((resource) => resource.project === (project.trim() || "Local project")).map((resource) => <div className="settings-item" key={resource.id}><div><strong>{resource.label}</strong><p>{resource.content}</p></div><div><button type="button" onClick={() => addContextItem({ id: `project-resource:${resource.id}:${Date.now()}`, kind: "text", label: resource.label, content: resource.content, bytes: resource.content.length })}>Add to current request</button><button type="button" onClick={() => setWorkspace(removeLocalResource(resource.id))}>Delete</button></div></div>)}</div>}
+        {section === "integrations" && <div className="settings-section"><h3>Project Integrations</h3><p className="settings-section__note">No project integration is configured. Local tasks and resources remain usable without one.</p><button type="button" onClick={() => setScreenLocation("settings", "connections")}>Open AI Connections</button></div>}
       </div>
     </div>
   );
@@ -967,6 +992,7 @@ function TemplatesScreen() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  useLearningSearchSignal(searchTerm);
   const [selectedTemplateIds, setSelectedTemplateIds] = useState<Set<string>>(new Set());
   const [formData, setFormData] = useState({
     title: "",
@@ -1460,199 +1486,46 @@ function TemplatesScreen() {
 
 function SavedPromptsScreen() {
   const savedPrompts = useAccountStore((s) => s.savedPrompts);
+  const addSavedPrompt = useAccountStore((s) => s.addSavedPrompt);
   const removeSavedPrompt = useAccountStore((s) => s.removeSavedPrompt);
   const toggleSavedPromptStar = useAccountStore((s) => s.toggleSavedPromptStar);
+  const setDraftInput = useSessionStore((s) => s.setDraftInput);
   const setScreenLocation = useSessionStore((s) => s.setScreenLocation);
-
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState<"recent" | "title">("recent");
+  useLearningSearchSignal(searchTerm);
+  const [title, setTitle] = useState("");
+  const [text, setText] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
 
-  const filteredPrompts = savedPrompts.filter((prompt) => {
-    const searchLower = searchTerm.toLowerCase();
-    return prompt.title.toLowerCase().includes(searchLower) || prompt.text.toLowerCase().includes(searchLower);
-  });
+  const prompts = savedPrompts.filter((prompt) => `${prompt.title} ${prompt.text}`.toLowerCase().includes(searchTerm.toLowerCase()))
+    .sort((a, b) => Number(Boolean(b.starred)) - Number(Boolean(a.starred)) || a.title.localeCompare(b.title));
 
-  const sortedPrompts = [...filteredPrompts].sort((a, b) => {
-    switch (sortBy) {
-      case "title":
-        return a.title.localeCompare(b.title);
-      case "recent":
-      default:
-        return 0;
-    }
-  });
+  function savePrompt() {
+    if (!title.trim() || !text.trim()) return;
+    const existing = editingId ? savedPrompts.find((prompt) => prompt.id === editingId) : undefined;
+    if (editingId) removeSavedPrompt(editingId);
+    addSavedPrompt({ id: editingId ?? `prompt-${Date.now()}`, title: title.trim(), text: text.trim(), starred: existing?.starred });
+    setTitle(""); setText(""); setEditingId(null);
+  }
+  function editPrompt(id: string) {
+    const prompt = savedPrompts.find((item) => item.id === id);
+    if (!prompt) return;
+    setEditingId(id); setTitle(prompt.title); setText(prompt.text);
+  }
+  function applyPrompt(promptText: string) {
+    setDraftInput(promptText);
+    setScreenLocation("translate", null);
+  }
 
-  const starredPrompts = sortedPrompts.filter((p) => p.starred);
-  const regularPrompts = sortedPrompts.filter((p) => !p.starred);
-
-  return (
-    <div className="screen screen-saved-prompts">
-      <div className="screen__header">
-        <h1>Saved Tools</h1>
-        <p><button type="button" onClick={() => setScreenLocation("saved-tools", "templates")}>Templates</button> · <strong>Saved Prompts</strong></p>
-      </div>
-      <div className="screen__content">
-        {savedPrompts.length === 0 ? (
-          <p>No saved prompts yet. Save prompts from the Translate screen to reuse them later.</p>
-        ) : (
-          <>
-            <div style={{ display: "flex", gap: "12px", marginBottom: "24px" }}>
-              <input
-                type="text"
-                placeholder="Search prompts..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                style={{
-                  flex: 1,
-                  padding: "10px 12px",
-                  fontSize: "13px",
-                  border: "1px solid var(--accent-cyan-tint-06)",
-                  borderRadius: "4px",
-                  background: "var(--surface-base)",
-                  color: "var(--text-primary)",
-                }}
-              />
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as "recent" | "title")}
-                style={{
-                  padding: "10px 12px",
-                  fontSize: "13px",
-                  border: "1px solid var(--accent-cyan-tint-06)",
-                  borderRadius: "4px",
-                  background: "var(--surface-base)",
-                  color: "var(--text-primary)",
-                }}
-              >
-                <option value="recent">Recent</option>
-                <option value="title">By Title</option>
-              </select>
-            </div>
-
-            {sortedPrompts.length === 0 ? (
-              <p style={{ color: "var(--text-secondary)" }}>
-                No prompts match your search.
-              </p>
-            ) : (
-              <>
-                {starredPrompts.length > 0 && (
-                  <div style={{ marginBottom: "32px" }}>
-                    <h3 style={{ fontSize: "14px", fontWeight: "600", marginBottom: "12px", color: "var(--text-secondary)" }}>⭐ Favorite Prompts</h3>
-                    <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                      {starredPrompts.map((prompt) => (
-                        <div key={prompt.id} style={{
-                          padding: "12px",
-                          background: "var(--surface-tint-01)",
-                          border: "1px solid var(--accent-cyan-tint-06)",
-                          borderRadius: "6px",
-                        }}>
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", gap: "12px" }}>
-                            <div style={{ flex: 1 }}>
-                              <h4 style={{ margin: "0 0 6px", fontSize: "14px", fontWeight: "500" }}>{prompt.title}</h4>
-                              <p style={{ margin: "0", fontSize: "13px", color: "var(--text-secondary)", lineHeight: "1.4" }}>
-                                {prompt.text}
-                              </p>
-                            </div>
-                            <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
-                              <button
-                                type="button"
-                                onClick={() => toggleSavedPromptStar(prompt.id)}
-                                title="Remove from favorites"
-                                style={{
-                                  padding: "6px",
-                                  background: "none",
-                                  border: "none",
-                                  cursor: "pointer",
-                                  color: "var(--accent-cyan)",
-                                }}
-                              >
-                                <Star size={16} fill="currentColor" />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => removeSavedPrompt(prompt.id)}
-                                title="Delete prompt"
-                                style={{
-                                  padding: "6px",
-                                  background: "none",
-                                  border: "none",
-                                  cursor: "pointer",
-                                  color: "var(--text-secondary)",
-                                }}
-                              >
-                                ✕
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {regularPrompts.length > 0 && (
-                  <div>
-                    {starredPrompts.length > 0 && (
-                      <h3 style={{ fontSize: "14px", fontWeight: "600", marginBottom: "12px", marginTop: "24px", color: "var(--text-secondary)" }}>Other Prompts</h3>
-                    )}
-                    <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                      {regularPrompts.map((prompt) => (
-                        <div key={prompt.id} style={{
-                          padding: "12px",
-                          background: "var(--surface-tint-01)",
-                          border: "1px solid var(--accent-cyan-tint-06)",
-                          borderRadius: "6px",
-                        }}>
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", gap: "12px" }}>
-                            <div style={{ flex: 1 }}>
-                              <h4 style={{ margin: "0 0 6px", fontSize: "14px", fontWeight: "500" }}>{prompt.title}</h4>
-                              <p style={{ margin: "0", fontSize: "13px", color: "var(--text-secondary)", lineHeight: "1.4" }}>
-                                {prompt.text}
-                              </p>
-                            </div>
-                            <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
-                              <button
-                                type="button"
-                                onClick={() => toggleSavedPromptStar(prompt.id)}
-                                title="Add to favorites"
-                                style={{
-                                  padding: "6px",
-                                  background: "none",
-                                  border: "none",
-                                  cursor: "pointer",
-                                  color: "var(--text-secondary)",
-                                }}
-                              >
-                                <Star size={16} />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => removeSavedPrompt(prompt.id)}
-                                title="Delete prompt"
-                                style={{
-                                  padding: "6px",
-                                  background: "none",
-                                  border: "none",
-                                  cursor: "pointer",
-                                  color: "var(--text-secondary)",
-                                }}
-                              >
-                                ✕
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
-          </>
-        )}
-      </div>
+  return <div className="screen screen-saved-prompts">
+    <div className="screen__header"><h1>Saved Tools</h1><p><button type="button" onClick={() => setScreenLocation("saved-tools", "templates")}>Templates</button> · <strong>Saved Prompts</strong></p></div>
+    <div className="screen__content">
+      <div className="template-form"><input aria-label="Prompt title" placeholder="Prompt title" value={title} onChange={(event) => setTitle(event.target.value)} /><textarea aria-label="Prompt text" placeholder="Prompt text" value={text} onChange={(event) => setText(event.target.value)} /><button type="button" className="primary" disabled={!title.trim() || !text.trim()} onClick={savePrompt}>{editingId ? "Save changes" : "Create prompt"}</button>{editingId && <button type="button" onClick={() => { setEditingId(null); setTitle(""); setText(""); }}>Cancel edit</button>}</div>
+      <input type="search" aria-label="Search saved prompts" placeholder="Search prompts..." value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} />
+      {prompts.map((prompt) => <div className="template-card" key={prompt.id}><h4>{prompt.starred ? "★ " : ""}{prompt.title}</h4><p>{prompt.text}</p><div className="template-card__actions"><button type="button" onClick={() => applyPrompt(prompt.text)}>Use</button><button type="button" onClick={() => editPrompt(prompt.id)}>Edit</button><button type="button" onClick={() => addSavedPrompt({ ...prompt, id: `prompt-${Date.now()}`, title: `${prompt.title} — Copy`, starred: false })}>Duplicate</button><button type="button" onClick={() => toggleSavedPromptStar(prompt.id)}>{prompt.starred ? "Unfavorite" : "Favorite"}</button><button type="button" onClick={() => removeSavedPrompt(prompt.id)}>Delete</button></div></div>)}
+      {prompts.length === 0 && <p>No saved prompts match. Create one above.</p>}
     </div>
-  );
+  </div>;
 }
 
 function SettingsScreen() {
@@ -1662,11 +1535,30 @@ function SettingsScreen() {
   const currentSection = useSessionStore((s) => s.currentSection);
   const setScreenLocation = useSessionStore((s) => s.setScreenLocation);
   const [exportOpen, setExportOpen] = useState(false);
+  const [restoreStatus, setRestoreStatus] = useState("");
   const section = currentSection ?? "account";
 
   const totalSessions = sessions.length;
   const totalTrashed = trashed.length;
   const totalMessages = sessions.reduce((sum, s) => sum + s.conversation.length, 0);
+
+  function downloadDataset() {
+    const blob = new Blob([serializeLocalDataset()], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `divergence-local-dataset-${new Date().toISOString().slice(0, 10)}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function restoreDataset(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const restored = await restoreLocalDataset(await file.text());
+    setRestoreStatus(restored ? "Local dataset restored." : "That file is not a valid Divergence local dataset.");
+    event.target.value = "";
+  }
 
   const sections = [
     ["account", "Account"], ["plan", "Plan & credits"], ["connections", "AI Connections"],
@@ -1741,7 +1633,7 @@ function SettingsScreen() {
           </p>
         </div>}
       </div>
-      {exportOpen && <div className="workflow-dialog" role="dialog" aria-modal="true" aria-labelledby="data-export-title"><div className="workflow-dialog__card surface-smoked-glass"><header><h2 id="data-export-title">Complete data export</h2><p>Complete round-trip dataset export is not available at this layer. No file has been created and no data was sent.</p></header><div className="workflow-dialog__summary"><strong>Currently stored locally</strong><p>{totalSessions} sessions · {totalTrashed} trashed items · {totalMessages} messages</p></div><footer className="workflow-dialog__actions"><button type="button" className="primary" autoFocus onClick={() => setExportOpen(false)}>Close</button></footer></div></div>}
+      {exportOpen && <div className="workflow-dialog" role="dialog" aria-modal="true" aria-labelledby="data-export-title"><div className="workflow-dialog__card surface-smoked-glass"><header><h2 id="data-export-title">Complete local data export</h2><p>Download or restore the locally available workspace. No data is sent anywhere, and cross-device sync is not claimed.</p></header><div className="workflow-dialog__summary"><strong>Included locally</strong><p>{totalSessions} sessions · {totalTrashed} trashed items · {totalMessages} messages · templates, prompts, variables, settings, tasks, and resources</p></div><input type="file" accept="application/json,.json" aria-label="Restore local dataset" onChange={(event) => void restoreDataset(event)} />{restoreStatus && <p role="status">{restoreStatus}</p>}<footer className="workflow-dialog__actions"><button type="button" onClick={() => setExportOpen(false)}>Close</button><button type="button" className="primary" onClick={downloadDataset}>Download restorable dataset</button></footer></div></div>}
     </div>
   );
 }
@@ -1786,6 +1678,7 @@ function SessionsScreen() {
   const duplicateSession = useAccountStore((s) => s.duplicateSession);
 
   const [searchTerm, setSearchTerm] = useState("");
+  useLearningSearchSignal(searchTerm);
   const [sortBy, setSortBy] = useState<"recent" | "oldest" | "name">("recent");
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renamingText, setRenamingText] = useState("");
@@ -1795,6 +1688,7 @@ function SessionsScreen() {
   const handleLoadSession = (sessionId: string) => {
     const session = sessions.find((s) => s.id === sessionId);
     if (session) {
+      recordTopicReturnSignal(session.id);
       loadSessionRecord(session);
       setCurrentScreen("translate");
     }
@@ -2201,6 +2095,7 @@ function TrashScreen() {
   const toggleSessionStar = useAccountStore((s) => s.toggleSessionStar);
 
   const [searchTerm, setSearchTerm] = useState("");
+  useLearningSearchSignal(searchTerm);
   const [sortBy, setSortBy] = useState<"recent" | "oldest" | "name">("recent");
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renamingText, setRenamingText] = useState("");
@@ -2399,20 +2294,25 @@ function TrashScreen() {
 }
 
 function LargeJobsScreen() {
-  const [showPlan, setShowPlan] = useState(false);
+  const [source, setSource] = useState("");
+  const [batchSize, setBatchSize] = useState(2);
+  const [units, setUnits] = useState<SyntheticJobUnit[]>([]);
+  const [paused, setPaused] = useState(false);
+  const complete = units.filter((unit) => unit.status === "complete").length;
+  function prepare() { setUnits(planSyntheticJob(source, batchSize)); setPaused(false); }
+  function runNext() { if (!paused) setUnits((current) => runNextSyntheticBatch(current)); }
+  function downloadEvidence() {
+    const blob = new Blob([JSON.stringify({ kind: "divergence-synthetic-job", source, batchSize, units }, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = "divergence-synthetic-job-evidence.json"; link.click(); URL.revokeObjectURL(url);
+  }
   return <div className="screen screen-large-jobs">
-    <div className="screen__header"><h1>Large Jobs</h1><p>Plan resumable, cost-bounded high-volume work.</p></div>
-    <div className="screen__content">
-      <div className="settings-section">
-        <h3>No job is running</h3>
-        <p className="settings-section__note">Connected execution is not configured. Creating a plan here will not contact an AI provider or spend credits.</p>
-        <button type="button" className="settings-btn" aria-expanded={showPlan} onClick={() => setShowPlan((open) => !open)}>{showPlan ? "Hide job requirements" : "Plan a large job"}</button>
-        {showPlan && <div className="workflow-dialog__summary" role="region" aria-label="Large job requirements">
-          <p>A runnable job will require a source set, a cost ceiling, checkpoint frequency, provider authorization, and an explicit start confirmation.</p>
-          <button type="button" disabled title="Available after the Connected layer">Start remains unavailable until a provider is safely connected</button>
-        </div>}
-      </div>
-    </div>
+    <div className="screen__header"><h1>Large Jobs</h1><p>Exercise deterministic batching, progress, stop, resume, and evidence without a provider or cost.</p></div>
+    <div className="screen__content"><div className="settings-section">
+      <label>One local item per line<textarea aria-label="Synthetic job source items" value={source} onChange={(event) => setSource(event.target.value)} /></label>
+      <label>Items per batch<input type="number" min="1" max="25" value={batchSize} onChange={(event) => setBatchSize(Number(event.target.value))} /></label>
+      <button type="button" className="primary" onClick={prepare} disabled={!source.trim()}>Prepare synthetic job</button>
+      {units.length > 0 && <div className="workflow-dialog__summary" role="region" aria-label="Synthetic job progress"><strong>{complete} of {units.length} batches complete</strong><progress max={units.length} value={complete} /><p>No provider is connected and no credits can be spent.</p><div className="screen__actions"><button type="button" onClick={runNext} disabled={paused || complete === units.length}>Run next local batch</button>{paused ? <button type="button" onClick={() => setPaused(false)}>Resume</button> : <button type="button" onClick={() => setPaused(true)} disabled={complete === units.length}>Stop</button>}<button type="button" onClick={downloadEvidence}>Download evidence</button></div>{units.map((unit) => <div className="settings-item" key={unit.id}><strong>{unit.id}</strong><span>{unit.status}</span>{unit.result && <p>{unit.result}</p>}</div>)}</div>}
+    </div></div>
   </div>;
 }
 

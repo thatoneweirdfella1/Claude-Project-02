@@ -28,6 +28,9 @@ export interface TechniqueHints {
       (e.g. Emotion=frustrated → simplify). A HINT like the others, not a
       forced pick: still subject to conflicts/dependencies/the ≤4 cap below. */
   stateTechniques?: TechniqueId[];
+  /** Persisted learning nudges. Values are bounded account weights (-5..5)
+      and remain weaker than one explicit lexical match. */
+  learnedTechniqueWeights?: Partial<Record<TechniqueId, number>>;
 }
 
 export interface TechniqueScore {
@@ -133,6 +136,12 @@ function applyHints(
   // state hint alone doesn't overpower an actual lexical match in the text.
   for (const id of hints.stateTechniques ?? []) {
     bump(id, 1, "detected state");
+  }
+
+  for (const [rawId, rawWeight] of Object.entries(hints.learnedTechniqueWeights ?? {})) {
+    if (!isTechniqueId(rawId) || !Number.isFinite(rawWeight) || rawWeight === 0) continue;
+    const weight = Math.max(-5, Math.min(5, rawWeight));
+    bump(rawId, weight * 0.25, "learned from confirmed feedback");
   }
 }
 
