@@ -230,5 +230,16 @@
   ],
   "entry_head": "df22fba1b1ce9369a1244deec103a4019999a749",
   "start_remote_head": "df22fba1b1ce9369a1244deec103a4019999a749",
-  "exact_next_action": "Implement and verify Layer 4 only on horizontal-layer-4-implementation-v1. Preserve every earlier checkpoint and keep payments, providers, secrets, merge, and production closed."
+  "exact_next_action": "Provision approved durable account storage through the hosting integration, then prove authenticated cross-device sync, conflict preservation, deletion, migration, recovery, and remaining L4 regressions. Keep all earlier checkpoints read-only.",
+  "latest_application_checkpoint": "b443fc78ca90d972449f83e9b694480963de22c7",
+  "latest_matching_preview": "dpl_5VxnH9ZU2VXQipnW88RbtLq6CgFm",
+  "latest_test_evidence": "77 test files / 668 tests passed; TypeScript and Vite production build passed",
+  "external_dependency": {
+    "state": "NOT_CONFIGURED",
+    "evidence": "Matching preview /api/account returned configured:false",
+    "required_server_variables": [
+      "UPSTASH_REDIS_REST_URL",
+      "UPSTASH_REDIS_REST_TOKEN"
+    ]
+  }
 }

@@ -11,9 +11,17 @@
 - Active layer/batch: L4 / whole-site durability, identity, recovery, synchronization, and resumable work
 - Application changes: authorized for the exact 206-row L4 batch on the Layer 4 branch only
 
+## Implemented Layer 4 checkpoint
+
+- Application commit: `b443fc78ca90d972449f83e9b694480963de22c7`
+- Matching READY preview: `dpl_5VxnH9ZU2VXQipnW88RbtLq6CgFm`
+- Evidence: 77 test files / 668 tests passed; TypeScript and Vite production build passed
+- Implemented: durable local workspace, bounded recovery history, resumable large jobs, versioned/checksummed complete export and atomic rollback import, web account/session API, server-side password hashing and HttpOnly session cookies, conditional remote revisions, and explicit no-loss conflict choices
+- Honest preview result: `/api/account` returned `{"configured":false,"user":null}`; local durability is active, remote account storage is not provisioned, and Layer 4 is not complete
+
 ## Exact next action
 
-Implement the active Layer 4 batch using `L4-DATA-AND-CONFLICT-CONTRACT.md`, then run the full tests and production build and verify a matching branch preview. Keep all earlier horizontal checkpoints read-only.
+Provision approved durable account storage and connect `UPSTASH_REDIS_REST_URL` plus `UPSTASH_REDIS_REST_TOKEN` through the hosting integration without revealing their values. Then prove account creation, login, cross-device sync, stale-revision conflict preservation, deletion, migration, recovery, and the remaining L4 regressions. Keep all earlier checkpoints read-only.
 
 ## Closed effects
 
