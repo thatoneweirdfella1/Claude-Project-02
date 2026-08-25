@@ -1,18 +1,29 @@
 {
   "schema_version": 1,
-  "active_layer": "NONE",
-  "subsystem": null,
-  "permanent_ids": [],
-  "allowed_paths": [],
+  "active_layer": "L3",
+  "subsystem": "learnable-signal-patterns",
+  "permanent_ids": [
+    "SPEC-LS-01"
+  ],
+  "allowed_paths": [
+    "src/stores/types.ts",
+    "src/stores/accountStore.ts",
+    "src/stores/accountStore.test.ts",
+    "src/components/streaming/RatingRow.tsx",
+    "src/services/learningEngine.ts",
+    "src/services/learningEngine.test.ts",
+    "src/services/debug/learningAuditViewer.ts",
+    "src/services/techniques/autoDetect.ts",
+    "PENDING-INTEGRATIONS.md",
+    "docs/layer-system/**"
+  ],
   "required_tests": [
     "npm test",
     "npm run build",
-    "Layer 3 local/manual end-to-end tests",
-    "prompt-injection data-versus-instruction gate",
-    "Layer 2 interaction regression",
+    "SPEC-LS-01 learning-signal hierarchy tests",
     "matching branch-preview deployment identity"
   ],
-  "entry_head": "20b8271d4813579c0eda67452c0faa6ae0882111",
-  "start_remote_head": "20b8271d4813579c0eda67452c0faa6ae0882111",
-  "exact_next_action": "Stop. Layer 3 is checkpointed as implemented but not independently proven. Resolve SPEC-LS-01 and complete an independent Layer 3 audit before any completion or Layer 4 claim."
+  "entry_head": "33a549b3818dea1d250d8e35462f106c26ddfb5a",
+  "start_remote_head": "33a549b3818dea1d250d8e35462f106c26ddfb5a",
+  "exact_next_action": "Implement and verify recovered SPEC-LS-01 acceptance criteria on horizontal-layer-3-implementation-v1 only."
 }
