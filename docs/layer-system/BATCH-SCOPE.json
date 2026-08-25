@@ -1,33 +1,16 @@
 {
   "schema_version": 1,
-  "active_layer": "L3",
-  "subsystem": "learnable-signal-patterns",
-  "permanent_ids": [
-    "SPEC-LS-01"
-  ],
-  "allowed_paths": [
-    "src/stores/types.ts",
-    "src/stores/accountStore.ts",
-    "src/stores/accountStore.test.ts",
-    "src/components/streaming/RatingRow.tsx",
-    "src/services/learningEngine.ts",
-    "src/services/learningEngine.test.ts",
-    "src/services/debug/learningAuditViewer.ts",
-    "src/services/techniques/autoDetect.ts",
-    "PENDING-INTEGRATIONS.md",
-    "docs/layer-system/**",
-    "src/stores/sessionStore.ts",
-    "src/stores/sessionStore.test.ts",
-    "src/components/streaming/MessageBubble.tsx",
-    "src/components/streaming/StreamingAnswer.tsx"
-  ],
+  "active_layer": "NONE",
+  "subsystem": null,
+  "permanent_ids": [],
+  "allowed_paths": [],
   "required_tests": [
     "npm test",
     "npm run build",
     "SPEC-LS-01 learning-signal hierarchy tests",
     "matching branch-preview deployment identity"
   ],
-  "entry_head": "33a549b3818dea1d250d8e35462f106c26ddfb5a",
-  "start_remote_head": "33a549b3818dea1d250d8e35462f106c26ddfb5a",
-  "exact_next_action": "Implement and verify recovered SPEC-LS-01 acceptance criteria on horizontal-layer-3-implementation-v1 only."
+  "entry_head": "94841450b1aedb28f3d144a191ffac2301d03170",
+  "start_remote_head": "94841450b1aedb28f3d144a191ffac2301d03170",
+  "exact_next_action": "Layer 3 implementation is finished. Stop before Layer 4, merge, production, or external effects unless explicitly authorized."
 }
