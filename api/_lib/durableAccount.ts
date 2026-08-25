@@ -19,7 +19,14 @@ function storageToken(): string | undefined {
 }
 
 export function storageConfigured(): boolean {
-  return Boolean(storageUrl() && storageToken());
+  const configured = Boolean(storageUrl() && storageToken());
+  if (!configured) {
+    const candidateNames = Object.keys(process.env)
+      .filter((name) => /(?:UPSTASH|REDIS|KV_)/i.test(name))
+      .sort();
+    console.info("layer4-storage-variable-names", JSON.stringify(candidateNames));
+  }
+  return configured;
 }
 
 async function redis<T>(command: Array<string | number>): Promise<T> {
