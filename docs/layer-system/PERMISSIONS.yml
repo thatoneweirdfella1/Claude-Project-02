@@ -3,7 +3,7 @@
   "default": "deny",
   "branch_scope": "horizontal-layer-3-implementation-v1",
   "authorization_date": "2026-08-25",
-  "authorization_source": "2026-08-25 user confirmation that SPEC-LS-01 is no longer blocked, continuing the explicit instruction to finish Layer 3 on horizontal-layer-3-implementation-v1 only.",
+  "authorization_source": "2026-08-25 SPEC-LS-01 recovery grant consumed after implementation checkpoint 94841450b1aedb28f3d144a191ffac2301d03170; Layer 3 implementation is finished.",
   "grants": {
     "inspect_repository": {
       "allowed": true
@@ -21,10 +21,10 @@
       "allowed": true
     },
     "modify_application_behavior": {
-      "allowed": true
+      "allowed": false
     },
     "modify_application_tests": {
-      "allowed": true
+      "allowed": false
     },
     "create_protected_tag": {
       "allowed": false
@@ -36,7 +36,7 @@
       "allowed": false
     },
     "deploy_preview": {
-      "allowed": true
+      "allowed": false
     },
     "promote_stable_preview": {
       "allowed": false
