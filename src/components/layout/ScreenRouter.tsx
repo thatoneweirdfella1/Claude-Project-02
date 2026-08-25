@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { addLocalResource, addLocalTask, getLocalWorkspace, planSyntheticJob, removeLocalResource, removeLocalTask, runNextSyntheticBatch, toggleLocalTask, type SyntheticJobUnit } from "../../services/localWorkspace";
+import { addLocalResource, addLocalTask, getLocalWorkspace, removeLocalResource, removeLocalTask, toggleLocalTask } from "../../services/localWorkspace";
 import { restoreLocalDataset, serializeCompleteLocalDataset } from "../../services/localDataset";
 import { DurableAccountPanel } from "../settings/DurableAccountPanel";
 import { DurableLargeJobsScreen } from "./DurableLargeJobsScreen";

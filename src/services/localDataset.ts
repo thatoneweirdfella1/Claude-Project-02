@@ -104,7 +104,7 @@ export function parseLocalDataset(text: string): LocalDataset | null {
     if (value.schemaVersion !== 2 || !value.provenance || typeof value.checksum !== "string") return null;
     const { checksum: claimed, ...withoutChecksum } = value as unknown as LocalDataset;
     if (payloadChecksum(withoutChecksum) !== claimed) return null;
-    return value as LocalDataset;
+    return value as unknown as LocalDataset;
   } catch {
     return null;
   }
