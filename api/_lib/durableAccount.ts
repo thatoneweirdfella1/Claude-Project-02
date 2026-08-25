@@ -10,13 +10,21 @@ export interface DurableAccount {
 const SESSION_SECONDS = 60 * 60 * 24 * 30;
 const encoder = new TextEncoder();
 
+function storageUrl(): string | undefined {
+  return process.env.UPSTASH_REDIS_REST_URL ?? process.env.KV_REST_API_URL;
+}
+
+function storageToken(): string | undefined {
+  return process.env.UPSTASH_REDIS_REST_TOKEN ?? process.env.KV_REST_API_TOKEN;
+}
+
 export function storageConfigured(): boolean {
-  return Boolean(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN);
+  return Boolean(storageUrl() && storageToken());
 }
 
 async function redis<T>(command: Array<string | number>): Promise<T> {
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  const url = storageUrl();
+  const token = storageToken();
   if (!url || !token) throw new Error("durable-storage-not-configured");
   const response = await fetch(url, {
     method: "POST",
