@@ -81,3 +81,14 @@ Only dated, scoped, exact user corrections belong here. They supersede older aut
 - External-effects boundary: accounts, identity, remote persistence, payments, authoritative allowance or entitlement mutation, provider calls, secrets, merge, and production remain denied.
 - Conflict resolution: this explicit scoped grant supersedes the earlier no-L3-permission state only for the isolated Layer 3 branch.
 - Commit where applied: pending Layer 3 authorization checkpoint.
+
+### 2026-08-25 — Begin Layer 4 on its isolated branch
+
+- Exact user wording: `begin layer 4`
+- Scope: create `horizontal-layer-4-implementation-v1` from finished Layer 3 head `4db777514e50e011fb0887bf283a416e1a34f477`; implement and verify Layer 4 durability only on the new branch.
+- Affected permanent IDs: every matrix row whose L4 status is APPLICABLE; the exact list is frozen in `BATCH-SCOPE.json`.
+- Durable-data contract: local state remains a crash-safe write-through cache; confirmed account storage is the durable cross-device record. Conditional revisions prevent silent overwrite. A conflict preserves both recoverable versions and requires explicit user resolution. Export, deletion, migration, and rollback remain user-visible and fail closed.
+- External-effects boundary: identity and durable user-data storage/synchronization are authorized only as required for Layer 4. Payments, authoritative credit/allowance/entitlement mutation, provider calls, BYOK secrets, merge, and production remain denied.
+- Conflict resolution: this scoped grant supersedes the consumed Layer 3 permission state only on `horizontal-layer-4-implementation-v1`; every earlier horizontal checkpoint is read-only.
+- Commit where applied: pending Layer 4 authorization checkpoint.
+
