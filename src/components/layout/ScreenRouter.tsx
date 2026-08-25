@@ -1,6 +1,8 @@
 import { useState, useRef } from "react";
 import { addLocalResource, addLocalTask, getLocalWorkspace, planSyntheticJob, removeLocalResource, removeLocalTask, runNextSyntheticBatch, toggleLocalTask, type SyntheticJobUnit } from "../../services/localWorkspace";
-import { restoreLocalDataset, serializeLocalDataset } from "../../services/localDataset";
+import { restoreLocalDataset, serializeCompleteLocalDataset } from "../../services/localDataset";
+import { DurableAccountPanel } from "../settings/DurableAccountPanel";
+import { DurableLargeJobsScreen } from "./DurableLargeJobsScreen";
 import { Pencil, Star, Copy } from "lucide-react";
 import { useSessionStore } from "../../stores/sessionStore";
 import { useAccountStore } from "../../stores/accountStore";
@@ -1504,8 +1506,8 @@ function SettingsScreen() {
   const totalTrashed = trashed.length;
   const totalMessages = sessions.reduce((sum, s) => sum + s.conversation.length, 0);
 
-  function downloadDataset() {
-    const blob = new Blob([serializeLocalDataset()], { type: "application/json" });
+  async function downloadDataset() {
+    const blob = new Blob([await serializeCompleteLocalDataset()], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
@@ -1578,6 +1580,7 @@ function SettingsScreen() {
           >
             Review data export
           </button>
+          <DurableAccountPanel />
         </div>}
 
         {section === "status" && <div className="settings-section">
@@ -1595,7 +1598,7 @@ function SettingsScreen() {
           </p>
         </div>}
       </div>
-      {exportOpen && <div className="workflow-dialog" role="dialog" aria-modal="true" aria-labelledby="data-export-title"><div className="workflow-dialog__card surface-smoked-glass"><header><h2 id="data-export-title">Complete local data export</h2><p>Download or restore the locally available workspace. No data is sent anywhere, and cross-device sync is not claimed.</p></header><div className="workflow-dialog__summary"><strong>Included locally</strong><p>{totalSessions} sessions · {totalTrashed} trashed items · {totalMessages} messages · templates, prompts, variables, settings, tasks, and resources</p></div><input type="file" accept="application/json,.json" aria-label="Restore local dataset" onChange={(event) => void restoreDataset(event)} />{restoreStatus && <p role="status">{restoreStatus}</p>}<footer className="workflow-dialog__actions"><button type="button" onClick={() => setExportOpen(false)}>Close</button><button type="button" className="primary" onClick={downloadDataset}>Download restorable dataset</button></footer></div></div>}
+      {exportOpen && <div className="workflow-dialog" role="dialog" aria-modal="true" aria-labelledby="data-export-title"><div className="workflow-dialog__card surface-smoked-glass"><header><h2 id="data-export-title">Complete local data export</h2><p>Download or restore the locally available workspace. No data is sent anywhere, and cross-device sync is not claimed.</p></header><div className="workflow-dialog__summary"><strong>Included locally</strong><p>{totalSessions} sessions · {totalTrashed} trashed items · {totalMessages} messages · templates, prompts, variables, settings, tasks, and resources</p></div><input type="file" accept="application/json,.json" aria-label="Restore local dataset" onChange={(event) => void restoreDataset(event)} />{restoreStatus && <p role="status">{restoreStatus}</p>}<footer className="workflow-dialog__actions"><button type="button" onClick={() => setExportOpen(false)}>Close</button><button type="button" className="primary" onClick={() => void downloadDataset()}>Download restorable dataset</button></footer></div></div>}
     </div>
   );
 }
@@ -2299,7 +2302,7 @@ export function ScreenRouter() {
     case "checkpoints":
       return <CheckpointsScreen />;
     case "large-jobs":
-      return <LargeJobsScreen />;
+      return <DurableLargeJobsScreen />;
     case "trash":
       return <TrashScreen />;
     default:

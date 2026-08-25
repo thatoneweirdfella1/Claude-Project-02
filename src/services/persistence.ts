@@ -4,6 +4,7 @@ import { useSessionStore, SESSION_PERSISTED_KEYS } from "../stores/sessionStore"
 import type { AccountState, SessionRecoveryReason, SessionState } from "../stores/types";
 import { desktopBridge } from "./desktopBridge";
 import { buildSessionRecord, sessionHasRecoverableWork } from "./sessionLifecycle";
+import { saveRecoveryPoint } from "./durableLayer4";
 
 /* persistence.ts — autosave and restore (CANON "STORES AND PERSISTENCE":
    "Autosave writes both to IndexedDB every 5 seconds. On load, both
@@ -90,6 +91,11 @@ async function performSave(options: SaveNowOptions): Promise<void> {
   tx.store.put(sessionData, SESSION_KEY);
   tx.store.put(accountData, ACCOUNT_KEY);
   await tx.done;
+  await saveRecoveryPoint(
+    sessionData as Partial<SessionState>,
+    accountData as Partial<AccountState>,
+    options.reason ?? "autosave",
+  );
 }
 
 /** Serialize writes so a slower older transaction cannot land after a newer one. */

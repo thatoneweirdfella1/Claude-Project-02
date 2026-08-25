@@ -25,6 +25,19 @@ export interface SyntheticJobUnit {
 }
 
 let workspace: LocalWorkspaceSnapshot = { tasks: [], resources: [] };
+const subscribers = new Set<(snapshot: LocalWorkspaceSnapshot) => void>();
+
+function notify(): void {
+  const snapshot = getLocalWorkspace();
+  for (const subscriber of subscribers) subscriber(snapshot);
+}
+
+export function subscribeLocalWorkspace(
+  subscriber: (snapshot: LocalWorkspaceSnapshot) => void,
+): () => void {
+  subscribers.add(subscriber);
+  return () => subscribers.delete(subscriber);
+}
 
 function id(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
@@ -52,7 +65,9 @@ export function restoreLocalWorkspace(value: unknown): LocalWorkspaceSnapshot {
           typeof resource.label === "string" && typeof resource.content === "string")
       : [],
   };
-  return getLocalWorkspace();
+  const snapshot = getLocalWorkspace();
+  notify();
+  return snapshot;
 }
 
 export function addLocalTask(project: string, text: string): LocalWorkspaceSnapshot {
@@ -60,18 +75,24 @@ export function addLocalTask(project: string, text: string): LocalWorkspaceSnaps
   const cleanText = text.trim();
   if (!cleanText) return getLocalWorkspace();
   workspace.tasks.push({ id: id("task"), project: cleanProject, text: cleanText, completed: false });
-  return getLocalWorkspace();
+  const snapshot = getLocalWorkspace();
+  notify();
+  return snapshot;
 }
 
 export function toggleLocalTask(taskId: string): LocalWorkspaceSnapshot {
   workspace.tasks = workspace.tasks.map((task) =>
     task.id === taskId ? { ...task, completed: !task.completed } : task);
-  return getLocalWorkspace();
+  const snapshot = getLocalWorkspace();
+  notify();
+  return snapshot;
 }
 
 export function removeLocalTask(taskId: string): LocalWorkspaceSnapshot {
   workspace.tasks = workspace.tasks.filter((task) => task.id !== taskId);
-  return getLocalWorkspace();
+  const snapshot = getLocalWorkspace();
+  notify();
+  return snapshot;
 }
 
 export function addLocalResource(project: string, label: string, content: string): LocalWorkspaceSnapshot {
@@ -80,12 +101,16 @@ export function addLocalResource(project: string, label: string, content: string
   const cleanContent = content.trim();
   if (!cleanLabel || !cleanContent) return getLocalWorkspace();
   workspace.resources.push({ id: id("resource"), project: cleanProject, label: cleanLabel, content: cleanContent });
-  return getLocalWorkspace();
+  const snapshot = getLocalWorkspace();
+  notify();
+  return snapshot;
 }
 
 export function removeLocalResource(resourceId: string): LocalWorkspaceSnapshot {
   workspace.resources = workspace.resources.filter((resource) => resource.id !== resourceId);
-  return getLocalWorkspace();
+  const snapshot = getLocalWorkspace();
+  notify();
+  return snapshot;
 }
 
 export function planSyntheticJob(source: string, batchSize: number): SyntheticJobUnit[] {
