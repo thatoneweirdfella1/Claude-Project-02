@@ -15,7 +15,11 @@
     "src/services/debug/learningAuditViewer.ts",
     "src/services/techniques/autoDetect.ts",
     "PENDING-INTEGRATIONS.md",
-    "docs/layer-system/**"
+    "docs/layer-system/**",
+    "src/stores/sessionStore.ts",
+    "src/stores/sessionStore.test.ts",
+    "src/components/streaming/MessageBubble.tsx",
+    "src/components/streaming/StreamingAnswer.tsx"
   ],
   "required_tests": [
     "npm test",
