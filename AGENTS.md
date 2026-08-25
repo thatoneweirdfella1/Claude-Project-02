@@ -11,3 +11,7 @@ Obey `docs/layer-system/EXTERNAL-DEPENDENCY-DEFERRAL.md`: Layer 4's queued Upsta
 Layer 5 may implement and test only deterministic/sandbox allowance, entitlement, checkout, ledger, reservation, reconciliation, release, cap, receipt, and cost-safety behavior. Real charges, payment-provider configuration, production billing, external AI execution, secrets, merge, and production deployment remain forbidden.
 
 Never modify an earlier checkpoint branch. Record checkpoints, tests, preview identity, deferred proof, and the exact next action before yielding.
+
+## Optional browser-access rule
+
+Interactive cloud-browser access to a preview is not required for a Layer 5 implementation checkpoint and must not be requested merely because a browser-verification tool prefers it. The required implementation evidence is the full automated Layer 5 test suite, TypeScript/build success, and exact matching READY preview identity. If interactive deployed UI inspection is unavailable or requires a new permission prompt, deny/defer only that optional inspection, record it for the consolidated independent/final verification pass, finish the checkpoint and handoff, and continue. Never substitute optional browser access for the independent audit that the implementation session cannot self-certify.
