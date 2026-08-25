@@ -1512,7 +1512,7 @@ function SavedPromptsScreen() {
     if (!prompt) return;
     setEditingId(id); setTitle(prompt.title); setText(prompt.text);
   }
-  function usePrompt(promptText: string) {
+  function applyPrompt(promptText: string) {
     setDraftInput(promptText);
     setScreenLocation("translate", null);
   }
@@ -1522,7 +1522,7 @@ function SavedPromptsScreen() {
     <div className="screen__content">
       <div className="template-form"><input aria-label="Prompt title" placeholder="Prompt title" value={title} onChange={(event) => setTitle(event.target.value)} /><textarea aria-label="Prompt text" placeholder="Prompt text" value={text} onChange={(event) => setText(event.target.value)} /><button type="button" className="primary" disabled={!title.trim() || !text.trim()} onClick={savePrompt}>{editingId ? "Save changes" : "Create prompt"}</button>{editingId && <button type="button" onClick={() => { setEditingId(null); setTitle(""); setText(""); }}>Cancel edit</button>}</div>
       <input type="search" aria-label="Search saved prompts" placeholder="Search prompts..." value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} />
-      {prompts.map((prompt) => <div className="template-card" key={prompt.id}><h4>{prompt.starred ? "★ " : ""}{prompt.title}</h4><p>{prompt.text}</p><div className="template-card__actions"><button type="button" onClick={() => usePrompt(prompt.text)}>Use</button><button type="button" onClick={() => editPrompt(prompt.id)}>Edit</button><button type="button" onClick={() => addSavedPrompt({ ...prompt, id: `prompt-${Date.now()}`, title: `${prompt.title} — Copy`, starred: false })}>Duplicate</button><button type="button" onClick={() => toggleSavedPromptStar(prompt.id)}>{prompt.starred ? "Unfavorite" : "Favorite"}</button><button type="button" onClick={() => removeSavedPrompt(prompt.id)}>Delete</button></div></div>)}
+      {prompts.map((prompt) => <div className="template-card" key={prompt.id}><h4>{prompt.starred ? "★ " : ""}{prompt.title}</h4><p>{prompt.text}</p><div className="template-card__actions"><button type="button" onClick={() => applyPrompt(prompt.text)}>Use</button><button type="button" onClick={() => editPrompt(prompt.id)}>Edit</button><button type="button" onClick={() => addSavedPrompt({ ...prompt, id: `prompt-${Date.now()}`, title: `${prompt.title} — Copy`, starred: false })}>Duplicate</button><button type="button" onClick={() => toggleSavedPromptStar(prompt.id)}>{prompt.starred ? "Unfavorite" : "Favorite"}</button><button type="button" onClick={() => removeSavedPrompt(prompt.id)}>Delete</button></div></div>)}
       {prompts.length === 0 && <p>No saved prompts match. Create one above.</p>}
     </div>
   </div>;
