@@ -8,6 +8,7 @@ import type {
   LayoutId,
   LearnedPreferences,
   LearningAuditEntry,
+  SignalLearningAuditEntry,
   ManualPaymentRequest,
   MethodologyEntry,
   OptimizationGoalId,
@@ -22,6 +23,7 @@ import type {
   ThemePreference,
   VisibilitySettings,
 } from "./types";
+import { applySignalLearning } from "../services/learningEngine";
 
 /* Account store (CANON "STORES AND PERSISTENCE") — persists across browser
    closes. Holds everything that outlives a single session: archived Q/A
@@ -238,6 +240,9 @@ interface AccountActions {
       Orthogonal to theme; every layout works in both light and dark. */
   setLayout: (layout: LayoutId) => void;
   setLearnedPreferences: (prefs: LearnedPreferences) => void;
+  getLearnedPreferences: () => LearnedPreferences;
+  /** Append a primary, secondary, or tertiary learning signal, capped at 500. */
+  recordSignal: (entry: SignalLearningAuditEntry) => void;
   /** Step 10.2 — atomic write for the learning-loop applier
       (services/learningLoop/applier.ts): sets the updated
       LearnedPreferences AND appends the batch's audit entries together, so
@@ -425,10 +430,48 @@ export const useAccountStore = create<AccountStore>((set, get) => ({
   setRating: (rating) =>
     set((s) => {
       const idx = s.ratings.findIndex((r) => r.messageId === rating.messageId);
-      if (idx === -1) return { ratings: [...s.ratings, rating] };
-      const next = [...s.ratings];
-      next[idx] = rating;
-      return { ratings: next };
+      const ratings = [...s.ratings];
+      if (idx === -1) ratings.push(rating);
+      else ratings[idx] = rating;
+      const signal: SignalLearningAuditEntry = {
+        id: `signal-rating-${rating.messageId}-${rating.timestamp}`,
+        timestamp: rating.timestamp,
+        kind: "signal",
+        sessionId: rating.sessionId ?? "current",
+        messageId: rating.messageId,
+        signalType: "rating",
+        signalValue: rating.stars,
+        signalConfidence: 0.9,
+        hierarchy: "primary",
+        modelUsed: rating.modelUsed ?? "auto",
+        techniquesUsed: rating.techniquesUsed ?? [],
+        outcome: rating.stars >= 4 ? "positive" : rating.stars <= 2 ? "negative" : "neutral",
+        verified: true,
+      };
+      const commentSignal: SignalLearningAuditEntry | null = rating.comment?.trim()
+        ? {
+            ...signal,
+            id: `signal-comment-${rating.messageId}-${rating.timestamp}`,
+            signalType: "comment",
+            signalValue: rating.comment.trim(),
+          }
+        : null;
+      const learningAuditLog = [
+          ...s.learningAuditLog,
+          signal,
+          ...(commentSignal ? [commentSignal] : []),
+        ].slice(-MAX_LEARNING_AUDIT_ENTRIES);
+      const signals = learningAuditLog.filter(
+        (item): item is SignalLearningAuditEntry => item.kind === "signal",
+      );
+      const shouldApply = signals.length >= 5 && signals.length % 5 === 0;
+      return {
+        ratings,
+        learningAuditLog,
+        learnedPreferences: shouldApply
+          ? applySignalLearning(s.learnedPreferences, signals.slice(-5))
+          : s.learnedPreferences,
+      };
     }),
   addSavedPrompt: (prompt) => set((s) => ({ savedPrompts: [...s.savedPrompts, prompt] })),
   removeSavedPrompt: (id) =>
@@ -450,6 +493,23 @@ export const useAccountStore = create<AccountStore>((set, get) => ({
   setTheme: (theme) => set({ theme }),
   setLayout: (layout) => set({ layout }),
   setLearnedPreferences: (learnedPreferences) => set({ learnedPreferences }),
+  getLearnedPreferences: () => get().learnedPreferences,
+  recordSignal: (entry) =>
+    set((s) => {
+      const nextLog = [...s.learningAuditLog, entry].slice(-MAX_LEARNING_AUDIT_ENTRIES);
+      const signals = nextLog.filter(
+        (item): item is SignalLearningAuditEntry => item.kind === "signal",
+      );
+      // Apply each complete five-signal batch exactly once. Re-running the
+      // entire history on every event would repeatedly learn from old data.
+      const shouldApply = signals.length >= 5 && signals.length % 5 === 0;
+      return {
+        learningAuditLog: nextLog,
+        learnedPreferences: shouldApply
+          ? applySignalLearning(s.learnedPreferences, signals.slice(-5))
+          : s.learnedPreferences,
+      };
+    }),
   applyLearningRefinements: (updated, newAuditEntries) =>
     set((s) => {
       const nextLog = [...s.learningAuditLog, ...newAuditEntries];
