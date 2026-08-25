@@ -1,7 +1,7 @@
 # Current horizontal-layer status
 
 **Governance state:** POST-CORRECTION INDEPENDENT AUDIT PASSED AND USER ACCEPTED  
-**Verified through app source commit:** `16beca26c305bd9bdae088eb8e977ca1e9730747`  
+**Verified through app source commit:** `94841450b1aedb28f3d144a191ffac2301d03170`  
 **Last implemented horizontal depth:** `L3 — IMPLEMENTED, NOT INDEPENDENTLY PROVEN`  
 **Last completed horizontal layer:** `NONE`  
 **Active layer:** `NONE`  
@@ -12,11 +12,11 @@
 
 **L1 implementation checkpoint:** `5f90a8014bffd573fd1aa2207405077d72765f1c` — 70 test files / 650 deployed tests passed, Vercel preview `dpl_9nNhEATfhjMHJre2GRE2BDVygV99` is READY and returned HTTP 200. The implementation session records this as implemented evidence, not an independent `PROVEN` certification.
 
-**L2 implementation checkpoint:** `e10ee9f1c64fee5f8faccd1832ef19703bc65f33` — 73 test files / 655 deployed tests passed, Vercel preview `dpl_G1rSrrtgnLaD82ojH1ga57L9NTjt` is READY and returned HTTP 200. Connected AI, payments, identity, and remote data effects remain closed. The implementation session records this as implemented evidence, not an independent `PROVEN` certification.\n\n**L3 implementation checkpoint:** `20b8271d4813579c0eda67452c0faa6ae0882111` — 74 test files / 659 tests passed, TypeScript and Vite production build passed, and matching Vercel preview `dpl_7j3V83jUeedLSgfppQc9ewyGR1pd` is READY and returned HTTP 200. Local/manual workflows are implemented; real identity, payments, authoritative allowance mutation, remote persistence, providers, secrets, merge, and production remain closed. `SPEC-LS-01` is blocked by its missing documented source/acceptance contract.
+**L2 implementation checkpoint:** `e10ee9f1c64fee5f8faccd1832ef19703bc65f33` — 73 test files / 655 deployed tests passed, Vercel preview `dpl_G1rSrrtgnLaD82ojH1ga57L9NTjt` is READY and returned HTTP 200. Connected AI, payments, identity, and remote data effects remain closed. The implementation session records this as implemented evidence, not an independent `PROVEN` certification.\n\n**L3 implementation checkpoint:** `94841450b1aedb28f3d144a191ffac2301d03170` — Learnable Signal Patterns was recovered and implemented, 75 test files / 664 tests passed, TypeScript and Vite production build passed, and matching Vercel preview `dpl_3CgDffYmJvBvx5ZNBY3EHJSqkpxy` is READY. All Layer 3 implementation requirements are implemented; real identity, payments, authoritative allowance mutation, remote persistence, providers, secrets, merge, and production remain closed.
 
 ## Exact next action
 
-Stop. Layer 3 is checkpointed as `IMPLEMENTED — NOT FULLY PROVEN`. Resolve `SPEC-LS-01` and obtain an independent Layer 3 audit before any formal Layer 3 completion, stable promotion, or Layer 4 work.
+Layer 3 implementation is finished on its isolated branch. An independent audit may separately promote implementation evidence to formal `PROVEN`; do not begin Layer 4, merge, or promote production without a new exact instruction.
 
 ## Honest initial state
 
