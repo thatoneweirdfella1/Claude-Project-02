@@ -11,6 +11,7 @@ import { useApprovedKeyboardShortcuts } from "../../keyboard/useApprovedKeyboard
 import { CostConfirm } from "../credits";
 import { OperatorWorkspaceBar } from "../credits/OperatorWorkspaceBar";
 import { DevAdminPanel } from "../settings/DevAdminPanel";
+import { LocalDryRunPanel } from "../settings/LocalDryRunPanel";
 import { useAccountStore } from "../../stores/accountStore";
 import { useSessionStore } from "../../stores/sessionStore";
 import { destinationLabel } from "../../services/providerNeutral";
@@ -66,7 +67,7 @@ export function AppShell() {
     <div className="app-shell app-layer" style={{ transform: `scale(${canvasScale})` }} data-layout-authority="frozen-reference-1600x1024">
       <header className="topbar" aria-label="Top bar" data-testid="topbar"><TopBar /></header>
       <nav className="col-left" aria-label="Primary navigation" data-testid="col-left"><LeftNav /></nav>
-      <main className="col-center" data-testid="col-center"><div className="frozen-center-stack"><OperatorWorkspaceBar /><AppErrorBoundary resetKey={currentScreen}><ScreenRouter /></AppErrorBoundary><DevAdminPanel /></div></main>
+      <main className="col-center" data-testid="col-center"><div className="frozen-center-stack"><OperatorWorkspaceBar /><AppErrorBoundary resetKey={currentScreen}><ScreenRouter /></AppErrorBoundary><LocalDryRunPanel /><DevAdminPanel /></div></main>
       <aside className="col-right" aria-label="Sidebar panels" data-testid="col-right">
         {rightRailPanel && <section className="right-rail-reference surface-smoked-glass" aria-label={rightRailPanel.startsWith("help:") ? "Help" : "Quick Reference"}>
           <header><strong>{rightRailPanel.startsWith("help:") ? "Help" : "Quick Reference"}</strong><button type="button" aria-label="Close reference" onClick={() => setRightRailPanel(null)}>×</button></header>
