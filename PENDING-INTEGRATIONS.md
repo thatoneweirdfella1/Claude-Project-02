@@ -132,7 +132,7 @@ HALLUCINATION REDUCTION TECHNIQUES:
 
 ---
 
-## TASK 2: Learnable Signal Patterns Verification & Integration
+## COMPLETED TASK 2: Learnable Signal Patterns Verification & Integration
 
 **Source**: Prior Claude Code session analyzing learnable signal patterns for accuracy degradation based on multi-signal feedback hierarchy
 
@@ -262,16 +262,16 @@ MAX_LEARNING_AUDIT_ENTRIES:
    ```
 
 **How to know when done**:
-- [ ] LearningAuditEntry type includes all three signal hierarchies
-- [ ] RatingRow records PRIMARY signals to audit log
-- [ ] Secondary signals (model switch, technique switch, time delta, edits) are recorded
-- [ ] Tertiary signals (session close, download, search, topic return) are recorded
-- [ ] Accuracy score computed: PRIMARY=1.0, PRIMARY+SECONDARY=0.85, ALL=0.70
-- [ ] LearnedPreferences updated after collecting 5+ signals
-- [ ] Model/Technique router uses learnedPreferences for future recommendations
-- [ ] Audit log bounded at 500 entries (purges oldest)
-- [ ] Debug viewer shows signal hierarchy and weights
-- [ ] Full end-to-end test: rate answer → check audit log → verify signal recorded → check accuracy score
+- [x] LearningAuditEntry type includes all three signal hierarchies
+- [x] RatingRow records PRIMARY signals to audit log
+- [x] Secondary signals (model switch, technique switch, time delta, edits) are recorded
+- [x] Tertiary signals (session close, download, search, topic return) are recorded
+- [x] Accuracy score computed: PRIMARY=1.0, PRIMARY+SECONDARY=0.85, ALL=0.70
+- [x] LearnedPreferences updated after collecting 5+ signals
+- [x] Model/Technique router uses learnedPreferences for future recommendations
+- [x] Audit log bounded at 500 entries (purges oldest)
+- [x] Debug viewer shows signal hierarchy and weights
+- [x] Full end-to-end test: rate answer → check audit log → verify signal recorded → check accuracy score
 
 **Acceptance criteria**:
 - All three signal hierarchies working (primary/secondary/tertiary)
@@ -280,6 +280,10 @@ MAX_LEARNING_AUDIT_ENTRIES:
 - LearnedPreferences update and feed back to router/techniques
 - Audit log persists across sessions and has max 500 bound
 - Signal weights verified against real feedback outcomes
+
+---
+
+**Completion evidence (2026-08-25):** implemented through `3fd6b35d1b4d9dd85f2b79e9ae35e32f39ceea32`; exact tests/build and matching preview recorded in the Layer 3 checkpoint. Task 1 and Task 3 remain unchanged.
 
 ---
 
