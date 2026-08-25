@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
   "default": "deny",
-  "branch_scope": "horizontal-layer-3-implementation-v1",
+  "branch_scope": "horizontal-layer-4-implementation-v1",
   "authorization_date": "2026-08-25",
-  "authorization_source": "2026-08-25 SPEC-LS-01 recovery grant consumed after implementation checkpoint 94841450b1aedb28f3d144a191ffac2301d03170; Layer 3 implementation is finished.",
+  "authorization_source": "User instruction `begin layer 4`, recorded in docs/authority/USER-CORRECTIONS.md at commit df22fba1b1ce9369a1244deec103a4019999a749.",
   "grants": {
     "inspect_repository": {
       "allowed": true
@@ -21,10 +21,10 @@
       "allowed": true
     },
     "modify_application_behavior": {
-      "allowed": false
+      "allowed": true
     },
     "modify_application_tests": {
-      "allowed": false
+      "allowed": true
     },
     "create_protected_tag": {
       "allowed": false
@@ -36,7 +36,7 @@
       "allowed": false
     },
     "deploy_preview": {
-      "allowed": false
+      "allowed": true
     },
     "promote_stable_preview": {
       "allowed": false
@@ -48,22 +48,22 @@
       "allowed": false
     },
     "configure_auth_service": {
-      "allowed": false
+      "allowed": true
     },
     "create_or_modify_identity": {
-      "allowed": false
+      "allowed": true
     },
     "provision_database_or_storage": {
-      "allowed": false
+      "allowed": true
     },
     "write_remote_user_data": {
-      "allowed": false
+      "allowed": true
     },
     "synchronize_remote_user_data": {
-      "allowed": false
+      "allowed": true
     },
     "run_schema_migration": {
-      "allowed": false
+      "allowed": true
     },
     "configure_payment_provider": {
       "allowed": false

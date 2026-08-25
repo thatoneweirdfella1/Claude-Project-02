@@ -1,38 +1,25 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "repository": "thatoneweirdfella1/Claude-Project-02",
   "canonical_remote": "https://github.com/thatoneweirdfella1/Claude-Project-02.git",
-  "source_branch": "horizontal-layer-completion-v1",
-  "source_commit": "52273d6a5f07fcde0dd4353f2d2b1599a3e332ff",
-  "source_commit_message": "Governance: checkpoint completed Layer 1 and Layer 2 work",
-  "source_commit_time": "2026-08-24T18:24:13Z",
-  "continuation_branch": "horizontal-layer-3-implementation-v1",
+  "source_branch": "horizontal-layer-3-implementation-v1",
+  "source_commit": "4db777514e50e011fb0887bf283a416e1a34f477",
+  "source_commit_message": "Governance: checkpoint completed Layer 3 work",
+  "continuation_branch": "horizontal-layer-4-implementation-v1",
+  "required_ancestor": "94841450b1aedb28f3d144a191ffac2301d03170",
   "selection": "INCLUDE",
   "test_evidence": {
-    "rerun_this_installation": false,
-    "reason": "The connected repository interface does not provide a local executable checkout.",
-    "latest_recorded_source_evidence": "73 test files / 655 deployed tests, TypeScript and Vite production build, matching READY deployment dpl_G1rSrrtgnLaD82ojH1ga57L9NTjt for Layer 2 app commit e10ee9f1c64fee5f8faccd1832ef19703bc65f33; checkpoint commit 52273d6a5f07fcde0dd4353f2d2b1599a3e332ff changes governance status only.",
+    "rerun_this_activation": false,
+    "latest_recorded_source_evidence": "75 test files / 664 tests, TypeScript and Vite production build, matching READY deployment dpl_3CgDffYmJvBvx5ZNBY3EHJSqkpxy for Layer 3 application checkpoint 94841450b1aedb28f3d144a191ffac2301d03170.",
     "independent_reverification_required": false
   },
-  "protected_comparisons": {
-    "build": {
-      "head": "ebbda8c0ab16c556b7920239765dde8d4432e322",
-      "merge_base": "0de85b93328eebf55f2cf7a68e2938960c60a02d",
-      "source_ahead_by": 98,
-      "source_behind_by": 5,
-      "classification": "EXCLUDE FROM SOURCE BASELINE — five build-only commits remain recorded for later authority audit; no app cherry-pick is allowed during governance installation"
-    },
-    "frozen-implementation-v1": {
-      "head": "18e4345f703bfe62c8a5fca87b1b2a11a549be4c",
-      "source_ahead_by": 78,
-      "source_behind_by": 0,
-      "classification": "INCLUDED — ancestor of selected source"
-    },
-    "backup-reference-do-not-touch": {
-      "head": "2a1be17a2d9703127f6255c2c6c0e7ed7956a3df",
-      "classification": "REFERENCE ONLY — untouched"
-    }
-  },
-  "selected_by": "authority plus complete surviving-branch comparison",
-  "selected_at": "2026-08-24"
+  "protected_branches": [
+    "horizontal-layer-completion-v1",
+    "horizontal-layer-3-implementation-v1",
+    "build",
+    "frozen-implementation-v1",
+    "backup-reference-do-not-touch"
+  ],
+  "selected_by": "explicit user instruction `begin layer 4` plus exact Layer 3 checkpoint identity",
+  "selected_at": "2026-08-25"
 }

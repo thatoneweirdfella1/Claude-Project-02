@@ -5,12 +5,11 @@ This branch contains the durable context for an AI with no prior conversation.
 ## Identity
 
 - Repository: `thatoneweirdfella1/Claude-Project-02`
-- Read-only completed branch: `horizontal-layer-completion-v1`
-- Required Layer 3 working branch: `horizontal-layer-3-implementation-v1`
-- Minimum completed checkpoint: `52273d6a5f07fcde0dd4353f2d2b1599a3e332ff`
-- Protected comparison branches: `build`, `frozen-implementation-v1`
-- Last implemented horizontal depth: `L2`
-- App implementation permission: `DENIED` after the consumed Layer 3 grant; Layer 3 is checkpointed as implemented but not independently proven
+- Read-only source branch: `horizontal-layer-3-implementation-v1`
+- Required Layer 4 working branch: `horizontal-layer-4-implementation-v1`
+- Exact source head: `4db777514e50e011fb0887bf283a416e1a34f477`
+- Required application ancestor: `94841450b1aedb28f3d144a191ffac2301d03170`
+- Active layer: `L4 — Durable`
 
 ## Mandatory read order
 
@@ -23,32 +22,18 @@ This branch contains the durable context for an AI with no prior conversation.
 7. `docs/authority/DIVERGENCE-AI-CANONICAL-DECISION-AUTHORITY-v2.md`
 8. `docs/authority/DIVERGENCE-AI-CONTROL-BEHAVIOR-MAP-v2.md`
 9. `docs/layer-system/HORIZONTAL-LAYER-COMPLETION-SYSTEM.md`
-10. `docs/layer-system/HYBRID-INDEPENDENT-AUDIT-PROTOCOL.md` and `AUDIT-RESULTS/2026-08-24-hybrid-reconciled.md`.
-11. `docs/layer-system/LAYER-OBLIGATION-PROFILES.yml` and the exact row(s) in `LAYER-OBLIGATION-MATRIX.csv`.
-12. Only the repair, decision, workflow, test, evidence, and open-defect rows relevant to the one active batch.
+10. `docs/layer-system/HYBRID-INDEPENDENT-AUDIT-PROTOCOL.md`
+11. `docs/layer-system/LAYER-OBLIGATION-PROFILES.yml` and the L4-applicable matrix rows.
+12. `docs/layer-system/L4-DATA-AND-CONFLICT-CONTRACT.md` and only the task-specific authority/evidence rows needed by the active batch.
 
 ## Required first action
 
-If `horizontal-layer-3-implementation-v1` does not exist, remain on `horizontal-layer-completion-v1`, verify its current local and remote tip match, and run:
+Use the authenticated GitHub API gate in `docs/layer-system/API-WORK-MODE.md`. Confirm the exact branch and ancestor identities and return the Remote Resume Certificate before writing. All writes target only `horizontal-layer-4-implementation-v1`.
 
-```bash
-node scripts/governance/preflight.mjs --action=create_continuation_branch
-```
+## Current exact action
 
-Create the exact branch `horizontal-layer-3-implementation-v1` from that verified tip and switch to it. Do not edit or advance `horizontal-layer-completion-v1`. When an authenticated executable checkout exists, run without changing files:
-
-```bash
-node scripts/governance/preflight.mjs --action=read-only
-```
-
-Return its Resume Certificate verbatim. A structural `PASS` does not prove product behavior and does not grant permission.
-
-When the environment provides authenticated GitHub repository API access but no executable checkout, use `docs/layer-system/API-WORK-MODE.md` instead. The absence of a local clone is normal in Work mode and is not a blocker. The remote gate must verify exact repository, source branch, working branch, and commit identities before any write.
-
-## Current exact next action
-
-The required Layer 3 branch already exists. Verify it through the local or API Work-mode startup gate, record the user's explicit Layer 3 instruction as a dated and scoped application grant on that branch, and implement Layer 3 there. Never modify the completed Layer 1–2 branch.
+Implement and verify the active 206-row Layer 4 durability batch. Do not modify any earlier checkpoint branch.
 
 ## Conflict rule
 
-Use explicit scoped authority and supersession. Current code, tests, live behavior, timestamps, and model confidence cannot override approved intent. Record unresolved conflicts in `UNRESOLVED-FINDINGS.md`; continue unrelated work.
+Explicit scoped authority wins. Never silently overwrite user data. Preserve recoverable versions, expose conflicts, and require an explicit resolution. Record unresolved authority conflicts and continue unrelated work.
