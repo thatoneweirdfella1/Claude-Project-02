@@ -7,9 +7,9 @@
 - Required next working branch: `horizontal-layer-3-implementation-v1`
 - Source: `16beca26c305bd9bdae088eb8e977ca1e9730747`
 - Governance: the 23-defect hybrid closure passed the final independent post-correction audit and the user accepted it
-- Last implemented horizontal depth: L2 — implemented, not independently `PROVEN`
-- Active layer/batch: L3 / whole-site-local-manual-usefulness
-- App behavior changes: Layer 3 local/manual application behavior and tests are authorized only on horizontal-layer-3-implementation-v1
+- Last implemented horizontal depth: L3 — implemented, not independently `PROVEN`
+- Active layer/batch: none
+- App behavior changes: no further layer is authorized; the Layer 3 grant has been consumed
 
 ## Preserved completed work
 
@@ -17,7 +17,7 @@ The source handoff records V2-RQ-001 through V2-RQ-003 as completed/verified and
 
 ## Exact next action
 
-Implement the whole-site Layer 3 local/manual-function batch on `horizontal-layer-3-implementation-v1`, preserving the L1/L2 checkpoint and keeping every real external effect disabled. Verify with focused tests, the full test/build gate, and a matching branch preview before recording implementation evidence.
+Layer 3 application commit `20b8271d4813579c0eda67452c0faa6ae0882111` passed 74 test files / 659 tests and the TypeScript/Vite production build on matching READY preview `dpl_7j3V83jUeedLSgfppQc9ewyGR1pd`, which returned HTTP 200. The implementation remains `IMPLEMENTED — NOT FULLY PROVEN`; `SPEC-LS-01` is blocked because its documented source and acceptance contract are unavailable. Do not begin Layer 4, merge, promote, or claim formal Layer 3 completion without a new exact instruction and the required independent evidence.
 
 The governance installer's local staging directory had no `.git`, so it could not issue a local Resume Certificate. This is an environment limitation, not a preflight pass. A real checkout/CI must supply that proof.
 

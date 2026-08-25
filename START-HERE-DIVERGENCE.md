@@ -10,7 +10,7 @@ This branch contains the durable context for an AI with no prior conversation.
 - Minimum completed checkpoint: `52273d6a5f07fcde0dd4353f2d2b1599a3e332ff`
 - Protected comparison branches: `build`, `frozen-implementation-v1`
 - Last implemented horizontal depth: `L2`
-- App implementation permission: `GRANTED FOR L3 ONLY` on `horizontal-layer-3-implementation-v1`; external effects, merge, and production remain denied
+- App implementation permission: `DENIED` after the consumed Layer 3 grant; Layer 3 is checkpointed as implemented but not independently proven
 
 ## Mandatory read order
 

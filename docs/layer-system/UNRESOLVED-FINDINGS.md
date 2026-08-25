@@ -10,3 +10,10 @@ The 23 defects recorded in `AUDIT-RESULTS/2026-08-24-hybrid-reconciled.md` have 
 6. **No horizontal layer is complete.** Visible-site checkpoints exist, but a site-wide L1 baseline audit has not assigned credit.
 7. **Data and cross-device conflict contracts require authority derivation before L4.** They are project tasks, not permission to invent a product policy.
 8. **The cited Learnable Signal Patterns and Fable task sources are absent from the governed packet.** Their exact rows remain blocked at the depths recorded in `LAYER-DECISION-BLOCKERS.md`.
+
+## SPEC-LS-01 — Layer 3 completion blocker
+
+- Status: BLOCKED — documented Learnable Signal Patterns source and acceptance contract unavailable.
+- Scope: only SPEC-LS-01 and formal Layer 3 completion; unrelated local/manual work is checkpointed.
+- Evidence: LAYER-DEFINITIONS.yml and LAYER-OBLIGATION-MATRIX.csv require project_task_source_and_acceptance at L3.
+- Exact next action: recover the documented source and acceptance contract before implementation or PROVEN status is claimed.

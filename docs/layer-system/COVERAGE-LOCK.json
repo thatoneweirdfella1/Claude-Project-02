@@ -20,8 +20,8 @@
   "independent_audit_required": true,
   "independent_audit_verdict": "PASS",
   "application_permission_required": "modify_application_behavior",
-  "application_permission_currently_granted": true,
+  "application_permission_currently_granted": false,
   "protected_governance_ref_required_before_app_edits": true,
   "protected_governance_ref_currently_available": true,
-  "exact_next_action": "Implement and verify Layer 3 local/manual usefulness on horizontal-layer-3-implementation-v1 only."
+  "exact_next_action": "Layer 3 implementation is checkpointed; independent proof and SPEC-LS-01 resolution remain before formal completion."
 }
