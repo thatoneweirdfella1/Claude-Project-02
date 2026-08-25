@@ -503,9 +503,17 @@ export interface TechniquePreference {
    writes accepted refinements to the account store with an audit log").
    One entry per proposal applied, in the same batch a background
    analysis run produces (services/learningLoop/backgroundJob.ts). */
-export interface LearningAuditEntry {
+export type SignalType =
+  | "rating" | "comment"
+  | "usage_time" | "edit_distance" | "model_switch" | "technique_switch"
+  | "session_close" | "download" | "search_query" | "topic_return";
+export type SignalHierarchy = "primary" | "secondary" | "tertiary";
+export type SignalOutcome = "positive" | "negative" | "neutral" | "unknown";
+
+export interface RefinementLearningAuditEntry {
   id: string;
   timestamp: number;
+  kind?: "refinement";
   proposalType: "technique-weight" | "detection-threshold";
   target: string;
   adjustment: "increase" | "decrease";
@@ -515,6 +523,26 @@ export interface LearningAuditEntry {
   reasoning: string;
   affectedRunCount: number;
 }
+
+export interface SignalLearningAuditEntry {
+  id: string;
+  timestamp: number;
+  kind: "signal";
+  sessionId: string;
+  messageId: string;
+  signalType: SignalType;
+  signalValue: number | string | boolean;
+  signalConfidence: 0.1 | 0.3 | 0.5 | 0.7 | 0.9;
+  hierarchy: SignalHierarchy;
+  modelUsed: ModelSelection;
+  techniquesUsed: TechniqueId[];
+  outcome: SignalOutcome;
+  verified: boolean;
+}
+
+export type LearningAuditEntry =
+  | RefinementLearningAuditEntry
+  | SignalLearningAuditEntry;
 
 /* One state-pill correction (CANON Feature 5 / PIPELINE.md STATE DETECTION,
    Step 6.4 — "Correction learning"). Recorded every time a user picks a
