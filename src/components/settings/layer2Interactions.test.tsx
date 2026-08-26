@@ -32,13 +32,15 @@ afterEach(() => {
 });
 
 describe("Layer 2 safe interaction surfaces", () => {
-  it("previews a plan without creating a payment or changing the plan", () => {
+  it("keeps the deterministic plan checkout isolated from real account state", () => {
     mount(<InteractivePlanControls />);
-    act(() => button("Preview Plus").click());
-    expect(host?.querySelector('[role="dialog"]')?.textContent).toContain("No checkout was created");
+    act(() => button("Start Plus sandbox checkout").click());
+    expect(host?.querySelector('[role="dialog"]')?.textContent).toContain("No balance or entitlement changes");
+    expect(host?.querySelector('[role="dialog"]')?.textContent).toContain("No real payment can occur");
     expect(useAccountStore.getState().manualPaymentRequests).toHaveLength(0);
     expect(useAccountStore.getState().plan).toBe("free");
-    act(() => button("Close preview").click());
+    expect(useAccountStore.getState().creditBalance).toBe(0);
+    act(() => button("Cancel").click());
     expect(host?.querySelector('[role="dialog"]')).toBeNull();
   });
 
