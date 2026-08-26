@@ -322,10 +322,6 @@ export type SessionRecoveryReason =
   | "discard"
   | "start-fresh";
 
-export type SessionRecoveryReason =
-  | "autosave" | "navigation" | "new-session" | "resume" | "duplicate"
-  | "finish-save" | "finish-archive" | "discard" | "start-fresh";
-
 export interface SessionRecord {
   id: string;
   createdAt: number;
