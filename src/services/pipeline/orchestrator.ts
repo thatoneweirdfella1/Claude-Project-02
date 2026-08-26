@@ -35,7 +35,7 @@
    see resilience.ts), they just get the same catch-and-report boundary. */
 
 import type { TranslateAskRequest } from "../composer";
-import type { SubscriptionTier, TechniqueId } from "../../stores/types";
+import type { ModelSelection, SubscriptionTier, TechniqueId } from "../../stores/types";
 import type { ProxyCompletionRequest, TokenUsage } from "../proxyClient";
 import { mapTierToRoutingPlan } from "../../stores/accountStore";
 import { addTokenUsage } from "../costTracking";
