@@ -7,6 +7,7 @@ import { AppErrorBoundary } from "./components/layout/AppErrorBoundary";
 import { CustomBackgroundController } from "./services/customBackground";
 import { loadPersistedState, saveNow, startAutosave } from "./services/persistence";
 import { buildSessionRecord, sessionHasRecoverableWork } from "./services/sessionLifecycle";
+import { loadDurableWorkspace, startDurableWorkspacePersistence } from "./services/durableLayer4";
 import { useAccountStore } from "./stores/accountStore";
 import { useSessionStore } from "./stores/sessionStore";
 import type { SessionRecord } from "./stores/types";
@@ -114,6 +115,7 @@ async function bootstrap() {
   let startFreshRecord: SessionRecord | null = null;
   if (window.divergenceDesktop) document.documentElement.dataset.desktopApp = "true";
   try {
+    await loadDurableWorkspace();
     const { hadSession } = await loadPersistedState();
 
     if (hadSession && sessionHasRecoverableWork(useSessionStore.getState())) {
@@ -157,6 +159,7 @@ async function bootstrap() {
   );
 
   startAutosave();
+  startDurableWorkspacePersistence();
   if (startFreshRecord) showStartFreshUndo(startFreshRecord);
 }
 
