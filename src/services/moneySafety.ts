@@ -247,6 +247,39 @@ export class DeterministicMoneyAuthority {
     this.now = options.now ?? (() => Date.now());
   }
 
+  static restore(snapshot: MoneySnapshot, options: { now?: () => number } = {}): DeterministicMoneyAuthority {
+    const authority = new DeterministicMoneyAuthority({
+      balanceCents: snapshot.balanceCents,
+      allowanceCents: snapshot.allowanceCents,
+      caps: snapshot.caps,
+      now: options.now,
+    });
+    authority.subscriptionTier = snapshot.subscriptionTier;
+    authority.subscriptionBenefits = [...snapshot.subscriptionBenefits];
+    authority.managedApiEnabled = snapshot.managedApiEnabled;
+    authority.paidFallbackEnabled = snapshot.paidFallbackEnabled;
+    authority.autoTopUp = { ...snapshot.autoTopUp };
+    for (const reservation of snapshot.reservations) {
+      const restored = cloneReservation(reservation);
+      authority.reservations.set(restored.id, restored);
+      authority.reservationKeys.set(restored.idempotencyKey, restored.id);
+      if (restored.status === "settled" && restored.actualCents !== null) {
+        authority.sessionSpent.set(restored.sessionId, (authority.sessionSpent.get(restored.sessionId) ?? 0) + restored.actualCents);
+        authority.monthSpent.set(restored.monthId, (authority.monthSpent.get(restored.monthId) ?? 0) + restored.actualCents);
+      }
+    }
+    authority.receipts.push(...snapshot.receipts.map((value) => ({ ...value })));
+    authority.ledger.push(...snapshot.ledger.map((value) => ({ ...value })));
+    for (const checkout of snapshot.checkouts) {
+      const restored = cloneCheckout(checkout);
+      authority.checkouts.set(restored.id, restored);
+      authority.checkoutKeys.set(restored.idempotencyKey, restored.id);
+    }
+    authority.sequence = [...snapshot.reservations, ...snapshot.receipts, ...snapshot.ledger, ...snapshot.checkouts]
+      .reduce((maximum, value) => Math.max(maximum, Number(value.id.match(/(\d+)$/)?.[1] ?? 0)), 0);
+    return authority;
+  }
+
   snapshot(): MoneySnapshot {
     return {
       balanceCents: this.balanceCents,

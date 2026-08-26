@@ -245,3 +245,31 @@ describe("deterministic checkout and top-up safety", () => {
   });
 });
 
+
+
+describe("durable authority restoration", () => {
+  it("restores balances, reservations, receipts, idempotency, and committed caps", async () => {
+    const original = new DeterministicMoneyAuthority({ balanceCents: 100 });
+    const reserved = await original.reserve(request({ idempotencyKey: "durable-reservation", hardMaximumCents: 10 }));
+    original.settle(reserved.reservation!.id, 6, "durable-settlement");
+    const pending = original.createSandboxCheckout({
+      idempotencyKey: "durable-checkout",
+      kind: "credit-top-up",
+      paidAmountCents: 500,
+      creditAmountCents: 500,
+    });
+
+    const restored = DeterministicMoneyAuthority.restore(original.snapshot());
+    expect(restored.snapshot()).toEqual(original.snapshot());
+    expect((await restored.reserve(request({ idempotencyKey: "durable-reservation" }))).reservation?.id)
+      .toBe(reserved.reservation!.id);
+    expect(restored.createSandboxCheckout({
+      idempotencyKey: "durable-checkout",
+      kind: "credit-top-up",
+      paidAmountCents: 500,
+      creditAmountCents: 500,
+    }).id).toBe(pending.id);
+    expect(restored.preflight(request({ idempotencyKey: "next", hardMaximumCents: 95 })).reason)
+      .toBe("request-cap-exceeded");
+  });
+});

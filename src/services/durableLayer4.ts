@@ -1,5 +1,6 @@
 import { deleteDB, openDB, type IDBPDatabase } from "idb";
 import type { AccountState, SessionRecoveryReason, SessionState } from "../stores/types";
+import type { MoneySnapshot } from "./moneySafety";
 import {
   getLocalWorkspace,
   restoreLocalWorkspace,
@@ -9,16 +10,18 @@ import {
 } from "./localWorkspace";
 
 const DB_NAME = "divergence-layer4";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const JOBS = "jobs";
 const RECOVERY = "recovery";
 const META = "meta";
 const CONFLICTS = "conflicts";
 const WORKSPACE = "workspace";
+const MONEY = "money";
 const ACTIVE_JOB_KEY = "active";
 const WORKSPACE_KEY = "current";
 const SYNC_META_KEY = "sync";
 const ACTIVE_CONFLICT_KEY = "active";
+const MONEY_KEY = "authority";
 const MAX_RECOVERY_POINTS = 20;
 
 let dbPromise: Promise<IDBPDatabase> | null = null;
@@ -27,7 +30,7 @@ function database(): Promise<IDBPDatabase> {
   if (!dbPromise) {
     dbPromise = openDB(DB_NAME, DB_VERSION, {
       upgrade(db) {
-        for (const name of [JOBS, RECOVERY, META, CONFLICTS, WORKSPACE]) {
+        for (const name of [JOBS, RECOVERY, META, CONFLICTS, WORKSPACE, MONEY]) {
           if (!db.objectStoreNames.contains(name)) db.createObjectStore(name);
         }
       },
@@ -178,6 +181,16 @@ export function startDurableWorkspacePersistence(): () => void {
       console.error("[durability] workspace save failed", error);
     });
   });
+}
+
+export async function saveMoneySnapshot(snapshot: MoneySnapshot): Promise<void> {
+  const db = await database();
+  await db.put(MONEY, structuredClone(snapshot), MONEY_KEY);
+}
+
+export async function loadMoneySnapshot(): Promise<MoneySnapshot | null> {
+  const db = await database();
+  return (await db.get(MONEY, MONEY_KEY) as MoneySnapshot | undefined) ?? null;
 }
 
 export async function _resetLayer4DatabaseForTests(): Promise<void> {
