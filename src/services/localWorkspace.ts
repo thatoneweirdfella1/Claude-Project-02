@@ -26,6 +26,17 @@ export interface LocalWorkspaceSnapshot {
 }
 
 let workspace: LocalWorkspaceSnapshot = { tasks: [], resources: [], syntheticJobs: [] };
+const subscribers = new Set<(snapshot: LocalWorkspaceSnapshot) => void>();
+
+function notifyWorkspace(): void {
+  const snapshot = getLocalWorkspace();
+  for (const subscriber of subscribers) subscriber(snapshot);
+}
+
+export function subscribeLocalWorkspace(subscriber: (snapshot: LocalWorkspaceSnapshot) => void): () => void {
+  subscribers.add(subscriber);
+  return () => subscribers.delete(subscriber);
+}
 
 function id(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
@@ -60,6 +71,7 @@ export function restoreLocalWorkspace(value: unknown): LocalWorkspaceSnapshot {
           (unit.status === "pending" || unit.status === "complete"))
       : [],
   };
+  notifyWorkspace();
   return getLocalWorkspace();
 }
 
@@ -68,17 +80,20 @@ export function addLocalTask(project: string, text: string): LocalWorkspaceSnaps
   const cleanText = text.trim();
   if (!cleanText) return getLocalWorkspace();
   workspace.tasks.push({ id: id("task"), project: cleanProject, text: cleanText, completed: false });
+  notifyWorkspace();
   return getLocalWorkspace();
 }
 
 export function toggleLocalTask(taskId: string): LocalWorkspaceSnapshot {
   workspace.tasks = workspace.tasks.map((task) =>
     task.id === taskId ? { ...task, completed: !task.completed } : task);
+  notifyWorkspace();
   return getLocalWorkspace();
 }
 
 export function removeLocalTask(taskId: string): LocalWorkspaceSnapshot {
   workspace.tasks = workspace.tasks.filter((task) => task.id !== taskId);
+  notifyWorkspace();
   return getLocalWorkspace();
 }
 
@@ -88,11 +103,13 @@ export function addLocalResource(project: string, label: string, content: string
   const cleanContent = content.trim();
   if (!cleanLabel || !cleanContent) return getLocalWorkspace();
   workspace.resources.push({ id: id("resource"), project: cleanProject, label: cleanLabel, content: cleanContent });
+  notifyWorkspace();
   return getLocalWorkspace();
 }
 
 export function removeLocalResource(resourceId: string): LocalWorkspaceSnapshot {
   workspace.resources = workspace.resources.filter((resource) => resource.id !== resourceId);
+  notifyWorkspace();
   return getLocalWorkspace();
 }
 
@@ -110,6 +127,7 @@ export function planSyntheticJob(source: string, batchSize: number): SyntheticJo
     });
   }
   workspace.syntheticJobs = units.map((unit) => ({ ...unit }));
+  notifyWorkspace();
   return units;
 }
 
@@ -126,6 +144,7 @@ export function runNextSyntheticBatch(units: SyntheticJobUnit[]): SyntheticJobUn
     };
   });
   workspace.syntheticJobs = updated.map((unit) => ({ ...unit }));
+  notifyWorkspace();
   return updated;
 }
 
