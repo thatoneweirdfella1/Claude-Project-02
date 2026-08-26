@@ -209,8 +209,7 @@ interface AccountActions {
     kind?: CreditLedgerEntry["kind"],
     referenceId?: string,
   ) => boolean;
-  /** Atomically spend credits. Developer mode succeeds without changing
-      balance; User mode fails closed when the balance is insufficient. */
+  /** Atomically spend credits. Every mode fails closed when the balance is insufficient. */
   deductCredits: (amount: number, note?: string, referenceId?: string) => boolean;
   requestManualPayment: (
     request: Omit<ManualPaymentRequest, "id" | "createdAt" | "status">,
@@ -341,7 +340,6 @@ export const useAccountStore = create<AccountStore>((set, get) => ({
   deductCredits: (amount, note = "AI usage", referenceId) => {
     if (!Number.isFinite(amount) || amount <= 0) return false;
     const state = get();
-    if (state.appMode === "developer") return true;
     if (state.plan === "free") return false;
     if (state.creditBalance + Number.EPSILON < amount) return false;
     const nextBalance = roundCredits(Math.max(0, state.creditBalance - amount));
