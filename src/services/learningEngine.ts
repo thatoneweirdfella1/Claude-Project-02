@@ -125,10 +125,14 @@ export function applySignalLearning(
   if (signals.length < 5) return current;
   const now = Date.now();
   const technique = { ...current.technique };
+  const routing = { ...current.routing };
   const totals = new Map<TechniqueId, number>();
+  const modelTotals = new Map<ModelSelection, number>();
   for (const signal of signals) {
     const direction = signal.outcome === "positive" ? 1 : signal.outcome === "negative" ? -1 : 0;
-    for (const id of signal.techniquesUsed) totals.set(id, (totals.get(id) ?? 0) + direction * computeSignalWeight(signal.signalType));
+    const weightedDirection = direction * computeSignalWeight(signal.signalType);
+    for (const id of signal.techniquesUsed) totals.set(id, (totals.get(id) ?? 0) + weightedDirection);
+    if (signal.modelUsed !== "auto") modelTotals.set(signal.modelUsed, (modelTotals.get(signal.modelUsed) ?? 0) + weightedDirection);
   }
   for (const [id, total] of totals) {
     if (Math.abs(total) < 2) continue;
@@ -139,7 +143,12 @@ export function applySignalLearning(
       totalAdjustments: (previous?.totalAdjustments ?? 0) + 1,
     };
   }
-  return { routing: current.routing, technique };
+  for (const [model, total] of modelTotals) {
+    if (Math.abs(total) < 2) continue;
+    const previous = typeof routing[model] === "number" ? routing[model] as number : 0;
+    routing[model] = Math.max(-5, Math.min(5, previous + (total > 0 ? 1 : -1)));
+  }
+  return { routing, technique };
 }
 
 export function recommendModelAndTechniques(
@@ -150,6 +159,9 @@ export function recommendModelAndTechniques(
   const techniques = [...candidates]
     .sort((a, b) => (learned.technique[b]?.weight ?? 0) - (learned.technique[a]?.weight ?? 0))
     .slice(0, 4);
-  return { model: "auto", techniques, confidence: Object.keys(learned.technique).length > 0 ? 0.85 : 0.5 };
+  const model = Object.entries(learned.routing)
+    .filter((entry): entry is [ModelSelection, number] => entry[0] !== "auto" && typeof entry[1] === "number" && entry[1] > 0)
+    .sort((a, b) => b[1] - a[1])[0]?.[0] ?? "auto";
+  return { model, techniques, confidence: model !== "auto" || Object.keys(learned.technique).length > 0 ? 0.85 : 0.5 };
 }
 

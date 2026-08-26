@@ -52,6 +52,21 @@ describe("Learnable Signal Patterns", () => {
     expect(recommendation.confidence).toBe(0.85);
   });
 
+  it("learns a model preference and returns it for Auto routing", () => {
+    const modelContext = { ...context, modelUsed: "claude-sonnet-5" as const };
+    const signals = Array.from({ length: 5 }, (_, index) => createSignal(modelContext, "rating", 5, "positive", true, index + 1));
+    const learned = applySignalLearning({ routing: {}, technique: {} }, signals);
+    expect(learned.routing["claude-sonnet-5"]).toBe(1);
+    expect(recommendModelAndTechniques("A neutral request", learned).model).toBe("claude-sonnet-5");
+  });
+
+  it("does not recommend a model from neutral evidence", () => {
+    const modelContext = { ...context, modelUsed: "claude-sonnet-5" as const };
+    const neutral = Array.from({ length: 5 }, (_, index) => createSignal(modelContext, "model_switch", true, "neutral", true, index + 1));
+    const learned = applySignalLearning({ routing: {}, technique: {} }, neutral);
+    expect(recommendModelAndTechniques("A neutral request", learned).model).toBe("auto");
+  });
+
   it("applies each completed signal batch once and nudges the real auto selector", () => {
     useAccountStore.setState(createInitialAccountState());
     for (let index = 0; index < 5; index += 1) {

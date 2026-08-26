@@ -49,6 +49,7 @@ import type { PaidRoutePolicy } from "../../services/paidRoutePolicy";
 import { saveNow } from "../../services/persistence";
 import { CONNECTED_EXECUTION_AVAILABLE } from "../../services/executionAvailability";
 import type { TechniqueId } from "../../stores/types";
+import { recommendModelAndTechniques } from "../../services/learningEngine";
 
 const client = createProxyClient();
 const STATE_DIMENSIONS = ["emotion", "rsd", "interest", "cognitive"] as const;
@@ -160,10 +161,12 @@ export function CenterColumn() {
       const feeds = result && recommendationApplied
         ? deriveStateFeeds(toStatePills(result))
         : { directnessSuggestion: null, techniqueCandidates: [], toneGuidance: null, transparency: [] };
+      const learnedPreferences = useAccountStore.getState().learnedPreferences;
       const learnedTechniqueWeights = Object.fromEntries(
-        Object.entries(useAccountStore.getState().learnedPreferences.technique)
+        Object.entries(learnedPreferences.technique)
           .map(([id, preference]) => [id, preference.weight]),
       ) as Partial<Record<TechniqueId, number>>;
+      const learnedModel = recommendModelAndTechniques(request.rawInput, learnedPreferences).model;
 
       setWorkflowMessage("Sending…");
       setRun({
@@ -175,6 +178,7 @@ export function CenterColumn() {
             signal: controller.signal,
             stateTechniques: feeds.techniqueCandidates,
             learnedTechniqueWeights,
+            learnedModel,
             stateTone: feeds.toneGuidance,
             pretranslated,
             pretranslationUsage,

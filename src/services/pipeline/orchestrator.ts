@@ -87,6 +87,8 @@ export interface PipelineDeps {
   stateTechniques?: TechniqueId[];
   /** Bounded account-level feedback weights consumed only by Auto mode. */
   learnedTechniqueWeights?: Partial<Record<TechniqueId, number>>;
+  /** Learned model recommendation. An explicit user model always overrides it. */
+  learnedModel?: ModelSelection;
   /** Step 6.5 state bus — RSD's tone guidance
       (deriveStateFeeds().toneGuidance), fed into composition's directness
       section. Same reasoning as stateTechniques above. */
@@ -220,7 +222,7 @@ export async function* runPipeline(
       confidence: result.confidence,
       gaps: result.detectedGaps,
       plan: mapTierToRoutingPlan(deps.plan),
-      override: overrideFromSelection(request.model),
+      override: overrideFromSelection(request.model === "auto" ? deps.learnedModel ?? "auto" : request.model),
     });
   } catch (error) {
     yield { kind: "error", message: errorMessage(error) };
