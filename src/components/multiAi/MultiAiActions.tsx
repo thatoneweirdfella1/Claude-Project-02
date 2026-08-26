@@ -27,6 +27,7 @@ import { ProTierSelector } from "./ProTierSelector";
 import { authorizeEstimatedCost } from "../../services/creditAuthorization";
 import { addTokenUsage, getEstimatedCostForCall } from "../../services/costTracking";
 import type { PaidRoutePolicy } from "../../services/paidRoutePolicy";
+import { getProviderAvailability, type ConnectedProviderId } from "../../services/providerStatus";
 
 /* MULTI-AI ACTIONS (Step 8.3) — the composer-footer control from the
    screenshot, sitting beside TRANSPARENCY DETAILS in the `.composer__footer-row`
@@ -73,6 +74,18 @@ function explicitMultiAiPolicy(
   };
 }
 
+function providerForPartner(id: DebatePartnerId): ConnectedProviderId {
+  return id === "gpt-5.5" ? "openai"
+    : id === "gemini-3.1-pro" ? "google"
+      : id === "grok-4.3" ? "xai"
+        : "deepseek";
+}
+
+async function configuredForDebate(partnerIds: DebatePartnerId[]): Promise<boolean> {
+  const status = await getProviderAvailability();
+  return status.anthropic && partnerIds.every((id) => status[providerForPartner(id)]);
+}
+
 type Phase = "idle" | "debating" | "consensus" | "synthesis";
 
 export function MultiAiActions() {
@@ -105,6 +118,10 @@ export function MultiAiActions() {
   const startDebate = useCallback(async () => {
     if (selectedPartnerIds.length === 0) {
       setActionError("Select at least one debate partner or use Auto-select.");
+      return;
+    }
+    if (!(await configuredForDebate(selectedPartnerIds))) {
+      setActionError("One or more selected providers are not configured. No credits were reserved; choose another provider or use the manual alternative.");
       return;
     }
     const inputTokens = Math.ceil(lastQuestion.length / 4) + 600;
@@ -158,6 +175,10 @@ export function MultiAiActions() {
   const retrySide = useCallback(
     async (sideIndex: number) => {
       if (!outcome || outcome.status === "empty-question") return;
+      if (!(await configuredForDebate(selectedPartnerIds))) {
+        setActionError("A required provider is not configured. No retry charge was reserved.");
+        return;
+      }
       const estimate = getEstimatedCostForCall({
         model: "claude-opus-4-8",
         inputTokens: Math.ceil(lastQuestion.length / 4) + 600,
@@ -218,6 +239,10 @@ export function MultiAiActions() {
 
   const doConsensus = useCallback(async () => {
     if (!transcript) return;
+    if (!(await getProviderAvailability()).anthropic) {
+      setActionError("Claude is not configured. No consensus charge was reserved.");
+      return;
+    }
     const estimate = getEstimatedCostForCall({
       model: "claude-opus-4-8",
       inputTokens: Math.ceil((transcript.claudeText.length + transcript.partnerText.length) / 4) + 700,
@@ -244,6 +269,10 @@ export function MultiAiActions() {
 
   const doSynthesis = useCallback(async () => {
     if (!transcript) return;
+    if (!(await getProviderAvailability()).anthropic) {
+      setActionError("Claude is not configured. No synthesis charge was reserved.");
+      return;
+    }
     const estimate = getEstimatedCostForCall({
       model: "claude-opus-4-8",
       inputTokens: Math.ceil((transcript.claudeText.length + transcript.partnerText.length) / 4) + 700,
