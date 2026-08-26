@@ -50,6 +50,7 @@ import { saveNow } from "../../services/persistence";
 import { CONNECTED_EXECUTION_AVAILABLE } from "../../services/executionAvailability";
 import type { TechniqueId } from "../../stores/types";
 import { recommendModelAndTechniques } from "../../services/learningEngine";
+import { providerAvailable } from "../../services/providerStatus";
 
 const client = createProxyClient();
 const STATE_DIMENSIONS = ["emotion", "rsd", "interest", "cognitive"] as const;
@@ -500,6 +501,11 @@ export function CenterColumn() {
     }
     const paidRequest = paidModel === request.model ? request : { ...request, model: paidModel };
     const selectedModel = paidModel === "auto" ? "claude-haiku-4-5" : paidModel;
+    if (!(await providerAvailable("anthropic"))) {
+      queueFreeFlow({ ...paidRequest, translatorEngine: "local-rules" });
+      setWorkflowMessage("Connected Claude is not configured. Prepared a no-charge handoff instead.");
+      return true;
+    }
     const estimate = getEstimatedCostForPipeline(
       paidRequest.rawInput,
       selectedModel,
