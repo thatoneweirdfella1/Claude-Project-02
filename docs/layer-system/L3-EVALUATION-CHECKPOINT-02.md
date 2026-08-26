@@ -39,15 +39,19 @@ Staged diff: 928 additions, 257 deletions.
 
 ## Automated proof at staging commit
 
-GitHub Actions run `32969529888` was triggered for the checkpoint.
+GitHub Actions run `32969529888` tested the candidate checkpoint.
 
 - `npm ci`: PASS
 - `npm run build`: PASS
 - `npm run lint`: PASS
 - `npm test`: PASS
-- Playwright E2E: still running when this checkpoint note was first written; update this record after completion.
+- Playwright E2E: FAIL, with 12 failed / 1 passed / 2 skipped.
 
-Passing CI is necessary but is not Layer 3 verification by itself.
+The E2E failure is **not a newly introduced Layer 3 candidate regression**. The clean source checkpoint `2a2c8b2f...` was separately tested by run `32966405979` and produced the same 12 failed / 1 passed / 2 skipped result, with the same visible failure classes (review flow locator, draft reload locator, frozen-layout authority expectation, All Tools/pin click interception, duplicate Trash locator, session-history expectation, appearance-settings locator). Therefore the existing E2E suite exposes a pre-existing Layer 1/2 baseline/test-authority mismatch that must be resolved before any clean Layer 3 verification claim.
+
+The workflow's artifact upload also failed because GitHub Actions artifact storage quota is full. This prevents retaining new Playwright reports through that upload step but does not erase the console failure evidence above.
+
+Passing build/lint/unit tests is necessary but is not Layer 3 verification by itself.
 
 ## Confirmed evaluation findings
 
@@ -82,15 +86,26 @@ Still missing/unproved:
 
 Synthetic batching works deterministically without calling a provider, but job progress is returned as caller-owned arrays and is not part of `LocalWorkspaceSnapshot`. Stop/reload/resume durability is therefore not proved.
 
+## Baseline blocker discovered
+
+Clean Layer 3 promotion depends on a trustworthy inherited Layer 1/2 base. The current clean checkpoint's E2E suite already fails 12 tests, so inherited Layer 1/2 remains implemented-but-not-independently-proven. This is now a direct gate item, not an assumption.
+
+The next baseline step is to classify each failure as either:
+
+- stale test expectation that conflicts with current frozen authority, or
+- genuine current UI/behavior defect.
+
+Only authority-supported test corrections or genuine app repairs should be made. Do not change the app merely to satisfy stale tests.
+
 ## Promotion status
 
 **DO NOT PROMOTE THIS CANDIDATE TO `codex-verified/layer-3-v2` YET.**
 
-The evaluation branch is useful and CI-buildable, but the defects above must be repaired or explicitly resolved against higher authority before a narrow adoption gate can be frozen.
+The evaluation branch is buildable and does not worsen the existing E2E failure count, but the learning defects and inherited Layer 1/2 proof gap remain.
 
 ## Exact next action
 
-1. Finish the current E2E result and record it.
-2. Repair learning correctness first: exact edit distance and one-time five-signal batching across multi-signal writes and the 500-entry cap.
-3. Add focused regression tests for those failures.
-4. Re-run CI and create the next hard checkpoint before moving to routing, dataset integrity, or large-job resume work.
+1. Classify the 12 inherited E2E failures against current frozen navigation/layout behavior and repair the smallest baseline/test mismatch needed to recover a trustworthy L1/2 gate.
+2. In parallel-sized bounded work, repair Layer 3 learning correctness: actual edit distance and one-time five-signal batching across multi-signal writes and the 500-entry cap.
+3. Add focused regression tests.
+4. Re-run CI and create the next hard checkpoint before routing, dataset-integrity, or large-job-resume work.
