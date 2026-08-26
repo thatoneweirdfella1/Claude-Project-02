@@ -1,10 +1,10 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "default": "deny",
-  "branch_scope": "codex-verified/layer-3-v1",
-  "authorization_date": "2026-08-25",
-  "authorization_source": "User instruction 'go' authorized the proposed audit and creation of a clean Codex lineage before further layers.",
-  "active_purpose": "Read-only Account 2 audit and preparation of the exact Codex Layer 3 corrective batch.",
+  "branch_scope": "codex-verified/layer-3-v2",
+  "authorization_date": "2026-08-26",
+  "authorization_source": "User instructed this account to continue the interrupted audit/isolation workflow; prior 'go' authorization established the clean-lineage audit purpose. This grant is limited to governance recovery and read-only Layer 3 audit until an exact application batch is frozen.",
+  "active_purpose": "Quarantine the invalid Codex-v1 candidate, preserve all donor work, and prepare the exact clean Codex-v2 Layer 3 batch.",
   "grants": {
     "inspect_repository": {"allowed": true},
     "install_governance": {"allowed": true},

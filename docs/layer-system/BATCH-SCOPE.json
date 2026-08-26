@@ -5,9 +5,13 @@
   "permanent_ids": [],
   "allowed_paths": [],
   "required_tests": [
-    "npm test", "npm run build", "safe interaction component tests", "visible native-control contract", "remote branch-preview availability and deployment identity"
+    "npm test",
+    "npm run build",
+    "safe interaction component tests",
+    "visible native-control contract",
+    "remote branch-preview availability and deployment identity"
   ],
-  "entry_head": "52273d6a5f07fcde0dd4353f2d2b1599a3e332ff",
-  "start_remote_head": "52273d6a5f07fcde0dd4353f2d2b1599a3e332ff",
-  "exact_next_action": "Create horizontal-layer-3-implementation-v1 from the verified current tip of the read-only horizontal-layer-completion-v1 checkpoint, then switch to it and run read-only preflight. Do not begin L3 application work until a new exact grant is recorded on that branch."
+  "entry_head": "c966953bc0377fe978edc630fbdff43965b16e6e",
+  "start_remote_head": "c966953bc0377fe978edc630fbdff43965b16e6e",
+  "exact_next_action": "On codex-verified/layer-3-v2, audit all L3-applicable obligation rows against the trusted Layer 2 baseline. Use Account 2 and the quarantined Codex-v1 candidate only as evidence/reference. Freeze the smallest exact L3 implementation/adoption batch with permanent IDs and allowed paths before granting or making any application/test edit."
 }
