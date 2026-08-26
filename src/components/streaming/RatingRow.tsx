@@ -1,4 +1,7 @@
 import { useEffect, useState } from "react";
+import { createSignal } from "../../services/learningEngine";
+import { useAccountStore } from "../../stores/accountStore";
+import { useSessionStore } from "../../stores/sessionStore";
 
 /* The 5-star row + download icon (Step 5.1), matching the screenshot. Step
    8.1 makes this a CONTROLLED component: `stars`/`comment` reflect the
@@ -15,6 +18,7 @@ import { useEffect, useState } from "react";
    judgmental — there is no default/pre-selected star. */
 
 export interface RatingRowProps {
+  messageId?: string;
   /** Controlled — undefined means "not yet rated": no star filled, comment
       field hidden. */
   stars?: number;
@@ -29,6 +33,7 @@ export interface RatingRowProps {
 const STAR_COUNT = 5;
 
 export function RatingRow({
+  messageId = "current-answer",
   stars,
   comment = "",
   onRate = () => {},
@@ -36,6 +41,21 @@ export function RatingRow({
   onDownload = () => {},
 }: RatingRowProps) {
   const [commentDraft, setCommentDraft] = useState(comment);
+  const recordSignal = useAccountStore((state) => state.recordSignal);
+  const sessionId = useSessionStore((state) => state.sessionId);
+  const modelUsed = useSessionStore((state) => state.model);
+  const techniquesUsed = useSessionStore((state) => state.techniques);
+
+  const download = () => {
+    recordSignal(createSignal(
+      { sessionId, messageId, modelUsed, techniquesUsed },
+      "download",
+      true,
+      "positive",
+      true,
+    ));
+    onDownload();
+  };
 
   useEffect(() => {
     setCommentDraft(comment);
@@ -63,7 +83,7 @@ export function RatingRow({
           type="button"
           className="rating-row__download"
           aria-label="Download this answer"
-          onClick={onDownload}
+          onClick={download}
         >
           ⬇
         </button>
@@ -84,3 +104,4 @@ export function RatingRow({
     </div>
   );
 }
+
