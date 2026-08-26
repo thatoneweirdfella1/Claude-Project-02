@@ -1,8 +1,11 @@
 /**
- * Layer 2 is an interaction-only preview. Connected providers and payment
- * effects stay closed until the Connected layer proves their real adapters.
+ * Layer 6 connected execution gate.
+ *
+ * Adapters are enabled for explicit paid routes. Free-first/local routes remain
+ * the default and missing server credentials fail closed inside each proxy;
+ * no provider key is ever exposed to the browser.
  */
-export const CONNECTED_EXECUTION_AVAILABLE = false;
+export const CONNECTED_EXECUTION_AVAILABLE = true;
 
 export const CONNECTED_EXECUTION_UNAVAILABLE_MESSAGE =
-  "Connected execution is not enabled in this preview. Divergence will prepare a no-charge manual handoff instead.";
+  "Connected execution is unavailable. Divergence will preserve the request for a no-charge manual handoff.";
