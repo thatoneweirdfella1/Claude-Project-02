@@ -157,6 +157,8 @@ describe("ACCOUNT_PERSISTED_KEYS", () => {
         "trashed",
         "templates",
         "learningAuditLog",
+        "learningSignalCount",
+        "learningSignalBuffer",
         "methodologyLog",
         "autoSelectUsedThisMonth",
         "autoSelectUsageResetDate",
