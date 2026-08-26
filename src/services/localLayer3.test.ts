@@ -55,6 +55,8 @@ describe("Layer 3 local/manual workflows", () => {
   it("rejects malformed, unsafe, and oversized local restore payloads", () => {
     const valid = buildLocalDataset();
     expect(parseLocalDataset(JSON.stringify(valid))?.kind).toBe("divergence-local-dataset");
+    expect(parseLocalDataset(JSON.stringify({ ...valid, account: { ...valid.account, plan: 7 } }))).toBeNull();
+    expect(parseLocalDataset(JSON.stringify({ ...valid, workspace: { ...valid.workspace, tasks: [...valid.workspace.tasks, { id: "t", project: "p", text: "tampered", completed: false }] } }))).toBeNull();
     expect(parseLocalDataset(JSON.stringify({ ...valid, workspace: { tasks: [{}], resources: [] } }))).toBeNull();
     expect(parseLocalDataset(JSON.stringify({ ...valid, account: { constructor: { polluted: true } } }))).toBeNull();
     expect(parseLocalDataset("x".repeat(MAX_LOCAL_DATASET_BYTES + 1))).toBeNull();
