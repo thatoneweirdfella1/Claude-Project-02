@@ -115,7 +115,7 @@ export function planSyntheticJob(source: string, batchSize: number): SyntheticJo
 
 export function runNextSyntheticBatch(units: SyntheticJobUnit[]): SyntheticJobUnit[] {
   let completed = false;
-  const updated = units.map((unit) => {
+  const updated: SyntheticJobUnit[] = units.map((unit) => {
     if (completed || unit.status === "complete") return unit;
     completed = true;
     const items = unit.source.split(/\r?\n/).filter(Boolean);
