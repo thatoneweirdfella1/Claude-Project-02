@@ -8,6 +8,7 @@ import { CustomBackgroundController } from "./services/customBackground";
 import { loadPersistedState, saveNow, startAutosave } from "./services/persistence";
 import { buildSessionRecord, sessionHasRecoverableWork } from "./services/sessionLifecycle";
 import { loadDurableWorkspace, startDurableWorkspacePersistence } from "./services/durableLayer4";
+import { loadMoneyAuthority } from "./services/moneyRuntime";
 import { useAccountStore } from "./stores/accountStore";
 import { useSessionStore } from "./stores/sessionStore";
 import type { SessionRecord } from "./stores/types";
@@ -117,6 +118,7 @@ async function bootstrap() {
   try {
     await loadDurableWorkspace();
     const { hadSession } = await loadPersistedState();
+    await loadMoneyAuthority(Math.max(0, Math.round(useAccountStore.getState().creditBalance * 100)));
 
     if (hadSession && sessionHasRecoverableWork(useSessionStore.getState())) {
       const choice = await showRestoreDialog();

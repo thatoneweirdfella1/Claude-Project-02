@@ -1,11 +1,11 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Check, Coins, Crown, ReceiptText, ShieldCheck } from "lucide-react";
 import { TIER_OFFERS, TOP_UP_AMOUNTS, usableCreditsForPayment } from "../../services/payment";
 import {
-  DeterministicMoneyAuthority,
   type MoneyPreflightRequest,
   type SandboxCheckout,
 } from "../../services/moneySafety";
+import { getMoneyAuthority, persistMoneyAuthority } from "../../services/moneyRuntime";
 import { useAccountStore } from "../../stores/accountStore";
 
 function dollars(cents: number): string {
@@ -34,9 +34,7 @@ function labRequest(idempotencyKey: string): MoneyPreflightRequest {
 
 export function InteractivePlanControls() {
   const persistedPlan = useAccountStore((state) => state.plan);
-  const authorityRef = useRef<DeterministicMoneyAuthority | null>(null);
-  if (!authorityRef.current) authorityRef.current = new DeterministicMoneyAuthority();
-  const authority = authorityRef.current;
+  const authority = getMoneyAuthority();
   const [snapshot, setSnapshot] = useState(() => authority.snapshot());
   const [pendingCheckout, setPendingCheckout] = useState<SandboxCheckout | null>(null);
   const [status, setStatus] = useState("Money automation is off. No payment or provider call has been made.");
@@ -46,6 +44,7 @@ export function InteractivePlanControls() {
   function refresh(message: string): void {
     setSnapshot(authority.snapshot());
     setStatus(message);
+    void persistMoneyAuthority();
   }
 
   function createCheckout(input: {
@@ -127,7 +126,7 @@ export function InteractivePlanControls() {
           Paid fallback: {snapshot.paidFallbackEnabled ? "On" : "Off"}
         </button>
       </div>
-      <p className="settings-section__note">These toggles affect this in-memory sandbox only. They cannot enable a live provider or move funds.</p>
+      <p className="settings-section__note">These controls are saved locally and survive reloads. They cannot enable a live provider or move real funds.</p>
     </div>
 
     <div className="cost-confirm__note" aria-label="Cost preflight">
