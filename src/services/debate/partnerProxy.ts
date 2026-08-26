@@ -24,6 +24,9 @@
 export const PARTNER_TIMEOUT_MS = 45_000;
 
 const DEFAULT_MAX_TOKENS = 2048;
+const MAX_PARTNER_INPUT_CHARS = 100_000;
+const MAX_PARTNER_SYSTEM_CHARS = 32_000;
+const MAX_PARTNER_OUTPUT_TOKENS = 4_096;
 
 export interface PartnerProxyRequestBody {
   /** The partner's api string (roster id) — validated by the handler against
@@ -91,6 +94,14 @@ export async function handlePartnerRequest(
   if (typeof body.input !== "string" || body.input.trim().length === 0) {
     return jsonResponse({ error: "input must be a non-empty string" }, 400);
   }
+  if (body.input.length > MAX_PARTNER_INPUT_CHARS || typeof body.system !== "string" ||
+      body.system.length > MAX_PARTNER_SYSTEM_CHARS) {
+    return jsonResponse({ error: "request content exceeds the partner proxy limit" }, 413);
+  }
+  const maxTokens = body.maxTokens ?? DEFAULT_MAX_TOKENS;
+  if (!Number.isSafeInteger(maxTokens) || maxTokens < 1 || maxTokens > MAX_PARTNER_OUTPUT_TOKENS) {
+    return jsonResponse({ error: "maxTokens is outside the allowed range" }, 400);
+  }
 
   // Own timeout, per ROUTING.md — merged with the caller's own abort so a
   // client-side cancel still propagates.
@@ -103,7 +114,7 @@ export async function handlePartnerRequest(
     upstream = await fetchImpl(adapter.url(body), {
       method: "POST",
       headers: { "content-type": "application/json", ...adapter.headers(apiKey) },
-      body: JSON.stringify(adapter.body(body, body.maxTokens ?? DEFAULT_MAX_TOKENS)),
+      body: JSON.stringify(adapter.body(body, maxTokens)),
       signal: timeout.signal,
     });
   } catch (error) {

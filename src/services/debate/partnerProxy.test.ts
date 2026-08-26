@@ -55,6 +55,23 @@ describe("partner proxy — guards", () => {
     expect(response.status).toBe(400);
   });
 
+  it("rejects oversized content and unsafe output limits before upstream", async () => {
+    const fetchImpl = okFetch(CHAT_OK);
+    const oversized = await handleOpenAiRequest(
+      post({ model: "gpt-5.5", system: "s", input: "x".repeat(100_001) }),
+      KEY,
+      fetchImpl,
+    );
+    const tokens = await handleOpenAiRequest(
+      post({ model: "gpt-5.5", system: "s", input: "i", maxTokens: 50_000 }),
+      KEY,
+      fetchImpl,
+    );
+    expect(oversized.status).toBe(413);
+    expect(tokens.status).toBe(400);
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
   it("refuses a body naming a DIFFERENT provider's model — endpoints are not interchangeable", async () => {
     const response = await handleOpenAiRequest(post({ model: "grok-4.3", system: "s", input: "i" }), KEY, okFetch(CHAT_OK));
     expect(response.status).toBe(400);
