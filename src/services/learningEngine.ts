@@ -21,6 +21,23 @@ const WEIGHTS: Record<SignalHierarchy, 1 | 0.85 | 0.7> = {
   tertiary: 0.7,
 };
 
+/** Exact Levenshtein distance: insertions, deletions, and substitutions. */
+export function computeEditDistance(before: string, after: string): number {
+  if (before === after) return 0;
+  if (before.length === 0) return after.length;
+  if (after.length === 0) return before.length;
+  let previous = Array.from({ length: after.length + 1 }, (_, index) => index);
+  for (let row = 1; row <= before.length; row += 1) {
+    const current = [row];
+    for (let column = 1; column <= after.length; column += 1) {
+      const substitution = previous[column - 1] + (before[row - 1] === after[column - 1] ? 0 : 1);
+      current[column] = Math.min(previous[column] + 1, current[column - 1] + 1, substitution);
+    }
+    previous = current;
+  }
+  return previous[after.length];
+}
+
 export function computeSignalWeight(signalType: SignalType): 1 | 0.85 | 0.7 {
   return WEIGHTS[hierarchyForSignal(signalType)];
 }

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   applySignalLearning,
   computeAccuracyScore,
+  computeEditDistance,
   computeSignalWeight,
   createSignal,
   recommendModelAndTechniques,
@@ -15,6 +16,12 @@ import { autoDetectTechniques } from "./techniques/autoDetect";
 const context = { sessionId: "s1", messageId: "m1", modelUsed: "auto" as const, techniquesUsed: ["simplify" as const] };
 
 describe("Learnable Signal Patterns", () => {
+  it("computes exact edit distance even when text lengths match", () => {
+    expect(computeEditDistance("cat", "cut")).toBe(1);
+    expect(computeEditDistance("kitten", "sitting")).toBe(3);
+    expect(computeEditDistance("same", "same")).toBe(0);
+  });
+
   it("classifies and weights primary, secondary, and tertiary signals", () => {
     expect(computeSignalWeight("rating")).toBe(1);
     expect(computeSignalWeight("model_switch")).toBe(0.85);
@@ -59,6 +66,30 @@ describe("Learnable Signal Patterns", () => {
     });
     expect(selection.scores.find((score) => score.id === "simplify")?.reasons)
       .toContain("learned from confirmed feedback");
+  });
+
+  it("processes a completed batch when one rating action adds two signals", () => {
+    useAccountStore.setState(createInitialAccountState());
+    for (let index = 0; index < 4; index += 1) {
+      useAccountStore.getState().recordSignal(createSignal(context, "rating", 5, "positive", true, index + 1));
+    }
+    useAccountStore.getState().setRating({ messageId: "answer-batch", stars: 5, comment: "Useful", timestamp: 10, techniquesUsed: ["simplify"] });
+    const state = useAccountStore.getState();
+    expect(state.learningSignalCount).toBe(6);
+    expect(state.learningSignalBuffer).toHaveLength(1);
+    expect(state.learnedPreferences.technique.simplify?.weight).toBe(1);
+  });
+
+  it("continues batching after the capped audit log reaches 500 entries", () => {
+    useAccountStore.setState(createInitialAccountState());
+    for (let index = 0; index < 505; index += 1) {
+      useAccountStore.getState().recordSignal(createSignal(context, "rating", 5, "positive", true, index + 1));
+    }
+    const state = useAccountStore.getState();
+    expect(state.learningAuditLog).toHaveLength(500);
+    expect(state.learningSignalCount).toBe(505);
+    expect(state.learningSignalBuffer).toHaveLength(0);
+    expect(state.learnedPreferences.technique.simplify?.totalAdjustments).toBe(101);
   });
 
   it("persists a real rating and comment as primary audit signals", () => {

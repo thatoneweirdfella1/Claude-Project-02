@@ -766,6 +766,10 @@ export interface AccountState {
       refinement actually applied to learnedPreferences. Bounded (see
       accountStore.ts) — same reasoning as stateCorrections/telemetry. */
   learningAuditLog: LearningAuditEntry[];
+  /** Monotonic signal total and unprocessed remainder. The audit log is capped,
+      so its current length cannot serve as the lifetime batching cursor. */
+  learningSignalCount: number;
+  learningSignalBuffer: SignalLearningAuditEntry[];
   /** 3-State Methodology tracking across sessions. Bounded to prevent unbounded growth. */
   methodologyLog: MethodologyEntry[];
 }

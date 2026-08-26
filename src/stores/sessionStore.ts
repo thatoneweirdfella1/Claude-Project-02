@@ -15,7 +15,7 @@ import type {
   TechniqueId,
   TranslatorEngine,
 } from "./types";
-import { createSignal } from "../services/learningEngine";
+import { computeEditDistance, createSignal } from "../services/learningEngine";
 import { useAccountStore } from "./accountStore";
 import { useSettingsDefaultsStore } from "./settingsDefaultsStore";
 
@@ -219,7 +219,7 @@ export const useSessionStore = create<SessionStore>((set) => ({
   updateMessage: (messageId, patch) => set((s) => {
     const existing = s.conversation.find((message) => message.id === messageId);
     if (existing && typeof patch.content === "string" && patch.content !== existing.content) {
-      const distance = Math.abs(patch.content.length - existing.content.length);
+      const distance = computeEditDistance(existing.content, patch.content);
       useAccountStore.getState().recordSignal(createSignal(
         { sessionId: s.sessionId, messageId, modelUsed: s.model, techniquesUsed: s.techniques },
         "edit_distance",

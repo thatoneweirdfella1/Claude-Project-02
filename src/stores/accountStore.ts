@@ -160,6 +160,8 @@ export function createInitialAccountState(): AccountState {
     trashed: [], // Deleted sessions (can be restored or permanently deleted)
     templates: DEFAULT_TEMPLATES.map((t) => ({ ...t, techniques: [...t.techniques] })), // Step 9.2 — fresh objects/arrays, no shared references
     learningAuditLog: [], // Step 10.2
+    learningSignalCount: 0,
+    learningSignalBuffer: [],
     methodologyLog: [], // 3-State Methodology tracking
   };
 }
@@ -191,6 +193,8 @@ export const ACCOUNT_PERSISTED_KEYS: (keyof AccountState)[] = [
   "trashed",
   "templates",
   "learningAuditLog",
+  "learningSignalCount",
+  "learningSignalBuffer",
   "methodologyLog",
 ];
 
@@ -295,6 +299,22 @@ interface AccountActions {
 }
 
 export type AccountStore = AccountState & AccountActions;
+
+function processSignalBatch(
+  state: Pick<AccountState, "learnedPreferences" | "learningSignalCount" | "learningSignalBuffer">,
+  entries: SignalLearningAuditEntry[],
+): Pick<AccountState, "learnedPreferences" | "learningSignalCount" | "learningSignalBuffer"> {
+  let learnedPreferences = state.learnedPreferences;
+  const pending = [...(state.learningSignalBuffer ?? []), ...entries];
+  while (pending.length >= 5) {
+    learnedPreferences = applySignalLearning(learnedPreferences, pending.splice(0, 5));
+  }
+  return {
+    learnedPreferences,
+    learningSignalCount: (state.learningSignalCount ?? 0) + entries.length,
+    learningSignalBuffer: pending,
+  };
+}
 
 export const useAccountStore = create<AccountStore>((set, get) => ({
   ...createInitialAccountState(),
@@ -461,16 +481,11 @@ export const useAccountStore = create<AccountStore>((set, get) => ({
           signal,
           ...(commentSignal ? [commentSignal] : []),
         ].slice(-MAX_LEARNING_AUDIT_ENTRIES);
-      const signals = learningAuditLog.filter(
-        (item): item is SignalLearningAuditEntry => item.kind === "signal",
-      );
-      const shouldApply = signals.length >= 5 && signals.length % 5 === 0;
+      const newSignals = [signal, ...(commentSignal ? [commentSignal] : [])];
       return {
         ratings,
         learningAuditLog,
-        learnedPreferences: shouldApply
-          ? applySignalLearning(s.learnedPreferences, signals.slice(-5))
-          : s.learnedPreferences,
+        ...processSignalBatch(s, newSignals),
       };
     }),
   addSavedPrompt: (prompt) => set((s) => ({ savedPrompts: [...s.savedPrompts, prompt] })),
@@ -497,17 +512,9 @@ export const useAccountStore = create<AccountStore>((set, get) => ({
   recordSignal: (entry) =>
     set((s) => {
       const nextLog = [...s.learningAuditLog, entry].slice(-MAX_LEARNING_AUDIT_ENTRIES);
-      const signals = nextLog.filter(
-        (item): item is SignalLearningAuditEntry => item.kind === "signal",
-      );
-      // Apply each complete five-signal batch exactly once. Re-running the
-      // entire history on every event would repeatedly learn from old data.
-      const shouldApply = signals.length >= 5 && signals.length % 5 === 0;
       return {
         learningAuditLog: nextLog,
-        learnedPreferences: shouldApply
-          ? applySignalLearning(s.learnedPreferences, signals.slice(-5))
-          : s.learnedPreferences,
+        ...processSignalBatch(s, [entry]),
       };
     }),
   applyLearningRefinements: (updated, newAuditEntries) =>
