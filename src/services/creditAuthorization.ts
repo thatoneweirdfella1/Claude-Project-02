@@ -10,6 +10,8 @@ import {
   type PaidRouteBlockReason,
   type PaidRoutePolicy,
 } from "./paidRoutePolicy";
+import { getMoneyAuthority, persistMoneyAuthority } from "./moneyRuntime";
+import type { MoneyBlockReason } from "./moneySafety";
 
 export type CostConfirmationChoice = "paid" | "free-route" | "cancelled";
 
@@ -33,7 +35,8 @@ export interface CreditAuthorizationResult {
     | "cancelled"
     | "free-route-selected"
     | "insufficient-credits"
-    | PaidRouteBlockReason;
+    | PaidRouteBlockReason
+    | MoneyBlockReason;
 }
 
 let mountedConfirmationHosts = 0;
@@ -117,12 +120,45 @@ export async function authorizeEstimatedCost(
     return { authorized: false, amount, referenceId, reason: "insufficient-credits" };
   }
 
-  const deducted = useAccountStore
-    .getState()
-    .deductCredits(amount, label, referenceId);
+  const amountCents = Math.max(1, Math.ceil(amount * 100));
+  const authority = getMoneyAuthority();
+  const reservation = await authority.reserve({
+    idempotencyKey: referenceId,
+    route: "divergence-credits",
+    estimatedCents: amountCents,
+    hardMaximumCents: amountCents,
+    sessionId: "active-session",
+    monthId: new Date().toISOString().slice(0, 7),
+    provider: policy.routeLabel,
+    model: "selected-model",
+    translator: "Divergence paid-route authorization",
+    payerLabel: "Your Divergence credits",
+    reasonLabel: label,
+    freeAlternativeLabel: "Use the free route",
+    priceVersion: "paid-route-policy-v1",
+    explicitConsent: true,
+    developerMode,
+  });
+  if (!reservation.ok || !reservation.reservation) {
+    return {
+      authorized: false,
+      amount,
+      referenceId,
+      reason: reservation.reason ?? "insufficient-funds",
+    };
+  }
+
+  // Persist the hard-maximum hold before any caller can dispatch paid work.
+  await persistMoneyAuthority();
+  const deducted = useAccountStore.getState().deductCredits(amount, label, referenceId);
   if (!deducted) {
+    authority.release(reservation.reservation.id, `release-${referenceId}`, "Account ledger mirror rejected the charge.");
+    await persistMoneyAuthority();
     return { authorized: false, amount, referenceId, reason: "insufficient-credits" };
   }
+
+  authority.settle(reservation.reservation.id, amountCents, `settle-${referenceId}`);
+  await persistMoneyAuthority();
   emitCreditDeducted(amount, referenceId);
   await saveNow();
   return { authorized: true, amount, referenceId };
