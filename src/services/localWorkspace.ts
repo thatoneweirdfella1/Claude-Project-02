@@ -12,11 +12,6 @@ export interface LocalProjectResource {
   content: string;
 }
 
-export interface LocalWorkspaceSnapshot {
-  tasks: LocalProjectTask[];
-  resources: LocalProjectResource[];
-}
-
 export interface SyntheticJobUnit {
   id: string;
   source: string;
@@ -24,7 +19,13 @@ export interface SyntheticJobUnit {
   status: "pending" | "complete";
 }
 
-let workspace: LocalWorkspaceSnapshot = { tasks: [], resources: [] };
+export interface LocalWorkspaceSnapshot {
+  tasks: LocalProjectTask[];
+  resources: LocalProjectResource[];
+  syntheticJobs: SyntheticJobUnit[];
+}
+
+let workspace: LocalWorkspaceSnapshot = { tasks: [], resources: [], syntheticJobs: [] };
 
 function id(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
@@ -34,6 +35,7 @@ export function getLocalWorkspace(): LocalWorkspaceSnapshot {
   return {
     tasks: workspace.tasks.map((task) => ({ ...task })),
     resources: workspace.resources.map((resource) => ({ ...resource })),
+    syntheticJobs: workspace.syntheticJobs.map((unit) => ({ ...unit })),
   };
 }
 
@@ -50,6 +52,12 @@ export function restoreLocalWorkspace(value: unknown): LocalWorkspaceSnapshot {
       ? candidate.resources.filter((resource): resource is LocalProjectResource =>
           Boolean(resource) && typeof resource.id === "string" && typeof resource.project === "string" &&
           typeof resource.label === "string" && typeof resource.content === "string")
+      : [],
+    syntheticJobs: Array.isArray(candidate.syntheticJobs)
+      ? candidate.syntheticJobs.filter((unit): unit is SyntheticJobUnit =>
+          Boolean(unit) && typeof unit.id === "string" && typeof unit.source === "string" &&
+          (unit.result === null || typeof unit.result === "string") &&
+          (unit.status === "pending" || unit.status === "complete"))
       : [],
   };
   return getLocalWorkspace();
@@ -101,12 +109,13 @@ export function planSyntheticJob(source: string, batchSize: number): SyntheticJo
       status: "pending",
     });
   }
+  workspace.syntheticJobs = units.map((unit) => ({ ...unit }));
   return units;
 }
 
 export function runNextSyntheticBatch(units: SyntheticJobUnit[]): SyntheticJobUnit[] {
   let completed = false;
-  return units.map((unit) => {
+  const updated = units.map((unit) => {
     if (completed || unit.status === "complete") return unit;
     completed = true;
     const items = unit.source.split(/\r?\n/).filter(Boolean);
@@ -116,5 +125,7 @@ export function runNextSyntheticBatch(units: SyntheticJobUnit[]): SyntheticJobUn
       result: `Local synthetic worker processed ${items.length} item${items.length === 1 ? "" : "s"}; no provider was called.`,
     };
   });
+  workspace.syntheticJobs = updated.map((unit) => ({ ...unit }));
+  return updated;
 }
 

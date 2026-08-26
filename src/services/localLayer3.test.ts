@@ -48,8 +48,12 @@ describe("Layer 3 local/manual workflows", () => {
     units = runNextSyntheticBatch(units);
     expect(units.map((unit) => unit.status)).toEqual(["complete", "pending"]);
     expect(units[0].result).toContain("no provider was called");
-    units = runNextSyntheticBatch(units);
+    expect(getLocalWorkspace().syntheticJobs.map((unit) => unit.status)).toEqual(["complete", "pending"]);
+    const interrupted = getLocalWorkspace();
+    restoreLocalWorkspace({ tasks: [], resources: [], syntheticJobs: interrupted.syntheticJobs });
+    units = runNextSyntheticBatch(getLocalWorkspace().syntheticJobs);
     expect(units.every((unit) => unit.status === "complete")).toBe(true);
+    expect(getLocalWorkspace().syntheticJobs.every((unit) => unit.status === "complete")).toBe(true);
   });
 
   it("rejects malformed, unsafe, and oversized local restore payloads", () => {

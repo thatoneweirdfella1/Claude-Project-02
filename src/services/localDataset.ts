@@ -31,14 +31,18 @@ function hasUnsafeKeys(value: unknown): boolean {
 }
 
 function validWorkspace(value: unknown): value is LocalWorkspaceSnapshot {
-  if (!isPlainRecord(value) || !Array.isArray(value.tasks) || !Array.isArray(value.resources)) return false;
+  if (!isPlainRecord(value) || !Array.isArray(value.tasks) || !Array.isArray(value.resources) || !Array.isArray(value.syntheticJobs)) return false;
   const validTask = (item: unknown) => isPlainRecord(item) &&
     typeof item.id === "string" && typeof item.project === "string" &&
     typeof item.text === "string" && typeof item.completed === "boolean";
   const validResource = (item: unknown) => isPlainRecord(item) &&
     typeof item.id === "string" && typeof item.project === "string" &&
     typeof item.label === "string" && typeof item.content === "string";
-  return value.tasks.every(validTask) && value.resources.every(validResource);
+  const validJob = (item: unknown) => isPlainRecord(item) &&
+    typeof item.id === "string" && typeof item.source === "string" &&
+    (item.result === null || typeof item.result === "string") &&
+    (item.status === "pending" || item.status === "complete");
+  return value.tasks.every(validTask) && value.resources.every(validResource) && value.syntheticJobs.every(validJob);
 }
 
 function compatibleShape(value: unknown, template: unknown): boolean {
