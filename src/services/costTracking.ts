@@ -11,9 +11,11 @@ export const MODEL_PRICES: Record<string, ModelPrice> = {
 export interface SessionCost { totalTokens: number; inputTokens: number; outputTokens: number; estimatedCost: number; }
 export interface CostEstimateInput { model: string; inputTokens: number; maxOutputTokens: number; }
 export class ModelPricingUnavailableError extends Error {
-  constructor(public readonly model: string) {
+  readonly model: string;
+  constructor(model: string) {
     super(`Cost unavailable for model: ${model}`);
     this.name = "ModelPricingUnavailableError";
+    this.model = model;
   }
 }
 
