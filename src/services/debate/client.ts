@@ -1,50 +1,16 @@
-/* Model-client seams for Debate mode (Step 8.3).
-
-   TWO seams, deliberately, because Debate is the one feature in this build
-   that calls two DIFFERENT vendors in one turn (CANON Feature 9: "two
-   DIFFERENT AI providers, never two Claude calls arguing with itself"):
-
-   - DebateClaudeClient — Claude's side. Structurally identical to the
-     translation/detection/multiAi seams, so createProxyClient().complete
-     satisfies it unchanged.
-   - DebatePartnerClient — the partner's side. Routes to that provider's own
-     endpoint (api/proxy-<provider>.ts), never to api/proxy.ts.
-
-   Keeping them as separate types is what makes "never two Claude calls" a
-   compile-time property rather than a convention someone has to remember:
-   runDebate takes one of each and cannot be handed the same client twice. */
+/* Browser-side partner client for Debate mode. Partner proxies normalize both
+   text and provider-reported usage; unknown dollar prices remain unknown. */
 
 import type { ModelId } from "../modelRegistry";
 import { appAccessHeaders } from "../appAccessClient";
+import { addTokenUsage } from "../costTracking";
 import type { DebatePartner, DebatePartnerId } from "./roster";
 
-export interface DebateCompletionRequest {
-  system: string;
-  input: string;
-  signal?: AbortSignal;
-}
-
-/** Claude's side of the debate. `model` is a real Claude ModelId. */
-export type DebateClaudeClient = (
-  request: DebateCompletionRequest & { model: ModelId },
-) => Promise<string>;
-
-/** The partner's side. `partner` carries the roster entry so the client knows
-    which endpoint to hit; the caller never builds a URL itself. */
-export type DebatePartnerClient = (
-  request: DebateCompletionRequest & { partner: DebatePartner },
-) => Promise<string>;
-
-/** Claude's debate model. Sonnet, not Opus: Opus is reserved as the RUNTIME
-    model for Consensus/Synthesis (MULTI_AI_RUNTIME_MODEL, Step 8.4) which
-    read both transcripts afterward — a debate side is one argued position,
-    not the adjudication, and Sonnet is the Balanced default this app already
-    routes most real questions to. Not run through routing.js: ROUTING.md is
-    explicit that debate "is a distinct code path... it does not go through
-    the MODELS table or the complexity scorer." */
+export interface DebateCompletionRequest { system: string; input: string; signal?: AbortSignal; }
+export type DebateClaudeClient = (request: DebateCompletionRequest & { model: ModelId }) => Promise<string>;
+export type DebatePartnerClient = (request: DebateCompletionRequest & { partner: DebatePartner }) => Promise<string>;
 export const DEBATE_CLAUDE_MODEL: ModelId = "claude-sonnet-5";
 
-/** Endpoint per provider — mirrors api/proxy-<provider>.ts one-to-one. */
 export function partnerEndpoint(id: DebatePartnerId): string {
   const provider = id === "gpt-5.5" ? "openai" : id === "gemini-3.1-pro" ? "google" : id === "grok-4.3" ? "xai" : "deepseek";
   return `/api/proxy-${provider}`;
@@ -53,12 +19,21 @@ export function partnerEndpoint(id: DebatePartnerId): string {
 interface PartnerProxyReply {
   text?: unknown;
   error?: unknown;
+  category?: unknown;
+  usage?: { inputTokens?: unknown; outputTokens?: unknown };
 }
 
-/** Real partner client: POSTs to that provider's proxy and returns its text.
-    Throws on any failure — runDebate catches per side, so one dead provider
-    fails only its own column (ROUTING.md: "a partner API being down must not
-    break the whole debate turn"). */
+function safeClientFailure(partner: DebatePartner, status: number, category: unknown): Error {
+  const reason = category === "authentication" ? "authentication failed"
+    : category === "rate-limit" ? "rate limit reached"
+      : category === "timeout" ? "request timed out"
+        : category === "configuration" ? "connection is not configured"
+          : category === "network" ? "service could not be reached"
+            : status >= 500 ? "service is temporarily unavailable"
+              : "request was rejected";
+  return new Error(`${partner.label}: ${reason}.`);
+}
+
 export function createPartnerClient(fetchImpl: typeof fetch = fetch): DebatePartnerClient {
   return async ({ partner, system, input, signal }) => {
     const response = await fetchImpl(partnerEndpoint(partner.id), {
@@ -69,18 +44,16 @@ export function createPartnerClient(fetchImpl: typeof fetch = fetch): DebatePart
     });
 
     let payload: PartnerProxyReply;
-    try {
-      payload = (await response.json()) as PartnerProxyReply;
-    } catch {
-      throw new Error(`${partner.label} returned an unreadable response.`);
-    }
+    try { payload = (await response.json()) as PartnerProxyReply; }
+    catch { throw new Error(`${partner.label}: unreadable response.`); }
 
-    if (!response.ok) {
-      const detail = typeof payload.error === "string" ? payload.error : `HTTP ${response.status}`;
-      throw new Error(`${partner.label} call failed: ${detail}`);
-    }
-    if (typeof payload.text !== "string" || payload.text.trim().length === 0) {
-      throw new Error(`${partner.label} returned no text.`);
+    if (!response.ok) throw safeClientFailure(partner, response.status, payload.category);
+    if (typeof payload.text !== "string" || payload.text.trim().length === 0) throw new Error(`${partner.label}: no usable text.`);
+
+    const inputTokens = payload.usage?.inputTokens;
+    const outputTokens = payload.usage?.outputTokens;
+    if (typeof inputTokens === "number" && Number.isSafeInteger(inputTokens) && inputTokens >= 0 && typeof outputTokens === "number" && Number.isSafeInteger(outputTokens) && outputTokens >= 0) {
+      addTokenUsage(inputTokens, outputTokens, partner.id);
     }
     return payload.text;
   };
