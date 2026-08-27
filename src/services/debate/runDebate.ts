@@ -1,27 +1,8 @@
-/* Debate mode (Step 8.3) — PIPELINE.md MULTI-AI ACTIONS: "2 to 4 AIs argue
-   different sides in a multi-column view."
+/* Debate mode — 2 to 4 AIs argue different sides in one parallel round.
+   Every participant fails independently. A complete result preserves every
+   successful side in stable order for Consensus and Synthesis. */
 
-   SINGLE ROUND: each participant states its case once, simultaneously. No
-   rebuttal turns. Nothing in CANON, PIPELINE.md, or ROUTING.md asks for a
-   multi-turn exchange, and single-round is what Step 8.4's already-built,
-   already-tested DebateTranscript {question, claudeText, partnerLabel,
-   partnerText} can hold — extending that to carry rounds would mean reworking
-   Consensus and Synthesis for a depth no spec requires. See BUILD-LOG.md
-   DECISIONS.
-
-   ALL PARTICIPANTS RUN IN PARALLEL and fail INDEPENDENTLY. ROUTING.md is
-   explicit: "a partner API being down must not break the whole debate turn —
-   fail that side gracefully with a visible retry, not a crash." So this never
-   throws; it reports each participant's own fate.
-
-   2-to-4-way debates (Claude + 1 to 3 partners). Never two Claude calls: the
-   two client seams are distinct types (DebateClaudeClient / DebatePartnerClient),
-   so a caller cannot pass the same client for multiple partners — see client.ts.
-
-   Multiple partners are called in parallel via Promise.all and each fails
-   independently if their API is down. */
-
-import type { DebateTranscript } from "../multiAi";
+import type { DebateTranscript, DebateTranscriptParticipant } from "../multiAi";
 import {
   DEBATE_CLAUDE_MODEL,
   type DebateClaudeClient,
@@ -31,47 +12,32 @@ import { debateInput, debateSystemPrompt, type DebateStance } from "./prompt";
 import { getDebatePartner, type DebatePartnerId } from "./roster";
 
 export interface DebateSide {
-  /** Which position this side argued. */
   stance: DebateStance;
-  /** Display name for the column header — "Claude" or the roster label. */
   label: string;
-  /** Partner ID, present for non-Claude sides. */
   partnerId?: DebatePartnerId;
   status: "ok" | "error";
-  /** Present when status is "ok". */
   text?: string;
-  /** Present when status is "error" — neutral, non-blaming copy for display
-      (CANON's ADHD Feedback rule applies to failures too). */
   message?: string;
 }
 
 export type DebateOutcome =
-  /** All participants landed. Includes transcript for Consensus/Synthesis.
-      For 2-way, transcript is the standard DebateTranscript. For 3-4-way,
-      the primary transcript uses the first partner; all participants available
-      in the `sides` array for rendering all columns. */
-  | {
-      status: "complete";
-      sides: DebateSide[];
-      transcript: DebateTranscript;
-    }
-  /** Partial success — at least one but not all participants landed. */
+  | { status: "complete"; sides: DebateSide[]; transcript: DebateTranscript }
   | { status: "partial"; sides: DebateSide[] }
-  /** Complete failure — no participants landed. */
   | { status: "failed"; sides: DebateSide[] }
-  /** Nothing to debate — short-circuits without spending any calls. */
   | { status: "empty-question" };
 
 export interface RunDebateOptions {
   claudeClient: DebateClaudeClient;
   partnerClient: DebatePartnerClient;
-  /** 1-3 roster picks (multi-way debate). Required and non-empty. */
   partnerIds: DebatePartnerId[];
-  /** Which side Claude argues. Defaults to "for" — the assignment is
-      arbitrary but must be FIXED per run so the prompts are genuine
-      opposites; exposed so a caller (or a future rematch control) can swap
-      sides without this module guessing. */
   claudeStance?: DebateStance;
+  signal?: AbortSignal;
+}
+
+export interface RunDebateParticipantOptions {
+  claudeClient: DebateClaudeClient;
+  partnerClient: DebatePartnerClient;
+  side: Pick<DebateSide, "stance" | "partnerId">;
   signal?: AbortSignal;
 }
 
@@ -90,16 +56,57 @@ async function runSide(
 ): Promise<DebateSide> {
   try {
     const text = (await call()).trim();
-    if (text.length === 0) {
-      return { stance, label, status: "error", message: NEUTRAL_FAILURE, partnerId };
-    }
+    if (text.length === 0) return { stance, label, status: "error", message: NEUTRAL_FAILURE, partnerId };
     return { stance, label, status: "ok", text, partnerId };
   } catch {
-    // The real error is deliberately not surfaced to the user — a provider
-    // error string can echo request content or vendor internals. The retry
-    // affordance is the useful part, not the stack.
     return { stance, label, status: "error", message: NEUTRAL_FAILURE, partnerId };
   }
+}
+
+/** Re-run exactly one existing debate participant. This is intentionally
+    separate from runDebate so retry cannot silently call every provider. */
+export async function runDebateParticipant(
+  question: string,
+  options: RunDebateParticipantOptions,
+): Promise<DebateSide> {
+  const trimmed = question.trim();
+  if (!trimmed) {
+    return { ...options.side, label: options.side.partnerId ? getDebatePartner(options.side.partnerId).label : "Claude", status: "error", message: NEUTRAL_FAILURE };
+  }
+  const input = debateInput(trimmed);
+  if (!options.side.partnerId) {
+    return runSide(
+      () => options.claudeClient({
+        model: DEBATE_CLAUDE_MODEL,
+        system: debateSystemPrompt(options.side.stance),
+        input,
+        signal: options.signal,
+      }),
+      options.side.stance,
+      "Claude",
+    );
+  }
+  const partner = getDebatePartner(options.side.partnerId);
+  return runSide(
+    () => options.partnerClient({
+      partner,
+      system: debateSystemPrompt(options.side.stance),
+      input,
+      signal: options.signal,
+    }),
+    options.side.stance,
+    partner.label,
+    partner.id,
+  );
+}
+
+function transcriptParticipant(side: DebateSide): DebateTranscriptParticipant {
+  if (!side.text) throw new Error("Cannot create a transcript participant without text.");
+  if (!side.partnerId) {
+    return { label: side.label, providerId: "anthropic", modelId: DEBATE_CLAUDE_MODEL, text: side.text };
+  }
+  const partner = getDebatePartner(side.partnerId);
+  return { label: side.label, providerId: partner.provider, modelId: partner.id, text: side.text };
 }
 
 export async function runDebate(
@@ -108,74 +115,49 @@ export async function runDebate(
 ): Promise<DebateOutcome> {
   const trimmed = question.trim();
   if (trimmed.length === 0) return { status: "empty-question" };
-
-  if (options.partnerIds.length === 0 || options.partnerIds.length > 3) {
-    return { status: "failed", sides: [] };
-  }
+  if (options.partnerIds.length === 0 || options.partnerIds.length > 3) return { status: "failed", sides: [] };
 
   const claudeStance = options.claudeStance ?? "for";
   const partnerStance = opposite(claudeStance);
   const input = debateInput(trimmed);
-
-  // Build all participant calls in parallel
   const partnerCalls = options.partnerIds.map((partnerId) => {
     const partner = getDebatePartner(partnerId);
     return runSide(
-      () =>
-        options.partnerClient({
-          partner,
-          system: debateSystemPrompt(partnerStance),
-          input,
-          signal: options.signal,
-        }),
+      () => options.partnerClient({ partner, system: debateSystemPrompt(partnerStance), input, signal: options.signal }),
       partnerStance,
       partner.label,
       partnerId,
     );
   });
 
-  // Run all in parallel: Claude + all partners
   const results = await Promise.all([
     runSide(
-      () =>
-        options.claudeClient({
-          model: DEBATE_CLAUDE_MODEL,
-          system: debateSystemPrompt(claudeStance),
-          input,
-          signal: options.signal,
-        }),
+      () => options.claudeClient({ model: DEBATE_CLAUDE_MODEL, system: debateSystemPrompt(claudeStance), input, signal: options.signal }),
       claudeStance,
       "Claude",
     ),
     ...partnerCalls,
   ]);
-
   const claude = results[0];
   const partners = results.slice(1);
   const sides = [claude, ...partners];
-
-  // Determine completion status
   const allSucceeded = sides.every((s) => s.status === "ok");
   const anySucceeded = sides.some((s) => s.status === "ok");
 
   if (allSucceeded && claude.status === "ok" && partners[0]?.status === "ok") {
-    // Use the first partner for the canonical transcript
     const firstPartner = partners[0];
     return {
       status: "complete",
       sides,
       transcript: {
         question: trimmed,
+        participants: sides.map(transcriptParticipant),
         claudeText: claude.text!,
         partnerLabel: firstPartner.label,
         partnerText: firstPartner.text!,
       },
     };
   }
-
-  if (anySucceeded) {
-    return { status: "partial", sides };
-  }
-
+  if (anySucceeded) return { status: "partial", sides };
   return { status: "failed", sides };
 }
