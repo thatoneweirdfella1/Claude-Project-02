@@ -1,34 +1,11 @@
 {
-  "schema_version": 2,
-  "active_layer": "USER_OUTCOME_REPAIR",
-  "subsystem": "messaging-handoff-and-visible-control-truth",
-  "permanent_ids": [
-    "DR-007",
-    "DR-028",
-    "DR-030",
-    "SPEC-MC-08",
-    "USR-SC-03"
-  ],
-  "allowed_paths": [
-    "docs/authority/USER-CORRECTIONS.md",
-    "docs/layer-system/PERMISSIONS.yml",
-    "docs/layer-system/BATCH-SCOPE.json",
-    "src/components/composer/TranslateAskButton.tsx",
-    "src/components/layout/AppShell.tsx",
-    "src/components/visibleControlContract.test.ts",
-    "docs/audit/DIVERGENCE-WHOLE-SITE-TRUTH-AUDIT-2026-08-27.md"
-  ],
-  "required_tests": [
-    "npm test",
-    "npm run build",
-    "visible Send control assertion",
-    "Import Response deployed workflow",
-    "All Tools deployed navigation",
-    "exclusive top-bar overlay behavior",
-    "session persistence after reload",
-    "matching deployment identity"
-  ],
-  "entry_head": "ac3edfcbe161408eb2b3b9450a797da3ce0ff858",
-  "start_remote_head": "ac3edfcbe161408eb2b3b9450a797da3ce0ff858",
-  "exact_next_action": "Commit governance-only authorization, then independently update only the frozen application/test paths, deploy the branch, and verify the matching deployed user outcomes."
+  "schema_version": 4,
+  "active_branch": "claude/whole-site-repair-v1",
+  "starting_commit": "e1a4b0cb97572ed023c281efe909f2bd41b880ca",
+  "work_order": "docs/repair-authority/CLAUDE-WHOLE-SITE-REPAIR-WORK-ORDER.md",
+  "active_requirements": "R07-R31",
+  "already_verified_baseline": "six contained repairs recorded before this branch",
+  "completion_authority": "CLAUDE.md implementation-to-fresh-verification loop",
+  "allowed_paths": ["src/**","api/**","e2e/**","tests/**","test/**","scripts/**","package*.json","*config.*","docs/checkpoints/**","docs/repair-authority/**","CLAUDE.md","AGENTS.md","START-HERE-DIVERGENCE.md","docs/layer-system/PERMISSIONS.yml","docs/layer-system/BATCH-SCOPE.json"],
+  "exact_next_action": "Create the progress ledger, begin R07 with a fresh implementation agent, then send its commit to a different fresh verification agent."
 }
