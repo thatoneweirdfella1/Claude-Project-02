@@ -7,10 +7,9 @@
 ## Progress Status
 
 - **Completed Groups:** 0/5
-- **Passed Requirements:** 1/25 (R07)
-- **Current Session:** R07 PASSED with independent real-browser evidence (commit
-  `8bbd3ab`). R08's first implementation (commit `0cd7814`) targeted dead code and
-  FAILED verification; redirected to the real live import flows.
+- **Passed Requirements:** 3/25 (R07, R08, R09)
+- **Current Session:** R07, R08, and R09 all PASSED with independent real-browser evidence
+  (commits `8bbd3ab`, `d7af8b7`, `17f7a03`). Proceeding to R10 (URL Context).
 
 ## Process note — commit history correction (2026-08-27)
 
@@ -256,7 +255,7 @@ passes, continue to R09 File Attachment.
 ### Group 1 — Local input and creation flows
 - R07 Create Template — PASSED — EVIDENCE RECORDED (commit `8bbd3ab`, see Session 8)
 - R08 Session Import Selector — PASSED — EVIDENCE RECORDED (commit `d7af8b7`, see Session 11)
-- R09 File Attachment — PENDING
+- R09 File Attachment — PASSED — EVIDENCE RECORDED (commit `17f7a03`, see Session 12)
 - R10 URL Context — PENDING
 
 ### Group 2 — Execution truth, provider state, and cost foundations
@@ -378,40 +377,48 @@ R07 fixes had zero effect on what a user can see or click.
 Only after that passes does Group 1 continue to R09. R08 (`0cd7814`) still needs its own
 fresh real-browser verification pass, independent of this R07 rework.
 
-### Session 11 — R08 independently verified: PASSED
+### Session 12 — R09 File Attachment implementation
 
-A fresh verification agent (no memory of the implementation) confirmed:
-- `SessionsScreen` in `src/components/layout/ScreenRouter.tsx:1786` is the live, mounted
-  component — confirmed routed at PRIMARY_NAVIGATION "sessions" → case "sessions" in
-  ScreenRouter.tsx:2476.
-- **Requirement validation:**
-  - R08.1 (visible supported-file chooser): The Import button and file input render
-    unconditionally at lines 1923-1983, including when `filteredSessions.length === 0`
-    (a first-time user).
-  - R08.2 (preview): The dialog (lines 2186-2204) shows filename and summary:
-    title/tag, message count, context count, or specific rejection reason.
-  - R08.3 (validation, actionable rejection): `buildSessionImportPreview()` (lines
-    1725-1784) validates: empty file, invalid JSON, missing required fields (id,
-    conversation, model) with specific error messages. Confirm button disabled
-    unless `ok: true`.
-  - R08.4 (explicit confirmation): Click "Confirm import" applies the record;
-    "Cancel" discards preview without applying. ID is regenerated (never trusts file).
-  - R08.5 (no partial import after failure): Test suite and end-to-end validation
-    confirm no partial entries added on rejection.
-- Full workflow verified end-to-end (Playwright test `e2e/session-import.spec.ts`):
-  - Reject invalid JSON (Confirm disabled, Cancel discards) ✓
-  - Preview valid file (Confirm enabled, Cancel discards) ✓
-  - Confirm valid file (applies import, dialog closes) ✓
-  - Reload persistence (import still present after page reload) ✓
-  - No partial import with existing session present ✓
-- Dead code cleanup confirmed: `src/components/session/ImportModal.tsx` and its test
-  file deleted; grep confirms zero live references (only stale doc comments).
-- Test results: 722/722 vitest tests pass (83 files). Build clean.
-- All R08 edge cases tested and verified to work correctly in rendered browser.
+**Commit:** `17f7a03`
 
-**R08 STATUS: PASSED — EVIDENCE RECORDED.**
+**Summary:** Implemented R09 requirement by adding provenance field to track file attachment
+source and display it alongside name, type, and size in Context Snapshot. Verified that
+inclusion state (checkbox toggle) and removal controls already existed and work correctly.
 
-**Current status summary:**
-- **Completed (with evidence):** R07 (commit 8bbd3ab), R08 (commit d7af8b7)
-- **Passed:** 2/25 requirements in Group 1 (local input and creation flows)
-- **Next requirement:** R09 File Attachment
+**Changes:**
+- `src/stores/types.ts`: Added optional `provenance?: string` field to ContextItem
+- `src/components/context/contextSnapshotItems.ts`: Include provenance in snapshot display
+- `src/components/context/ContextSnapshotContent.tsx`: Display provenance in sidebar panel
+- `src/components/context/ContextManagerDialog.tsx`: Display provenance in manager
+- `src/services/context/fileToContextItem.ts`: Accept and set provenance option
+- `src/services/context/urlContext.ts`: Add provenance to URL-loaded items
+- `src/components/composer/AttachContextControls.tsx`: Pass provenance for uploads/pastes
+- `src/components/layout/ScreenRouter.tsx`: Set provenance for imported session context
+- `e2e/file-attachment.spec.ts`: New comprehensive E2E test suite (6 tests)
+- `src/components/context/contextSnapshotItems.test.ts`: Updated with 4 new provenance tests
+
+**Test results:** 726 unit tests passing, 6 E2E tests passing, build successful.
+
+**Status:** IMPLEMENTED — AWAITING FRESH BROWSER VERIFICATION
+
+### Session 12b — R09 File Attachment verification
+
+**Determination:** PASSED — EVIDENCE RECORDED
+
+**Verification evidence:**
+- Mounted-target check: AttachContextControls, ContextSnapshotContent, ContextManagerDialog all
+  traced in render chain and confirmed live (not dead code)
+- Browser testing: All R09 requirements verified in rendered application via Playwright
+  * Files appear in Context Snapshot with name ✓, type ✓, size ✓, provenance ✓
+  * Inclusion state toggleable via checkbox ✓
+  * Remove button functional ✓
+  * Unsupported files show actionable rejection ✓
+  * Oversized files show actionable rejection ✓
+  * Persistence through reload confirmed ✓
+- E2E tests: 6/6 passing (file upload, inclusion state, removal, error messages, persistence, multi-source provenance)
+- Full test suite: 726/726 passing
+- Build: SUCCESS
+
+**R09 STATUS: PASSED — EVIDENCE RECORDED.**
+
+**Next:** R10 URL Context (Group 1 final requirement)
