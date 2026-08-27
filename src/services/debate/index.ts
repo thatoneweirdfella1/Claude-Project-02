@@ -1,6 +1,4 @@
-/* Debate mode — public surface (Step 8.3). The partner proxy handlers are
-   NOT exported here: they are server-side only, reached through
-   api/proxy-<provider>.ts, and must never be pulled into the client bundle. */
+/* Debate mode — public surface. Server-only provider handlers are not exported. */
 
 export {
   DEBATE_PARTNERS,
@@ -21,4 +19,11 @@ export {
   type DebatePartnerClient,
 } from "./client";
 export { debateInput, debateSystemPrompt, type DebateStance } from "./prompt";
-export { runDebate, type DebateOutcome, type DebateSide, type RunDebateOptions } from "./runDebate";
+export {
+  runDebate,
+  runDebateParticipant,
+  type DebateOutcome,
+  type DebateSide,
+  type RunDebateOptions,
+  type RunDebateParticipantOptions,
+} from "./runDebate";
