@@ -1,8 +1,9 @@
 /* R09 File Attachment verification
    - Files are accepted and appear in Context Snapshot with name, type, size, and provenance
-   - Unsupported and oversized files show actionable rejection messages
-   - Inclusion state can be toggled
-   - Files can be removed
+   - Unsupported and oversized files show actionable rejection messages with exact text
+   - Rejected files never enter context
+   - Inclusion state can be toggled with real clicks
+   - Files can be removed with real clicks
    - Changes persist through reload
  */
 
@@ -34,15 +35,14 @@ test.describe("R09 File Attachment", () => {
     await page.goto("/");
     await page.waitForSelector("#root > *", { timeout: 15_000 });
     // Wait for Add Context button to be visible
-    await page.waitForSelector("button:has-text('Add Context')");
+    await page.getByRole("button", { name: "Add Context" }).waitFor({ state: "visible" });
   });
 
-  test("uploads a text file and shows it in Context Snapshot with provenance", async ({ page }) => {
-    // Create a test file
+  test("uploads a text file and shows it in Context Snapshot with name, type, size, provenance", async ({ page }) => {
     const fileName = "test.txt";
     const fileContent = "This is a test file for context attachment.";
 
-    // Set up file input
+    // Find the file input and set files directly
     const fileInput = page.locator('input[type="file"]');
     await fileInput.setInputFiles({
       name: fileName,
@@ -50,27 +50,76 @@ test.describe("R09 File Attachment", () => {
       buffer: Buffer.from(fileContent),
     });
 
-    // Wait for file to appear in the page
-    await page.waitForSelector("text=test.txt");
+    // Wait for file to appear in the snapshot
+    await page.getByText(fileName).first().waitFor({ state: "visible", timeout: 15000 });
 
-    // Expand the Context Snapshot accordion panel (sidebar)
-    const contextPanel = page.locator(".accordion-panel").filter({ hasText: "Context Snapshot" });
-    const panelHeader = contextPanel.locator("button.accordion-panel__header");
-    await panelHeader.click();
+    // Check that the file appears in the context snapshot with all required fields
+    const fileRow = page.locator(".context-snapshot-panel__row").filter({ hasText: fileName });
+    await expect(fileRow).toBeVisible({ timeout: 15000 });
 
-    // Check that the file appears in the context snapshot
-    const fileRow = page.locator(".context-snapshot-panel__row", { has: page.locator("text=test.txt") });
-    await expect(fileRow).toContainText("File"); // Kind
-    await expect(fileRow).toContainText("test.txt"); // Name
-    await expect(fileRow).toContainText("Uploaded"); // Provenance
-    await expect(fileRow).toContainText("B"); // Size (should be shown)
+    // Verify all required fields are present
+    await expect(fileRow).toContainText("file", { timeout: 5000 }); // Kind (lowercase in snapshot)
+    await expect(fileRow).toContainText(fileName, { timeout: 5000 }); // Name
+    await expect(fileRow).toContainText("Uploaded", { timeout: 5000 }); // Provenance
+    // Size should be shown in bytes
+    await expect(fileRow).toContainText("B", { timeout: 5000 });
   });
 
-  test("shows inclusion state and allows toggling", async ({ page }) => {
-    const fileName = "test.txt";
-    const fileContent = "Test content";
+  test("shows actionable rejection message for unsupported file types", async ({ page }) => {
+    // Set unsupported file (zip) directly on the file input
+    const fileInput = page.locator('input[type="file"]');
+    await fileInput.setInputFiles({
+      name: "archive.zip",
+      mimeType: "application/zip",
+      buffer: Buffer.from("PK\x03\x04"), // ZIP file signature
+    });
 
-    // Upload a file
+    // Wait for and verify the rejection message appears
+    const rejectionDiv = page.locator(".attach-context-controls__rejections");
+    await expect(rejectionDiv).toBeVisible({ timeout: 10000 });
+
+    // Verify the exact actionable rejection message
+    await expect(rejectionDiv).toContainText("archive.zip");
+    await expect(rejectionDiv).toContainText("isn't a supported file type yet");
+    await expect(rejectionDiv).toContainText("PDF, TXT, JSON, CSV, and image files");
+
+    // Verify the rejected file did NOT enter context
+    const snapshotRows = page.locator(".context-snapshot-panel__row").filter({ hasText: "archive.zip" });
+    await expect(snapshotRows).not.toBeVisible();
+
+    // Click dismiss to clear rejection
+    await page.locator(".attach-context-controls__rejections button").click();
+    await expect(rejectionDiv).not.toBeVisible();
+  });
+
+  test("shows actionable rejection for oversized files", async ({ page }) => {
+    // Create a file larger than 10MB (11MB) and set it directly on the file input
+    const oversizedSize = 11 * 1024 * 1024;
+    const fileInput = page.locator('input[type="file"]');
+    await fileInput.setInputFiles({
+      name: "huge.txt",
+      mimeType: "text/plain",
+      buffer: Buffer.alloc(oversizedSize), // 11MB file
+    });
+
+    // Wait for rejection message
+    const rejectionDiv = page.locator(".attach-context-controls__rejections");
+    await expect(rejectionDiv).toBeVisible({ timeout: 15000 });
+
+    // Verify the exact actionable rejection message
+    await expect(rejectionDiv).toContainText("huge.txt", { timeout: 5000 });
+    await expect(rejectionDiv).toContainText("over the 10 MB per-file limit", { timeout: 5000 });
+
+    // Verify the oversized file did NOT enter context
+    const snapshotRows = page.locator(".context-snapshot-panel__row").filter({ hasText: "huge.txt" });
+    await expect(snapshotRows).not.toBeVisible();
+  });
+
+  test("shows inclusion state and allows toggling with real clicks", async ({ page }) => {
+    const fileName = "toggletest.txt";
+    const fileContent = "Test content for toggle";
+
+    // Set file directly on the file input
     const fileInput = page.locator('input[type="file"]');
     await fileInput.setInputFiles({
       name: fileName,
@@ -79,41 +128,36 @@ test.describe("R09 File Attachment", () => {
     });
 
     // Wait for file to appear
-    await page.waitForSelector("text=test.txt");
+    await page.getByText(fileName).first().waitFor({ state: "visible", timeout: 15000 });
 
-    // Expand the Context Snapshot accordion panel
-    const contextPanel = page.locator(".accordion-panel").filter({ hasText: "Context Snapshot" });
-    const panelHeader = contextPanel.locator("button.accordion-panel__header");
-    await panelHeader.click();
+    // Click "View All" button with proper locator
+    const viewAllButton = page.getByRole("button").filter({ hasText: "View All" });
+    await viewAllButton.click();
 
-    // Open the context manager via "Manage context" button inside the accordion
-    const manageButton = page.locator(".context-snapshot-panel__summary").locator("button:has-text('Manage context')");
-    await manageButton.evaluate((el: HTMLElement) => { (el as HTMLButtonElement).click(); });
+    // Wait for the Manage Context dialog
+    await page.getByText("Manage Context").waitFor({ state: "visible" });
 
-    // Wait for dialog
-    await page.waitForSelector("text=Manage Context");
+    // Verify file is shown with "Included" status
+    const fileRow = page.locator(".context-manager-row").filter({ hasText: fileName });
+    await expect(fileRow.locator("small")).toContainText("Included", { timeout: 5000 });
 
-    // Check that file is shown with "Included" status
-    const fileLabel = page.locator("strong", { hasText: "test.txt" });
-    await expect(fileLabel.locator("../small")).toContainText("Included");
-
-    // Toggle the inclusion state
-    const checkbox = page.locator('input[type="checkbox"]').first();
+    // Find and click the checkbox for this file with real click
+    const checkbox = fileRow.locator('input[type="checkbox"]');
     await checkbox.click();
 
-    // Check it now says "Excluded"
-    await expect(fileLabel.locator("../small")).toContainText("Excluded");
+    // Verify it now says "Excluded"
+    await expect(fileRow.locator("small")).toContainText("Excluded", { timeout: 5000 });
 
-    // Toggle back to Included
+    // Toggle back to Included with real click
     await checkbox.click();
-    await expect(fileLabel.locator("../small")).toContainText("Included");
+    await expect(fileRow.locator("small")).toContainText("Included", { timeout: 5000 });
   });
 
-  test("allows removing a file from context", async ({ page }) => {
-    const fileName = "test.txt";
-    const fileContent = "Test content";
+  test("allows removing a file with real click", async ({ page }) => {
+    const fileName = "removetest.txt";
+    const fileContent = "Test content for removal";
 
-    // Upload a file
+    // Set file directly on the file input
     const fileInput = page.locator('input[type="file"]');
     await fileInput.setInputFiles({
       name: fileName,
@@ -122,52 +166,30 @@ test.describe("R09 File Attachment", () => {
     });
 
     // Wait for file to appear
-    await page.waitForSelector("text=test.txt");
+    await page.getByText(fileName).first().waitFor({ state: "visible", timeout: 15000 });
 
-    // Expand the Context Snapshot accordion panel
-    const contextPanel = page.locator(".accordion-panel").filter({ hasText: "Context Snapshot" });
-    const panelHeader = contextPanel.locator("button.accordion-panel__header");
-    await panelHeader.click();
+    // Verify file is in context snapshot
+    const snapshotRow = page.locator(".context-snapshot-panel__row").filter({ hasText: fileName });
+    await expect(snapshotRow).toBeVisible({ timeout: 5000 });
 
-    // Open the context manager via "Manage context" button inside the accordion
-    const manageButton = page.locator(".context-snapshot-panel__summary").locator("button:has-text('Manage context')");
-    await manageButton.evaluate((el: HTMLElement) => { (el as HTMLButtonElement).click(); });
+    // Open the context manager
+    await page.getByRole("button").filter({ hasText: "View All" }).click();
+    await page.getByText("Manage Context").waitFor({ state: "visible" });
 
-    await page.waitForSelector("text=Manage Context");
+    // Find the row for this file and click Remove button with real click
+    const fileRow = page.locator(".context-manager-row").filter({ hasText: fileName });
+    const removeButton = fileRow.getByRole("button", { name: "Remove" });
+    await removeButton.click();
 
-    // Click the Remove button
-    const removeButton = page.locator(".context-manager-row").filter({ has: page.locator("text=test.txt") }).locator('button:has-text("Remove")');
-    await removeButton.evaluate((el: HTMLElement) => { (el as HTMLButtonElement).click(); });
-
-    // Check that the file is no longer in the list
-    const fileRow = page.locator(".context-manager-row", { has: page.locator("text=test.txt") });
-    await expect(fileRow).not.toBeVisible({ timeout: 1000 });
-  });
-
-  test("shows actionable rejection for unsupported file types", async ({ page }) => {
-    // Try to upload a .zip file (unsupported)
-    const fileInput = page.locator('input[type="file"]');
-
-    // Note: file input accept filter prevents selection, but we can still attempt via script
-    // For this test, we verify the error message would appear if the validation ran
-    await fileInput.evaluate((el: HTMLInputElement) => {
-      // Create a change event with a zip file
-      const dataTransfer = new DataTransfer();
-      dataTransfer.items.add(new File(["content"], "archive.zip", { type: "application/zip" }));
-      const event = new DragEvent("drop", { dataTransfer });
-      el.dispatchEvent(event);
-    });
-
-    // The UI should show a rejection message
-    // Note: This might not work in all test environments due to file input restrictions
-    // The actual validation happens server-side anyway
+    // Verify the file is no longer visible in the dialog
+    await expect(fileRow).not.toBeVisible({ timeout: 5000 });
   });
 
   test("persistence through reload", async ({ page }) => {
     const fileName = "persistent.txt";
     const fileContent = "Content that should persist";
 
-    // Upload a file
+    // Set file directly on the file input
     const fileInput = page.locator('input[type="file"]');
     await fileInput.setInputFiles({
       name: fileName,
@@ -176,29 +198,23 @@ test.describe("R09 File Attachment", () => {
     });
 
     // Wait for file to appear
-    await page.waitForSelector("text=persistent.txt");
+    await page.getByText(fileName).first().waitFor({ state: "visible", timeout: 15000 });
 
-    // Expand the Context Snapshot accordion panel
-    const contextPanel = page.locator(".accordion-panel").filter({ hasText: "Context Snapshot" });
-    const panelHeader = contextPanel.locator("button.accordion-panel__header");
-    await panelHeader.click();
-
-    // Verify it appears with correct provenance
-    await expect(page.locator(".context-snapshot-panel__row")).toContainText("Uploaded");
+    // Verify it appears in context snapshot with correct provenance
+    const snapshotRow = page.locator(".context-snapshot-panel__row").filter({ hasText: fileName });
+    await expect(snapshotRow).toContainText("Uploaded", { timeout: 5000 });
 
     // Wait a bit for autosave
-    await page.waitForTimeout(1_000);
+    await page.waitForTimeout(2_000);
 
     // Reload the page
     await page.reload();
     await afterReload(page);
 
-    // Expand the Context Snapshot panel again after reload
-    await panelHeader.click();
-
-    // Check that the file is still there
-    await expect(page.locator(".context-snapshot-panel__row")).toContainText("persistent.txt");
-    await expect(page.locator(".context-snapshot-panel__row")).toContainText("Uploaded");
+    // Check that the file is still there after reload
+    const persistedRow = page.locator(".context-snapshot-panel__row").filter({ hasText: fileName });
+    await expect(persistedRow).toBeVisible({ timeout: 15000 });
+    await expect(persistedRow).toContainText("Uploaded", { timeout: 5000 });
   });
 
   test("displays correct provenance for different attachment sources", async ({ page }) => {
@@ -210,28 +226,22 @@ test.describe("R09 File Attachment", () => {
       buffer: Buffer.from("Uploaded content"),
     });
 
-    await page.waitForSelector("text=uploaded.txt");
+    await page.getByText("uploaded.txt").first().waitFor({ state: "visible", timeout: 15000 });
+    let row = page.locator(".context-snapshot-panel__row").filter({ hasText: "uploaded.txt" });
+    await expect(row).toContainText("Uploaded", { timeout: 5000 });
 
-    // Expand the Context Snapshot accordion panel
-    const contextPanel = page.locator(".accordion-panel").filter({ hasText: "Context Snapshot" });
-    const panelHeader = contextPanel.locator("button.accordion-panel__header");
-    await panelHeader.click();
-
-    await expect(page.locator(".context-snapshot-panel__row")).toContainText("Uploaded");
-
-    // Open Add Context menu
-    const addContextButton = page.locator("button:has-text('Add Context')");
-    await addContextButton.evaluate((el: HTMLElement) => { (el as HTMLButtonElement).click(); });
+    // Open Add Context menu again
+    await page.getByRole("button", { name: "Add Context" }).click();
 
     // Add pasted text (should show "Pasted")
-    await page.click("text=Paste Text");
+    await page.getByRole("menuitem", { name: "Paste Text" }).click();
     await page.fill("input[placeholder='Meeting notes']", "My Notes");
     await page.fill("textarea", "This is pasted content");
+    await page.getByRole("button", { name: "Add Text" }).click();
 
-    const addTextButton = page.locator("button:has-text('Add Text')").first();
-    await addTextButton.evaluate((el: HTMLElement) => { (el as HTMLButtonElement).click(); });
-
-    // Check that pasted text shows "Pasted" provenance (find the row with "My Notes")
-    await expect(page.locator(".context-snapshot-panel__row").filter({ has: page.locator("text=My Notes") })).toContainText("Pasted");
+    // Check that pasted text shows "Pasted" provenance
+    await page.getByText("My Notes").waitFor({ state: "visible" });
+    row = page.locator(".context-snapshot-panel__row").filter({ hasText: "My Notes" });
+    await expect(row).toContainText("Pasted", { timeout: 5000 });
   });
 });
