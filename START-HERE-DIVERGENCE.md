@@ -1,23 +1,7 @@
-# START HERE — CLAUDE CENSUS-FIRST WHOLE-SITE REPAIR
+# START HERE — R08 SINGLE-PROBLEM TRIAL
 
-- Repository: `thatoneweirdfella1/Claude-Project-02`
-- Only writable branch: `claude/whole-site-repair-v1`
-- Current method: six census-first dependency waves
-- R07: independently verified
-- Current target: mounted-interface census, then Wave 1 beginning with R08
+Work only on `claude/whole-site-repair-v1`.
 
-Read in order:
+Read `CLAUDE.md` completely. Use one Sonnet session with no subagents.
 
-1. `CLAUDE.md`
-2. `AGENTS.md`
-3. `docs/repair-authority/CLAUDE-WHOLE-SITE-REPAIR-WORK-ORDER.md`
-4. `docs/checkpoints/CLAUDE-REPAIR-PROGRESS.md`
-5. `docs/layer-system/PERMISSIONS.yml`
-6. `docs/layer-system/BATCH-SCOPE.json`
-
-Resume from the branch's actual current HEAD. First create or refresh
-`docs/checkpoints/CLAUDE-MOUNTED-UI-CENSUS.md`. Then execute all six waves
-sequentially under `CLAUDE.md`.
-
-Do not return to one-agent-cycle-per-defect. Do not ask the user to manage agents,
-branches, tests, corrections, or checkpoints.
+Repair and browser-verify only R08 Session Import Selector. Stop after reporting R08 with the exact full commit SHA. Do not begin R09.
