@@ -126,6 +126,6 @@ export async function fetchUrlContext(
 
   return {
     ok: true,
-    item: { id: newContextItemId(), kind: KIND, label: url, content: extracted, bytes },
+    item: { id: newContextItemId(), kind: KIND, label: url, content: extracted, bytes, provenance: "Loaded from URL" },
   };
 }

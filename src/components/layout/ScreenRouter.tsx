@@ -1749,7 +1749,12 @@ function buildSessionImportPreview(fileName: string, raw: string): SessionImport
   }
 
   const conversation = data.conversation as SessionRecord["conversation"];
-  const context = Array.isArray(data.context) ? (data.context as SessionRecord["context"]) : [];
+  const rawContext = Array.isArray(data.context) ? (data.context as SessionRecord["context"]) : [];
+  // R09: Set provenance to "Imported" for context items from imported session
+  const context = rawContext.map((item) => ({
+    ...item,
+    provenance: item.provenance || "Imported",
+  }));
   const variables = (data.variables && typeof data.variables === "object" && !Array.isArray(data.variables))
     ? (data.variables as SessionRecord["variables"])
     : {};

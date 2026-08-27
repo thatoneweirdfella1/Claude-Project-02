@@ -30,6 +30,9 @@ export interface SnapshotItem {
   /** Human-readable secondary line — byte size for files/URLs, a preview of
       the value for variables. */
   detail: string;
+  /** Source/origin of this context item (e.g., "Uploaded", "Imported").
+      Optional for non-file/url items. */
+  provenance?: string;
 }
 
 const VARIABLE_ID_PREFIX = "variable:";
@@ -47,6 +50,7 @@ export function buildSnapshotItems(
     kind: item.kind,
     label: item.label,
     detail: formatBytes(item.bytes),
+    provenance: item.provenance,
   }));
 
   const fromVariables: SnapshotItem[] = Object.entries(variables).map(([name, value]) => ({
