@@ -7,10 +7,9 @@
 ## Progress Status
 
 - **Completed Groups:** 0/5
-- **Passed Requirements:** 1/25 (R07)
-- **Current Session:** R07 PASSED with independent real-browser evidence (commit
-  `8bbd3ab`). R08's first implementation (commit `0cd7814`) targeted dead code and
-  FAILED verification; redirected to the real live import flows.
+- **Passed Requirements:** 2/25 (R07, R08)
+- **Current Session:** R07 and R08 both PASSED with independent real-browser evidence
+  (commits `8bbd3ab`, `d7af8b7`). Proceeding to R09 (File Attachment).
 
 ## Process note — commit history correction (2026-08-27)
 
@@ -255,7 +254,7 @@ passes, continue to R09 File Attachment.
 
 ### Group 1 — Local input and creation flows
 - R07 Create Template — PASSED — EVIDENCE RECORDED (commit `8bbd3ab`, see Session 8)
-- R08 Session Import Selector — IMPLEMENTED — AWAITING FRESH BROWSER VERIFICATION (fixed live `SessionsScreen` in `ScreenRouter.tsx`; see Session 10)
+- R08 Session Import Selector — PASSED — EVIDENCE RECORDED (commit `d7af8b7`, see Session 11)
 - R09 File Attachment — PENDING
 - R10 URL Context — PENDING
 
