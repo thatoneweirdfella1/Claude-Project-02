@@ -5,9 +5,9 @@ export interface TranslateAskButtonProps { onClick: () => void; disabled?: boole
 
 export function TranslateAskButton({ onClick, disabled = false }: TranslateAskButtonProps) {
   return (
-    <BlueMarbleButton className="translate-ask-button" onClick={onClick} disabled={disabled}>
+    <BlueMarbleButton className="translate-ask-button" onClick={onClick} disabled={disabled} aria-label="Send">
       <Sparkles size={20} strokeWidth={1.6} />
-      Translate &amp; Ask
+      Send
     </BlueMarbleButton>
   );
 }
