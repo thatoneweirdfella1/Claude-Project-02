@@ -71,7 +71,7 @@ export function AppShell() {
       <aside className="col-right" aria-label="Sidebar panels" data-testid="col-right">
         {rightRailPanel && <section className="right-rail-reference surface-smoked-glass" aria-label={rightRailPanel.startsWith("help:") ? "Help" : "Quick Reference"}>
           <header><strong>{rightRailPanel.startsWith("help:") ? "Help" : "Quick Reference"}</strong><button type="button" aria-label="Close reference" onClick={() => setRightRailPanel(null)}>×</button></header>
-          <p>{currentScreen === "translate" ? "Write naturally. Ctrl/Cmd + Enter submits. Add Context keeps source material attached to the request." : `You are in ${currentScreen.replaceAll("-", " ")}. Use the visible tabs and controls; unavailable external actions say so before doing anything.`}</p>
+          <p>{currentScreen === "translate" ? "Write naturally, then use Send. Ctrl/Cmd + Enter uses the same Send action. Add Context keeps source material attached to the request." : `You are in ${currentScreen.replaceAll("-", " ")}. Use the visible tabs and controls; unavailable external actions say so before doing anything.`}</p>
           <small>Ctrl/Cmd + K opens Search. Press ? outside a text field to reopen this reference.</small>
         </section>}
         <div className="right-rail-helpful surface-smoked-glass"><strong>Ready for {destinationLabel(destination)}</strong><span>Local preparation uses no Divergence credits.</span></div>
