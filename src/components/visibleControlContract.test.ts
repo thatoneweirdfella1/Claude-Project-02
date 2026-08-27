@@ -43,3 +43,13 @@ describe("Layer 2 visible-control contract", () => {
     expect(failures).toEqual([]);
   });
 });
+
+
+describe("primary message outcome contract", () => {
+  it("exposes a literal, accessible Send action", () => {
+    const source = readFileSync("src/components/composer/TranslateAskButton.tsx", "utf8");
+    expect(source).toContain('aria-label="Send"');
+    expect(source).toMatch(/>\s*Send\s*</);
+    expect(source).not.toContain("Translate &amp; Ask");
+  });
+});
