@@ -189,3 +189,34 @@ Deployment verification gate:
 - All Tools destinations must navigate.
 - Only one top-bar overlay may remain open.
 - Anything blocked by app-password protection remains `UNPROVEN`.
+
+## Checkpoint CP-07 — Build and deployment gate
+
+Status: BUILD PASS; LIVE WORKFLOW BLOCKED; PRODUCTION NOT PROMOTED
+
+Evidence for application/test commit `99e99c969e99f849fb871f7d198285399c8e17dd`:
+
+- Matching Vercel deployment: `dpl_FKzL8vwnUttpifgaL19nNMfcmRSi`
+- Deployment state: `READY`
+- Test files: 81 passed
+- Tests: 710 passed
+- New visible Send contract test passed
+- TypeScript and Vite production build passed
+
+Live verification blocker:
+
+- Vercel deployment protection was bypassed through an authorized temporary access route.
+- The application then displayed its separate `Enter app password` gate.
+- The audit environment has no approved secure credential-entry capability for that gate and is not authorized to read deployment secrets.
+- Therefore Send, Import Response, All Tools, exclusive overlays, and persistence remain `UNPROVEN` on this matching deployment even though their source and automated tests pass.
+
+Production safety decision:
+
+- Production was not promoted because doing so before crossing the app-password gate could replace the currently accessible public site with a site the user cannot enter.
+- This is an explicit stop condition, not a completion claim.
+
+Exact continuation point:
+
+1. Provide a safe user-accessible deployment with the app gate already unlocked, or temporarily disable only the preview's app gate through an authorized configuration change.
+2. Run the frozen live workflow checklist.
+3. Promote only after every required visible outcome passes.
