@@ -49,22 +49,28 @@ export function getEstimatedCostForPipeline(rawInput: string, answerModel = "cla
   return roundDollars(translation + stateDetection + answer);
 }
 
+/** Record provider-reported token counts even when exact dollar pricing for
+    that model is unavailable. Unknown price contributes $0 to the displayed
+    cost rather than borrowing another model's price. */
 export function addTokenUsage(inputTokens: number, outputTokens: number, model = "claude-haiku-4-5"): number {
-  const callCost = calculateUsageCost(inputTokens, outputTokens, model);
+  if (!Number.isSafeInteger(inputTokens) || inputTokens < 0 || !Number.isSafeInteger(outputTokens) || outputTokens < 0) return 0;
+  const callCost = hasExplicitModelPricing(model) ? calculateUsageCost(inputTokens, outputTokens, model) : 0;
   sessionCost.inputTokens += inputTokens;
   sessionCost.outputTokens += outputTokens;
   sessionCost.totalTokens += inputTokens + outputTokens;
   sessionCost.estimatedCost = roundDollars(sessionCost.estimatedCost + callCost);
-  window.dispatchEvent(new CustomEvent("costUpdated", { detail: getSessionCost() }));
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("costUpdated", { detail: { ...getSessionCost(), model, costKnown: hasExplicitModelPricing(model) } }));
+  }
   return callCost;
 }
 
 export function emitCreditDeducted(amount: number, referenceId?: string): void {
-  window.dispatchEvent(new CustomEvent("creditDeducted", { detail: { amount, referenceId } }));
+  if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("creditDeducted", { detail: { amount, referenceId } }));
 }
 export function getSessionCost(): SessionCost { return { ...sessionCost }; }
 export function resetSessionCost(): void {
   sessionCost.totalTokens = 0; sessionCost.inputTokens = 0; sessionCost.outputTokens = 0; sessionCost.estimatedCost = 0;
-  window.dispatchEvent(new CustomEvent("costUpdated", { detail: getSessionCost() }));
+  if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("costUpdated", { detail: getSessionCost() }));
 }
 export function isApproachingLimit(threshold = 5): boolean { return sessionCost.estimatedCost >= threshold; }
