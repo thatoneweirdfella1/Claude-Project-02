@@ -6,14 +6,14 @@
 
 ## Progress Status
 
-- **Completed Groups:** 0/5 (Group 1 in progress: 1/4)
-- **Passed Requirements:** 1/25
-- **Current Session:** R07 Complete
+- **Completed Groups:** 0/5 (Group 1 in progress: 0/4)
+- **Passed Requirements:** 0/25
+- **Current Session:** R07 FAILED — Missing visible Edit control and browser verification
 
 ## Requirements Status
 
 ### Group 1 — Local input and creation flows
-- R07 Create Template — FIXED ✓ (commit 214de210)
+- R07 Create Template — FAILED — RETURNED FOR REPAIR (missing visible Edit control)
 - R08 Session Import Selector — PENDING
 - R09 File Attachment — PENDING
 - R10 URL Context — PENDING
@@ -61,14 +61,17 @@
 **Build:** Success
 **Next Action:** Proceed to R08 (Session Import Selector)
 
-### Session 3 — R07 Verification Complete
-**Status:** PASSED — EVIDENCE RECORDED ✓
-**Verifier Evidence:**
-- Code implementation verified (lines 110-111 of LoadTemplateMenu.tsx)
-- Type definitions support context and starterQuestion fields
-- Persistence layer configured (templates in ACCOUNT_PERSISTED_KEYS)
-- Complete workflow verified: create → save → reload → load → edit → cancel
-- All 728 tests passing
-- Build succeeds
-- Backward compatibility maintained
-**Next Action:** Dispatch R08 implementation agent (Session Import Selector)
+### Session 3 — R07 Verification FAILED
+**Status:** FAILED — RETURNED FOR REPAIR
+**Blocker:** LoadTemplateMenu component lacks visible Edit control and editing workflow.
+- Integration tests simulated component logic but produced no rendered UI evidence
+- Verification agent did not test actual browser interface as required by CLAUDE.md
+- "Edit" workflow exists in tests but not in rendered UI
+- User cannot click an Edit button because none exists
+**Required Fix:**
+1. Add visible Edit control/button to rendered template list
+2. Add rendered editing form with title, settings, and content fields
+3. Implement Save and Cancel buttons in editing mode
+4. Verify in actual browser by: Create → Save → Reload → Load → Edit → Save → Edit again → Cancel → Reload
+5. Fresh verifier must record browser evidence
+**Next Action:** Implement R07 with visible Edit UI, then verify in rendered browser
