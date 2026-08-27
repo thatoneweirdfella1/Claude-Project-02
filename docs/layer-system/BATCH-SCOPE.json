@@ -1,11 +1,22 @@
 {
-  "schema_version": 4,
+  "schema_version": 5,
   "active_branch": "claude/whole-site-repair-v1",
-  "starting_commit": "e1a4b0cb97572ed023c281efe909f2bd41b880ca",
+  "method": "census-first dependency waves",
   "work_order": "docs/repair-authority/CLAUDE-WHOLE-SITE-REPAIR-WORK-ORDER.md",
-  "active_requirements": "R07-R31",
-  "already_verified_baseline": "six contained repairs recorded before this branch",
-  "completion_authority": "CLAUDE.md implementation-to-fresh-verification loop",
-  "allowed_paths": ["src/**","api/**","e2e/**","tests/**","test/**","scripts/**","package*.json","*config.*","docs/checkpoints/**","docs/repair-authority/**","CLAUDE.md","AGENTS.md","START-HERE-DIVERGENCE.md","docs/layer-system/PERMISSIONS.yml","docs/layer-system/BATCH-SCOPE.json"],
-  "exact_next_action": "Create the progress ledger, begin R07 with a fresh implementation agent, then send its commit to a different fresh verification agent."
+  "mounted_census": "docs/checkpoints/CLAUDE-MOUNTED-UI-CENSUS.md",
+  "completed_requirements": ["R07"],
+  "active_wave": 1,
+  "active_requirements": ["R08", "R09", "R10"],
+  "remaining_waves": {
+    "2": ["R11", "R12", "R13", "R25", "R26", "R29"],
+    "3": ["R14", "R15", "R19", "R27", "R28"],
+    "4": ["R16", "R17", "R18"],
+    "5": ["R20", "R21", "R22", "R23", "R24"],
+    "6": ["R30", "R31"]
+  },
+  "single_writer": true,
+  "verification_unit": "one fresh verifier per complete wave",
+  "correction_unit": "all failures from the active wave in one consolidated correction pass",
+  "forbidden": ["other branches", "merge", "pull request", "deployment", "credentials", "paid or live providers", "spending", "production or real-user data changes"],
+  "exact_next_action": "Run mandatory preflight, create the mounted-interface census from the real application root, then independently verify and repair R08 in the live import paths as part of Wave 1 before continuing R09 and R10."
 }
