@@ -31,7 +31,7 @@ sequentially, or with `isolation: "worktree"`, never sharing one working directo
 ## Requirements Status
 
 ### Group 1 — Local input and creation flows
-- R07 Create Template — IMPLEMENTED, AWAITING FRESH BROWSER VERIFICATION (commit `4003e49`)
+- R07 Create Template — FAILED — RETURNED FOR REPAIR (fixed wrong component; see Session 6)
 - R08 Session Import Selector — IMPLEMENTED, AWAITING FRESH BROWSER VERIFICATION (commit `0cd7814`)
 - R09 File Attachment — PENDING
 - R10 URL Context — PENDING
@@ -109,7 +109,48 @@ Reset to `b5952ef`, recovered R08's stashed implementation, split the mixed comm
 into `4003e49` (R07 only) and `0cd7814` (R08 only). Re-ran full suite: 748/748 passing.
 Build: success. Progress ledger rewritten to remove premature PASS claims.
 
-**Next action:** Dispatch a fresh verification agent for R07 that operates the actual
-rendered browser UI (not just component/store logic) and records concrete evidence.
-Then do the same for R08. Only after both pass real browser verification does Group 1
-continue to R09.
+### Session 6 — R07 verification FAILED: wrong component fixed entirely
+
+A fresh verification agent used Playwright against a real browser (working around a
+sandbox-specific issue where `npm run dev` never resolves past "Loading account" —
+the project's own `playwright.config.ts` already documents this and its e2e specs
+use `npm run build && npx vite preview` with `/api/verify-access` and `/api/account`
+mocked via `page.route()`; that pattern is confirmed to work and should be reused).
+
+**Finding:** `src/components/session/LoadTemplateMenu.tsx` — the file both R07 attempts
+(`214de21`, `4003e49`) edited — is dead code. `grep -rn "LoadTemplateMenu"` outside its
+own file finds only a barrel re-export (`src/components/session/index.ts`) and its own
+unit test. No component ever renders `<LoadTemplateMenu>`. `git log --follow` confirms
+this file already existed unused before this repair branch started (`e35083e`), so both
+R07 fixes had zero effect on what a user can see or click.
+
+**The real, live template UI** is `TemplatesScreen` in `src/components/layout/ScreenRouter.tsx`
+(reached via Saved Tools → Templates), which:
+- Already has a working, visible Edit control (`Pencil` icon button, `title="Edit template"`,
+  `handleEditTemplate`/`handleSaveEdit`/`handleCancelEdit`) — verified working in-browser
+  by the same verification agent for create/save/reload/load/edit/save/edit/cancel/reload.
+- Has the *same underlying defect* originally diagnosed: `formData` (used by both the
+  create form and the edit form) has no `context` or `starterQuestion` fields, and neither
+  `handleCreateTemplate` nor `handleSaveEdit` capture them. There is also no input field in
+  either rendered form for a starter question or context items.
+- `handleLoadTemplate` already reads `template.context` and `template.starterQuestion` if
+  present — so loading is ready, but nothing ever sets those fields via this screen.
+
+**Corrected next action:** Implement the R07 fix in `TemplatesScreen`
+(`src/components/layout/ScreenRouter.tsx`), not `LoadTemplateMenu.tsx`:
+1. Add a starter-question field to `formData` and to both the create-form and edit-form JSX.
+2. Decide and implement how context items are captured (likely: snapshot the active
+   session's current context, matching how `handleLoadTemplate` re-applies it — consult
+   `useSessionStore`'s `context` state).
+3. Update `handleCreateTemplate` and `handleSaveEdit` to persist these fields via
+   `addTemplate`/`updateTemplate`.
+4. Consider removing the orphaned `LoadTemplateMenu.tsx`/its test/barrel export as
+   cleanup, since it directly caused two wasted repair-and-verify cycles by looking like
+   the real component — optional but recommended if it doesn't risk other work.
+5. Verify with Playwright against `vite preview` (not `vite dev`), mocking `/api/verify-access`
+   and `/api/account` the way the project's own `e2e/` specs already do.
+6. A fresh verifier must repeat the full click-through sequence and confirm
+   context/starterQuestion actually round-trip through create → save → reload → load.
+
+Only after that passes does Group 1 continue to R09. R08 (`0cd7814`) still needs its own
+fresh real-browser verification pass, independent of this R07 rework.
