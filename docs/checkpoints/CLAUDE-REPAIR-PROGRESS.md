@@ -9,8 +9,8 @@
 - **Completed Groups:** 0/5
 - **Passed Requirements:** 1/25 (R07)
 - **Current Session:** R07 PASSED with independent real-browser evidence (commit
-  `8bbd3ab`). R08 implementation exists (commit `0cd7814`) and awaits its own
-  independent fresh verification.
+  `8bbd3ab`). R08's first implementation (commit `0cd7814`) targeted dead code and
+  FAILED verification; redirected to the real live import flows.
 
 ## Process note — commit history correction (2026-08-27)
 
@@ -118,16 +118,50 @@ actionability checks.
 
 **R07 STATUS: PASSED — EVIDENCE RECORDED.**
 
-**Next action:** Dispatch a fresh, independent verification agent for R08 (commit
-`0cd7814`, Session 4), same real-browser standard. Continue running one agent at a
-time (implementation or verification) to avoid repeating the Session 5 working-tree
-race condition.
+### Session 9 — R08 verification FAILED: also fixed dead code
+
+Same failure mode as R07 Sessions 2-6, one requirement later. Independent verifier's
+mandatory first step (confirm the component is actually mounted before touching a
+browser) caught it without needing to run Playwright:
+
+- `grep -rn "ImportModal" src/` outside `ImportModal.tsx`/`ImportModal.test.ts` finds
+  only comments (a stale doc reference in `ocr.ts`, CSS comments). No file anywhere
+  contains `<ImportModal`, an import of it, or a `lazy()` reference.
+- `src/components/session/index.ts` never exported it (only `QuickActionsRow` and
+  `SavedPromptsMenu` — the barrel's own header already documents `LoadTemplateMenu`
+  being removed for the same reason, but `ImportModal` was never wired in at all).
+- `ImportModal.test.ts`'s own header states it tests "import logic and data flow"
+  only and that "UI rendering is covered separately by visual testing" — no such
+  visual testing exists anywhere in the repo.
+- **The real, live import UX is split across two components that commit `0cd7814`
+  never touched:**
+  - `src/components/session/QuickActionsRow.tsx` — mounted at
+    `src/components/pipeline/CenterColumn.tsx:687` (`<QuickActionsRow />`, part of the
+    real render tree). Has its own inline `dialog === "import"` state and its own
+    picker/preview/confirm/cancel UI around lines 220-230.
+  - `src/components/layout/ScreenRouter.tsx` — its own `handleImportSession` file-input
+    handlers at lines 517 and 1765, a separate import path.
+
+**Corrected next action:** Implement R08 in the real live component(s)
+(`QuickActionsRow.tsx`'s inline import dialog, and/or `ScreenRouter.tsx`'s
+`handleImportSession`, whichever is the actual user-facing "Session Import Selector"
+this requirement describes — investigate both, determine if they're the same
+conceptual flow or two distinct ones, and fix whichever is missing preview/validation/
+explicit-confirmation/actionable-rejection/atomicity). Consider removing the orphaned
+`ImportModal.tsx` + its test file as cleanup (same treatment as `LoadTemplateMenu.tsx`
+in R07), but only after confirming zero live references, same as before. Verify with
+real Playwright browser testing (vite preview + route mocks, per the now-established
+pattern in `e2e/templates.spec.ts`), and dispatch a fresh independent verifier
+afterward — same standard, same "confirm it's actually mounted first" check.
+
+Continue running one agent at a time (implementation or verification) to avoid
+repeating the Session 5 working-tree race condition.
 
 ## Requirements Status
 
 ### Group 1 — Local input and creation flows
 - R07 Create Template — PASSED — EVIDENCE RECORDED (commit `8bbd3ab`, see Session 8)
-- R08 Session Import Selector — IMPLEMENTED, AWAITING FRESH BROWSER VERIFICATION (commit `0cd7814`)
+- R08 Session Import Selector — FAILED — RETURNED FOR REPAIR (fixed dead `ImportModal.tsx`; see Session 9)
 - R09 File Attachment — PENDING
 - R10 URL Context — PENDING
 
