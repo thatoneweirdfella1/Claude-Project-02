@@ -15,7 +15,6 @@ import { AdvancedControls } from "./AdvancedControls";
 import { DestinationAiDropdown } from "./DestinationAiDropdown";
 import { InputBox } from "./InputBox";
 import { TranslateAskButton } from "./TranslateAskButton";
-import { CONNECTED_EXECUTION_AVAILABLE } from "../../services/executionAvailability";
 
 export interface ComposerProps {
   onSubmit: (request: TranslateAskRequest) => void | boolean | Promise<void | boolean>;
@@ -64,6 +63,6 @@ export function Composer({ onSubmit, onAttach, onContext, detection, detectionSt
     </div>
     <div className="composer-inline-feedback" role="status" aria-live="polite" aria-atomic="true">{feedback || "\u00a0"}</div>
     <AdvancedControls />
-    {hasConversation && <div className="composer__footer-row frozen-post-submit-tools"><TransparencyCard />{CONNECTED_EXECUTION_AVAILABLE ? <MultiAiActions /> : <div className="settings-section__note" role="status">Multi-AI comparison remains unavailable until external providers are safely connected.</div>}</div>}
+    {hasConversation && <div className="composer__footer-row frozen-post-submit-tools"><TransparencyCard /><MultiAiActions /></div>}
   </section>;
 }
