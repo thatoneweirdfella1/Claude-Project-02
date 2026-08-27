@@ -17,6 +17,7 @@ const FILE_ITEM: ContextItem = {
   label: "notes.txt",
   content: "hello",
   bytes: 2048,
+  provenance: "Uploaded",
 };
 
 const URL_ITEM: ContextItem = {
@@ -25,6 +26,7 @@ const URL_ITEM: ContextItem = {
   label: "https://example.com/article",
   content: "article text",
   bytes: 1_048_576, // 1MB
+  provenance: "Loaded from URL",
 };
 
 describe("buildSnapshotItems — combines session.context and session.variables", () => {
@@ -35,12 +37,13 @@ describe("buildSnapshotItems — combines session.context and session.variables"
   it("includes every session.context item, keyed by its own id", () => {
     const items = buildSnapshotItems([FILE_ITEM, URL_ITEM], {});
     expect(items.map((i) => i.id)).toEqual(["ctx-1", "ctx-2"]);
-    expect(items[0]).toEqual({ id: "ctx-1", kind: "file", label: "notes.txt", detail: "2.0 KB" });
+    expect(items[0]).toEqual({ id: "ctx-1", kind: "file", label: "notes.txt", detail: "2.0 KB", provenance: "Uploaded" });
     expect(items[1]).toEqual({
       id: "ctx-2",
       kind: "url",
       label: "https://example.com/article",
       detail: "1.0 MB",
+      provenance: "Loaded from URL",
     });
   });
 
@@ -96,5 +99,42 @@ describe("SNAPSHOT_KIND_LABELS", () => {
     expect(SNAPSHOT_KIND_LABELS.url).toBe("URL");
     expect(SNAPSHOT_KIND_LABELS.text).toBe("Text");
     expect(SNAPSHOT_KIND_LABELS.variable).toBe("Variable");
+  });
+});
+
+describe("R09 — File Attachment provenance", () => {
+  it("preserves provenance from context items", () => {
+    const items = buildSnapshotItems([FILE_ITEM], {});
+    expect(items[0].provenance).toBe("Uploaded");
+  });
+
+  it("includes provenance in the snapshot item when present", () => {
+    const pasted: ContextItem = {
+      id: "ctx-pasted",
+      kind: "text",
+      label: "My Notes",
+      content: "Some text",
+      bytes: 100,
+      provenance: "Pasted",
+    };
+    const items = buildSnapshotItems([pasted], {});
+    expect(items[0].provenance).toBe("Pasted");
+  });
+
+  it("handles items without provenance gracefully", () => {
+    const noProv: ContextItem = {
+      id: "ctx-no-prov",
+      kind: "text",
+      label: "Old Item",
+      content: "text",
+      bytes: 50,
+    };
+    const items = buildSnapshotItems([noProv], {});
+    expect(items[0].provenance).toBeUndefined();
+  });
+
+  it("does not add provenance to variables", () => {
+    const items = buildSnapshotItems([], { x: "value" });
+    expect(items[0].provenance).toBeUndefined();
   });
 });

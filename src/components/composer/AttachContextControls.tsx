@@ -111,7 +111,7 @@ export function AttachContextControls({ onAttach = () => {}, onContext = () => {
     setPendingFiles(names);
     setRejections([]);
     try {
-      const { accepted, rejected } = await uploadFiles(fileList, currentSessionBytes(), { ocrClient: getSharedOcrClient() });
+      const { accepted, rejected } = await uploadFiles(fileList, currentSessionBytes(), { ocrClient: getSharedOcrClient(), provenance: "Uploaded" });
       for (const item of accepted) addContextItem(item);
       setRejections(rejected);
     } finally {
@@ -123,7 +123,7 @@ export function AttachContextControls({ onAttach = () => {}, onContext = () => {
     const name = textName.trim();
     const content = textValue.trim();
     if (!name || !content) return;
-    addContextItem({ id: contextId("text"), kind: "text", label: name, content, bytes: textBytes(content) });
+    addContextItem({ id: contextId("text"), kind: "text", label: name, content, bytes: textBytes(content), provenance: "Pasted" });
     closePopover();
   }
 
@@ -149,7 +149,7 @@ export function AttachContextControls({ onAttach = () => {}, onContext = () => {
   function addUrlReferenceOnly() {
     const value = urlValue.trim();
     if (!value) return;
-    addContextItem({ id: contextId("url"), kind: "url", label: value, content: value, bytes: textBytes(value) });
+    addContextItem({ id: contextId("url"), kind: "url", label: value, content: value, bytes: textBytes(value), provenance: "URL reference" });
     closePopover();
   }
 

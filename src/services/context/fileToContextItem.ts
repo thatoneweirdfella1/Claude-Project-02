@@ -44,6 +44,9 @@ export interface ReadFileOptions {
       extracted through this client instead of the placeholder. Omit to keep
       Step 7.1's original placeholder-only behavior (e.g. offline tests). */
   ocrClient?: OcrClient;
+  /** R09 — origin/source of this file (e.g., "Uploaded", "Imported").
+      Optional; display layer provides sensible defaults if omitted. */
+  provenance?: string;
 }
 
 async function extractImageContent(file: File, ocrClient: OcrClient | undefined): Promise<string> {
@@ -99,5 +102,6 @@ export async function readFileAsContextItem(
     label: file.name,
     content,
     bytes: file.size,
+    ...(options.provenance && { provenance: options.provenance }),
   };
 }

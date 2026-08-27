@@ -42,7 +42,7 @@ export function ContextSnapshotContent() {
           <div className="context-snapshot-panel__row-text">
             <span className="context-snapshot-panel__row-kind">{SNAPSHOT_KIND_LABELS[item.kind]}</span>
             <span className="context-snapshot-panel__row-label">{item.label}</span>
-            <span className="context-snapshot-panel__row-detail">{item.detail}</span>
+            <span className="context-snapshot-panel__row-detail">{item.detail}{item.provenance ? ` · ${item.provenance}` : ""}</span>
           </div>
           <button type="button" className="context-snapshot-panel__row-remove" aria-label={`Remove ${item.label} from context`} onClick={() => handleRemove(item.id)}>×</button>
         </li>

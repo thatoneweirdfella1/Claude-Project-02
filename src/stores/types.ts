@@ -289,6 +289,9 @@ export interface ContextItem {
   bytes: number;
   /** Excluded items remain attached for later use but are not sent. */
   included?: boolean;
+  /** Source/origin of this context item (e.g., "Uploaded", "Imported", "Pasted").
+      Optional for backward compatibility; display layer provides sensible defaults. */
+  provenance?: string;
 }
 
 /* ── Account-store domain types ───────────────────────────────────────── */

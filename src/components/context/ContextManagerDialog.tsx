@@ -44,7 +44,7 @@ export function ContextManagerDialog({ onClose, onAddMore }: ContextManagerDialo
             return <div key={item.id} className="context-manager-row">
               <label>
                 <input type="checkbox" checked={included} onChange={(event) => setContextIncluded(item.id, event.target.checked)} />
-                <span><strong>{item.label}</strong><small>{item.kind} · {item.bytes.toLocaleString()} bytes · {included ? "Included" : "Excluded"}</small></span>
+                <span><strong>{item.label}</strong><small>{item.kind} · {item.bytes.toLocaleString()} bytes{item.provenance ? ` · ${item.provenance}` : ""} · {included ? "Included" : "Excluded"}</small></span>
               </label>
               <div>
                 <button type="button" onClick={() => setPreviewId(item.id)}>Preview</button>
@@ -63,7 +63,7 @@ export function ContextManagerDialog({ onClose, onAddMore }: ContextManagerDialo
         </div>}
 
       {preview && <div className="context-manager-preview" role="region" aria-label={`Preview ${preview.label}`}>
-        <div><strong>{preview.label}</strong><span>{preview.kind} · {preview.bytes.toLocaleString()} bytes · {isContextIncluded(preview) ? "Included" : "Excluded"}</span></div>
+        <div><strong>{preview.label}</strong><span>{preview.kind} · {preview.bytes.toLocaleString()} bytes{preview.provenance ? ` · ${preview.provenance}` : ""} · {isContextIncluded(preview) ? "Included" : "Excluded"}</span></div>
         <pre>{preview.content || "No readable text was extracted."}</pre>
         <div>
           <button type="button" onClick={() => setContextIncluded(preview.id, !isContextIncluded(preview))}>
