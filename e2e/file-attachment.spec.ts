@@ -50,8 +50,13 @@ test.describe("R09 File Attachment", () => {
       buffer: Buffer.from(fileContent),
     });
 
-    // Wait for file to appear in the snapshot
+    // Wait for file to appear in the page
     await page.waitForSelector("text=test.txt");
+
+    // Expand the Context Snapshot accordion panel (sidebar)
+    const contextPanel = page.locator(".accordion-panel").filter({ hasText: "Context Snapshot" });
+    const panelHeader = contextPanel.locator("button.accordion-panel__header");
+    await panelHeader.click();
 
     // Check that the file appears in the context snapshot
     const fileRow = page.locator(".context-snapshot-panel__row", { has: page.locator("text=test.txt") });
@@ -76,8 +81,14 @@ test.describe("R09 File Attachment", () => {
     // Wait for file to appear
     await page.waitForSelector("text=test.txt");
 
-    // Open the context manager to check inclusion state
-    await page.click("button:has-text('View All')");
+    // Expand the Context Snapshot accordion panel
+    const contextPanel = page.locator(".accordion-panel").filter({ hasText: "Context Snapshot" });
+    const panelHeader = contextPanel.locator("button.accordion-panel__header");
+    await panelHeader.click();
+
+    // Open the context manager via "Manage context" button inside the accordion
+    const manageButton = page.locator(".context-snapshot-panel__summary").locator("button:has-text('Manage context')");
+    await manageButton.evaluate((el: HTMLElement) => { (el as HTMLButtonElement).click(); });
 
     // Wait for dialog
     await page.waitForSelector("text=Manage Context");
@@ -113,12 +124,20 @@ test.describe("R09 File Attachment", () => {
     // Wait for file to appear
     await page.waitForSelector("text=test.txt");
 
-    // Open the context manager
-    await page.click("button:has-text('View All')");
+    // Expand the Context Snapshot accordion panel
+    const contextPanel = page.locator(".accordion-panel").filter({ hasText: "Context Snapshot" });
+    const panelHeader = contextPanel.locator("button.accordion-panel__header");
+    await panelHeader.click();
+
+    // Open the context manager via "Manage context" button inside the accordion
+    const manageButton = page.locator(".context-snapshot-panel__summary").locator("button:has-text('Manage context')");
+    await manageButton.evaluate((el: HTMLElement) => { (el as HTMLButtonElement).click(); });
+
     await page.waitForSelector("text=Manage Context");
 
     // Click the Remove button
-    await page.click('button:has-text("Remove")');
+    const removeButton = page.locator(".context-manager-row").filter({ has: page.locator("text=test.txt") }).locator('button:has-text("Remove")');
+    await removeButton.evaluate((el: HTMLElement) => { (el as HTMLButtonElement).click(); });
 
     // Check that the file is no longer in the list
     const fileRow = page.locator(".context-manager-row", { has: page.locator("text=test.txt") });
@@ -159,6 +178,11 @@ test.describe("R09 File Attachment", () => {
     // Wait for file to appear
     await page.waitForSelector("text=persistent.txt");
 
+    // Expand the Context Snapshot accordion panel
+    const contextPanel = page.locator(".accordion-panel").filter({ hasText: "Context Snapshot" });
+    const panelHeader = contextPanel.locator("button.accordion-panel__header");
+    await panelHeader.click();
+
     // Verify it appears with correct provenance
     await expect(page.locator(".context-snapshot-panel__row")).toContainText("Uploaded");
 
@@ -168,6 +192,9 @@ test.describe("R09 File Attachment", () => {
     // Reload the page
     await page.reload();
     await afterReload(page);
+
+    // Expand the Context Snapshot panel again after reload
+    await panelHeader.click();
 
     // Check that the file is still there
     await expect(page.locator(".context-snapshot-panel__row")).toContainText("persistent.txt");
@@ -184,18 +211,27 @@ test.describe("R09 File Attachment", () => {
     });
 
     await page.waitForSelector("text=uploaded.txt");
+
+    // Expand the Context Snapshot accordion panel
+    const contextPanel = page.locator(".accordion-panel").filter({ hasText: "Context Snapshot" });
+    const panelHeader = contextPanel.locator("button.accordion-panel__header");
+    await panelHeader.click();
+
     await expect(page.locator(".context-snapshot-panel__row")).toContainText("Uploaded");
 
     // Open Add Context menu
-    await page.click("button:has-text('Add Context')");
+    const addContextButton = page.locator("button:has-text('Add Context')");
+    await addContextButton.evaluate((el: HTMLElement) => { (el as HTMLButtonElement).click(); });
 
     // Add pasted text (should show "Pasted")
     await page.click("text=Paste Text");
     await page.fill("input[placeholder='Meeting notes']", "My Notes");
     await page.fill("textarea", "This is pasted content");
-    await page.click("button:has-text('Add Text')");
 
-    // Check that pasted text shows "Pasted" provenance
-    await expect(page.locator(".context-snapshot-panel__row")).toContainText("Pasted");
+    const addTextButton = page.locator("button:has-text('Add Text')").first();
+    await addTextButton.evaluate((el: HTMLElement) => { (el as HTMLButtonElement).click(); });
+
+    // Check that pasted text shows "Pasted" provenance (find the row with "My Notes")
+    await expect(page.locator(".context-snapshot-panel__row").filter({ has: page.locator("text=My Notes") })).toContainText("Pasted");
   });
 });
