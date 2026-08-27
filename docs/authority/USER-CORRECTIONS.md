@@ -62,6 +62,17 @@ Only dated, scoped, exact user corrections belong here. They supersede older aut
 - Conflict resolution: this scoped correction supersedes every general instruction to continue all seven layers on `horizontal-layer-completion-v1`.
 - App implementation authority: not granted by this correction; it governs branch creation and isolation only.
 
+### 2026-08-27 — User-outcome repair and deployment
+
+- Exact user wording: `do it allwith checkppoints, go`
+- Contextual scope: finish the deployed-site user-outcome audit, preserve checkpoints, repair the confirmed connected messaging defects, deploy the repaired current lineage, and verify the deployed outcomes.
+- Required primary action: a clear visible `Send` action. This scoped current correction supersedes DR-007 only as to the visible primary-action label; translation/review behavior remains intact.
+- Required response-import outcome: open paste dialog, validate input, add confirmed response to the correct thread, change the handoff to imported/answered, autosave, and survive reload/session load.
+- Branch isolation: work occurs only on `codex-verified/user-outcome-repair-v1`, created from `codex-verified/layer-7-v2@ac3edfcbe161408eb2b3b9450a797da3ce0ff858`.
+- Application/test/deployment authority: granted only for the frozen batch in `docs/layer-system/BATCH-SCOPE.json`.
+- External-effects boundary: no real provider calls, payments, credentials, identity changes, or remote user-data mutation are authorized.
+- Completion law: source/build status is insufficient; the matching deployed branch must pass the exact visible user workflow.
+
 ## Required format for future entries
 
 - Date
