@@ -1,94 +1,59 @@
-# DIVERGENCE.AI — BINDING SINGLE-PROBLEM R08 TRIAL
+# DIVERGENCE.AI — BINDING CLAUDE REPAIR LAW
 
-## Scope
+## Identity
 
 - Repository: `thatoneweirdfella1/Claude-Project-02`
 - Only writable branch: `claude/whole-site-repair-v1`
-- Only authorized repair: `R08 Session Import Selector`
-- Model: Sonnet
-- One writing session only
-- No subagents
-- Stop after R08
+- Clean starting commit: `e1a4b0cb97572ed023c281efe909f2bd41b880ca`
+- Work order: `docs/repair-authority/CLAUDE-WHOLE-SITE-REPAIR-WORK-ORDER.md`
+- Progress ledger: `docs/checkpoints/CLAUDE-REPAIR-PROGRESS.md`
 
-Do not begin R09 or any later requirement.
+This file is binding. Claude must read it at the start of every session and before delegating any work.
 
-## Required outcome
+## Mission
 
-The actual rendered application must provide a live session-import workflow where the user can:
+Complete every remaining user-visible repair in the work order. Do not replace implementation with inspection, planning, documentation, or claims that existing code looks correct.
 
-1. Open the import control through visible navigation.
-2. Choose a supported session-export file.
-3. See a preview before anything is imported.
-4. Receive clear validation and actionable rejection for invalid or unsupported input.
-5. Explicitly confirm before importing.
-6. Cancel without changing session data.
-7. Import successfully after confirmation.
-8. Experience no partial import if validation or application fails.
-9. See the imported session persist after reload when persistence applies.
+## Required autonomous loop
 
-## Mandatory mounted-target check
+Claude is the coordinator. The user does not manage branches, agents, tests, checkpoints, or failed work.
 
-Before editing:
+For each requirement, in order:
 
-1. Start from `src/main.tsx`.
-2. Trace the real render chain to every visible session-import control.
-3. Prove each target renders in the built application through a browser locator.
-4. Inspect both known live candidates:
-   - `QuickActionsRow.tsx` inline import flow
-   - `ScreenRouter.tsx` session import handlers
-5. Determine whether both are live distinct user workflows.
-6. Do not edit `ImportModal.tsx` unless the render chain and browser both prove it is mounted. Prior evidence indicates it is dead code.
+1. Give a fresh implementation agent the requirement and relevant approved product authority.
+2. The implementer reproduces the failure, identifies the actual cause, implements the smallest complete repair, adds outcome-level regression tests, runs affected tests and the build, and commits only that repair.
+3. Give the commit to a different fresh verification agent that did not implement it.
+4. The verifier must try to break the exact rendered user workflow, inspect the diff, test success and failure paths, and test reload, persistence, cancellation, or partial failure where applicable.
+5. Code presence, handler presence, unit tests, build success, plans, checklists, and prior AI claims are not browser proof.
+6. If verification fails, automatically return the exact failure for another implementation pass. Repeat without involving the user.
+7. If verification passes, update the progress ledger with full commit SHA and evidence, then continue automatically.
+8. After every five passed requirements, commit a checkpoint and continue without waiting.
 
-Record the mounted paths briefly before editing. Do not build a whole-site census.
+## Completion law
 
-## Implementation
-
-Use one Sonnet session directly. Do not delegate.
-
-Reproduce R08 in the rendered application, repair every live R08 path necessary for one coherent truthful workflow, and remove confirmed dead R08 decoys only if their removal is safe and tested.
-
-The repair must include the UI, validation, state application, persistence boundary, cancellation, rejection, and atomic failure behavior required above.
-
-## Verification
-
-Verification is performed in this same trial to measure speed. It must still use real evidence:
-
-- Focused production-code tests
-- Production build
-- Playwright starting at the built application root
-- Visible navigation and controls
-- Valid supported fixture
-- Invalid JSON fixture
-- Unsupported/wrong-shape fixture
-- Preview and explicit confirmation
-- Cancel with no mutation
-- Failed import with no partial mutation
-- Successful import and reload persistence
-
-Tests may not recreate production logic or call stores directly to prove a visible workflow.
-
-## Completion
-
-Commit the coherent R08 repair and evidence. Report:
-
-- Actual mounted import paths
-- Root cause
-- Files changed
-- Focused tests
-- Full test result
-- Build result
-- Browser result for every required outcome
-- Exact full commit SHA
-- Any exact blocker
+Never mark a requirement complete unless its exact user-visible outcome was performed in the rendered application by a fresh verifier.
 
 Use only:
+- `PASSED — EVIDENCE RECORDED`
+- `FAILED — RETURNED FOR REPAIR`
+- `BLOCKED — EXACT EXTERNAL REQUIREMENT RECORDED`
 
-- `R08 PASSED — RENDERED EVIDENCE RECORDED`
-- `R08 FAILED — EXACT FAILURE RECORDED`
-- `R08 BLOCKED — EXACT EXTERNAL REQUIREMENT RECORDED`
+Never say all tests pass when any test fails. Never use an abbreviated or inconsistent SHA as deployment identity. Never mark an empty verification matrix complete. Never let Claude grade its own implementation pass.
 
-Then stop. Do not continue to R09.
+## Final whole-site verification
+
+After individual requirements pass, a fresh verification agent must census every visible screen and control: expected result, actual result, evidence, PASS/FAIL. Every failure returns automatically to repair. Repeat until no locally testable failure remains.
+
+## Donor restriction
+
+The rejected branch `account2/layer-8-candidate-v1` may be inspected only for defect ideas and tests. Do not merge, cherry-pick, copy its application code, or inherit its completion claims.
 
 ## Safety
 
-Do not modify another branch, merge, open a pull request, deploy, use credentials, call providers, spend money, or alter real user/production data.
+Allowed: inspect, edit, test, build, run locally, use local simulations, commit, and checkpoint on this branch.
+
+Forbidden without new explicit user authorization: modify another branch, merge, open a PR, deploy, use credentials or secrets, call paid/live providers, spend money, change production, or alter real user data.
+
+## Resume rule
+
+At every checkpoint update `docs/checkpoints/CLAUDE-REPAIR-PROGRESS.md` with passed, failed, blocked, current full SHA, current requirement, and exact next action. A new session resumes from that file without asking the user to reconstruct context.
