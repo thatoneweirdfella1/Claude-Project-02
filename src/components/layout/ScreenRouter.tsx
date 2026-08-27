@@ -1009,6 +1009,8 @@ function TemplatesScreen() {
   const setModel = useSessionStore((s) => s.setModel);
   const setDirectness = useSessionStore((s) => s.setDirectness);
   const setTechniques = useSessionStore((s) => s.setTechniques);
+  const addContextItem = useSessionStore((s) => s.addContextItem);
+  const setDraftInput = useSessionStore((s) => s.setDraftInput);
   const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
   const setScreenLocation = useSessionStore((s) => s.setScreenLocation);
 
@@ -1026,6 +1028,8 @@ function TemplatesScreen() {
     setModel(template.model);
     setDirectness(template.directness);
     setTechniques(template.techniques);
+    for (const item of template.context ?? []) addContextItem(item);
+    if (template.starterQuestion) setDraftInput(template.starterQuestion);
     setCurrentScreen("translate");
   };
 
@@ -1471,7 +1475,7 @@ function TemplatesScreen() {
         )}
 
         {templates.length === 0 && (
-          <p>No templates yet. Save a template from the Translate screen using "Close Session → Archive Tagged" or create one manually.</p>
+          <p>No templates yet. Create one here, or save current settings from Talk to AI.</p>
         )}
 
         {templates.length > 0 && builtInTemplates.length === 0 && customTemplates.length === 0 && (
