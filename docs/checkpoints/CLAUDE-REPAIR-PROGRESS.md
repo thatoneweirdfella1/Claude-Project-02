@@ -6,14 +6,14 @@
 
 ## Progress Status
 
-- **Completed Groups:** 0/5
-- **Passed Requirements:** 0/25
-- **Current Session:** Initializing...
+- **Completed Groups:** 0/5 (Group 1 in progress: 1/4)
+- **Passed Requirements:** 1/25
+- **Current Session:** R07 Complete
 
 ## Requirements Status
 
 ### Group 1 — Local input and creation flows
-- R07 Create Template — PENDING
+- R07 Create Template — FIXED ✓ (commit 214de210)
 - R08 Session Import Selector — PENDING
 - R09 File Attachment — PENDING
 - R10 URL Context — PENDING
@@ -52,3 +52,11 @@
 ### Session 1 — Initialization
 **Checkpoint:** Starting commit `e1a4b0cb97572ed023c281efe909f2bd41b880ca`
 **Next Action:** Dispatch fresh implementation agent for R07 (Create Template)
+
+### Session 2 — R07 Complete
+**Commit:** `214de210d5886f8c09c9f6fe32c35657de6adb9c`
+**Checkpoint:** CLAUDE-REPAIR-GROUP-1-R07.md
+**Summary:** Fixed saveCurrentAsTemplate() to capture context and starterQuestion
+**Tests:** 728 passed (added 19 new regression tests)
+**Build:** Success
+**Next Action:** Proceed to R08 (Session Import Selector)
