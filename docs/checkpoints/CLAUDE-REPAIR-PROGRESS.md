@@ -7,11 +7,10 @@
 ## Progress Status
 
 - **Completed Groups:** 0/5
-- **Passed Requirements:** 0/25
-- **Current Session:** R07 implementation repaired (visible Edit control added); commit
-  history corrected after a working-tree mixup. Both R07 and R08 implementations exist
-  and pass automated tests, but neither has passed a fresh verifier's real browser
-  workflow test yet. Do not count either as PASSED until that evidence exists.
+- **Passed Requirements:** 1/25 (R07)
+- **Current Session:** R07 PASSED with independent real-browser evidence (commit
+  `8bbd3ab`). R08 implementation exists (commit `0cd7814`) and awaits its own
+  independent fresh verification.
 
 ## Process note — commit history correction (2026-08-27)
 
@@ -86,10 +85,48 @@ for `e2e/templates.spec.ts` isolated in this session does not touch those other 
 files. Whoever picks up general E2E-suite health next should apply the same
 `/api/account` mock to the shared `e2e/credit-helpers.ts` / `e2e/mocks.ts` helpers.
 
+### Session 8 — R07 independently verified: PASSED
+
+A different fresh verification agent (no memory of the implementation) confirmed:
+- `TemplatesScreen` at `ScreenRouter.tsx:991` is genuinely the live, mounted component
+  — traced `AppShell.tsx` → `ScreenRouter` (the app's sole router) → `case "saved-tools"`
+  → `TemplatesScreen()`, and nav path `LeftNav.tsx` "Saved Tools" → screen `saved-tools`.
+- **Found a second decoy**: `src/screens/TemplatesScreen.tsx`, registered in an unused
+  `SCREENS` registry (`src/screens/index.ts`) that nothing imports — same trap shape as
+  the original `LoadTemplateMenu.tsx` false lead, one level deeper. Verifier confirmed
+  it's dead and did not mistake it for the real component.
+- Full lettered sequence (create w/ starter question → card shows it → reload →
+  rediscovered → Use Template → composer pre-filled → Edit → pre-populated form →
+  change + Save → reload → persisted → Edit again → change + Cancel → reload → NOT
+  persisted) passed against a real Chromium browser via `vite preview` + Playwright,
+  using both the committed `e2e/templates.spec.ts` and the verifier's own independent
+  script (not committed).
+- Context-capture round-trip (add context to session → create template → reload →
+  Use Template → context restored; edit+save → context still present, not dropped)
+  also verified.
+- `npm run test`: 727/727 passing. `npm run build`: green.
+- `LoadTemplateMenu.tsx` removal confirmed harmless (zero remaining references,
+  suite/build green).
+
+**Caveat noted, not a blocker:** a pre-existing, unrelated Playwright actionability
+quirk in `AttachContextControls.tsx`'s "Add Context" popover (pointer-event
+interception by `<main class="col-center">` at computed click coordinates under this
+app's `frozen-canvas` scaled layout) — worked around with `locator.evaluate()` click.
+Not touched by the R07 commit; flagged for whoever works R09/R10 (both touch context
+attachment) in case it affects real user interaction, not just Playwright's strict
+actionability checks.
+
+**R07 STATUS: PASSED — EVIDENCE RECORDED.**
+
+**Next action:** Dispatch a fresh, independent verification agent for R08 (commit
+`0cd7814`, Session 4), same real-browser standard. Continue running one agent at a
+time (implementation or verification) to avoid repeating the Session 5 working-tree
+race condition.
+
 ## Requirements Status
 
 ### Group 1 — Local input and creation flows
-- R07 Create Template — FAILED — RETURNED FOR REPAIR (fixed wrong component; see Session 6)
+- R07 Create Template — PASSED — EVIDENCE RECORDED (commit `8bbd3ab`, see Session 8)
 - R08 Session Import Selector — IMPLEMENTED, AWAITING FRESH BROWSER VERIFICATION (commit `0cd7814`)
 - R09 File Attachment — PENDING
 - R10 URL Context — PENDING
