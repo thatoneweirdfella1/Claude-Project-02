@@ -171,3 +171,116 @@
 .import-modal__file-input {
   display: none;
 }
+
+/* R08: Session Import Selector — File preview and confirmation UI */
+
+.import-modal__file-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--space-list-item-margin);
+  background: var(--surface-smoked-glass);
+  border: 1px solid var(--surface-smoked-glass-border);
+  border-radius: var(--radius-button);
+}
+
+.import-modal__label {
+  margin: 0;
+  font-size: var(--font-size-meta);
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.import-modal__label--muted {
+  color: var(--text-secondary);
+}
+
+.import-modal__filename {
+  margin: 0;
+  font-size: var(--font-size-body);
+  color: var(--text-primary);
+  font-weight: 600;
+  word-break: break-all;
+}
+
+.import-modal__preview {
+  padding: var(--space-list-item-margin);
+  border-radius: var(--radius-button);
+  border-left: 3px solid;
+}
+
+.import-modal__preview--ok {
+  background: rgba(76, 175, 80, 0.1);
+  border-color: var(--status-online);
+}
+
+.import-modal__preview--problem {
+  background: rgba(255, 152, 0, 0.1);
+  border-color: var(--accent-orange);
+}
+
+.import-modal__preview p {
+  margin: 0;
+  font-size: var(--font-size-body);
+  color: var(--text-primary);
+}
+
+.import-modal__preview--ok p {
+  color: var(--text-primary);
+}
+
+.import-modal__preview--problem p {
+  color: var(--text-primary);
+}
+
+.import-modal__preview-detail {
+  margin-top: 4px;
+  font-size: var(--font-size-meta);
+  color: var(--text-secondary);
+}
+
+.import-modal__actions {
+  display: flex;
+  gap: var(--space-list-item-margin);
+  flex-direction: row-reverse;
+}
+
+.import-modal__action-button {
+  flex: 1;
+  min-height: 44px;
+  padding: 0 var(--space-row-margin);
+  border-radius: var(--radius-button);
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-body);
+  cursor: pointer;
+  border: 1px solid var(--surface-smoked-glass-border);
+}
+
+.import-modal__action-button--primary {
+  border-color: var(--accent-cyan);
+  font-weight: 600;
+}
+
+.import-modal__action-button--primary:hover:not(:disabled) {
+  border-color: var(--accent-cyan);
+  background: rgba(0, 188, 212, 0.1);
+}
+
+.import-modal__action-button--primary:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.import-modal__action-button--secondary {
+  border-color: var(--surface-smoked-glass-border);
+}
+
+.import-modal__action-button--secondary:hover:not(:disabled) {
+  border-color: var(--text-secondary);
+}
+
+.import-modal__action-button--secondary:disabled {
+  opacity: 0.5;
+  cursor: default;
+}

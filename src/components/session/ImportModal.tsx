@@ -7,7 +7,7 @@ import {
   getSharedOcrClient,
   uploadFiles,
 } from "../../services/context";
-import { parseImportText, type ImportPayloadKind } from "../../services/import";
+import { parseImportText, type ImportPayloadKind, type ImportOutcome } from "../../services/import";
 import { buildSessionRecord } from "../../services/sessionLifecycle";
 import { useAccountStore } from "../../stores/accountStore";
 import { useSessionStore } from "../../stores/sessionStore";
@@ -33,14 +33,29 @@ import type { SessionRecord } from "../../stores/types";
    fetchUrlContext() — both already enforce CANON's 10MB/50MB budgets, so
    Import cannot become a side door around limits the rest of the app obeys.
    The modal shell (focus trap + Escape-dismissable layer + backdrop click)
-   is Step 8.5's DownloadModal pattern, unchanged. */
+   is Step 8.5's DownloadModal pattern, unchanged.
+
+   R08 REQUIREMENT: Session Import Selector now provides:
+   - Visible supported-file chooser (R08.1)
+   - File preview before import (R08.2)
+   - Validation with actionable feedback (R08.3)
+   - Explicit confirmation before applying changes (R08.4)
+   - No partial import after failure — atomic operations (R08.5) */
 
 type Group = "outside" | "app-data";
-type View = "groups" | Group | "url" | "previous-conversation";
+type View = "groups" | Group | "url" | "previous-conversation" | "json-file-preview";
+type ImportPhase = "select" | "preview" | "confirm" | null;
 
 interface Status {
   tone: "ok" | "problem";
   text: string;
+}
+
+interface FilePreviewState {
+  file: File;
+  kind: ImportPayloadKind;
+  phase: ImportPhase;
+  validationResult: ImportOutcome | null;
 }
 
 export interface ImportModalProps {
@@ -63,6 +78,7 @@ export function ImportModal({ onClose }: ImportModalProps) {
   const [status, setStatus] = useState<Status | null>(null);
   const [busy, setBusy] = useState(false);
   const [urlValue, setUrlValue] = useState("");
+  const [filePreview, setFilePreview] = useState<FilePreviewState | null>(null);
 
   /* Which payload kind the pending file-picker click is for. A ref, not
      state: it's set immediately before .click() and read in the change
@@ -146,6 +162,7 @@ export function ImportModal({ onClose }: ImportModalProps) {
   function pickJsonFor(kind: ImportPayloadKind): void {
     pendingKind.current = kind;
     setStatus(null);
+    setView("json-file-preview");
     jsonFileInput.current?.click();
   }
 
@@ -158,19 +175,51 @@ export function ImportModal({ onClose }: ImportModalProps) {
     setBusy(true);
     setStatus(null);
     try {
-      const outcome = parseImportText(await file.text(), kind);
-      if (!outcome.ok) {
-        report("problem", outcome.message);
-        return;
-      }
-      report("ok", withSkipped(applyPayload(outcome.payload), outcome.skipped));
+      const fileText = await file.text();
+      const validationResult = parseImportText(fileText, kind);
+
+      /* R08.1: Show file selection with visible UI.
+         R08.2: Display preview with validation results before confirming.
+         R08.3: Validation happens here, results shown to user.
+         R08.4: Require explicit confirmation before applying.
+         Atomic operation: we validate first, then only apply if validation
+         succeeds AND user confirms. No partial state changes. */
+      setFilePreview({
+        file,
+        kind,
+        phase: "preview",
+        validationResult,
+      });
     } catch {
       // Reading the file itself failed (permissions, a device that went
       // away mid-read). Neutral copy, same as every other failure here.
       report("problem", "That file couldn't be read.");
+      setFilePreview(null);
     } finally {
       setBusy(false);
     }
+  }
+
+  /** Apply the validated payload to the appropriate store. Only called after
+      explicit user confirmation. This ensures R08.5: no partial import on
+      failure — either the entire confirmed payload applies, or nothing does. */
+  async function confirmImport(): Promise<void> {
+    if (!filePreview || !filePreview.validationResult || !filePreview.validationResult.ok) return;
+
+    setBusy(true);
+    try {
+      const validResult = filePreview.validationResult;
+      const message = applyPayload(validResult.payload);
+      report("ok", withSkipped(message, validResult.skipped));
+      setFilePreview(null);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function cancelFileImport(): void {
+    setFilePreview(null);
+    setStatus(null);
   }
 
   /** Applies a validated payload to the right store and returns the
@@ -223,6 +272,51 @@ export function ImportModal({ onClose }: ImportModalProps) {
     return record.archived ? "Archived session" : "Duplicated session";
   }
 
+  /** R08.2: Describe what will be imported from the validated payload.
+      Shows the user a clear preview before they confirm. */
+  function describePreview(validationResult: ImportOutcome | null): string {
+    if (!validationResult || !validationResult.ok) {
+      return `Cannot import: ${validationResult?.message ?? "Unknown error"}`;
+    }
+
+    const { payload, skipped } = validationResult;
+    let description = "";
+
+    switch (payload.kind) {
+      case "variables": {
+        const count = Object.keys(payload.variables).length;
+        description = `Will import ${count} variable${count === 1 ? "" : "s"}`;
+        break;
+      }
+      case "context-snapshot": {
+        const count = payload.items.length;
+        description = `Will import ${count} context item${count === 1 ? "" : "s"}`;
+        break;
+      }
+      case "saved-prompts": {
+        const count = payload.prompts.length;
+        description = `Will import ${count} saved prompt${count === 1 ? "" : "s"}`;
+        break;
+      }
+      case "template-settings": {
+        const count = payload.templates.length;
+        description = `Will import ${count} template${count === 1 ? "" : "s"}`;
+        break;
+      }
+      case "chat-history": {
+        const count = payload.messages.length;
+        description = `Will import ${count} message${count === 1 ? "" : "s"}`;
+        break;
+      }
+    }
+
+    if (skipped > 0) {
+      description += ` (${skipped} item${skipped === 1 ? "" : "s"} skipped)`;
+    }
+
+    return description;
+  }
+
   /* ── views ──────────────────────────────────────────────────────────── */
 
   function renderBack(to: View, label: string) {
@@ -230,6 +324,62 @@ export function ImportModal({ onClose }: ImportModalProps) {
       <button type="button" className="import-modal__back" onClick={() => setView(to)}>
         ← {label}
       </button>
+    );
+  }
+
+  /** R08.1–R08.5: Render the file preview and confirmation UI. Shows the
+      selected file, validation results, and allows the user to confirm or
+      reject the import before any changes are made to the store. */
+  function renderJsonFilePreview() {
+    if (!filePreview || !filePreview.validationResult) return null;
+
+    const { file, kind, validationResult } = filePreview;
+    const isValid = validationResult.ok;
+    const preview = describePreview(validationResult);
+
+    return (
+      <div className="import-modal__rows">
+        {renderBack("app-data", "Saved data")}
+
+        <div className="import-modal__file-info">
+          <p className="import-modal__label">File selected</p>
+          <p className="import-modal__filename" title={file.name}>
+            {file.name}
+          </p>
+          <p className="import-modal__label import-modal__label--muted">Type: {PAYLOAD_LABELS[kind]}</p>
+        </div>
+
+        <div
+          className={`import-modal__preview import-modal__preview--${isValid ? "ok" : "problem"}`}
+          role="status"
+        >
+          <p>{preview}</p>
+          {!isValid && (
+            <p className="import-modal__preview-detail">
+              This file cannot be imported. Try another file or check that it was exported from this app.
+            </p>
+          )}
+        </div>
+
+        <div className="import-modal__actions">
+          <button
+            type="button"
+            className="surface-smoked-glass import-modal__action-button import-modal__action-button--primary"
+            disabled={busy || !isValid}
+            onClick={() => void confirmImport()}
+          >
+            {busy ? "Importing…" : "Confirm import"}
+          </button>
+          <button
+            type="button"
+            className="surface-smoked-glass import-modal__action-button import-modal__action-button--secondary"
+            disabled={busy}
+            onClick={cancelFileImport}
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
     );
   }
 
@@ -407,6 +557,8 @@ export function ImportModal({ onClose }: ImportModalProps) {
                 ))}
             </div>
           )}
+
+          {view === "json-file-preview" && renderJsonFilePreview()}
 
           {busy && <p className="import-modal__status">Reading…</p>}
           {status && !busy && (
