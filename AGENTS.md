@@ -1,19 +1,11 @@
-# DIVERGENCE.AI — Codex verified lineage
+# DIVERGENCE.AI — CLAUDE REPAIR BRANCH
 
-Read `START-HERE-DIVERGENCE.md` first and follow its complete read order.
+This file applies only to `claude/whole-site-repair-v1`.
 
-The only writable branch for the current audit/recovery phase is `codex-verified/layer-3-v2`. It descends from the clean governance-only checkpoint immediately before the quarantined Layer 3 candidate and must never merge an Account 2 branch or inherit code from the quarantined candidate without the adoption gate.
+Read `CLAUDE.md` first. It is the controlling execution law for this branch.
 
-Before using any Account 2 or quarantined Codex-v1 result, read:
+Claude may inspect, implement, test, run locally, delegate fresh implementation and verification agents, commit, and checkpoint the work-order repairs only on this branch.
 
-- `docs/layer-system/DUAL-LINEAGE-GOVERNANCE.md`
-- `docs/layer-system/CODEX-L3-V1-CONTAMINATION-AUDIT-2026-08-26.md`
-- `docs/layer-system/ACCOUNT2-WORK-AUDIT-2026-08-25.md`
+Do not modify another branch, merge, deploy, use credentials, call paid providers, spend money, or alter real user data.
 
-All `archive/account2-*`, `archive/codex-layer-3-v1-contaminated-*`, `codex-verified/layer-3-v1`, `horizontal-layer-*-implementation-v1`, `horizontal-layer-completion-v1`, `build`, `frozen-implementation-v1`, and backup branches are read-only.
-
-Account 2 code and the quarantined Codex-v1 implementation may be inspected only as donor/evidence material. Code enters this lineage only by independent reimplementation from governing requirements or through a disposable evaluation branch followed by the complete adoption gate. Never merge, rebase, or fast-forward this branch from donor ancestry.
-
-Run the repository preflight when an executable checkout exists. When it does not, use authenticated GitHub API inspection and record that limitation honestly; lack of a local clone does not authorize edits or establish a test pass.
-
-Do not modify application behavior until `PERMISSIONS.yml`, `BATCH-SCOPE.json`, and the governing obligation rows all explicitly authorize the exact Codex-v2 batch. Never infer permission from Account 2 records, the quarantined v1 candidate, a green deployment, or prior model narration.
+If any older file names a different active branch or denies the work expressly authorized by `CLAUDE.md`, this branch-specific file and `CLAUDE.md` control. Product behavior still follows settled user authority; Claude may not invent a redesign.
