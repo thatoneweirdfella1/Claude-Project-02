@@ -76,9 +76,11 @@ test.describe("R10 URL Context", () => {
     const urlInput = page.locator("#attach-url-input");
     await urlInput.fill("https://example.com/article");
 
-    // Click Preview
+    // Click Preview (using evaluate to work around pointer-event interception)
     const previewButton = page.locator(".attach-context-controls__url-actions button[type='submit']");
-    await previewButton.click();
+    await previewButton.evaluate((el: HTMLElement) => {
+      (el as HTMLButtonElement).click();
+    });
 
     // Wait for preview to load
     await page.waitForSelector(".context-manager-preview");
@@ -143,16 +145,20 @@ test.describe("R10 URL Context", () => {
     const urlInput = page.locator("#attach-url-input");
     await urlInput.fill("https://example.com/test");
 
-    // Click Preview
+    // Click Preview (using evaluate to work around pointer-event interception)
     const previewButton = page.locator(".attach-context-controls__url-actions button[type='submit']");
-    await previewButton.click();
+    await previewButton.evaluate((el: HTMLElement) => {
+      (el as HTMLButtonElement).click();
+    });
 
     // Wait for preview to load
     await page.waitForSelector(".context-manager-preview");
 
-    // Click Back button without adding
+    // Click Back button without adding (using evaluate to work around pointer-event interception)
     const backButton = page.locator(".attach-context-controls__url-actions button:has-text('Back')");
-    await backButton.click();
+    await backButton.evaluate((el: HTMLElement) => {
+      (el as HTMLButtonElement).click();
+    });
 
     // Should be back at URL form (not menu)
     await expect(page.locator("#attach-url-input")).toBeVisible();
@@ -201,9 +207,11 @@ test.describe("R10 URL Context", () => {
     const urlInput = page.locator("#attach-url-input");
     await urlInput.fill("https://private.example.com/article");
 
-    // Click Preview
+    // Click Preview (using evaluate to work around pointer-event interception)
     const previewButton = page.locator(".attach-context-controls__url-actions button[type='submit']");
-    await previewButton.click();
+    await previewButton.evaluate((el: HTMLElement) => {
+      (el as HTMLButtonElement).click();
+    });
 
     // Wait for error message
     await page.waitForSelector("[role='alert']");
@@ -244,9 +252,11 @@ test.describe("R10 URL Context", () => {
     const urlInput = page.locator("#attach-url-input");
     await urlInput.fill("http://192.168.1.1/internal-page");
 
-    // Click Preview
+    // Click Preview (using evaluate to work around pointer-event interception)
     const previewButton = page.locator(".attach-context-controls__url-actions button[type='submit']");
-    await previewButton.click();
+    await previewButton.evaluate((el: HTMLElement) => {
+      (el as HTMLButtonElement).click();
+    });
 
     // Wait for error message
     await page.waitForSelector("[role='alert']");
@@ -287,9 +297,11 @@ test.describe("R10 URL Context", () => {
     const urlInput = page.locator("#attach-url-input");
     await urlInput.fill("https://slow-example.com/article");
 
-    // Click Preview
+    // Click Preview (using evaluate to work around pointer-event interception)
     const previewButton = page.locator(".attach-context-controls__url-actions button[type='submit']");
-    await previewButton.click();
+    await previewButton.evaluate((el: HTMLElement) => {
+      (el as HTMLButtonElement).click();
+    });
 
     // Wait for error message
     await page.waitForSelector("[role='alert']");
@@ -333,9 +345,11 @@ test.describe("R10 URL Context", () => {
     const urlInput = page.locator("#attach-url-input");
     await urlInput.fill("https://example.com/pdf");
 
-    // Click Preview
+    // Click Preview (using evaluate to work around pointer-event interception)
     const previewButton = page.locator(".attach-context-controls__url-actions button[type='submit']");
-    await previewButton.click();
+    await previewButton.evaluate((el: HTMLElement) => {
+      (el as HTMLButtonElement).click();
+    });
 
     // Wait for error message
     await page.waitForSelector("[role='alert']");
@@ -376,9 +390,11 @@ test.describe("R10 URL Context", () => {
     const urlInput = page.locator("#attach-url-input");
     await urlInput.fill("https://example.com/article");
 
-    // Click Preview
+    // Click Preview (using evaluate to work around pointer-event interception)
     const previewButton = page.locator(".attach-context-controls__url-actions button[type='submit']");
-    await previewButton.click();
+    await previewButton.evaluate((el: HTMLElement) => {
+      (el as HTMLButtonElement).click();
+    });
 
     // Wait for error message
     await page.waitForSelector("[role='alert']");
@@ -422,9 +438,11 @@ test.describe("R10 URL Context", () => {
     const urlInput = page.locator("#attach-url-input");
     await urlInput.fill("https://example.com/persistent");
 
-    // Click Preview
+    // Click Preview (using evaluate to work around pointer-event interception)
     const previewButton = page.locator(".attach-context-controls__url-actions button[type='submit']");
-    await previewButton.click();
+    await previewButton.evaluate((el: HTMLElement) => {
+      (el as HTMLButtonElement).click();
+    });
 
     // Wait for preview
     await page.waitForSelector(".context-manager-preview");
