@@ -1,24 +1,15 @@
-/* The OpenAI-compatible /chat/completions adapter, shared by the three
-   partners that speak it (OpenAI, xAI, DeepSeek) — Step 8.3.
-
-   ROUTING.md requires a separate handler FILE and a separate KEY per
-   provider, which openaiHandler/xaiHandler/deepseekHandler each satisfy.
-   What it does not require is three byte-identical copies of the same
-   request-body and response-parsing code: that is the part these providers
-   genuinely share (xAI and DeepSeek both ship OpenAI-compatible endpoints
-   deliberately), so it lives here once. Google's Gemini does NOT share this
-   shape and has its own adapter in googleHandler.ts. */
+/* Shared OpenAI-compatible adapter for OpenAI, xAI, and DeepSeek. */
 
 import type { PartnerAdapter, PartnerProxyRequestBody } from "./partnerProxy.js";
 
-interface ChatCompletionsConfig {
-  modelId: string;
-  url: string;
-  keyEnvVar: string;
-}
-
+interface ChatCompletionsConfig { modelId: string; url: string; keyEnvVar: string; }
 interface ChatCompletionsResponse {
   choices?: { message?: { content?: unknown } }[];
+  usage?: { prompt_tokens?: unknown; completion_tokens?: unknown };
+}
+
+function nonNegativeInteger(value: unknown): number | null {
+  return typeof value === "number" && Number.isSafeInteger(value) && value >= 0 ? value : null;
 }
 
 export function chatCompletionsAdapter(config: ChatCompletionsConfig): PartnerAdapter {
@@ -30,14 +21,17 @@ export function chatCompletionsAdapter(config: ChatCompletionsConfig): PartnerAd
     body: (body: PartnerProxyRequestBody, maxTokens: number) => ({
       model: config.modelId,
       max_tokens: maxTokens,
-      messages: [
-        { role: "system", content: body.system },
-        { role: "user", content: body.input },
-      ],
+      messages: [{ role: "system", content: body.system }, { role: "user", content: body.input }],
     }),
     extractText: (payload: unknown) => {
       const content = (payload as ChatCompletionsResponse)?.choices?.[0]?.message?.content;
       return typeof content === "string" ? content : null;
+    },
+    extractUsage: (payload: unknown) => {
+      const usage = (payload as ChatCompletionsResponse)?.usage;
+      const inputTokens = nonNegativeInteger(usage?.prompt_tokens);
+      const outputTokens = nonNegativeInteger(usage?.completion_tokens);
+      return inputTokens === null || outputTokens === null ? null : { inputTokens, outputTokens };
     },
   };
 }
