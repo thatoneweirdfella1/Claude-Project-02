@@ -1,104 +1,50 @@
-/* Browser-side proxy client (Step 1.10). The app's single door to models: it
-   POSTs to the serverless proxy (proxyHandler / api/proxy.ts) — never to
-   Anthropic directly, never holding a key. `complete()` is structurally a
-   TranslationModelClient (the Step 2.2 seam), so the Translation Engine calls
-   models through this with no adapter; `stream()` yields text deltas for answer
-   display (Step 5.1).
-
-   fetchImpl is injectable for tests; the sandbox has no network, so live calls
-   are exercised only once the proxy is deployed (parked, BUILD-LOG.md). */
+/* Browser-side Anthropic proxy client. The server normalizes failures; this
+   client never appends raw provider bodies to user-visible error strings. */
 
 import { appAccessHeaders } from "./appAccessClient";
 import { desktopBridge } from "./desktopBridge";
 
-export interface ProxyMessage {
-  role: "user" | "assistant";
-  content: string;
-}
-
-/** A model call. `input` is a convenience for a single user message; pass
-    `messages` for a full turn history. Shape is a superset of the translation
-    seam's ModelCompletionRequest, so `complete` satisfies it structurally. */
-export interface TokenUsage {
-  inputTokens: number;
-  outputTokens: number;
-}
-
+export interface ProxyMessage { role: "user" | "assistant"; content: string; }
+export interface TokenUsage { inputTokens: number; outputTokens: number; }
 export interface ProxyCompletionRequest {
-  model: string;
-  system?: string;
-  input?: string;
-  messages?: ProxyMessage[];
-  signal?: AbortSignal;
-  extendedThinking?: boolean;
-  /** Optional (Step 5.4 telemetry seam) — called once with the call's real
-      input/output token counts, straight from the Anthropic response, if the
-      caller wants them. Absent for callers that don't (e.g. translate()'s
-      Step 2.2 ModelCompletionRequest has no such field, so a bare
-      `client.complete(req)` never sets this) — never required, never changes
-      what complete()/stream() resolve/yield. */
-  onUsage?: (usage: TokenUsage) => void;
+  model: string; system?: string; input?: string; messages?: ProxyMessage[]; signal?: AbortSignal; extendedThinking?: boolean; onUsage?: (usage: TokenUsage) => void;
 }
-
-export interface ProxyClientConfig {
-  /** Proxy endpoint path. Defaults to the conventional serverless route. */
-  endpoint?: string;
-  fetchImpl?: typeof fetch;
-}
-
+export interface ProxyClientConfig { endpoint?: string; fetchImpl?: typeof fetch; }
 const DEFAULT_ENDPOINT = "/api/proxy";
 
 function buildMessages(req: ProxyCompletionRequest): ProxyMessage[] {
   if (req.messages && req.messages.length > 0) return req.messages;
   return [{ role: "user", content: req.input ?? "" }];
 }
-
-interface AnthropicMessageResponse {
-  content?: Array<{ type: string; text?: string }>;
-  usage?: { input_tokens?: number; output_tokens?: number };
-}
-
-function reportUsage(
-  onUsage: ((usage: TokenUsage) => void) | undefined,
-  raw: { input_tokens?: number; output_tokens?: number } | undefined,
-): void {
+interface AnthropicMessageResponse { content?: Array<{ type: string; text?: string }>; usage?: { input_tokens?: number; output_tokens?: number }; }
+interface SafeProxyError { error?: unknown; category?: unknown; }
+function reportUsage(onUsage: ((usage: TokenUsage) => void) | undefined, raw: { input_tokens?: number; output_tokens?: number } | undefined): void {
   if (!onUsage || !raw) return;
-  const inputTokens = raw.input_tokens ?? 0;
-  const outputTokens = raw.output_tokens ?? 0;
-  onUsage({ inputTokens, outputTokens });
+  onUsage({ inputTokens: raw.input_tokens ?? 0, outputTokens: raw.output_tokens ?? 0 });
+}
+function safeErrorMessage(status: number, body: SafeProxyError): string {
+  const category = typeof body.category === "string" ? body.category : "provider";
+  const message = typeof body.error === "string" ? body.error : status >= 500 ? "AI provider is temporarily unavailable" : "AI provider rejected the request";
+  return `${message} [${category}]`;
 }
 
-export interface ProxyClient {
-  complete(req: ProxyCompletionRequest): Promise<string>;
-  stream(req: ProxyCompletionRequest): AsyncGenerator<string>;
-  readonly endpoint: string;
-}
+export interface ProxyClient { complete(req: ProxyCompletionRequest): Promise<string>; stream(req: ProxyCompletionRequest): AsyncGenerator<string>; readonly endpoint: string; }
 
 export function createProxyClient(config: ProxyClientConfig = {}): ProxyClient {
   const endpoint = config.endpoint ?? DEFAULT_ENDPOINT;
   const doFetch = config.fetchImpl ?? fetch;
 
-  async function post(
-    req: ProxyCompletionRequest,
-    stream: boolean,
-  ): Promise<Response> {
+  async function post(req: ProxyCompletionRequest, stream: boolean): Promise<Response> {
     const res = await doFetch(endpoint, {
       method: "POST",
       headers: { "content-type": "application/json", ...appAccessHeaders() },
-      body: JSON.stringify({
-        model: req.model,
-        system: req.system,
-        messages: buildMessages(req),
-        stream,
-        extendedThinking: req.extendedThinking,
-      }),
+      body: JSON.stringify({ model: req.model, system: req.system, messages: buildMessages(req), stream, extendedThinking: req.extendedThinking }),
       signal: req.signal,
     });
     if (!res.ok) {
-      const detail = await res.text().catch(() => "");
-      throw new Error(
-        `Proxy call failed (${res.status})${detail ? `: ${detail.slice(0, 200)}` : ""}`,
-      );
+      let body: SafeProxyError = {};
+      try { body = await res.json() as SafeProxyError; } catch { /* normalized fallback below */ }
+      throw new Error(safeErrorMessage(res.status, body));
     }
     return res;
   }
@@ -106,36 +52,21 @@ export function createProxyClient(config: ProxyClientConfig = {}): ProxyClient {
   async function complete(req: ProxyCompletionRequest): Promise<string> {
     const desktop = desktopBridge();
     if (desktop) {
-      const result = await desktop.ai.complete({
-        model: req.model,
-        system: req.system,
-        messages: buildMessages(req),
-      });
+      const result = await desktop.ai.complete({ model: req.model, system: req.system, messages: buildMessages(req) });
       req.onUsage?.(result.usage);
       return result.text;
     }
     const res = await post(req, false);
     const data = (await res.json()) as AnthropicMessageResponse;
     reportUsage(req.onUsage, data.usage);
-    return (data.content ?? [])
-      .filter((block) => block.type === "text")
-      .map((block) => block.text ?? "")
-      .join("");
+    return (data.content ?? []).filter((block) => block.type === "text").map((block) => block.text ?? "").join("");
   }
 
-  async function* stream(
-    req: ProxyCompletionRequest,
-  ): AsyncGenerator<string> {
+  async function* stream(req: ProxyCompletionRequest): AsyncGenerator<string> {
     const desktop = desktopBridge();
     if (desktop) {
-      const result = await desktop.ai.complete({
-        model: req.model,
-        system: req.system,
-        messages: buildMessages(req),
-      });
+      const result = await desktop.ai.complete({ model: req.model, system: req.system, messages: buildMessages(req) });
       req.onUsage?.(result.usage);
-      // IPC returns one complete response. Yield natural text chunks so the
-      // existing progressive-answer UI still behaves consistently.
       for (const chunk of result.text.match(/\S+\s*/g) ?? []) yield chunk;
       return;
     }
@@ -144,10 +75,6 @@ export function createProxyClient(config: ProxyClientConfig = {}): ProxyClient {
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
     let buffer = "";
-    // Anthropic's SSE stream carries usage on message_start (input_tokens,
-    // usually output_tokens:0) and message_delta (cumulative output_tokens,
-    // sent once near the end) — neither is a text delta, so tracked
-    // separately from the yielded token stream and reported once at the end.
     let inputTokens: number | undefined;
     let outputTokens: number | undefined;
     for (;;) {
@@ -155,40 +82,21 @@ export function createProxyClient(config: ProxyClientConfig = {}): ProxyClient {
       if (done) break;
       buffer += decoder.decode(value, { stream: true });
       const lines = buffer.split("\n");
-      buffer = lines.pop() ?? ""; // keep the last, possibly-partial line
+      buffer = lines.pop() ?? "";
       for (const line of lines) {
         const trimmed = line.trim();
         if (!trimmed.startsWith("data:")) continue;
-        const data = trimmed.slice(5).trim();
-        if (data === "" || data === "[DONE]") continue;
+        const raw = trimmed.slice(5).trim();
+        if (raw === "" || raw === "[DONE]") continue;
         try {
-          const event = JSON.parse(data) as {
-            type?: string;
-            delta?: { type?: string; text?: string };
-            message?: { usage?: { input_tokens?: number; output_tokens?: number } };
-            usage?: { input_tokens?: number; output_tokens?: number };
-          };
-          if (
-            event.type === "content_block_delta" &&
-            event.delta?.type === "text_delta" &&
-            event.delta.text
-          ) {
-            yield event.delta.text;
-          } else if (event.type === "message_start" && event.message?.usage) {
-            inputTokens = event.message.usage.input_tokens ?? inputTokens;
-            outputTokens = event.message.usage.output_tokens ?? outputTokens;
-          } else if (event.type === "message_delta" && event.usage) {
-            outputTokens = event.usage.output_tokens ?? outputTokens;
-          }
-        } catch {
-          // Ignore keep-alive pings and any non-JSON lines.
-        }
+          const event = JSON.parse(raw) as { type?: string; delta?: { type?: string; text?: string }; message?: { usage?: { input_tokens?: number; output_tokens?: number } }; usage?: { input_tokens?: number; output_tokens?: number } };
+          if (event.type === "content_block_delta" && event.delta?.type === "text_delta" && event.delta.text) yield event.delta.text;
+          else if (event.type === "message_start" && event.message?.usage) { inputTokens = event.message.usage.input_tokens ?? inputTokens; outputTokens = event.message.usage.output_tokens ?? outputTokens; }
+          else if (event.type === "message_delta" && event.usage) outputTokens = event.usage.output_tokens ?? outputTokens;
+        } catch { /* ignore keep-alive/non-JSON */ }
       }
     }
-    if (inputTokens !== undefined || outputTokens !== undefined) {
-      reportUsage(req.onUsage, { input_tokens: inputTokens, output_tokens: outputTokens });
-    }
+    if (inputTokens !== undefined || outputTokens !== undefined) reportUsage(req.onUsage, { input_tokens: inputTokens, output_tokens: outputTokens });
   }
-
   return { complete, stream, endpoint };
 }
