@@ -12,7 +12,7 @@ import { AppearanceSettings } from "../settings/AppearanceSettings";
 import { COMPOSABLE_TECHNIQUE_IDS, MAX_TECHNIQUE_STACK, getTechnique } from "../../services/techniques";
 import { buildSessionRecord, sessionRecordStatus } from "../../services/sessionLifecycle";
 import { saveNow } from "../../services/persistence";
-import type { ModelSelection, TechniqueId } from "../../stores/types";
+import type { ModelSelection, SessionRecord, TechniqueId } from "../../stores/types";
 import { createSignal } from "../../services/learningEngine";
 import "./LayerScreens.css";
 
@@ -1705,6 +1705,84 @@ function CustomizeScreen() {
   );
 }
 
+/* Session-file import preview (R08). A picked file is read and validated
+   into this shape before anything touches the store — nothing is applied
+   until the user explicitly confirms, and a rejected file changes nothing.
+   The id is always regenerated (never trusted from the file) so an import
+   can never silently overwrite an existing session that happens to share
+   an id — same posture as services/import/envelope.ts. */
+interface SessionImportPreview {
+  fileName: string;
+  ok: boolean;
+  message: string;
+  record?: SessionRecord;
+}
+
+function newImportedSessionId(): string {
+  return `session-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function buildSessionImportPreview(fileName: string, raw: string): SessionImportPreview {
+  if (!raw.trim()) {
+    return { fileName, ok: false, message: "That file is empty, so there's nothing to import." };
+  }
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return { fileName, ok: false, message: "That file isn't valid JSON, so it can't be read as a session." };
+  }
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    return { fileName, ok: false, message: "That file doesn't look like a session export." };
+  }
+  const data = parsed as Record<string, unknown>;
+  const missing: string[] = [];
+  if (typeof data.id !== "string" || !data.id) missing.push("id");
+  if (!Array.isArray(data.conversation)) missing.push("conversation");
+  if (typeof data.model !== "string" || !data.model) missing.push("model");
+  if (missing.length > 0) {
+    return {
+      fileName,
+      ok: false,
+      message: `That file is missing what a session export needs (${missing.join(", ")}), so it can't be imported. Try exporting the session again.`,
+    };
+  }
+
+  const conversation = data.conversation as SessionRecord["conversation"];
+  const context = Array.isArray(data.context) ? (data.context as SessionRecord["context"]) : [];
+  const variables = (data.variables && typeof data.variables === "object" && !Array.isArray(data.variables))
+    ? (data.variables as SessionRecord["variables"])
+    : {};
+  const techniques = Array.isArray(data.techniques) ? (data.techniques as SessionRecord["techniques"]) : [];
+  const directness: SessionRecord["directness"] = data.directness === 1 || data.directness === 2 || data.directness === 3
+    ? data.directness
+    : 2;
+  const tag = typeof data.tag === "string" ? data.tag : undefined;
+
+  const record: SessionRecord = {
+    ...(data as unknown as SessionRecord),
+    id: newImportedSessionId(),
+    createdAt: typeof data.createdAt === "number" ? data.createdAt : Date.now(),
+    archived: typeof data.archived === "boolean" ? data.archived : false,
+    model: data.model as ModelSelection,
+    directness,
+    techniques,
+    context,
+    variables,
+    conversation,
+    tag,
+  };
+
+  const messageCount = conversation.length;
+  const contextCount = context.length;
+  return {
+    fileName,
+    ok: true,
+    message: `Will import "${tag || "Untitled session"}" — ${messageCount} message${messageCount === 1 ? "" : "s"}, ${contextCount} context item${contextCount === 1 ? "" : "s"}. This adds a new session; it never replaces an existing one.`,
+    record,
+  };
+}
+
 function SessionsScreen() {
   const sessions = useAccountStore((s) => s.sessions);
   const loadSessionRecord = useSessionStore((s) => s.loadSessionRecord);
@@ -1722,6 +1800,7 @@ function SessionsScreen() {
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renamingText, setRenamingText] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [importPreview, setImportPreview] = useState<SessionImportPreview | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleLoadSession = (sessionId: string) => {
@@ -1764,24 +1843,27 @@ function SessionsScreen() {
 
   const handleImportSession = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+    event.target.value = "";
     if (!file) return;
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      try {
-        const sessionData = JSON.parse(e.target?.result as string);
-        if (sessionData.id && sessionData.conversation && sessionData.model) {
-          addSessionRecord(sessionData);
-        } else {
-          alert("Invalid session file format");
-        }
-      } catch {
-        alert("Error reading session file");
-      }
+      const text = typeof e.target?.result === "string" ? e.target.result : "";
+      setImportPreview(buildSessionImportPreview(file.name, text));
+    };
+    reader.onerror = () => {
+      setImportPreview({ fileName: file.name, ok: false, message: "That file couldn't be read. Try selecting it again." });
     };
     reader.readAsText(file);
-    event.target.value = "";
   };
+
+  const confirmImportSession = () => {
+    if (!importPreview?.ok || !importPreview.record) return;
+    addSessionRecord(importPreview.record);
+    setImportPreview(null);
+  };
+
+  const cancelImportSession = () => setImportPreview(null);
 
   const toggleSessionSelect = (sessionId: string) => {
     const newSelected = new Set(selectedIds);
@@ -1838,11 +1920,12 @@ function SessionsScreen() {
         <nav className="screen-tabs" aria-label="Session states">{(["active", "saved", "archived", "trash"] as const).map((id) => <button type="button" key={id} aria-current={section === id ? "page" : undefined} className={section === id ? "is-active" : ""} onClick={() => setScreenLocation("sessions", id)}>{id[0].toUpperCase() + id.slice(1)}</button>)}</nav>
       </div>
       <div className="screen__content">
-        {filteredSessions.length === 0 ? (
-          <p>No {section} sessions yet.</p>
-        ) : (
-          <>
-            <div style={{ display: "flex", gap: "12px", marginBottom: "24px" }}>
+        {/* The search/sort/Import toolbar renders unconditionally (R08.1):
+            it must stay visible even with zero sessions in this section, or
+            with a search term that currently matches nothing — otherwise
+            the file chooser vanishes exactly when a first-time user most
+            needs it. */}
+        <div style={{ display: "flex", gap: "12px", marginBottom: "24px" }}>
               <input
                 type="text"
                 placeholder="Search sessions..."
@@ -1949,7 +2032,9 @@ function SessionsScreen() {
 
             {sortedSessions.length === 0 ? (
               <p style={{ color: "var(--text-secondary)" }}>
-                No sessions match your search. Try adjusting your search term.
+                {sessions.filter((s) => sessionRecordStatus(s) === section).length === 0
+                  ? `No ${section} sessions yet.`
+                  : "No sessions match your search. Try adjusting your search term."}
               </p>
             ) : (
               <div className="session-list">
@@ -2097,9 +2182,26 @@ function SessionsScreen() {
                 ))}
               </div>
             )}
-          </>
-        )}
       </div>
+      {importPreview && (
+        <div className="workflow-dialog" role="dialog" aria-modal="true" aria-labelledby="import-session-title">
+          <div className="workflow-dialog__card surface-smoked-glass">
+            <header>
+              <h2 id="import-session-title">Import a session file</h2>
+              <p>Review "{importPreview.fileName}" before it's added. Nothing changes until you confirm.</p>
+            </header>
+            <div className="workflow-dialog__summary">
+              <p role={importPreview.ok ? "status" : "alert"}>{importPreview.message}</p>
+            </div>
+            <footer className="workflow-dialog__actions">
+              <button type="button" onClick={cancelImportSession}>Cancel</button>
+              <button type="button" className="primary" disabled={!importPreview.ok} onClick={confirmImportSession}>
+                Confirm import
+              </button>
+            </footer>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

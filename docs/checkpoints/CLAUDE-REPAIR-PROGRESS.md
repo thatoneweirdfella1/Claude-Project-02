@@ -157,11 +157,105 @@ afterward — same standard, same "confirm it's actually mounted first" check.
 Continue running one agent at a time (implementation or verification) to avoid
 repeating the Session 5 working-tree race condition.
 
+### Session 10 — R08 re-implemented on the correct (live) component(s)
+
+Followed Session 9's corrected next action: investigated both candidate live
+components before touching either.
+
+**Which component is "the Session Import Selector":** `QuickActionsRow.tsx`'s
+"Import a saved session" dialog is a *session-to-session switcher* — it picks
+from records already in `useAccountStore`'s typed `sessions` array, never
+touches a file, and already had a visible chooser, a real preview, explicit
+confirm/cancel, and atomic apply (try/catch around `persistCurrent` +
+`loadSession`, nothing applied until an explicit click). There was nothing
+meaningful to validate there — its input is the app's own already-typed
+records, not untrusted external data — so it was left untouched.
+
+`SessionsScreen.handleImportSession` (`src/components/layout/ScreenRouter.tsx`,
+routed live at `PRIMARY_NAVIGATION` "sessions" -> `case "sessions"`) is the
+actual raw-file chooser the requirement's "supported-file chooser" language
+describes (`<input type="file" accept=".json">`), and it had the real gaps:
+it parsed the file and called `addSessionRecord()` immediately on selection
+with no preview and no confirm step, and rejected bad files with a blocking
+native `alert()` instead of the app's in-dialog messaging. A byte-identical
+second copy of the same handler exists in `RetiredArchiveScreen` — confirmed
+dead (no route reaches it; `RetiredHomeScreen`/`RetiredMessagesScreen`/etc.
+are the same already-established pattern) — left untouched, matching the
+"don't fix dead code" lesson from Sessions 6 and 9.
+
+**Fix (`SessionsScreen` only):**
+- `handleImportSession` now only reads and validates the file into an
+  `importPreview` state (`buildSessionImportPreview()`) — nothing is applied
+  to the store on selection.
+- New confirm/cancel dialog (reusing the existing `.workflow-dialog` classes
+  already used elsewhere in this file, no new CSS) shows the filename, a
+  human-readable summary (title, message count, context-item count) or the
+  specific rejection reason, with "Confirm import" (disabled unless valid)
+  and "Cancel" buttons. Nothing is applied until "Confirm import" is clicked;
+  "Cancel" discards the preview untouched.
+- Rejection messages are specific and actionable: empty file, invalid JSON,
+  and — naming exactly which fields are missing — a file missing `id`,
+  `conversation`, or `model`. No more `alert()`.
+- The imported record's `id` is always regenerated (never trusted from the
+  file), same posture as `services/import/envelope.ts`'s documented
+  philosophy — otherwise a file whose `id` collided with an existing session
+  would silently overwrite it with no warning at all.
+- Separately found and fixed a real R08.1 (visible chooser) gap: the entire
+  toolbar — search box, sort selector, **and the Import button/file input**
+  — was previously rendered only inside the `filteredSessions.length === 0
+  ? <p>...</p> : (...)` branch, so it vanished completely whenever the
+  current section had zero sessions (e.g. a first-time user) or a search
+  term matched nothing. The toolbar now always renders; only the "no
+  sessions" vs. session-list portion below it is conditional.
+
+**Tests added:**
+- `src/components/layout/SessionsScreenImport.test.tsx` (9 vitest/RTL tests,
+  mounting the real `<ScreenRouter/>`): chooser visible, preview before
+  apply, Confirm applies + regenerates id, Cancel applies nothing, rejects
+  invalid JSON / missing fields / empty file with Confirm disabled, no
+  partial import after a rejection with a pre-existing session present,
+  re-selecting a file after a rejection correctly replaces the preview.
+- `e2e/session-import.spec.ts` (Playwright, `npm run build && npx vite
+  preview`, same `/api/verify-access` + `/api/account` mocks as
+  `e2e/templates.spec.ts`): drives the real rendered Sessions screen —
+  chooser visible with zero sessions present, reject-then-cancel, preview
+  a valid file then Cancel (nothing applied), select + Confirm (applied),
+  **reload** (import genuinely persisted, not just in-memory), then a
+  second rejection with one real session present confirms nothing partial
+  was added (`.session-item` count stays 1). **Passed** against the actual
+  built app in this sandbox's Chromium.
+
+**Cleanup:** Deleted `src/components/session/ImportModal.tsx` and
+`ImportModal.test.ts` — re-confirmed zero references outside those two files
+(`grep -rn "ImportModal" src/` now finds only a stale doc comment in
+`ocr.ts`), never exported from `src/components/session/index.ts`, no
+`lazy()`/dynamic import anywhere. Same treatment as `LoadTemplateMenu.tsx`
+in R07.
+
+**Test results:** 722 vitest tests passing (83 files, was 748/84 including
+the now-deleted `ImportModal.test.ts`'s 20 tests, net +9 new / -20 removed).
+`npm run build` clean. Full `npx playwright test` run has 13 pre-existing
+failures (core-flow, frozen-light-audit, horizontal-layers, layout-picker,
+multi-ai, session-history, session-history-simple, theme-toggle) — confirmed
+identical on the pre-change tree via `git stash -u` (same 13 specs fail with
+zero code changes), so these are pre-existing sandbox/environment flakiness,
+not a regression from this change. `session-import.spec.ts` and
+`templates.spec.ts` both pass in isolation and together.
+
+**Status:** IMPLEMENTED — AWAITING FRESH BROWSER VERIFICATION (not yet
+PASSED per the completion law — a fresh verifier must independently drive
+the rendered UI before this can be marked PASSED).
+
+**Next:** dispatch a fresh independent verifier for R08 (same standard as
+Session 8: confirm the component is actually mounted first, try to break
+the workflow, test reload/persistence/cancellation/partial-failure). If it
+passes, continue to R09 File Attachment.
+
 ## Requirements Status
 
 ### Group 1 — Local input and creation flows
 - R07 Create Template — PASSED — EVIDENCE RECORDED (commit `8bbd3ab`, see Session 8)
-- R08 Session Import Selector — FAILED — RETURNED FOR REPAIR (fixed dead `ImportModal.tsx`; see Session 9)
+- R08 Session Import Selector — IMPLEMENTED — AWAITING FRESH BROWSER VERIFICATION (fixed live `SessionsScreen` in `ScreenRouter.tsx`; see Session 10)
 - R09 File Attachment — PENDING
 - R10 URL Context — PENDING
 
