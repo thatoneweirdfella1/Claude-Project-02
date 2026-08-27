@@ -1,34 +1,47 @@
 {
-  "schema_version": 2,
-  "active_layer": "USER_OUTCOME_REPAIR",
-  "subsystem": "messaging-handoff-and-visible-control-truth",
-  "permanent_ids": [
-    "DR-007",
-    "DR-028",
-    "DR-030",
-    "SPEC-MC-08",
-    "USR-SC-03"
-  ],
+  "schema_version": 3,
+  "active_layer": "ACCOUNT2_WHOLE_SITE_USER_OUTCOME_REPAIR",
+  "branch": "account2/layer-8-candidate-v1",
+  "task_range": "1-31",
+  "work_order": "docs/repair-authority/ACCOUNT2-REMAINING-SITE-REPAIR-WORK-ORDER.md",
   "allowed_paths": [
-    "docs/authority/USER-CORRECTIONS.md",
+    "src/**",
+    "api/**",
+    "tests/**",
+    "test/**",
+    "scripts/**",
+    "package.json",
+    "package-lock.json",
+    "vite.config.*",
+    "vitest.config.*",
+    "playwright.config.*",
+    "docs/repair-authority/**",
+    "docs/audit/**",
     "docs/layer-system/PERMISSIONS.yml",
     "docs/layer-system/BATCH-SCOPE.json",
-    "src/components/composer/TranslateAskButton.tsx",
-    "src/components/layout/AppShell.tsx",
-    "src/components/visibleControlContract.test.ts",
-    "docs/audit/DIVERGENCE-WHOLE-SITE-TRUTH-AUDIT-2026-08-27.md"
+    "docs/layer-system/CURRENT-LAYER-STATUS.md",
+    "docs/layer-system/HANDOFF.md",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "START-HERE-DIVERGENCE.md"
   ],
-  "required_tests": [
-    "npm test",
-    "npm run build",
-    "visible Send control assertion",
-    "Import Response deployed workflow",
-    "All Tools deployed navigation",
-    "exclusive top-bar overlay behavior",
-    "session persistence after reload",
-    "matching deployment identity"
+  "required_proof_per_task": [
+    "reproduced result or proof already fixed",
+    "actual root cause",
+    "outcome-level regression test",
+    "affected tests",
+    "production build",
+    "visible browser verification when locally possible",
+    "commit SHA and checkpoint"
   ],
-  "entry_head": "ac3edfcbe161408eb2b3b9450a797da3ce0ff858",
-  "start_remote_head": "ac3edfcbe161408eb2b3b9450a797da3ce0ff858",
-  "exact_next_action": "Commit governance-only authorization, then independently update only the frozen application/test paths, deploy the branch, and verify the matching deployed user outcomes."
+  "forbidden_actions": [
+    "modify another branch",
+    "merge or open a pull request",
+    "deploy preview or production",
+    "use credentials or secrets",
+    "call external AI providers",
+    "incur charges",
+    "alter real user data"
+  ],
+  "exact_next_action": "Begin Task 1 from the work order and continue in order; if a task is externally blocked, record it and continue to the next locally authorized task."
 }
