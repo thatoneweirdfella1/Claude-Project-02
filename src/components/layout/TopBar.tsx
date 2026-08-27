@@ -180,6 +180,8 @@ function UserMenu({ open, setOpen, rootRef }: PopoverProps) {
 
 export function TopBar() {
   const setScreenLocation = useSessionStore((s) => s.setScreenLocation);
+  const currentScreen = useSessionStore((s) => s.currentScreen);
+  const currentSection = useSessionStore((s) => s.currentSection);
   const [searchOpen, setSearchOpen] = useState(false);
   const [referenceOpen, setReferenceOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -190,6 +192,15 @@ export function TopBar() {
   const notificationsRef = useRef<HTMLDivElement>(null);
   const helpRef = useRef<HTMLDivElement>(null);
   const userRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setSearchOpen(false);
+    setReferenceOpen(false);
+    setNotificationsOpen(false);
+    setHelpOpen(false);
+    setUserOpen(false);
+    window.dispatchEvent(new CustomEvent("divergence:right-rail-panel", { detail: null }));
+  }, [currentScreen, currentSection]);
 
   useDismissableLayer(searchOpen, () => setSearchOpen(false));
   useDismissableLayer(referenceOpen, () => { setReferenceOpen(false); window.dispatchEvent(new CustomEvent("divergence:right-rail-panel", { detail: null })); });
