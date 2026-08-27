@@ -1,17 +1,34 @@
 {
-  "schema_version": 1,
-  "active_layer": "NONE",
-  "subsystem": null,
-  "permanent_ids": [],
-  "allowed_paths": [],
+  "schema_version": 2,
+  "active_layer": "USER_OUTCOME_REPAIR",
+  "subsystem": "messaging-handoff-and-visible-control-truth",
+  "permanent_ids": [
+    "DR-007",
+    "DR-028",
+    "DR-030",
+    "SPEC-MC-08",
+    "USR-SC-03"
+  ],
+  "allowed_paths": [
+    "docs/authority/USER-CORRECTIONS.md",
+    "docs/layer-system/PERMISSIONS.yml",
+    "docs/layer-system/BATCH-SCOPE.json",
+    "src/components/composer/TranslateAskButton.tsx",
+    "src/components/layout/AppShell.tsx",
+    "src/components/visibleControlContract.test.ts",
+    "docs/audit/DIVERGENCE-WHOLE-SITE-TRUTH-AUDIT-2026-08-27.md"
+  ],
   "required_tests": [
     "npm test",
     "npm run build",
-    "safe interaction component tests",
-    "visible native-control contract",
-    "remote branch-preview availability and deployment identity"
+    "visible Send control assertion",
+    "Import Response deployed workflow",
+    "All Tools deployed navigation",
+    "exclusive top-bar overlay behavior",
+    "session persistence after reload",
+    "matching deployment identity"
   ],
-  "entry_head": "c966953bc0377fe978edc630fbdff43965b16e6e",
-  "start_remote_head": "c966953bc0377fe978edc630fbdff43965b16e6e",
-  "exact_next_action": "On codex-verified/layer-3-v2, audit all L3-applicable obligation rows against the trusted Layer 2 baseline. Use Account 2 and the quarantined Codex-v1 candidate only as evidence/reference. Freeze the smallest exact L3 implementation/adoption batch with permanent IDs and allowed paths before granting or making any application/test edit."
+  "entry_head": "ac3edfcbe161408eb2b3b9450a797da3ce0ff858",
+  "start_remote_head": "ac3edfcbe161408eb2b3b9450a797da3ce0ff858",
+  "exact_next_action": "Commit governance-only authorization, then independently update only the frozen application/test paths, deploy the branch, and verify the matching deployed user outcomes."
 }
