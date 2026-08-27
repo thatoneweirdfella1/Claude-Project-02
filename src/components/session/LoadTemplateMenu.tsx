@@ -107,6 +107,8 @@ export function LoadTemplateMenu({ renderTrigger }: LoadTemplateMenuProps = {}) 
       model: current.model,
       directness: current.directness,
       techniques: current.techniques,
+      context: current.context.length > 0 ? current.context : undefined,
+      starterQuestion: current.draftInput.trim().length > 0 ? current.draftInput : undefined,
     });
     closePopover();
   }
