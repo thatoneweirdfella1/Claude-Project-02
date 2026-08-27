@@ -1,50 +1,60 @@
 /* The debate transcript shape Consensus and Synthesis read (Step 8.4).
 
-   Debate mode itself (CANON Feature 9's first Multi-AI action) is Step 8.3
-   — OPUS-tagged, not built in this session. This is the CONTRACT that step
-   is expected to produce and this one consumes: CONVENTIONS.md rule 6 ("no
-   black boxes... design the data shape... even in steps before it exists"),
-   the same forward-seam pattern Step 6.5's stateBus and Step 8.2's
-   Transparency card fields used before their own consumers/producers landed.
+   Debate can contain 2 to 4 participants. The original two-party fields stay
+   readable for old persisted/test fixtures, while `participants` is the
+   authoritative shape for new multi-way runs. Consensus and Synthesis must
+   receive every successful participant exactly once in stable debate order. */
 
-   Deliberately provider-agnostic — ROUTING.md DEBATE PARTNERS: "Consensus
-   and Synthesis run on Opus at runtime, reading both sides' transcripts
-   regardless of which two providers argued." Claude's side is always
-   claudeText; the other side is named generically (partnerLabel/
-   partnerText) so this module never hardcodes gpt-5.5/gemini-3.1-pro/
-   grok-4.3/deepseek-v4-pro — Step 8.3 is the only place the roster itself
-   is read. */
+export interface DebateTranscriptParticipant {
+  /** Stable display label used in the debate UI. */
+  label: string;
+  /** Provider/model attribution when the debate runner can prove it. */
+  providerId?: string;
+  modelId?: string;
+  text: string;
+}
 
 export interface DebateTranscript {
-  /** The original question both sides answered. */
+  /** The exact question/context bundle every side answered. */
   question: string;
+  /** Canonical participant list for new runs, in debate order. */
+  participants?: DebateTranscriptParticipant[];
+  /** Legacy two-party compatibility fields. */
   claudeText: string;
-  /** The roster label Step 8.3's partner picker used, e.g. "GPT-5.5" — a
-      display name, not the api string (ROUTING.md's api-string : provider :
-      role rows). */
   partnerLabel: string;
   partnerText: string;
 }
 
-/** One combined input block for the runtime model — question plus both
-    sides, clearly delimited. Shared by Consensus and Synthesis so the two
-    actions read the exact same framing of a debate. */
+export function transcriptParticipants(transcript: DebateTranscript): DebateTranscriptParticipant[] {
+  if (Array.isArray(transcript.participants) && transcript.participants.length > 0) {
+    return transcript.participants.map((participant) => ({ ...participant }));
+  }
+  return [
+    { label: "Claude", providerId: "anthropic", modelId: "claude-opus-4-8", text: transcript.claudeText },
+    { label: transcript.partnerLabel, text: transcript.partnerText },
+  ];
+}
+
+/** One combined input block for the runtime model — question plus every
+    successful participant, clearly delimited and in stable order. */
 export function buildTranscriptInput(transcript: DebateTranscript): string {
+  const participants = transcriptParticipants(transcript);
   return [
     `QUESTION:\n${transcript.question.trim()}`,
-    `CLAUDE'S ANSWER:\n${transcript.claudeText.trim()}`,
-    `${transcript.partnerLabel.trim().toUpperCase()}'S ANSWER:\n${transcript.partnerText.trim()}`,
+    ...participants.map((participant, index) => {
+      const attribution = [participant.providerId, participant.modelId].filter(Boolean).join(" · ");
+      const heading = `${participant.label.trim().toUpperCase()}${attribution ? ` (${attribution})` : ""}`;
+      return `ANSWER ${index + 1} — ${heading}:\n${participant.text.trim()}`;
+    }),
   ].join("\n\n");
 }
 
-/** True only when every side has real text — a malformed/incomplete
-    transcript (e.g. a debate turn that never finished) should never reach
-    the model as a wasted call. */
+/** True only when the question and at least two participants have real text. */
 export function isCompleteTranscript(transcript: DebateTranscript): boolean {
+  const participants = transcriptParticipants(transcript);
   return (
     transcript.question.trim().length > 0 &&
-    transcript.claudeText.trim().length > 0 &&
-    transcript.partnerLabel.trim().length > 0 &&
-    transcript.partnerText.trim().length > 0
+    participants.length >= 2 &&
+    participants.every((participant) => participant.label.trim().length > 0 && participant.text.trim().length > 0)
   );
 }
