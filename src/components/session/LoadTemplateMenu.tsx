@@ -32,7 +32,7 @@ function newTemplateId(): string {
     : `template-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
 }
 
-type View = "list" | "save";
+type View = "list" | "save" | "edit";
 
 export interface LoadTemplateMenuProps {
   /** Step 9.6 — Quick Tools' Prompt Library tile ("save/load prompt
@@ -49,6 +49,7 @@ export function LoadTemplateMenu({ renderTrigger }: LoadTemplateMenuProps = {}) 
   const templates = useAccountStore((s) => s.templates);
   const addTemplate = useAccountStore((s) => s.addTemplate);
   const removeTemplate = useAccountStore((s) => s.removeTemplate);
+  const updateTemplate = useAccountStore((s) => s.updateTemplate);
   const setModel = useSessionStore((s) => s.setModel);
   const setDirectness = useSessionStore((s) => s.setDirectness);
   const setTechniques = useSessionStore((s) => s.setTechniques);
@@ -58,6 +59,8 @@ export function LoadTemplateMenu({ renderTrigger }: LoadTemplateMenuProps = {}) 
   const [open, setOpen] = useState(false);
   const [view, setView] = useState<View>("list");
   const [titleValue, setTitleValue] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState("");
   const rootRef = useRef<HTMLDivElement>(null);
 
   useDismissableLayer(open, closePopover);
@@ -76,6 +79,29 @@ export function LoadTemplateMenu({ renderTrigger }: LoadTemplateMenuProps = {}) 
     setOpen(false);
     setView("list");
     setTitleValue("");
+    setEditingId(null);
+    setEditTitle("");
+  }
+
+  function startEditTemplate(templateId: string): void {
+    const template = templates.find((t) => t.id === templateId);
+    if (!template) return;
+    setEditingId(templateId);
+    setEditTitle(template.title);
+    setView("edit");
+  }
+
+  function cancelEdit(): void {
+    setEditingId(null);
+    setEditTitle("");
+    setView("list");
+  }
+
+  function saveEditedTemplate(): void {
+    const newTitle = editTitle.trim();
+    if (newTitle.length === 0 || !editingId) return;
+    updateTemplate(editingId, { title: newTitle });
+    cancelEdit();
   }
 
   function toggle(): void {
@@ -143,14 +169,25 @@ export function LoadTemplateMenu({ renderTrigger }: LoadTemplateMenuProps = {}) 
                     {template.title}
                   </button>
                   {!DEFAULT_TEMPLATE_IDS.has(template.id) && (
-                    <button
-                      type="button"
-                      className="quick-actions-row__list-remove"
-                      aria-label={`Delete template ${template.title}`}
-                      onClick={() => removeTemplate(template.id)}
-                    >
-                      ×
-                    </button>
+                    <>
+                      <button
+                        type="button"
+                        className="quick-actions-row__list-edit"
+                        aria-label={`Edit template ${template.title}`}
+                        onClick={() => startEditTemplate(template.id)}
+                        data-testid={`edit-template-${template.id}`}
+                      >
+                        ✎
+                      </button>
+                      <button
+                        type="button"
+                        className="quick-actions-row__list-remove"
+                        aria-label={`Delete template ${template.title}`}
+                        onClick={() => removeTemplate(template.id)}
+                      >
+                        ×
+                      </button>
+                    </>
                   )}
                 </div>
               ))}
@@ -185,6 +222,35 @@ export function LoadTemplateMenu({ renderTrigger }: LoadTemplateMenuProps = {}) 
                   className="quick-actions-row__tag-archive"
                   disabled={titleValue.trim().length === 0}
                   onClick={saveCurrentAsTemplate}
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          )}
+
+          {view === "edit" && editingId && (
+            <div className="quick-actions-row__tag-form">
+              <p className="quick-actions-row__popover-title">Edit Template</p>
+              <input
+                type="text"
+                className="quick-actions-row__tag-input"
+                placeholder="Template name"
+                aria-label="Template name"
+                value={editTitle}
+                onChange={(event) => setEditTitle(event.target.value)}
+                autoFocus
+              />
+              <div className="quick-actions-row__tag-actions">
+                <button type="button" className="quick-actions-row__tag-back" onClick={cancelEdit}>
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="quick-actions-row__tag-archive"
+                  disabled={editTitle.trim().length === 0}
+                  onClick={saveEditedTemplate}
+                  data-testid="save-edited-template"
                 >
                   Save
                 </button>

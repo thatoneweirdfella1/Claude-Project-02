@@ -106,6 +106,22 @@
   white-space: nowrap;
 }
 
+.quick-actions-row__list-edit {
+  flex-shrink: 0;
+  min-width: 24px;
+  min-height: 24px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.quick-actions-row__list-edit:hover {
+  color: var(--accent-cyan);
+}
+
 .quick-actions-row__list-remove {
   flex-shrink: 0;
   min-width: 24px;
