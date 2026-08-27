@@ -1,44 +1,114 @@
 {
-  "schema_version": 4,
+  "schema_version": 5,
   "default": "deny",
-  "branch_scope": "codex-verified/layer-3-v2",
-  "authorization_date": "2026-08-26",
-  "authorization_source": "User instructed this account to continue the interrupted audit/isolation workflow; prior 'go' authorization established the clean-lineage audit purpose. This grant is limited to governance recovery and read-only Layer 3 audit until an exact application batch is frozen.",
-  "active_purpose": "Quarantine the invalid Codex-v1 candidate, preserve all donor work, and prepare the exact clean Codex-v2 Layer 3 batch.",
+  "branch_scope": "codex-verified/user-outcome-repair-v1",
+  "authorization_date": "2026-08-27",
+  "authorization_source": "User explicitly instructed: do it all with checkpoints, go.",
+  "active_purpose": "Repair and deploy the frozen user-outcome messaging batch from the current Layer 7 checkpoint.",
   "grants": {
-    "inspect_repository": {"allowed": true},
-    "install_governance": {"allowed": true},
-    "modify_governance": {"allowed": true},
-    "create_continuation_branch": {"allowed": true},
-    "push_continuation_branch": {"allowed": true},
-    "modify_application_behavior": {"allowed": false},
-    "modify_application_tests": {"allowed": false},
-    "create_protected_tag": {"allowed": false},
-    "open_pull_request": {"allowed": false},
-    "merge": {"allowed": false},
-    "deploy_preview": {"allowed": false},
-    "promote_stable_preview": {"allowed": false},
-    "deploy_production": {"allowed": false},
-    "configure_repository_rules": {"allowed": false},
-    "configure_auth_service": {"allowed": false},
-    "create_or_modify_identity": {"allowed": false},
-    "provision_database_or_storage": {"allowed": false},
-    "write_remote_user_data": {"allowed": false},
-    "synchronize_remote_user_data": {"allowed": false},
-    "run_schema_migration": {"allowed": false},
-    "configure_payment_provider": {"allowed": false},
-    "create_payment_or_checkout": {"allowed": false},
-    "call_payment_sandbox": {"allowed": false},
-    "charge_or_reserve_funds": {"allowed": false},
-    "reconcile_or_release_reserved_credit": {"allowed": false},
-    "modify_allowance_or_entitlement": {"allowed": false},
-    "connect_free_provider": {"allowed": false},
-    "connect_paid_provider": {"allowed": false},
-    "call_external_ai_provider": {"allowed": false},
-    "register_oauth_application": {"allowed": false},
-    "install_browser_companion": {"allowed": false},
-    "modify_environment_configuration": {"allowed": false},
-    "read_secrets": {"allowed": false},
-    "write_or_rotate_secrets": {"allowed": false}
+    "inspect_repository": {
+      "allowed": true
+    },
+    "install_governance": {
+      "allowed": true
+    },
+    "modify_governance": {
+      "allowed": true
+    },
+    "create_continuation_branch": {
+      "allowed": true
+    },
+    "push_continuation_branch": {
+      "allowed": true
+    },
+    "modify_application_behavior": {
+      "allowed": true,
+      "scope": "BATCH-SCOPE.json allowed_paths only"
+    },
+    "modify_application_tests": {
+      "allowed": true,
+      "scope": "BATCH-SCOPE.json allowed_paths only"
+    },
+    "create_protected_tag": {
+      "allowed": false
+    },
+    "open_pull_request": {
+      "allowed": false
+    },
+    "merge": {
+      "allowed": false
+    },
+    "deploy_preview": {
+      "allowed": true
+    },
+    "promote_stable_preview": {
+      "allowed": true
+    },
+    "deploy_production": {
+      "allowed": true
+    },
+    "configure_repository_rules": {
+      "allowed": false
+    },
+    "configure_auth_service": {
+      "allowed": false
+    },
+    "create_or_modify_identity": {
+      "allowed": false
+    },
+    "provision_database_or_storage": {
+      "allowed": false
+    },
+    "write_remote_user_data": {
+      "allowed": false
+    },
+    "synchronize_remote_user_data": {
+      "allowed": false
+    },
+    "run_schema_migration": {
+      "allowed": false
+    },
+    "configure_payment_provider": {
+      "allowed": false
+    },
+    "create_payment_or_checkout": {
+      "allowed": false
+    },
+    "call_payment_sandbox": {
+      "allowed": false
+    },
+    "charge_or_reserve_funds": {
+      "allowed": false
+    },
+    "reconcile_or_release_reserved_credit": {
+      "allowed": false
+    },
+    "modify_allowance_or_entitlement": {
+      "allowed": false
+    },
+    "connect_free_provider": {
+      "allowed": false
+    },
+    "connect_paid_provider": {
+      "allowed": false
+    },
+    "call_external_ai_provider": {
+      "allowed": false
+    },
+    "register_oauth_application": {
+      "allowed": false
+    },
+    "install_browser_companion": {
+      "allowed": false
+    },
+    "modify_environment_configuration": {
+      "allowed": false
+    },
+    "read_secrets": {
+      "allowed": false
+    },
+    "write_or_rotate_secrets": {
+      "allowed": false
+    }
   }
 }
