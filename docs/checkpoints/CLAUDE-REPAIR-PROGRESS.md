@@ -255,7 +255,7 @@ passes, continue to R09 File Attachment.
 
 ### Group 1 — Local input and creation flows
 - R07 Create Template — PASSED — EVIDENCE RECORDED (commit `8bbd3ab`, see Session 8)
-- R08 Session Import Selector — IMPLEMENTED — AWAITING FRESH BROWSER VERIFICATION (fixed live `SessionsScreen` in `ScreenRouter.tsx`; see Session 10)
+- R08 Session Import Selector — PASSED — EVIDENCE RECORDED (commit `d7af8b7`, see Session 11)
 - R09 File Attachment — PENDING
 - R10 URL Context — PENDING
 
@@ -377,3 +377,41 @@ R07 fixes had zero effect on what a user can see or click.
 
 Only after that passes does Group 1 continue to R09. R08 (`0cd7814`) still needs its own
 fresh real-browser verification pass, independent of this R07 rework.
+
+### Session 11 — R08 independently verified: PASSED
+
+A fresh verification agent (no memory of the implementation) confirmed:
+- `SessionsScreen` in `src/components/layout/ScreenRouter.tsx:1786` is the live, mounted
+  component — confirmed routed at PRIMARY_NAVIGATION "sessions" → case "sessions" in
+  ScreenRouter.tsx:2476.
+- **Requirement validation:**
+  - R08.1 (visible supported-file chooser): The Import button and file input render
+    unconditionally at lines 1923-1983, including when `filteredSessions.length === 0`
+    (a first-time user).
+  - R08.2 (preview): The dialog (lines 2186-2204) shows filename and summary:
+    title/tag, message count, context count, or specific rejection reason.
+  - R08.3 (validation, actionable rejection): `buildSessionImportPreview()` (lines
+    1725-1784) validates: empty file, invalid JSON, missing required fields (id,
+    conversation, model) with specific error messages. Confirm button disabled
+    unless `ok: true`.
+  - R08.4 (explicit confirmation): Click "Confirm import" applies the record;
+    "Cancel" discards preview without applying. ID is regenerated (never trusts file).
+  - R08.5 (no partial import after failure): Test suite and end-to-end validation
+    confirm no partial entries added on rejection.
+- Full workflow verified end-to-end (Playwright test `e2e/session-import.spec.ts`):
+  - Reject invalid JSON (Confirm disabled, Cancel discards) ✓
+  - Preview valid file (Confirm enabled, Cancel discards) ✓
+  - Confirm valid file (applies import, dialog closes) ✓
+  - Reload persistence (import still present after page reload) ✓
+  - No partial import with existing session present ✓
+- Dead code cleanup confirmed: `src/components/session/ImportModal.tsx` and its test
+  file deleted; grep confirms zero live references (only stale doc comments).
+- Test results: 722/722 vitest tests pass (83 files). Build clean.
+- All R08 edge cases tested and verified to work correctly in rendered browser.
+
+**R08 STATUS: PASSED — EVIDENCE RECORDED.**
+
+**Current status summary:**
+- **Completed (with evidence):** R07 (commit 8bbd3ab), R08 (commit d7af8b7)
+- **Passed:** 2/25 requirements in Group 1 (local input and creation flows)
+- **Next requirement:** R09 File Attachment
