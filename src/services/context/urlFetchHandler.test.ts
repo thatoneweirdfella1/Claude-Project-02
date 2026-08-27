@@ -78,7 +78,7 @@ describe("handleUrlFetchRequest — guards", () => {
     expect(res.status).toBe(400);
   });
 
-  it("rejects a blocked URL with 400 and never calls upstream", async () => {
+  it("rejects a blocked URL with 400 and errorCode 'blocked_url' and never calls upstream", async () => {
     const fetchImpl = vi.fn();
     const res = await handleUrlFetchRequest(
       fetchUrlRequest({ url: "http://169.254.169.254/" }),
@@ -86,6 +86,8 @@ describe("handleUrlFetchRequest — guards", () => {
     );
     expect(res.status).toBe(400);
     expect(fetchImpl).not.toHaveBeenCalled();
+    const body = (await res.json()) as { errorCode?: string };
+    expect(body.errorCode).toBe("blocked_url");
   });
 });
 
@@ -112,7 +114,7 @@ describe("handleUrlFetchRequest — forwarding", () => {
     expect((init as RequestInit).method).toBe("GET");
   });
 
-  it("returns 502 when the upstream fetch throws", async () => {
+  it("returns 502 when the upstream fetch throws with errorCode 'fetch_failed'", async () => {
     const fetchImpl = vi.fn(async () => {
       throw new Error("dns failure");
     });
@@ -121,18 +123,59 @@ describe("handleUrlFetchRequest — forwarding", () => {
       fetchImpl as unknown as typeof fetch,
     );
     expect(res.status).toBe(502);
+    const body = (await res.json()) as { errorCode?: string };
+    expect(body.errorCode).toBe("fetch_failed");
   });
 
-  it("returns 502 when the upstream responds non-OK", async () => {
+  it("returns 502 with errorCode 'timeout' when the fetch times out (AbortError)", async () => {
+    const fetchImpl = vi.fn(async () => {
+      const err = new Error("The operation was aborted");
+      err.name = "AbortError";
+      throw err;
+    });
+    const res = await handleUrlFetchRequest(
+      fetchUrlRequest({ url: "https://example.com" }),
+      fetchImpl as unknown as typeof fetch,
+    );
+    expect(res.status).toBe(502);
+    const body = (await res.json()) as { errorCode?: string };
+    expect(body.errorCode).toBe("timeout");
+  });
+
+  it("returns 502 with errorCode 'auth_required' when upstream responds with 401", async () => {
+    const fetchImpl = vi.fn(async () => new Response("unauthorized", { status: 401 }));
+    const res = await handleUrlFetchRequest(
+      fetchUrlRequest({ url: "https://example.com/private" }),
+      fetchImpl as unknown as typeof fetch,
+    );
+    expect(res.status).toBe(502);
+    const body = (await res.json()) as { errorCode?: string };
+    expect(body.errorCode).toBe("auth_required");
+  });
+
+  it("returns 502 with errorCode 'auth_required' when upstream responds with 403", async () => {
+    const fetchImpl = vi.fn(async () => new Response("forbidden", { status: 403 }));
+    const res = await handleUrlFetchRequest(
+      fetchUrlRequest({ url: "https://example.com/private" }),
+      fetchImpl as unknown as typeof fetch,
+    );
+    expect(res.status).toBe(502);
+    const body = (await res.json()) as { errorCode?: string };
+    expect(body.errorCode).toBe("auth_required");
+  });
+
+  it("returns 502 with errorCode 'invalid_response' when upstream responds non-OK (other than 401/403)", async () => {
     const fetchImpl = vi.fn(async () => new Response("nope", { status: 404 }));
     const res = await handleUrlFetchRequest(
       fetchUrlRequest({ url: "https://example.com/missing" }),
       fetchImpl as unknown as typeof fetch,
     );
     expect(res.status).toBe(502);
+    const body = (await res.json()) as { errorCode?: string };
+    expect(body.errorCode).toBe("invalid_response");
   });
 
-  it("rejects (413) a page whose content-length header exceeds the size cap, without reading the body", async () => {
+  it("rejects (413) a page whose content-length header exceeds the size cap, with errorCode 'too_large'", async () => {
     const fetchImpl = vi.fn(async () =>
       new Response("small body", {
         status: 200,
@@ -144,9 +187,11 @@ describe("handleUrlFetchRequest — forwarding", () => {
       fetchImpl as unknown as typeof fetch,
     );
     expect(res.status).toBe(413);
+    const body = (await res.json()) as { errorCode?: string };
+    expect(body.errorCode).toBe("too_large");
   });
 
-  it("rejects (413) a page whose actual body exceeds the size cap even with no/wrong content-length", async () => {
+  it("rejects (413) a page whose actual body exceeds the size cap, with errorCode 'too_large'", async () => {
     const huge = "x".repeat(MAX_FILE_BYTES + 1);
     const fetchImpl = vi.fn(async () => new Response(huge, { status: 200 }));
     const res = await handleUrlFetchRequest(
@@ -154,5 +199,7 @@ describe("handleUrlFetchRequest — forwarding", () => {
       fetchImpl as unknown as typeof fetch,
     );
     expect(res.status).toBe(413);
+    const body = (await res.json()) as { errorCode?: string };
+    expect(body.errorCode).toBe("too_large");
   });
 });

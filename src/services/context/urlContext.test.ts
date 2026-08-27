@@ -102,11 +102,39 @@ describe("fetchUrlContext — never throws, always a typed outcome", () => {
     expect(fetchImpl).not.toHaveBeenCalled();
   });
 
-  it("surfaces the proxy's own error message on a non-OK response", async () => {
-    const fetchImpl = vi.fn(async () => jsonResponse({ error: "That URL can't be fetched." }, 400));
+  it("returns actionable error message for blocked URLs", async () => {
+    const fetchImpl = vi.fn(async () => jsonResponse({ error: "That URL can't be fetched.", errorCode: "blocked_url" }, 400));
     const outcome = await fetchUrlContext("https://example.com", 0, { fetchImpl });
     expect(outcome.ok).toBe(false);
-    if (!outcome.ok) expect(outcome.message).toBe("That URL can't be fetched.");
+    if (!outcome.ok) expect(outcome.message).toContain("private or internal URL");
+  });
+
+  it("returns actionable error message for authentication failures", async () => {
+    const fetchImpl = vi.fn(async () => jsonResponse({ error: "The page responded with 401.", errorCode: "auth_required" }, 502));
+    const outcome = await fetchUrlContext("https://example.com", 0, { fetchImpl });
+    expect(outcome.ok).toBe(false);
+    if (!outcome.ok) expect(outcome.message).toContain("requires login");
+  });
+
+  it("returns actionable error message for timeouts", async () => {
+    const fetchImpl = vi.fn(async () => jsonResponse({ error: "Fetching that page failed: timeout", errorCode: "timeout" }, 502));
+    const outcome = await fetchUrlContext("https://example.com", 0, { fetchImpl });
+    expect(outcome.ok).toBe(false);
+    if (!outcome.ok) expect(outcome.message).toContain("took too long to load");
+  });
+
+  it("returns actionable error message for oversized pages", async () => {
+    const fetchImpl = vi.fn(async () => jsonResponse({ error: "That page is too large to load as context.", errorCode: "too_large" }, 413));
+    const outcome = await fetchUrlContext("https://example.com", 0, { fetchImpl });
+    expect(outcome.ok).toBe(false);
+    if (!outcome.ok) expect(outcome.message).toContain("too large");
+  });
+
+  it("returns actionable error message for fetch failures", async () => {
+    const fetchImpl = vi.fn(async () => jsonResponse({ error: "Fetching that page failed: network error", errorCode: "fetch_failed" }, 502));
+    const outcome = await fetchUrlContext("https://example.com", 0, { fetchImpl });
+    expect(outcome.ok).toBe(false);
+    if (!outcome.ok) expect(outcome.message).toContain("Couldn't reach that page");
   });
 
   it("handles the fetch call itself throwing (network/proxy unreachable)", async () => {
@@ -117,12 +145,13 @@ describe("fetchUrlContext — never throws, always a typed outcome", () => {
     expect(outcome.ok).toBe(false);
   });
 
-  it("rejects when the page has no readable text after extraction", async () => {
+  it("rejects when the page has no readable text after extraction with actionable message", async () => {
     const fetchImpl = vi.fn(async () =>
       jsonResponse({ url: "https://example.com", contentType: "text/html", content: "<body><script>1;</script></body>" }),
     );
     const outcome = await fetchUrlContext("https://example.com", 0, { fetchImpl });
     expect(outcome.ok).toBe(false);
+    if (!outcome.ok) expect(outcome.message).toContain("doesn't have text content");
   });
 });
 

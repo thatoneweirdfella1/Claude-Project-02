@@ -15,7 +15,7 @@
 import type { ContextItem, ContextItemKind } from "../../stores/types";
 import { appAccessHeaders } from "../appAccessClient";
 import { MAX_FILE_BYTES, MAX_SESSION_BYTES, formatBytes } from "./fileValidation";
-import type { UrlFetchResponseBody } from "./urlFetchHandler";
+import type { UrlFetchResponseBody, UrlFetchErrorBody } from "./urlFetchHandler";
 
 const FETCH_URL_ENDPOINT = "/api/fetch-url";
 const NON_CONTENT_TAGS = [
@@ -66,6 +66,27 @@ function newContextItemId(): string {
 
 const KIND: ContextItemKind = "url";
 
+/** Translates error codes from the backend into actionable, user-friendly
+    messages that never blame the user and never expose raw error codes. */
+function getActionableErrorMessage(errorCode?: string, rawMessage?: string): string {
+  switch (errorCode) {
+    case "blocked_url":
+      return "This looks like a private or internal URL. Only publicly accessible URLs can be added.";
+    case "auth_required":
+      return "This page requires login. Please share a publicly accessible link instead.";
+    case "timeout":
+      return "That page took too long to load. Please try again, or share it differently.";
+    case "too_large":
+      return "That page is too large to load as context. Please try a shorter article or remove something else first.";
+    case "fetch_failed":
+      return "Couldn't reach that page. Please check the URL and try again.";
+    case "invalid_response":
+      return "That page couldn't be read. Please check the URL and try again.";
+    default:
+      return rawMessage || "Something went wrong loading that page. Please check the URL and try again.";
+  }
+}
+
 /** Never throws — every failure path (bad URL, proxy unreachable, proxy
     rejected it, page too big for the remaining session budget) returns a
     typed { ok: false; message } the caller renders directly, same never-
@@ -99,15 +120,16 @@ export async function fetchUrlContext(
   }
 
   if (!res.ok) {
-    const detail = (await res.json().catch(() => null)) as { error?: string } | null;
-    return { ok: false, message: detail?.error ?? `That page couldn't be loaded (${res.status}).` };
+    const detail = (await res.json().catch(() => null)) as UrlFetchErrorBody | null;
+    const message = getActionableErrorMessage(detail?.errorCode, detail?.error);
+    return { ok: false, message };
   }
 
   const { contentType, content } = (await res.json()) as UrlFetchResponseBody;
   const extracted = contentType.includes("html") ? extractReadableText(content) : content.trim();
 
   if (extracted.length === 0) {
-    return { ok: false, message: "That page didn't have any readable text to load." };
+    return { ok: false, message: "This page doesn't have text content we can read. PDFs and images need to be uploaded as files instead." };
   }
 
   const bytes = new TextEncoder().encode(extracted).length;

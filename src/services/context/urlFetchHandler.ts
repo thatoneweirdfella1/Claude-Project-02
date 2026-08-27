@@ -26,6 +26,11 @@ export interface UrlFetchResponseBody {
   content: string;
 }
 
+export interface UrlFetchErrorBody {
+  error: string;
+  errorCode?: "blocked_url" | "auth_required" | "timeout" | "fetch_failed" | "invalid_response" | "too_large";
+}
+
 function jsonResponse(body: unknown, status: number): Response {
   return new Response(JSON.stringify(body), {
     status,
@@ -90,7 +95,7 @@ export async function handleUrlFetchRequest(
   }
 
   if (isBlockedUrl(body.url)) {
-    return jsonResponse({ error: "That URL can't be fetched." }, 400);
+    return jsonResponse({ error: "That URL can't be fetched.", errorCode: "blocked_url" }, 400);
   }
 
   const controller = new AbortController();
@@ -105,9 +110,11 @@ export async function handleUrlFetchRequest(
       headers: { "user-agent": "DivergenceAI-ContextFetcher/1.0" },
     });
   } catch (error) {
+    const isTimeout = error instanceof Error && error.name === "AbortError";
     return jsonResponse(
       {
         error: `Fetching that page failed: ${error instanceof Error ? error.message : String(error)}`,
+        errorCode: isTimeout ? "timeout" : "fetch_failed",
       },
       502,
     );
@@ -116,17 +123,18 @@ export async function handleUrlFetchRequest(
   }
 
   if (!upstream.ok) {
-    return jsonResponse({ error: `The page responded with ${upstream.status}.` }, 502);
+    const errorCode = upstream.status === 401 || upstream.status === 403 ? "auth_required" : "invalid_response";
+    return jsonResponse({ error: `The page responded with ${upstream.status}.`, errorCode }, 502);
   }
 
   const contentLength = upstream.headers.get("content-length");
   if (contentLength && Number(contentLength) > MAX_FILE_BYTES) {
-    return jsonResponse({ error: "That page is too large to load as context." }, 413);
+    return jsonResponse({ error: "That page is too large to load as context.", errorCode: "too_large" }, 413);
   }
 
   const text = await upstream.text();
   if (text.length > MAX_FILE_BYTES) {
-    return jsonResponse({ error: "That page is too large to load as context." }, 413);
+    return jsonResponse({ error: "That page is too large to load as context.", errorCode: "too_large" }, 413);
   }
 
   const responseBody: UrlFetchResponseBody = {
