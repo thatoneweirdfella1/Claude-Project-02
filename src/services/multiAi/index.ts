@@ -1,8 +1,12 @@
-/* Multi-AI Actions — Consensus and Synthesis (Step 8.4). Debate mode (Step
-   8.3) is the still-unbuilt third action; the DebateTranscript type here is
-   the contract it is expected to produce. */
+/* Multi-AI Actions — shared public surface. */
 export { MULTI_AI_RUNTIME_MODEL, type MultiAiCompletionRequest, type MultiAiModelClient } from "./client";
-export { buildTranscriptInput, isCompleteTranscript, type DebateTranscript } from "./transcript";
+export {
+  buildTranscriptInput,
+  isCompleteTranscript,
+  transcriptParticipants,
+  type DebateTranscript,
+  type DebateTranscriptParticipant,
+} from "./transcript";
 export {
   MultiAiSchemaError,
   parseConsensusOutput,
