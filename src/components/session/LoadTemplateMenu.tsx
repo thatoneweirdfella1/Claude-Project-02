@@ -107,6 +107,8 @@ export function LoadTemplateMenu({ renderTrigger }: LoadTemplateMenuProps = {}) 
       model: current.model,
       directness: current.directness,
       techniques: current.techniques,
+      ...(current.context.length > 0 && { context: current.context }),
+      ...(current.draftInput.trim().length > 0 && { starterQuestion: current.draftInput }),
     });
     closePopover();
   }
