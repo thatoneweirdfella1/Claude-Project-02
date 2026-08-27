@@ -1,9 +1,15 @@
-# DIVERGENCE.AI — candidate-worker boundary
+# DIVERGENCE.AI — Account 2 candidate worker
 
-Read and obey `START-HERE-DIVERGENCE.md`, `AGENTS.md`, and `docs/layer-system/DUAL-LINEAGE-GOVERNANCE.md`.
+Active writable branch: `account2/layer-8-candidate-v1`.
 
-Claude/Account 2 must work only on an explicitly assigned `account2/layer-<N>-candidate-v<revision>` branch descended from its own candidate lineage. It must never modify or inherit authority over `codex-verified/*`.
+Read, in order:
 
-The Codex lineage may inspect candidate work but may not merge it. Candidate research, tests, and patches remain untrusted until independently adopted under the dual-lineage gate.
+1. `AGENTS.md`
+2. `START-HERE-DIVERGENCE.md`
+3. `docs/repair-authority/ACCOUNT2-REMAINING-SITE-REPAIR-WORK-ORDER.md`
+4. `docs/layer-system/PERMISSIONS.yml`
+5. `docs/layer-system/BATCH-SCOPE.json`
 
-Never modify archive branches, earlier checkpoints, `build`, `frozen-implementation-v1`, backups, or another account's active branch.
+Account 2 may inspect, diagnose, implement, test, and commit the 31 confirmed repair tasks only on this isolated branch. It may not modify or claim authority over `codex-verified/*`, production, build, frozen, or archive branches.
+
+Do not stop for ordinary technical decisions. Stop only at an explicitly forbidden external action or a genuine requirements conflict, and report the exact blocker.
