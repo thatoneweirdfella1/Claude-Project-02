@@ -28,6 +28,64 @@ and `import.css` edits, which were not committed at the time. Corrected by:
 **Lesson applied going forward: implementation agents for different requirements run
 sequentially, or with `isolation: "worktree"`, never sharing one working directory.**
 
+### Session 7 — R07 re-implemented on the correct (live) component
+
+Followed Session 6's corrected next action exactly: fixed `TemplatesScreen` in
+`src/components/layout/ScreenRouter.tsx` (the live Saved Tools -> Templates screen),
+not `LoadTemplateMenu.tsx`.
+
+**Changes:**
+- `formData` gained a `starterQuestion` field; both the create-form and edit-form JSX
+  gained a "Starter Question (optional)" textarea (`form-group__input` pattern).
+- `handleCreateTemplate` now passes `starterQuestion` (trimmed, omitted if blank) and
+  snapshots the active session's current `context` (via `useSessionStore`'s `context`
+  state) into the new template when it's non-empty — same precedent as the removed
+  `LoadTemplateMenu.saveCurrentAsTemplate`.
+- `handleEditTemplate` now seeds `formData.starterQuestion` from the template being
+  edited. `handleSaveEdit` now includes `starterQuestion` in its `updateTemplate` call
+  and intentionally omits `context` from the updates object — `updateTemplate` merges
+  updates onto the existing template (`{ ...t, ...updates }`), so context captured at
+  creation survives an edit untouched (no context-editing UI exists in this form).
+- Cleanup: removed `src/components/session/LoadTemplateMenu.tsx` and its two test
+  files, and its export from `src/components/session/index.ts` — confirmed dead code
+  (grep outside those 3 files found zero consumers; nothing ever rendered
+  `<LoadTemplateMenu>`), and it directly caused the two wasted repair cycles in
+  Sessions 3-6 by looking like the real component.
+
+**Tests:**
+- `src/components/layout/TemplatesScreen.test.tsx` (new, 4 tests) — mounts the real
+  `ScreenRouter` (routed to Saved Tools -> Templates) and drives create-with-context,
+  create-without-optional-fields, edit+save (starterQuestion updates, context
+  preserved), and edit+cancel (no store mutation) against the real store.
+  React-dom/client render harness, same pattern as
+  `src/components/settings/layer2Interactions.test.tsx`.
+- `e2e/templates.spec.ts` (new, 1 Playwright test) — full browser click-through:
+  create (title + model + starter question) -> reload -> rediscover -> Use Template
+  (starter question populates the composer) -> Edit -> change starter question ->
+  Save -> reload -> change persisted -> Edit again -> change -> Cancel -> reload ->
+  change NOT persisted. Uses `npm run build && npx vite preview` per
+  `playwright.config.ts`, with `/api/verify-access` AND `/api/account` mocked via
+  `page.route()` (the latter was the actual cause of the "Loading account" hang noted
+  in Session 6 — `vite preview`'s SPA fallback returns 200/HTML for the unmocked
+  `/api/account` route, which `durableSync.getAccountStatus` silently treats as an
+  ambiguous ok-but-empty body, parking `AccountGate` in `webUser === undefined`
+  forever). Full sequence passed: `1 passed`.
+- Full unit suite after these changes: 727/727 passing (748 baseline + 4 new -
+  25 removed with the deleted dead-code test files). Build: green.
+
+**Status:** IMPLEMENTED AND UNIT/E2E-TESTED BY THIS IMPLEMENTATION AGENT. NOT YET
+VERIFIED BY A FRESH, INDEPENDENT VERIFICATION AGENT. Do not mark PASSED until that
+happens per the completion law.
+
+**Environment note (out of scope for R07):** the rest of the pre-existing `e2e/`
+suite (`core-flow`, `horizontal-layers`, `session-history*`, `theme-toggle`, etc.)
+currently fails in this sandbox for the same `/api/account` reason described above —
+none of those specs mock that route. This is a pre-existing gap unrelated to this R07
+fix (confirmed by reproducing the same failure before touching any R07 code); the fix
+for `e2e/templates.spec.ts` isolated in this session does not touch those other spec
+files. Whoever picks up general E2E-suite health next should apply the same
+`/api/account` mock to the shared `e2e/credit-helpers.ts` / `e2e/mocks.ts` helpers.
+
 ## Requirements Status
 
 ### Group 1 — Local input and creation flows

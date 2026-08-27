@@ -999,6 +999,7 @@ function TemplatesScreen() {
     model: "auto" as ModelSelection,
     directness: 2,
     techniques: [] as string[],
+    starterQuestion: "",
   });
 
   const templates = useAccountStore((s) => s.templates);
@@ -1011,6 +1012,7 @@ function TemplatesScreen() {
   const setTechniques = useSessionStore((s) => s.setTechniques);
   const addContextItem = useSessionStore((s) => s.addContextItem);
   const setDraftInput = useSessionStore((s) => s.setDraftInput);
+  const currentContext = useSessionStore((s) => s.context);
   const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
   const setScreenLocation = useSessionStore((s) => s.setScreenLocation);
 
@@ -1045,8 +1047,15 @@ function TemplatesScreen() {
         model: formData.model,
         directness: formData.directness as 1 | 2 | 3,
         techniques: formData.techniques as any,
+        // Optional per CANON ("optional context and starter question") —
+        // snapshot the current session's loaded context (same array
+        // handleLoadTemplate re-populates via addContextItem) only when
+        // there's something to capture, mirroring the dead LoadTemplateMenu's
+        // saveCurrentAsTemplate precedent.
+        ...(currentContext.length > 0 && { context: currentContext }),
+        ...(formData.starterQuestion.trim() && { starterQuestion: formData.starterQuestion.trim() }),
       });
-      setFormData({ title: "", model: "auto", directness: 2, techniques: [] });
+      setFormData({ title: "", model: "auto", directness: 2, techniques: [], starterQuestion: "" });
       setShowCreateForm(false);
     }
   };
@@ -1058,6 +1067,7 @@ function TemplatesScreen() {
       model: template.model,
       directness: template.directness,
       techniques: template.techniques || [],
+      starterQuestion: template.starterQuestion || "",
     });
   };
 
@@ -1068,15 +1078,20 @@ function TemplatesScreen() {
         model: formData.model,
         directness: formData.directness as 1 | 2 | 3,
         techniques: formData.techniques as any,
+        // Note: `context` is intentionally omitted here — updateTemplate
+        // merges these updates onto the existing template (`{ ...t, ...updates
+        // }`), so any context captured at creation time survives an edit
+        // untouched since this form has no context-editing UI.
+        starterQuestion: formData.starterQuestion.trim() || undefined,
       });
       setEditingId(null);
-      setFormData({ title: "", model: "auto", directness: 2, techniques: [] });
+      setFormData({ title: "", model: "auto", directness: 2, techniques: [], starterQuestion: "" });
     }
   };
 
   const handleCancelEdit = () => {
     setEditingId(null);
-    setFormData({ title: "", model: "auto", directness: 2, techniques: [] });
+    setFormData({ title: "", model: "auto", directness: 2, techniques: [], starterQuestion: "" });
   };
 
   const toggleTechnique = (technique: string) => {
@@ -1200,6 +1215,16 @@ function TemplatesScreen() {
                   </label>
                 ))}
               </div>
+            </div>
+            <div className="form-group">
+              <label className="form-group__label">Starter Question (optional)</label>
+              <textarea
+                className="form-group__input"
+                placeholder="Pre-fill this question when the template is used"
+                value={formData.starterQuestion}
+                onChange={(e) => setFormData({ ...formData, starterQuestion: e.target.value })}
+                rows={2}
+              />
             </div>
             <button
               type="button"
@@ -1391,6 +1416,16 @@ function TemplatesScreen() {
                             </label>
                           ))}
                         </div>
+                      </div>
+                      <div className="form-group">
+                        <label className="form-group__label">Starter Question (optional)</label>
+                        <textarea
+                          className="form-group__input"
+                          placeholder="Pre-fill this question when the template is used"
+                          value={formData.starterQuestion}
+                          onChange={(e) => setFormData({ ...formData, starterQuestion: e.target.value })}
+                          rows={2}
+                        />
                       </div>
                       <div style={{ display: "flex", gap: "8px" }}>
                         <button
