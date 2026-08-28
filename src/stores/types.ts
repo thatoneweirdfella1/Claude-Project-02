@@ -218,6 +218,16 @@ export interface StatePills {
    attached by Steps 5.x/8.x. Kept minimal and open here. */
 export type MessageRole = "user" | "assistant";
 
+/* R19: Message state lifecycle — distinct, persistent states enforcing
+   valid transitions (copying/opening never transition to sent/answered). */
+export type MessageState =
+  | "prepared"  // Message composed but not sent (user messages in draft, handoffs waiting)
+  | "sent"      // Message successfully transmitted to system (user to AI, or AI response confirmed)
+  | "answered"  // Response received (assistant messages following user messages)
+  | "imported"  // Message imported from external source
+  | "cancelled" // User cancelled sending this message
+  | "failed";   // Sending or receiving failed
+
 export interface ConversationMessage {
   id: string;
   role: MessageRole;
@@ -265,6 +275,19 @@ export interface ConversationMessage {
       tension Step 6.5's DECISIONS already logged for deriveStateFeeds). */
   telemetryId?: string;
   statePills?: StatePills;
+  /* R19: Distinct message lifecycle state (prepared/sent/answered/imported/
+     cancelled/failed) replacing the handoffStatus-only model. Backward
+     compatible: existing messages without messageState derive their state
+     from messageKind/handoffStatus legacy fields (see services/migration). */
+  messageState?: MessageState;
+  /* R19: User action tracking — separate concerns from message state.
+     Copying/opening never affect sent/answered state; they are independent
+     read-only user actions tracked per message. */
+  userCopied?: boolean;
+  userOpened?: boolean;
+  /* Legacy fields (pre-R19): For backward compatibility. Migration layer
+     derives messageState from these if not present. New code should use
+     messageState exclusively. */
   /** Prepared handoffs are not answers. Imported responses become answers only
       after the user previews and confirms them. */
   messageKind?: "answer" | "handoff" | "imported";

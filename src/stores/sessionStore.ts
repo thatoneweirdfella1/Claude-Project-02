@@ -16,6 +16,7 @@ import type {
   TranslatorEngine,
 } from "./types";
 import { computeEditDistance, createSignal } from "../services/learningEngine";
+import { migrateConversationStates } from "../services/migration/messageStateMigration";
 import { useAccountStore } from "./accountStore";
 import { useSettingsDefaultsStore } from "./settingsDefaultsStore";
 
@@ -271,7 +272,7 @@ export const useSessionStore = create<SessionStore>((set) => ({
     techniques: record.techniques,
     context: record.context,
     variables: record.variables,
-    conversation: record.conversation,
+    conversation: migrateConversationStates(record.conversation),
     draftInput: record.draftInput ?? "",
     draftSelectionStart: record.draftSelectionStart ?? (record.draftInput?.length ?? 0),
     draftSelectionEnd: record.draftSelectionEnd ?? (record.draftInput?.length ?? 0),
@@ -303,7 +304,7 @@ export const useSessionStore = create<SessionStore>((set) => ({
       ? { conversationScrollTop: Math.max(0, Number(state.conversationScrollTop) || 0) }
       : {}),
     ...(state.context !== undefined ? { context: Array.isArray(state.context) ? state.context : current.context } : {}),
-    ...(state.conversation !== undefined ? { conversation: Array.isArray(state.conversation) ? state.conversation : current.conversation } : {}),
+    ...(state.conversation !== undefined ? { conversation: Array.isArray(state.conversation) ? migrateConversationStates(state.conversation) : current.conversation } : {}),
     ...(state.techniques !== undefined ? { techniques: Array.isArray(state.techniques) ? state.techniques : current.techniques } : {}),
     ...(state.destination !== undefined && state.destination && typeof state.destination === "object"
       ? { destination: state.destination }

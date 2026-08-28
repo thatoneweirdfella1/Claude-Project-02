@@ -20,6 +20,7 @@ const MESSAGE: ConversationMessage = {
   role: "user",
   content: "what is the boiling point of water",
   timestamp: 1000,
+  messageState: "sent", // R19: explicit message state
 };
 
 const CONTEXT_ITEM: ContextItem = {

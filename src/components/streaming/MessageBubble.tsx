@@ -13,6 +13,7 @@ export interface MessageBubbleProps {
   onDownload?: () => void;
   onRefine?: (instruction: string) => void;
   onBranchChange?: (index: number) => void;
+  onUserCopied?: () => void;
 }
 
 function formatRelativeTime(timestamp: number): string {
@@ -23,7 +24,7 @@ function formatRelativeTime(timestamp: number): string {
   return `${Math.round(minutes / 60)}h ago`;
 }
 
-export function MessageBubble({ message, userInitial = "U", onRate, onRatingComment, onDownload, onRefine, onBranchChange }: MessageBubbleProps) {
+export function MessageBubble({ message, userInitial = "U", onRate, onRatingComment, onDownload, onRefine, onBranchChange, onUserCopied }: MessageBubbleProps) {
   const isAssistant = message.role === "assistant";
   const isAnswer = isAssistant && message.messageKind !== "handoff";
   const [copied, setCopied] = useState(false);
@@ -37,8 +38,13 @@ export function MessageBubble({ message, userInitial = "U", onRate, onRatingComm
   }, [copied]);
 
   async function copy() {
-    try { await navigator.clipboard.writeText(message.content); setCopied(true); }
-    catch { setCopied(false); }
+    try {
+      await navigator.clipboard.writeText(message.content);
+      setCopied(true);
+      onUserCopied?.();
+    } catch {
+      setCopied(false);
+    }
   }
 
   return <div className={`message-bubble message-bubble--${message.role} ${message.messageKind ? `message-bubble--${message.messageKind}` : ""}`} data-testid="message-bubble">

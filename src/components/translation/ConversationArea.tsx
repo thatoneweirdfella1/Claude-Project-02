@@ -61,6 +61,7 @@ export function ConversationArea({ children }: ConversationAreaProps) {
             queueMicrotask(() => document.querySelector<HTMLTextAreaElement>(".input-box__textarea")?.focus());
           }}
           onBranchChange={(branchIndex) => updateMessage(message.id, { branchIndex })}
+          onUserCopied={() => updateMessage(message.id, { userCopied: true })}
         />
       ))}
       {children}
