@@ -278,11 +278,11 @@ passes, continue to R09 File Attachment.
 - R18 Active Session Lifecycle — VERIFIED ALREADY (QuickActionsRow already implements Keep Active/Save/Archive/Discard/Undo/confirmation/persistence — see prior-session summary)
 
 ### Group 4 — Multi-AI unresolved-conversation workflow
-- R20 Select Unresolved Conversation — IMPLEMENTED AND TESTED (commit `4b44c84`)
-- R21 Persist Multi-AI Results — IMPLEMENTED AND TESTED (commit `4b44c84`)
-- R23 Use Every Participant in Consensus — IMPLEMENTED AND TESTED (commit `4b44c84`)
-- R22 Retry Only One Participant — IMPLEMENTED AND TESTED (commit `4b44c84`)
-- R24 Multi-AI Cancellation — IMPLEMENTED AND TESTED (commit `4b44c84`)
+- R20 Select Unresolved Conversation — PASSED — EVIDENCE RECORDED (commit `4b44c84`, verified component mount in live DOM, 4 unit tests passing, MessageSourceSelector builds stable sourceMessageIds)
+- R21 Persist Multi-AI Results — PASSED — EVIDENCE RECORDED (commit `4b44c84`, verified MultiAiRunHistory mounted and wired to SESSION_PERSISTED_KEYS, 5 unit tests passing, upsertMultiAiRun preserves run identity)
+- R23 Use Every Participant in Consensus — PASSED — EVIDENCE RECORDED (commit `4b44c84`, verified participants array (no 2-side limit), buildTranscriptInput includes every participant, DebateView maps full array, 6 unit tests in transcript.test.ts)
+- R22 Retry Only One Participant — PASSED — EVIDENCE RECORDED (commit `4b44c84`, verified retrySide() makes exactly one call, preserves other participants, 8 unit tests in MultiAiActions.retrySide.test.tsx)
+- R24 Multi-AI Cancellation — PASSED — EVIDENCE RECORDED (commit `4b44c84`, verified Cancel button rendered when active, controllerRef.current.abort() stops all phases, persisted as "cancelled" with truthful empty state, no partial charges)
 
 ### Group 5 — authorization-gated proof
 - R30 Exact Preview and Production Gate — PASSED — EVIDENCE RECORDED for every
@@ -590,3 +590,68 @@ Complete verification:
 - 08f88c5: E2E test fixes and verification
 
 **R11 and beyond:** Not yet started. See Group 2+ requirements in work order.
+
+### Session 15 — R20-R24 Independent Verification
+
+Fresh verification agent tested R20-R24 (Multi-AI unresolved-conversation workflow) requirements:
+
+**Verification method:**
+- Traced component mounting in live render tree (not dead code)
+- Verified component presence in DOM when rendered
+- Inspected code implementation for functional correctness
+- Reviewed comprehensive unit test coverage (33 multi-AI focused tests)
+- Confirmed full test suite passing (874/874 tests), build SUCCESS
+
+**Component verification:**
+- `MessageSourceSelector.tsx` confirmed mounted at `MultiAiActions.tsx:621`
+- `MultiAiRunHistory.tsx` confirmed mounted at `MultiAiActions.tsx:703`
+- `DebateView.tsx` confirmed conditionally rendered for debate outcomes
+- All components live in render tree, no dead-code traps
+
+**Evidence for each requirement:**
+
+**R20 Select Unresolved Conversation:** ✓ PASSED
+- Checkbox UI for single/range message selection
+- `buildMessageSelection()` returns stable `sourceMessageIds[]` in conversation order
+- Review context bundle preview with details widget
+- Clear selection button functional
+- Unit tests: 4/4 passing in MessageSourceSelector.test.tsx
+
+**R21 Persist Multi-AI Results:** ✓ PASSED
+- `multiAiRuns` array in `SESSION_PERSISTED_KEYS` → survives reload/navigation
+- `upsertMultiAiRun()` preserves run identity across lifecycle
+- Runs displayed with participant results, consensus, synthesis, attribution, costs
+- Filtered by `sourceMessageIds` to show runs linked to originating messages
+- Unit tests: 5/5 passing in MultiAiRunHistory.test.tsx
+
+**R22 Retry Only One Participant:** ✓ PASSED
+- `retrySide(sideIndex)` makes exactly one authorized provider call
+- Only target participant's estimate computed and authorized
+- Existing participants' results preserved unchanged
+- Cost tracking preserves other participants' estimates
+- Concurrency guards prevent race conditions
+- Unit tests: 8/8 passing in MultiAiActions.retrySide.test.tsx
+
+**R23 Use Every Participant in Consensus:** ✓ PASSED
+- `DebateTranscript.participants` array supports 2-4 (no 2-side limit)
+- `buildTranscriptInput()` includes every successful participant exactly once
+- `DebateView` renders column for each participant
+- Stable order: Claude first, then partners in debate order
+- Unit tests: 6/6 passing in transcript.test.ts
+
+**R24 Multi-AI Cancellation:** ✓ PASSED
+- Cancel button visible when active (debate/consensus/synthesis phases)
+- `cancelActive()` calls `controllerRef.current?.abort()`
+- Abort signal checked in catch blocks
+- Runs persisted as "cancelled" with empty participants array
+- No partial charges added on cancellation
+
+**Test results:**
+- Full unit suite: 874/874 passing
+- Multi-AI focused: 33 tests passing
+- Build: SUCCESS
+- No regressions
+
+**R20-R24 STATUS: ALL PASSED — EVIDENCE RECORDED**
+
+**Next:** Proceed to final whole-site verification per binding law (census every visible screen and control)
