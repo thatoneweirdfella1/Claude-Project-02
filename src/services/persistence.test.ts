@@ -171,7 +171,7 @@ describe("persistence: kill and reload", () => {
     const hasFunction = Object.values(raw).some((v) => typeof v === "function");
     expect(hasFunction).toBe(false);
     expect(Object.keys(raw).sort()).toEqual(
-      ["sessionId", "sessionCreatedAt", "sessionTitle", "draftInput", "draftSelectionStart", "draftSelectionEnd", "conversationScrollTop", "context", "conversation", "currentScreen", "currentSection", "destination", "directness", "lockedProblemStatement", "maxRequestCost", "methodology", "methodologyPhase", "model", "paidFallbackEnabled", "reviewBeforeSend", "statePills", "techniques", "translatorEngine", "variables"].sort(),
+      ["sessionId", "sessionCreatedAt", "sessionTitle", "draftInput", "draftSelectionStart", "draftSelectionEnd", "conversationScrollTop", "context", "conversation", "currentScreen", "currentSection", "destination", "directness", "lockedProblemStatement", "maxRequestCost", "methodology", "methodologyPhase", "model", "multiAiRuns", "paidFallbackEnabled", "reviewBeforeSend", "statePills", "techniques", "translatorEngine", "variables"].sort(),
     );
   });
 });

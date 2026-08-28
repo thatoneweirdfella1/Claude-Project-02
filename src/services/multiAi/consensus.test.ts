@@ -14,9 +14,10 @@ type ClientFn = (req: MultiAiCompletionRequest) => Promise<string>;
 function transcript(overrides: Partial<DebateTranscript> = {}): DebateTranscript {
   return {
     question: "Should we use microservices?",
-    claudeText: "Only once you have a real scaling or team-boundary problem.",
-    partnerLabel: "GPT-5.5",
-    partnerText: "Start with microservices so you never have to migrate later.",
+    participants: [
+      { label: "Claude", text: "Only once you have a real scaling or team-boundary problem." },
+      { label: "GPT-5.5", text: "Start with microservices so you never have to migrate later." },
+    ],
     ...overrides,
   };
 }
@@ -66,10 +67,46 @@ describe("runConsensus — the happy path", () => {
 describe("runConsensus — an incomplete transcript", () => {
   it("returns 'incomplete-transcript' without calling the model", async () => {
     const client = vi.fn(async () => consensusJson());
-    const outcome = await runConsensus(transcript({ partnerText: "" }), { client });
+    const outcome = await runConsensus(transcript({
+      participants: [{ label: "Claude", text: "Only once you have a real scaling problem." }, { label: "GPT-5.5", text: "" }],
+    }), { client });
 
     expect(outcome.status).toBe("incomplete-transcript");
     expect(client).not.toHaveBeenCalled();
+  });
+});
+
+describe("runConsensus — R23: every participant in a 3-/4-way debate", () => {
+  it("includes a third participant's argument in the model input for a 3-way debate", async () => {
+    const client = vi.fn<ClientFn>(async () => consensusJson());
+    await runConsensus(transcript({
+      participants: [
+        { label: "Claude", text: "Claude's argument." },
+        { label: "GPT-5.5", text: "GPT's argument." },
+        { label: "Gemini 3.1 Pro", text: "Gemini's argument." },
+      ],
+    }), { client });
+
+    const req = client.mock.calls[0][0];
+    expect(req.input).toContain("GEMINI 3.1 PRO'S ANSWER:");
+    expect(req.input).toContain("Gemini's argument.");
+  });
+
+  it("includes all four participants' arguments for a 4-way debate", async () => {
+    const client = vi.fn<ClientFn>(async () => consensusJson());
+    await runConsensus(transcript({
+      participants: [
+        { label: "Claude", text: "Claude's argument." },
+        { label: "GPT-5.5", text: "GPT's argument." },
+        { label: "Gemini 3.1 Pro", text: "Gemini's argument." },
+        { label: "Grok 4.3", text: "Grok's argument." },
+      ],
+    }), { client });
+
+    const req = client.mock.calls[0][0];
+    expect(req.input).toContain("GPT-5.5'S ANSWER:");
+    expect(req.input).toContain("GEMINI 3.1 PRO'S ANSWER:");
+    expect(req.input).toContain("GROK 4.3'S ANSWER:");
   });
 });
 

@@ -23,4 +23,12 @@ export {
   type DebatePartnerClient,
 } from "./client";
 export { debateInput, debateSystemPrompt, type DebateStance } from "./prompt";
-export { runDebate, type DebateOutcome, type DebateSide, type ParticipantUsage, type RunDebateOptions } from "./runDebate";
+export {
+  retryDebateSide,
+  runDebate,
+  type DebateOutcome,
+  type DebateSide,
+  type ParticipantUsage,
+  type RetryDebateSideOptions,
+  type RunDebateOptions,
+} from "./runDebate";

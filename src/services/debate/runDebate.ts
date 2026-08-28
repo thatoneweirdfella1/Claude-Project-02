@@ -177,17 +177,15 @@ export async function runDebate(
   const allSucceeded = sides.every((s) => s.status === "ok");
   const anySucceeded = sides.some((s) => s.status === "ok");
 
-  if (allSucceeded && claude.status === "ok" && partners[0]?.status === "ok") {
-    // Use the first partner for the canonical transcript
-    const firstPartner = partners[0];
+  if (allSucceeded) {
+    // R23: every side that landed goes into the transcript, Claude first,
+    // in stable debate order — never just the first partner.
     return {
       status: "complete",
       sides,
       transcript: {
         question: trimmed,
-        claudeText: claude.text!,
-        partnerLabel: firstPartner.label,
-        partnerText: firstPartner.text!,
+        participants: sides.map((s) => ({ label: s.label, text: s.text! })),
       },
     };
   }
@@ -197,4 +195,56 @@ export async function runDebate(
   }
 
   return { status: "failed", sides };
+}
+
+/* R22: retry EXACTLY ONE participant. The full runDebate() call above always
+   re-asks every side — reusing it for a "retry one" action would spend a
+   fresh authorized call per participant just to replace the ones that
+   already succeeded, which is not what "retry only one participant" means.
+   This calls only the named side's client. */
+export interface RetryDebateSideOptions {
+  claudeClient: DebateClaudeClient;
+  partnerClient: DebatePartnerClient;
+  /** The stance this side already argued — preserved so a retry doesn't
+      flip which position it's defending mid-debate. */
+  stance: DebateStance;
+  /** Omit for Claude's side; set to retry a specific partner. */
+  partnerId?: DebatePartnerId;
+  signal?: AbortSignal;
+}
+
+export async function retryDebateSide(
+  question: string,
+  options: RetryDebateSideOptions,
+): Promise<DebateSide> {
+  const trimmed = question.trim();
+  const input = debateInput(trimmed);
+
+  if (options.partnerId) {
+    const partner = getDebatePartner(options.partnerId);
+    return runSide(
+      () =>
+        options.partnerClient({
+          partner,
+          system: debateSystemPrompt(options.stance),
+          input,
+          signal: options.signal,
+        }),
+      options.stance,
+      partner.label,
+      options.partnerId,
+    );
+  }
+
+  return runSide(
+    () =>
+      options.claudeClient({
+        model: DEBATE_CLAUDE_MODEL,
+        system: debateSystemPrompt(options.stance),
+        input,
+        signal: options.signal,
+      }),
+    options.stance,
+    "Claude",
+  );
 }

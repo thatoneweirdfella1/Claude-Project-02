@@ -9,11 +9,21 @@ export interface ModelPrice {
 
 /** First-party Claude API list prices current for the model ids used here.
     Keep this table explicit and version-controlled so price changes are
-    reviewable instead of silently arriving from a remote configuration. */
+    reviewable instead of silently arriving from a remote configuration.
+
+    R27: Multi-AI debate partners (services/debate/roster.ts) each get their
+    own explicit entry here too — before this, every participant's estimate
+    silently used Claude Opus pricing regardless of which provider it
+    actually called. Same "explicit price per model, never borrowed" rule
+    R14 already enforces for calculateUsageCost/priceFor. */
 export const MODEL_PRICES: Record<string, ModelPrice> = {
   "claude-haiku-4-5": { inputPerMillion: 1, outputPerMillion: 5 },
   "claude-sonnet-5": { inputPerMillion: 3, outputPerMillion: 15 },
   "claude-opus-4-8": { inputPerMillion: 5, outputPerMillion: 25 },
+  "gpt-5.5": { inputPerMillion: 3, outputPerMillion: 12 },
+  "gemini-3.1-pro": { inputPerMillion: 2.5, outputPerMillion: 10 },
+  "grok-4.3": { inputPerMillion: 3, outputPerMillion: 15 },
+  "deepseek-v4-pro": { inputPerMillion: 0.6, outputPerMillion: 2.2 },
 };
 
 export interface SessionCost {

@@ -7,6 +7,7 @@ import type {
   MethodologyPhase,
   MethodologyType,
   ModelSelection,
+  MultiAiRunRecord,
   ScreenId,
   ScreenSectionId,
   SessionRecord,
@@ -57,6 +58,7 @@ export function createInitialSessionState(): SessionState {
     methodology: defaults.methodology,
     methodologyPhase: "define",
     lockedProblemStatement: "",
+    multiAiRuns: [],
   };
 }
 
@@ -66,7 +68,7 @@ export const SESSION_PERSISTED_KEYS: (keyof SessionState)[] = [
   "destination", "translatorEngine", "reviewBeforeSend", "paidFallbackEnabled",
   "maxRequestCost", "directness", "techniques", "context", "conversation",
   "statePills", "variables", "currentScreen", "currentSection", "methodology", "methodologyPhase",
-  "lockedProblemStatement",
+  "lockedProblemStatement", "multiAiRuns",
 ];
 
 interface SessionActions {
@@ -89,6 +91,10 @@ interface SessionActions {
   removeSessionVariable: (name: string) => void;
   setMessageRating: (messageId: string, stars: number, comment?: string) => void;
   updateMessage: (messageId: string, patch: Partial<ConversationMessage>) => void;
+  /** R21: add or replace a persisted Multi-AI run by id (upsert — a run's
+      id is stable across its debating -> consensus -> synthesis lifecycle,
+      so later stages update the same record rather than creating new ones). */
+  upsertMultiAiRun: (run: MultiAiRunRecord) => void;
   resetSession: () => void;
   newSession: () => void;
   setCurrentScreen: (screen: ScreenId) => void;
@@ -231,6 +237,14 @@ export const useSessionStore = create<SessionStore>((set) => ({
     }
     return { conversation: s.conversation.map((m) => m.id === messageId ? { ...m, ...patch } : m) };
   }),
+  upsertMultiAiRun: (run) => set((s) => {
+    const exists = s.multiAiRuns.some((r) => r.id === run.id);
+    return {
+      multiAiRuns: exists
+        ? s.multiAiRuns.map((r) => (r.id === run.id ? run : r))
+        : [...s.multiAiRuns, run],
+    };
+  }),
   resetSession: () => set(createInitialSessionState()),
   newSession: () => {
     const previous = useSessionStore.getState();
@@ -254,6 +268,7 @@ export const useSessionStore = create<SessionStore>((set) => ({
       context: [],
       variables: {},
       statePills: { emotion: null, rsd: null, interest: null, cognitive: null },
+      multiAiRuns: [],
     });
   },
   setCurrentScreen: (currentScreen) => set({ currentScreen, currentSection: null }),
@@ -281,6 +296,7 @@ export const useSessionStore = create<SessionStore>((set) => ({
     methodology: record.methodology ?? "standard",
     methodologyPhase: record.methodologyPhase ?? "define",
     lockedProblemStatement: record.lockedProblemStatement ?? "",
+    multiAiRuns: record.multiAiRuns ?? [],
   }),
   setMethodology: (methodology) => set({ methodology }),
   setMethodologyPhase: (methodologyPhase) => set({ methodologyPhase }),
@@ -318,6 +334,9 @@ export const useSessionStore = create<SessionStore>((set) => ({
       : {}),
     ...(state.currentSection !== undefined
       ? { currentSection: state.currentSection && VALID_SECTIONS.has(state.currentSection) ? state.currentSection : null }
+      : {}),
+    ...(state.multiAiRuns !== undefined
+      ? { multiAiRuns: Array.isArray(state.multiAiRuns) ? state.multiAiRuns : current.multiAiRuns }
       : {}),
   })),
 }));

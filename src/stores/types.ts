@@ -393,6 +393,8 @@ export interface SessionRecord {
   methodology?: MethodologyType;
   methodologyPhase?: MethodologyPhase;
   lockedProblemStatement?: string;
+  /** R21: persisted Multi-AI runs, carried through save/archive/resume. */
+  multiAiRuns?: MultiAiRunRecord[];
 }
 
 /* Feedback rating (CANON Feature 7). Full rating UI + learning loop is
@@ -647,6 +649,60 @@ export interface MethodologyEntry {
   timestamp: number;
 }
 
+/* R20/R21: Multi-AI unresolved-conversation workflow — a persisted handoff
+   from a selected message/range of the conversation to a Debate/Consensus/
+   Synthesis run, rendered as a branch linked back to its source messages.
+   `sourceMessageIds` are the exact stable ConversationMessage ids the run
+   was created from (R20) — never a copy of their text, so the link survives
+   edits to how a message is displayed. */
+export type MultiAiParticipantStatus = "ok" | "error";
+
+export interface MultiAiParticipantResult {
+  /** Display name — "Claude" or the roster label (e.g. "GPT-5.5"). */
+  label: string;
+  provider: string | null;
+  model: string | null;
+  status: MultiAiParticipantStatus;
+  /** Present when status is "ok". */
+  text?: string;
+  /** Present when status is "error" — neutral, non-blaming copy. */
+  message?: string;
+  inputTokens?: number | null;
+  outputTokens?: number | null;
+  estimatedCost?: number | null;
+  actualCost?: number | null;
+}
+
+export interface MultiAiConsensusRecord {
+  disagreement: string;
+  commonGround: string;
+  unifiedView: string;
+}
+
+export interface MultiAiSynthesisRecord {
+  refinedAnswer: string;
+}
+
+export type MultiAiRunStatus = "complete" | "partial" | "failed" | "cancelled";
+
+export interface MultiAiRunRecord {
+  id: string;
+  /** R20: stable source message ids — the single message or range this run
+      was created from. */
+  sourceMessageIds: string[];
+  createdAt: number;
+  /** The exact question/context bundle sent to every participant. */
+  question: string;
+  /** R21/R23: every participant's result, Claude included, in stable
+      debate order — attribution preserved even for failed sides. */
+  participants: MultiAiParticipantResult[];
+  status: MultiAiRunStatus;
+  consensus?: MultiAiConsensusRecord;
+  synthesis?: MultiAiSynthesisRecord;
+  totalEstimatedCost: number;
+  totalActualCost: number | null;
+}
+
 /* ── The two store state shapes (top-level: authoritative at Step 1.7) ── */
 
 /** Session store — cleared when a session closes (CANON). */
@@ -736,6 +792,10 @@ export interface SessionState {
   methodologyPhase: MethodologyPhase;
   /** Locked problem statement for DEFINE phase. Prevents drift. */
   lockedProblemStatement: string;
+  /** R21: persisted Multi-AI (Debate/Consensus/Synthesis) runs, each linked
+      back to its source message(s) — survives reload/navigation and renders
+      as a branch under the originating conversation. */
+  multiAiRuns: MultiAiRunRecord[];
 }
 
 /** Account store — persists across browser closes (CANON). */

@@ -5,4 +5,6 @@ export { ConsensusView, type ConsensusViewProps } from "./ConsensusView";
 export { SynthesisView, type SynthesisViewProps } from "./SynthesisView";
 export { DebateView, type DebateViewProps } from "./DebateView";
 export { PartnerPicker, type PartnerPickerProps } from "./PartnerPicker";
+export { MessageSourceSelector, type MessageSourceSelectorProps } from "./MessageSourceSelector";
+export { MultiAiRunHistory, type MultiAiRunHistoryProps } from "./MultiAiRunHistory";
 export { MultiAiActions } from "./MultiAiActions";

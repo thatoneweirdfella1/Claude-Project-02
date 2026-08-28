@@ -34,9 +34,25 @@ describe("R14: Unknown Model Pricing", () => {
 
   it("rejects unknown models and never silently substitutes pricing", () => {
     expect(hasPricingFor("claude-opus-4")).toBe(false);
-    expect(hasPricingFor("gpt-5.5")).toBe(false);
-    expect(hasPricingFor("gemini-3.1-pro")).toBe(false);
+    expect(hasPricingFor("gpt-6")).toBe(false);
+    expect(hasPricingFor("some-future-model")).toBe(false);
     expect(hasPricingFor("claude-opus")).toBe(false);
+  });
+
+  it("R27: debate partner models each have their own explicit price — never borrowed from Claude's", () => {
+    // These are the roster ids in services/debate/roster.ts — each has its
+    // own entry in MODEL_PRICES (added for R27's per-participant estimate),
+    // distinct from every Claude model's price.
+    expect(hasPricingFor("gpt-5.5")).toBe(true);
+    expect(hasPricingFor("gemini-3.1-pro")).toBe(true);
+    expect(hasPricingFor("grok-4.3")).toBe(true);
+    expect(hasPricingFor("deepseek-v4-pro")).toBe(true);
+
+    const claudeOpusCost = calculateUsageCost(1_000_000, 1_000_000, "claude-opus-4-8");
+    expect(calculateUsageCost(1_000_000, 1_000_000, "gpt-5.5")).not.toBe(claudeOpusCost);
+    expect(calculateUsageCost(1_000_000, 1_000_000, "gemini-3.1-pro")).not.toBe(claudeOpusCost);
+    expect(calculateUsageCost(1_000_000, 1_000_000, "grok-4.3")).not.toBe(claudeOpusCost);
+    expect(calculateUsageCost(1_000_000, 1_000_000, "deepseek-v4-pro")).not.toBe(claudeOpusCost);
   });
 
   it("eliminates fuzzy keyword matching for unknown models", () => {

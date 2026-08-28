@@ -2,7 +2,8 @@
    8.3) is the still-unbuilt third action; the DebateTranscript type here is
    the contract it is expected to produce. */
 export { MULTI_AI_RUNTIME_MODEL, type MultiAiCompletionRequest, type MultiAiModelClient } from "./client";
-export { buildTranscriptInput, isCompleteTranscript, type DebateTranscript } from "./transcript";
+export { buildTranscriptInput, isCompleteTranscript, type DebateTranscript, type TranscriptParticipant } from "./transcript";
+export { buildMessageSelection, type MessageSelectionBundle } from "./messageSelection";
 export {
   MultiAiSchemaError,
   parseConsensusOutput,

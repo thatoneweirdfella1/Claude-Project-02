@@ -6,10 +6,12 @@ import { useSessionStore } from "../../stores/sessionStore";
 import { useAccountStore } from "../../stores/accountStore";
 import {
   createPartnerClient,
+  retryDebateSide,
   runDebate,
   withDebateUsage,
   type DebateOutcome,
   type DebatePartnerId,
+  type DebateSide,
 } from "../../services/debate";
 import { autoSelectPartners } from "../../services/debate/autoSelect";
 import {
@@ -17,6 +19,7 @@ import {
   runSynthesis,
   type ConsensusResult,
   type DebateTranscript,
+  type MessageSelectionBundle,
   type SynthesisResult,
 } from "../../services/multiAi";
 import { DebateView } from "./DebateView";
@@ -25,10 +28,13 @@ import { AutoSelectButton } from "./AutoSelectButton";
 import { ConsensusView } from "./ConsensusView";
 import { SynthesisView } from "./SynthesisView";
 import { ProTierSelector } from "./ProTierSelector";
+import { MessageSourceSelector } from "./MessageSourceSelector";
+import { MultiAiRunHistory } from "./MultiAiRunHistory";
 import { authorizeEstimatedCost } from "../../services/creditAuthorization";
 import { addTokenUsage, getEstimatedCostForCall } from "../../services/costTracking";
 import type { PaidRoutePolicy } from "../../services/paidRoutePolicy";
 import { getProviderAvailability, type ConnectedProviderId } from "../../services/providerStatus";
+import type { MultiAiParticipantResult, MultiAiRunRecord } from "../../stores/types";
 
 /* MULTI-AI ACTIONS (Step 8.3) — the composer-footer control from the
    screenshot, sitting beside TRANSPARENCY DETAILS in the `.composer__footer-row`
@@ -43,11 +49,14 @@ import { getProviderAvailability, type ConnectedProviderId } from "../../service
    "after a debate", so offering them before one would be offering an action
    that cannot work.
 
-   Debate runs on the last question asked this session, read from the session
-   store — CANON Feature 9 frames all three actions as "After an answer". */
+   Debate runs on the last question asked this session by default; R20 lets
+   the user instead select one message or a range via MessageSourceSelector,
+   and that selection is what gets persisted as the run's sourceMessageIds
+   (R21) — never the display text alone. */
 
 const claudeClient = createProxyClient();
 const partnerClient = createPartnerClient();
+const DEBATE_MODEL_ID = "claude-sonnet-5"; // DEBATE_CLAUDE_MODEL — see services/debate/client.ts
 
 function completeTracked(request: Parameters<typeof claudeClient.complete>[0]): Promise<string> {
   return claudeClient.complete({
@@ -87,10 +96,68 @@ async function configuredForDebate(partnerIds: DebatePartnerId[]): Promise<boole
   return status.anthropic && partnerIds.every((id) => status[providerForPartner(id)]);
 }
 
+/* R27: estimate every participant using its ACTUAL provider/model — never
+   one flat Opus number borrowed for every side regardless of who's really
+   answering. Claude debates on DEBATE_MODEL_ID (Sonnet, not Opus — Opus is
+   reserved for the Consensus/Synthesis runtime model); each partner is
+   estimated on its own roster model id, now individually priced in
+   costTracking's MODEL_PRICES (R14/R27). */
+interface ParticipantEstimate {
+  label: "Claude" | DebatePartnerId;
+  model: string;
+  cost: number;
+}
+
+function estimateDebateCost(question: string, partnerIds: DebatePartnerId[]): {
+  perParticipant: ParticipantEstimate[];
+  total: number;
+} {
+  const inputTokens = Math.ceil(question.length / 4) + 600;
+  const maxOutputTokens = 1_200;
+  const perParticipant: ParticipantEstimate[] = [
+    { label: "Claude", model: DEBATE_MODEL_ID, cost: getEstimatedCostForCall({ model: DEBATE_MODEL_ID, inputTokens, maxOutputTokens }) },
+    ...partnerIds.map((id) => ({
+      label: id,
+      model: id,
+      cost: getEstimatedCostForCall({ model: id, inputTokens, maxOutputTokens }),
+    })),
+  ];
+  const total = perParticipant.reduce((sum, p) => sum + p.cost, 0);
+  return { perParticipant, total };
+}
+
+function sideToParticipantResult(side: DebateSide): MultiAiParticipantResult {
+  return {
+    label: side.label,
+    provider: side.usage?.provider ?? null,
+    model: side.usage?.model ?? null,
+    status: side.status,
+    text: side.text,
+    message: side.message,
+    inputTokens: side.usage?.inputTokens ?? null,
+    outputTokens: side.usage?.outputTokens ?? null,
+    estimatedCost: side.usage?.estimatedCost ?? null,
+    actualCost: side.usage?.actualCost ?? null,
+  };
+}
+
+function outcomeToRunStatus(outcome: DebateOutcome): MultiAiRunRecord["status"] {
+  if (outcome.status === "complete") return "complete";
+  if (outcome.status === "partial") return "partial";
+  return "failed";
+}
+
+function newRunId(): string {
+  return typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : `multi-ai-run-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
+}
+
 type Phase = "idle" | "debating" | "consensus" | "synthesis";
 
 export function MultiAiActions() {
   const conversation = useSessionStore((s) => s.conversation);
+  const upsertMultiAiRun = useSessionStore((s) => s.upsertMultiAiRun);
   const logAutoSelectUsage = useAccountStore((s) => s.logAutoSelectUsage);
   const paidAiEnabled = useAccountStore((s) => s.plan !== "free" || s.appMode === "developer");
   // Use conversation length as a session identifier for auto-select logging
@@ -106,15 +173,44 @@ export function MultiAiActions() {
   const [consensus, setConsensus] = useState<ConsensusResult | null>(null);
   const [synthesis, setSynthesis] = useState<SynthesisResult | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [selection, setSelection] = useState<MessageSelectionBundle | null>(null);
+  // R21: the id of the persisted run this session's debate/consensus/synthesis
+  // is writing into — stable across the debating -> consensus -> synthesis
+  // lifecycle so later stages update the same record instead of forking one.
+  const [activeRunId, setActiveRunId] = useState<string | null>(null);
   const controllerRef = useRef<AbortController | null>(null);
 
-  const lastQuestion =
-    [...conversation].reverse().find((m) => m.role === "user")?.content ?? "";
+  const lastUserMessage = [...conversation].reverse().find((m) => m.role === "user") ?? null;
+  const lastQuestion = lastUserMessage?.content ?? "";
+
+  // R20: an explicit selection overrides the implicit "last question"
+  // default; both are real conversation content, never fabricated.
+  const effectiveQuestion = selection?.contextBundle || lastQuestion;
+  const sourceMessageIds = selection?.sourceMessageIds
+    ?? (lastUserMessage ? [lastUserMessage.id] : []);
 
   const transcript: DebateTranscript | null =
     outcome?.status === "complete" ? outcome.transcript : null;
 
-  const selectedPartnerIds = useAutoSelect ? autoSelectPartners(lastQuestion) : partnerIds;
+  const selectedPartnerIds = useAutoSelect ? autoSelectPartners(effectiveQuestion) : partnerIds;
+
+  const persistRun = useCallback(
+    (patch: Partial<MultiAiRunRecord> & { id: string }) => {
+      const existing = useSessionStore.getState().multiAiRuns.find((r) => r.id === patch.id);
+      const base: MultiAiRunRecord = existing ?? {
+        id: patch.id,
+        sourceMessageIds,
+        createdAt: Date.now(),
+        question: effectiveQuestion.trim(),
+        participants: [],
+        status: "failed",
+        totalEstimatedCost: 0,
+        totalActualCost: null,
+      };
+      upsertMultiAiRun({ ...base, ...patch });
+    },
+    [sourceMessageIds, effectiveQuestion, upsertMultiAiRun],
+  );
 
   const startDebate = useCallback(async () => {
     if (selectedPartnerIds.length === 0) {
@@ -125,14 +221,13 @@ export function MultiAiActions() {
       setActionError("One or more selected providers are not configured. No credits were reserved; choose another provider or use the manual alternative.");
       return;
     }
-    const inputTokens = Math.ceil(lastQuestion.length / 4) + 600;
-    const perSide = getEstimatedCostForCall({ model: "claude-opus-4-8", inputTokens, maxOutputTokens: 1_200 });
+    const { perParticipant, total } = estimateDebateCost(effectiveQuestion, selectedPartnerIds);
     const authorization = await authorizeEstimatedCost(
-      perSide * (selectedPartnerIds.length + 1),
+      total,
       `Multi-AI debate with ${selectedPartnerIds.length + 1} participants`,
       explicitMultiAiPolicy(
-        `Multi-AI debate · Claude Opus + ${selectedPartnerIds.length} connected partner${selectedPartnerIds.length === 1 ? "" : "s"}`,
-        "Starting this debate sends one paid request per participant.",
+        `Multi-AI debate · Claude Sonnet + ${selectedPartnerIds.length} connected partner${selectedPartnerIds.length === 1 ? "" : "s"}`,
+        `Starting this debate sends one paid request per participant (${perParticipant.map((p) => `${p.label}: $${p.cost.toFixed(4)}`).join(", ")}).`,
       ),
     );
     if (!authorization.authorized) return;
@@ -141,6 +236,8 @@ export function MultiAiActions() {
     const controller = new AbortController();
     controllerRef.current = controller;
 
+    const runId = newRunId();
+    setActiveRunId(runId);
     setPhase("debating");
     setOutcome(null);
     setConsensus(null);
@@ -153,97 +250,144 @@ export function MultiAiActions() {
         timestamp: Date.now(),
         type: "discussion_type",
         sessionId: sessionId || "",
-        estimatedCost: 0.01, // Placeholder — actual cost calculated server-side
+        // R28: no more hardcoded $0.01 placeholder — this is the real,
+        // already-computed pre-authorization estimate for this exact call.
+        estimatedCost: total,
       });
     }
 
     try {
-      const result = await runDebate(lastQuestion, {
+      const result = await runDebate(effectiveQuestion, {
         claudeClient: withDebateUsage((req) => completeTracked(req)),
         partnerClient,
         partnerIds: selectedPartnerIds,
         signal: controller.signal,
       });
 
-      if (controller.signal.aborted) return;
+      if (controller.signal.aborted) {
+        // R24: preserve nothing fabricated — a cancelled run is persisted
+        // as cancelled, with no sides recorded as having landed.
+        persistRun({ id: runId, status: "cancelled", totalEstimatedCost: total, totalActualCost: null, participants: [] });
+        return;
+      }
       setOutcome(result);
+      if (result.status !== "empty-question") {
+        persistRun({
+          id: runId,
+          status: outcomeToRunStatus(result),
+          participants: result.sides.map(sideToParticipantResult),
+          totalEstimatedCost: total,
+          totalActualCost: null,
+        });
+      }
     } catch (error) {
       if (!controller.signal.aborted) {
         setActionError(`Debate failed: ${error instanceof Error ? error.message : String(error)}`);
         setOutcome({ status: "failed", sides: [] });
+        persistRun({ id: runId, status: "failed", participants: [], totalEstimatedCost: total, totalActualCost: null });
+      } else {
+        persistRun({ id: runId, status: "cancelled", totalEstimatedCost: total, totalActualCost: null, participants: [] });
       }
     } finally {
       setPhase("idle");
     }
-  }, [lastQuestion, selectedPartnerIds, useAutoSelectFeature, useAutoSelect, sessionId, logAutoSelectUsage]);
+  }, [effectiveQuestion, selectedPartnerIds, useAutoSelectFeature, useAutoSelect, sessionId, logAutoSelectUsage, persistRun]);
 
-  /* Re-runs ONE side by index. The other sides' existing text is kept as-is
-     rather than re-fetched: they already succeeded, and re-asking would spend
+  /* R24: abort whatever is currently in flight (debate, consensus, or
+     synthesis) — every phase's own call is given the same controller's
+     signal, so one Cancel click stops the actual network request, not just
+     the UI's busy spinner. */
+  const cancelActive = useCallback(() => {
+    controllerRef.current?.abort();
+  }, []);
+
+  /* R22: retries EXACTLY ONE participant — one authorized call, for the one
+     side that failed. The other sides' existing text is kept as-is rather
+     than re-fetched: they already succeeded, and re-asking would spend
      calls to replace good arguments with different good arguments the user
      didn't ask to change. */
   const retrySide = useCallback(
     async (sideIndex: number) => {
       if (!outcome || outcome.status === "empty-question") return;
-      if (!(await configuredForDebate(selectedPartnerIds))) {
-        setActionError("A required provider is not configured. No retry charge was reserved.");
+      const target = outcome.sides[sideIndex];
+      if (!target) return;
+
+      const targetProviderId = target.partnerId;
+      if (targetProviderId) {
+        const status = await getProviderAvailability();
+        if (!status[providerForPartner(targetProviderId)]) {
+          setActionError(`${target.label} is not configured. No retry charge was reserved.`);
+          return;
+        }
+      } else if (!(await getProviderAvailability()).anthropic) {
+        setActionError("Claude is not configured. No retry charge was reserved.");
         return;
       }
+
+      const retryModel = targetProviderId ?? DEBATE_MODEL_ID;
       const estimate = getEstimatedCostForCall({
-        model: "claude-opus-4-8",
-        inputTokens: Math.ceil(lastQuestion.length / 4) + 600,
+        model: retryModel,
+        inputTokens: Math.ceil(effectiveQuestion.length / 4) + 600,
         maxOutputTokens: 1_200,
-      }) * (selectedPartnerIds.length + 1);
+      });
       const authorization = await authorizeEstimatedCost(
         estimate,
-        "Retry debate participant",
+        `Retry ${target.label}`,
         explicitMultiAiPolicy(
-          "Multi-AI debate retry · Claude Opus + connected partners",
-          "Retrying sends the debate requests again.",
+          `Multi-AI debate retry · ${target.label} only`,
+          `Retrying sends exactly one new request, to ${target.label} only ($${estimate.toFixed(4)}).`,
         ),
       );
       if (!authorization.authorized) return;
+
+      controllerRef.current?.abort();
+      const controller = new AbortController();
+      controllerRef.current = controller;
+
       setRetrying(sideIndex);
       setActionError(null);
 
-      const rerun = await runDebate(lastQuestion, {
+      const retried = await retryDebateSide(effectiveQuestion, {
         claudeClient: withDebateUsage((req) => completeTracked(req)),
         partnerClient,
-        partnerIds: selectedPartnerIds,
-        // Keep Claude on the stance it already had, so a retry doesn't
-        // silently flip sides mid-debate.
-        claudeStance: outcome.sides[0].stance,
+        stance: target.stance,
+        partnerId: targetProviderId,
+        signal: controller.signal,
       });
 
       setRetrying(null);
-      if (rerun.status === "empty-question") return;
+      if (controller.signal.aborted) return;
 
-      // Merge rerun.sides[sideIndex] into the existing sides array
       const newSides = [...outcome.sides];
-      newSides[sideIndex] = rerun.sides[sideIndex];
+      newSides[sideIndex] = retried;
 
       const allOk = newSides.every((s) => s.status === "ok");
+      let nextOutcome: DebateOutcome;
       if (allOk) {
-        // Create a transcript from the first non-Claude side
-        const firstPartnerSide = newSides.find((s) => s.partnerId);
-        if (firstPartnerSide) {
-          setOutcome({
-            status: "complete",
-            sides: newSides,
-            transcript: {
-              question: lastQuestion.trim(),
-              claudeText: newSides[0].text!,
-              partnerLabel: firstPartnerSide.label,
-              partnerText: firstPartnerSide.text!,
-            },
-          });
-        }
+        nextOutcome = {
+          status: "complete",
+          sides: newSides,
+          transcript: {
+            question: effectiveQuestion.trim(),
+            participants: newSides.map((s) => ({ label: s.label, text: s.text! })),
+          },
+        };
       } else if (newSides.some((s) => s.status === "ok")) {
-        setOutcome({ status: "partial", sides: newSides });
+        nextOutcome = { status: "partial", sides: newSides };
       } else {
-        setOutcome({ status: "failed", sides: newSides });
+        nextOutcome = { status: "failed", sides: newSides };
+      }
+      setOutcome(nextOutcome);
+
+      if (activeRunId) {
+        persistRun({
+          id: activeRunId,
+          status: outcomeToRunStatus(nextOutcome),
+          participants: newSides.map(sideToParticipantResult),
+        });
       }
     },
-    [outcome, lastQuestion, selectedPartnerIds],
+    [outcome, effectiveQuestion, activeRunId, persistRun],
   );
 
   const doConsensus = useCallback(async () => {
@@ -252,11 +396,10 @@ export function MultiAiActions() {
       setActionError("Claude is not configured. No consensus charge was reserved.");
       return;
     }
-    const estimate = getEstimatedCostForCall({
-      model: "claude-opus-4-8",
-      inputTokens: Math.ceil((transcript.claudeText.length + transcript.partnerText.length) / 4) + 700,
-      maxOutputTokens: 1_300,
-    });
+    const inputTokens = Math.ceil(
+      transcript.participants.reduce((sum, p) => sum + p.text.length, 0) / 4,
+    ) + 700;
+    const estimate = getEstimatedCostForCall({ model: "claude-opus-4-8", inputTokens, maxOutputTokens: 1_300 });
     const authorization = await authorizeEstimatedCost(
       estimate,
       "Multi-AI consensus",
@@ -266,20 +409,37 @@ export function MultiAiActions() {
       ),
     );
     if (!authorization.authorized) return;
+
+    controllerRef.current?.abort();
+    const controller = new AbortController();
+    controllerRef.current = controller;
+
     setPhase("consensus");
     setActionError(null);
     try {
       const result = await runConsensus(transcript, {
         client: (req) => completeTracked(req),
+        signal: controller.signal,
       });
-      if (result.status === "ok") setConsensus(result.result);
-      else setActionError("Consensus couldn't be produced from this debate. You can try again.");
+      if (controller.signal.aborted) {
+        setActionError("Consensus was cancelled. No charge beyond what already completed.");
+        if (activeRunId) persistRun({ id: activeRunId, status: "cancelled" });
+        return;
+      }
+      if (result.status === "ok") {
+        setConsensus(result.result);
+        if (activeRunId) persistRun({ id: activeRunId, consensus: result.result });
+      } else {
+        setActionError("Consensus couldn't be produced from this debate. You can try again.");
+      }
     } catch (error) {
-      setActionError(`Consensus failed: ${error instanceof Error ? error.message : String(error)}`);
+      if (!controller.signal.aborted) {
+        setActionError(`Consensus failed: ${error instanceof Error ? error.message : String(error)}`);
+      }
     } finally {
       setPhase("idle");
     }
-  }, [transcript]);
+  }, [transcript, activeRunId, persistRun]);
 
   const doSynthesis = useCallback(async () => {
     if (!transcript) return;
@@ -287,11 +447,10 @@ export function MultiAiActions() {
       setActionError("Claude is not configured. No synthesis charge was reserved.");
       return;
     }
-    const estimate = getEstimatedCostForCall({
-      model: "claude-opus-4-8",
-      inputTokens: Math.ceil((transcript.claudeText.length + transcript.partnerText.length) / 4) + 700,
-      maxOutputTokens: 1_600,
-    });
+    const inputTokens = Math.ceil(
+      transcript.participants.reduce((sum, p) => sum + p.text.length, 0) / 4,
+    ) + 700;
+    const estimate = getEstimatedCostForCall({ model: "claude-opus-4-8", inputTokens, maxOutputTokens: 1_600 });
     const authorization = await authorizeEstimatedCost(
       estimate,
       "Multi-AI synthesis",
@@ -301,23 +460,40 @@ export function MultiAiActions() {
       ),
     );
     if (!authorization.authorized) return;
+
+    controllerRef.current?.abort();
+    const controller = new AbortController();
+    controllerRef.current = controller;
+
     setPhase("synthesis");
     setActionError(null);
     try {
       const result = await runSynthesis(transcript, {
         client: (req) => completeTracked(req),
+        signal: controller.signal,
       });
-      if (result.status === "ok") setSynthesis(result.result);
-      else setActionError("Synthesis couldn't be produced from this debate. You can try again.");
+      if (controller.signal.aborted) {
+        setActionError("Synthesis was cancelled. No charge beyond what already completed.");
+        if (activeRunId) persistRun({ id: activeRunId, status: "cancelled" });
+        return;
+      }
+      if (result.status === "ok") {
+        setSynthesis(result.result);
+        if (activeRunId) persistRun({ id: activeRunId, synthesis: result.result });
+      } else {
+        setActionError("Synthesis couldn't be produced from this debate. You can try again.");
+      }
     } catch (error) {
-      setActionError(`Synthesis failed: ${error instanceof Error ? error.message : String(error)}`);
+      if (!controller.signal.aborted) {
+        setActionError(`Synthesis failed: ${error instanceof Error ? error.message : String(error)}`);
+      }
     } finally {
       setPhase("idle");
     }
-  }, [transcript]);
+  }, [transcript, activeRunId, persistRun]);
 
   const busy = phase !== "idle" || retrying !== null;
-  const canDebate = lastQuestion.trim().length > 0;
+  const canDebate = effectiveQuestion.trim().length > 0;
 
   return (
     <div className="multi-ai-actions" data-testid="multi-ai-actions">
@@ -343,6 +519,8 @@ export function MultiAiActions() {
             </p>
           ) : (
             <>
+              <MessageSourceSelector onSelectionChange={setSelection} disabled={busy} />
+
               <ProTierSelector
                 useAutoSelect={useAutoSelectFeature}
                 onToggleAutoSelect={setUseAutoSelectFeature}
@@ -357,7 +535,7 @@ export function MultiAiActions() {
 
               <div className="multi-ai-actions__selection">
                 <AutoSelectButton
-                  question={lastQuestion}
+                  question={effectiveQuestion}
                   onSelect={(ids) => {
                     setPartnerIds(ids);
                     setUseAutoSelect(false);
@@ -388,6 +566,15 @@ export function MultiAiActions() {
                 <GlassButton onClick={() => void doSynthesis()} disabled={busy || !transcript}>
                   {phase === "synthesis" ? "Synthesizing…" : "Synthesis"}
                 </GlassButton>
+                {phase !== "idle" && (
+                  <GlassButton
+                    className="multi-ai-actions__cancel"
+                    onClick={cancelActive}
+                    data-testid="multi-ai-cancel"
+                  >
+                    Cancel
+                  </GlassButton>
+                )}
               </div>
 
               {outcome && outcome.status !== "empty-question" && (
@@ -413,6 +600,8 @@ export function MultiAiActions() {
 
               {consensus && <ConsensusView result={consensus} />}
               {synthesis && <SynthesisView result={synthesis} />}
+
+              <MultiAiRunHistory sourceMessageIds={sourceMessageIds} />
             </>
           )}
         </GlassCard>

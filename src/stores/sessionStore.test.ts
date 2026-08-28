@@ -117,6 +117,7 @@ describe("SESSION_PERSISTED_KEYS", () => {
         "lockedProblemStatement",
         "maxRequestCost",
         "paidFallbackEnabled",
+        "multiAiRuns",
       ].sort(),
     );
   });
