@@ -651,6 +651,7 @@ export type ScreenSectionId =
   | "templates"
   | "saved-prompts"
   | "overview"
+  | "sessions"
   | "usage"
   | "activity"
   | "patterns"

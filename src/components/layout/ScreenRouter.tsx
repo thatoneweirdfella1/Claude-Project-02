@@ -688,10 +688,11 @@ function ResourcesScreen() {
 
 function ProjectsScreen() {
   const sessions = useAccountStore((s) => s.sessions);
+  const updateSessionTag = useAccountStore((s) => s.updateSessionTag);
   const addContextItem = useSessionStore((s) => s.addContextItem);
   const currentSection = useSessionStore((s) => s.currentSection);
   const setScreenLocation = useSessionStore((s) => s.setScreenLocation);
-  const section = currentSection === "tasks" || currentSection === "resources" || currentSection === "integrations" ? currentSection : "overview";
+  const section = currentSection === "sessions" ? "sessions" : currentSection === "tasks" || currentSection === "resources" || currentSection === "integrations" ? currentSection : "overview";
   const [workspace, setWorkspace] = useState(() => getLocalWorkspace());
   const [project, setProject] = useState("Local project");
   const [taskText, setTaskText] = useState("");
@@ -703,6 +704,31 @@ function ProjectsScreen() {
     ...workspace.tasks.map((task) => task.project),
     ...workspace.resources.map((resource) => resource.project),
   ])).filter(Boolean).sort((a, b) => a.localeCompare(b));
+
+  const sessionsInProject = sessions.filter((session) =>
+    (session.tag ? session.tag.split(":")[0].trim() : "Unsorted") === project
+  );
+
+  const unassignedSessions = sessions.filter((session) =>
+    !session.tag || !session.tag.split(":")[0].trim()
+  );
+
+  function assignSessionToProject(sessionId: string) {
+    const session = sessions.find((s) => s.id === sessionId);
+    if (session) {
+      const newTag = `${project}: ${session.tag || "Untitled"}`;
+      updateSessionTag(sessionId, newTag);
+    }
+  }
+
+  function removeSessionFromProject(sessionId: string) {
+    const session = sessions.find((s) => s.id === sessionId);
+    if (session && session.tag) {
+      const parts = session.tag.split(":");
+      const newTag = parts.slice(1).join(":").trim() || "Unassigned";
+      updateSessionTag(sessionId, newTag);
+    }
+  }
 
   function createTask() {
     setWorkspace(addLocalTask(project, taskText));
@@ -718,13 +744,14 @@ function ProjectsScreen() {
     <div className="screen screen-projects">
       <div className="screen__header">
         <h1>Projects</h1>
-        <nav className="screen-tabs" aria-label="Project sections">{(["overview", "tasks", "resources", "integrations"] as const).map((id) => <button type="button" key={id} aria-current={section === id ? "page" : undefined} className={section === id ? "is-active" : ""} onClick={() => setScreenLocation("projects", id)}>{id[0].toUpperCase() + id.slice(1)}</button>)}</nav>
+        <nav className="screen-tabs" aria-label="Project sections">{(["overview", "sessions", "tasks", "resources", "integrations"] as const).map((id) => <button type="button" key={id} aria-current={section === id ? "page" : undefined} className={section === id ? "is-active" : ""} onClick={() => setScreenLocation("projects", id)}>{id[0].toUpperCase() + id.slice(1)}</button>)}</nav>
       </div>
       <div className="screen__content">
         <label className="settings-section">Active local project<input aria-label="Active local project" value={project} onChange={(event) => setProject(event.target.value)} /></label>
         {section === "overview" && <div className="projects-list">
           {projectNames.length === 0 ? <p>No projects yet. Name one above, then add a task or resource.</p> : projectNames.map((name) => <div key={name} className="project-group"><h3 className="project-group__title">{name}</h3><p>{sessions.filter((session) => (session.tag ? session.tag.split(":")[0].trim() : "Unsorted") === name).length} sessions · {workspace.tasks.filter((task) => task.project === name).length} tasks · {workspace.resources.filter((resource) => resource.project === name).length} resources</p></div>)}
         </div>}
+        {section === "sessions" && <div className="settings-section"><h3>Project Sessions</h3><p className="settings-section__note">Manage which sessions belong to {project}.</p>{sessionsInProject.length === 0 ? <p>No sessions assigned to {project} yet.</p> : <div>{sessionsInProject.map((session) => <div className="settings-item" key={session.id}><div><strong>{session.tag || "Untitled"}</strong><p>{session.conversation.length} messages</p></div><button type="button" onClick={() => removeSessionFromProject(session.id)}>Remove from project</button></div>)}</div>}{unassignedSessions.length > 0 && <div><h4 style={{ marginTop: "20px" }}>Available to assign</h4>{unassignedSessions.map((session) => <div className="settings-item" key={session.id}><div><strong>{session.tag || "Untitled"}</strong><p>{session.conversation.length} messages</p></div><button type="button" onClick={() => assignSessionToProject(session.id)}>Assign to project</button></div>)}</div>}</div>}
         {section === "tasks" && <div className="settings-section"><h3>Project Tasks</h3><div className="template-form"><input aria-label="New project task" placeholder="Task" value={taskText} onChange={(event) => setTaskText(event.target.value)} /><button type="button" onClick={createTask} disabled={!taskText.trim()}>Create task</button></div>{workspace.tasks.filter((task) => task.project === (project.trim() || "Local project")).map((task) => <div className="settings-item" key={task.id}><label><input type="checkbox" checked={task.completed} onChange={() => setWorkspace(toggleLocalTask(task.id))} /> {task.text}</label><button type="button" onClick={() => setWorkspace(removeLocalTask(task.id))}>Delete</button></div>)}</div>}
         {section === "resources" && <div className="settings-section"><h3>Project Resources</h3><div className="template-form"><input aria-label="Resource label" placeholder="Label" value={resourceLabel} onChange={(event) => setResourceLabel(event.target.value)} /><textarea aria-label="Resource content" placeholder="Paste local reference text" value={resourceContent} onChange={(event) => setResourceContent(event.target.value)} /><button type="button" onClick={createResource} disabled={!resourceLabel.trim() || !resourceContent.trim()}>Add resource</button></div>{workspace.resources.filter((resource) => resource.project === (project.trim() || "Local project")).map((resource) => <div className="settings-item" key={resource.id}><div><strong>{resource.label}</strong><p>{resource.content}</p></div><div><button type="button" onClick={() => addContextItem({ id: `project-resource:${resource.id}:${Date.now()}`, kind: "text", label: resource.label, content: resource.content, bytes: resource.content.length })}>Add to current request</button><button type="button" onClick={() => setWorkspace(removeLocalResource(resource.id))}>Delete</button></div></div>)}</div>}
         {section === "integrations" && <div className="settings-section"><h3>Project Integrations</h3><p className="settings-section__note">No project integration is configured. Local tasks and resources remain usable without one.</p><button type="button" onClick={() => setScreenLocation("settings", "connections")}>Open AI Connections</button></div>}
