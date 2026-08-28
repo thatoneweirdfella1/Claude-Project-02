@@ -62,7 +62,14 @@ describe("R14: Unknown Model Pricing", () => {
     expect(calculateUsageCost(1_000_000, 1_000_000, "haiku-cheap")).toBe(0);
   });
 
-  it("shows cost unavailable (0) for unknown models instead of guessing", () => {
+  it("returns 0 (never a guessed price) for a model with no MODEL_PRICES entry", () => {
+    // Second-pass correction: this test previously claimed to prove the app
+    // "shows cost unavailable" for an unpriced model. It never did — 0 is a
+    // bare number, not a distinguishable "unavailable" state, and nothing in
+    // the UI renders "cost unavailable" text for this case (hasPricingFor is
+    // never called from any real component — see the roster/registry
+    // coverage test below, which is what actually keeps this scenario from
+    // occurring for any model real app code can reach).
     expect(calculateUsageCost(1_000_000, 1_000_000, "unknown-model")).toBe(0);
     expect(calculateUsageCost(5_000, 10_000, "future-model")).toBe(0);
   });
@@ -86,5 +93,29 @@ describe("R14: Unknown Model Pricing", () => {
       expect(hasPricingFor(model)).toBe(false);
       expect(calculateUsageCost(1_000_000, 0, model)).toBe(0);
     });
+  });
+
+  /* Second-pass addition: every prior test here hand-picks which model ids
+     to check — none of them cross-checks against the REAL, live sources
+     that actually reach calculateUsageCost/getEstimatedCostForCall in the
+     running app (services/debate/roster.ts's DEBATE_PARTNER_IDS for Multi-AI,
+     the three Claude ids routing.js/modelRegistry.ts's Anthropic entries
+     agree on for the main pipeline). Without this, adding a new debate
+     partner or Claude model to those sources without also pricing it here
+     would ship silently — every estimate for it would render as a plausible
+     "$0.00" (looks free) rather than any visible "unavailable" state, since
+     nothing in the app currently branches on hasPricingFor's result. This
+     test is what actually keeps that invariant true, not the hand-picked
+     lists above. */
+  it("R14: every model id the real app can execute — every debate partner and Claude routing model — has an explicit price entry", async () => {
+    const { DEBATE_PARTNER_IDS } = await import("./debate/roster");
+    const claudeModelIds = ["claude-haiku-4-5", "claude-sonnet-5", "claude-opus-4-8"];
+
+    for (const id of DEBATE_PARTNER_IDS) {
+      expect(hasPricingFor(id)).toBe(true);
+    }
+    for (const id of claudeModelIds) {
+      expect(hasPricingFor(id)).toBe(true);
+    }
   });
 });
