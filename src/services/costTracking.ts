@@ -40,11 +40,12 @@ function roundDollars(value: number): number {
   return Math.round((value + Number.EPSILON) * 1_000_000) / 1_000_000;
 }
 
-function priceFor(model: string): ModelPrice {
-  if (MODEL_PRICES[model]) return MODEL_PRICES[model];
-  if (model.includes("opus")) return MODEL_PRICES["claude-opus-4-8"];
-  if (model.includes("sonnet")) return MODEL_PRICES["claude-sonnet-5"];
-  return MODEL_PRICES["claude-haiku-4-5"];
+function priceFor(model: string): ModelPrice | null {
+  return MODEL_PRICES[model] ?? null;
+}
+
+export function hasPricingFor(model: string): boolean {
+  return priceFor(model) !== null;
 }
 
 export function calculateUsageCost(
@@ -54,6 +55,7 @@ export function calculateUsageCost(
 ): number {
   if (inputTokens < 0 || outputTokens < 0) return 0;
   const price = priceFor(model);
+  if (!price) return 0;
   return roundDollars(
     (inputTokens / 1_000_000) * price.inputPerMillion +
       (outputTokens / 1_000_000) * price.outputPerMillion,
