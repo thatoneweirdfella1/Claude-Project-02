@@ -15,7 +15,10 @@ interface HandoffReviewProps extends ReviewReadyRequestBaseProps {
   /** Manual handoff always needs a Copy/Open action. When Review first is off,
       present it as the terminal handoff step instead of a forced review. */
   reviewRequired?: boolean;
-  onHandoff: (text: string, destination: DestinationSelection) => void;
+  /** R19: `opened` distinguishes "Copy only" from "Copy & Open" so the
+      caller can record userOpened truthfully — both previously produced
+      an identical handoff record with no way to tell them apart. */
+  onHandoff: (text: string, destination: DestinationSelection, opened: boolean) => void;
   onSend?: never;
 }
 
@@ -64,7 +67,7 @@ export function ReviewReadyRequest(props: ReviewReadyRequestProps) {
       const url = destinationOfficialUrl(selected);
       if (url) window.open(url, "_blank", "noopener,noreferrer");
     }
-    if (props.mode !== "send") props.onHandoff(text, selected);
+    if (props.mode !== "send") props.onHandoff(text, selected, openDestination);
   }
 
   return <div className="review-ready workflow-dialog" role="dialog" aria-modal="true" aria-labelledby="review-ready-title">

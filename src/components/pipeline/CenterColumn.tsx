@@ -189,9 +189,9 @@ export function CenterColumn() {
     [plan],
   );
 
-  function completeFreeHandoff(request: TranslateAskRequest, readyText: string, decisionNote: string) {
+  function completeFreeHandoff(request: TranslateAskRequest, readyText: string, decisionNote: string, opened: boolean) {
     const label = destinationLabel(request.destination);
-    addMessage({ id: newMessageId(), role: "user", content: request.rawInput, timestamp: Date.now() });
+    addMessage({ id: newMessageId(), role: "user", content: request.rawInput, timestamp: Date.now(), messageState: "prepared" });
     addMessage({
       id: newMessageId(),
       role: "assistant",
@@ -199,6 +199,15 @@ export function CenterColumn() {
       timestamp: Date.now(),
       messageKind: "handoff",
       handoffStatus: "handed-off",
+      /* R19: a manual handoff is prepared and copied (and possibly opened),
+         never "sent" — the app itself never transmitted anything to an AI.
+         userCopied is always true here: completeFreeHandoff only runs after
+         ReviewReadyRequest's copyText() already succeeded (both "Copy only"
+         and "Copy & Open" copy first); userOpened reflects which button was
+         actually pressed — previously both produced an identical record. */
+      messageState: "prepared",
+      userCopied: true,
+      userOpened: opened,
       sourceLabel: label,
       preparedRequest: readyText,
       notes: [NO_CREDIT_BADGE, "Handed off — not answered", decisionNote].filter(Boolean),
@@ -313,7 +322,9 @@ export function CenterColumn() {
       return;
     }
 
-    addMessage({ id: newMessageId(), role: "user", content: request.rawInput, timestamp: Date.now() });
+    // R19: this message goes straight into startRun's real pipeline call —
+    // genuinely "sent" to an AI, unlike a manual handoff.
+    addMessage({ id: newMessageId(), role: "user", content: request.rawInput, timestamp: Date.now(), messageState: "sent" });
     lastRawRef.current = request.rawInput;
     useSessionStore.getState().setDraftInput("");
     startRun(effectiveRequest, result, recommendationApplied, decisionNote);
@@ -582,6 +593,7 @@ export function CenterColumn() {
       role: "user",
       content: substitutedAddition,
       timestamp: Date.now(),
+      messageState: "sent",
     });
     startRun(rerunRequest, null, false, "Refine rerun used the current explicit settings.");
   }
@@ -595,6 +607,7 @@ export function CenterColumn() {
         role: "assistant",
         content: done.text,
         timestamp: Date.now(),
+        messageState: "answered",
         confidence: done.confidence,
         downgraded: done.downgraded,
         notes: [...(done.notes ?? []), runDecisionNoteRef.current].filter(Boolean),
@@ -625,7 +638,11 @@ export function CenterColumn() {
 
   function confirmImportedResponse(response: string, sourceLabel: string) {
     if (!pendingHandoff) return;
-    updateMessage(pendingHandoff.id, { handoffStatus: "imported" });
+    // R19: the prepared handoff is fulfilled — its own state moves to
+    // "imported" alongside the legacy handoffStatus, and the response the
+    // user pasted back and confirmed is itself an imported message, never
+    // "answered" (no AI call happened inside this app for it).
+    updateMessage(pendingHandoff.id, { handoffStatus: "imported", messageState: "imported" });
     addMessage({
       id: newMessageId(),
       role: "assistant",
@@ -633,6 +650,7 @@ export function CenterColumn() {
       timestamp: Date.now(),
       messageKind: "imported",
       handoffStatus: "imported",
+      messageState: "imported",
       sourceLabel,
       parentMessageId: pendingHandoff.id,
       notes: [`Imported from ${sourceLabel}`, "Reviewed and confirmed by you"],
@@ -793,8 +811,8 @@ export function CenterColumn() {
             setPendingReview(null);
             setWorkflowMessage("Review cancelled. Your draft is still here.");
           }}
-          onHandoff={(text, destination) => {
-            completeFreeHandoff({ ...pendingReview.request, destination }, text, pendingReview.decisionNote);
+          onHandoff={(text, destination, opened) => {
+            completeFreeHandoff({ ...pendingReview.request, destination }, text, pendingReview.decisionNote, opened);
             setPendingReview(null);
           }}
         />
@@ -822,7 +840,7 @@ export function CenterColumn() {
             if (sendAutomaticallyNextTime) {
               useSessionStore.getState().setReviewBeforeSend(false);
             }
-            addMessage({ id: newMessageId(), role: "user", content: reviewed.request.rawInput, timestamp: Date.now() });
+            addMessage({ id: newMessageId(), role: "user", content: reviewed.request.rawInput, timestamp: Date.now(), messageState: "sent" });
             lastRawRef.current = reviewed.request.rawInput;
             useSessionStore.getState().setDraftInput("");
             setPendingReview(null);
