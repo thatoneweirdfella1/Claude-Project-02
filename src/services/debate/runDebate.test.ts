@@ -411,7 +411,12 @@ describe("R15: Partner Usage Collection", () => {
     expect(outcome.sides[2].usage?.provider).toBe("google");
   });
 
-  it("includes usage even when a side fails", async () => {
+  it("a failed side carries no usage at all — never a null-filled object, never a fake 0", async () => {
+    // Second-pass correction: this test's title previously claimed usage
+    // IS included on a failed side, but never actually checked `.usage` —
+    // only `.status`. A failed side never called the API, so it must have
+    // no usage object at all (undefined), not usage with 0/null fields
+    // pretending a call happened.
     const failingWithMetadata: DebatePartnerClient = vi.fn(async () => {
       throw new Error("API down");
     });
@@ -423,7 +428,7 @@ describe("R15: Partner Usage Collection", () => {
     });
 
     if (outcome.status === "empty-question") return;
-    // Failed sides should not have usage since they didn't call the API
     expect(outcome.sides[1].status).toBe("error");
+    expect(outcome.sides[1].usage).toBeUndefined();
   });
 });

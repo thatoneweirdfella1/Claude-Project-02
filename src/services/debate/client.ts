@@ -16,8 +16,20 @@
 
 import type { ModelId } from "../modelRegistry";
 import { appAccessHeaders } from "../appAccessClient";
+import { calculateUsageCost } from "../costTracking";
 import type { DebatePartner, DebatePartnerId } from "./roster";
 import type { ParticipantUsage } from "./runDebate";
+
+/* R15: the final, ACTUAL cost is computable the moment real input/output
+   token counts are known — calculateUsageCost is the same explicitly-priced
+   lookup R14 already requires (never a guess). Previously both clients below
+   hardcoded `actualCost: null` unconditionally, even on a fully successful
+   call with real token counts in hand, so MultiAiRunHistory's "Actual cost"
+   column showed "cost unavailable" for every participant, always. */
+function actualCostFor(model: string, inputTokens?: number, outputTokens?: number): number | null {
+  if (inputTokens === undefined || outputTokens === undefined) return null;
+  return calculateUsageCost(inputTokens, outputTokens, model);
+}
 
 export interface DebateCompletionRequest {
   system: string;
@@ -70,7 +82,7 @@ export function withDebateUsage(
         inputTokens: capturedUsage.inputTokens ?? null,
         outputTokens: capturedUsage.outputTokens ?? null,
         estimatedCost: null,
-        actualCost: null,
+        actualCost: actualCostFor(req.model, capturedUsage.inputTokens, capturedUsage.outputTokens),
       } : undefined,
     };
   };
@@ -126,7 +138,7 @@ export function createPartnerClient(fetchImpl: typeof fetch = fetch): DebatePart
         inputTokens: payload.usage.inputTokens ?? null,
         outputTokens: payload.usage.outputTokens ?? null,
         estimatedCost: null,
-        actualCost: null,
+        actualCost: actualCostFor(partner.id, payload.usage.inputTokens, payload.usage.outputTokens),
       } : undefined,
     };
   };

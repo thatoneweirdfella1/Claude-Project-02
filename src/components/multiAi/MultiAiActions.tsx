@@ -154,7 +154,13 @@ function estimateDebateCost(question: string, partnerIds: DebatePartnerId[]): {
   return { perParticipant, total };
 }
 
-function sideToParticipantResult(side: DebateSide): MultiAiParticipantResult {
+/* R15: ParticipantUsage.estimatedCost is always null at the client seam
+   (client.ts only ever sees a call's ACTUAL result, never what was
+   estimated before it ran) — the real pre-call, per-participant estimate
+   already exists at this point (estimateDebateCost's perParticipant, or
+   retrySide's own single estimate) and is threaded in here so it survives
+   into the persisted record instead of being silently dropped. */
+function sideToParticipantResult(side: DebateSide, estimatedCost: number | null = null): MultiAiParticipantResult {
   return {
     label: side.label,
     provider: side.usage?.provider ?? null,
@@ -164,9 +170,33 @@ function sideToParticipantResult(side: DebateSide): MultiAiParticipantResult {
     message: side.message,
     inputTokens: side.usage?.inputTokens ?? null,
     outputTokens: side.usage?.outputTokens ?? null,
-    estimatedCost: side.usage?.estimatedCost ?? null,
+    estimatedCost: side.usage?.estimatedCost ?? estimatedCost,
     actualCost: side.usage?.actualCost ?? null,
   };
+}
+
+/** Key a DebateSide by the same identity ParticipantEstimate.label uses:
+    the partner id, or "claude" for Claude's own side. */
+function participantKey(side: { partnerId?: DebatePartnerId }): string {
+  return side.partnerId ?? "claude";
+}
+
+function estimateKey(estimate: ParticipantEstimate): string {
+  return estimate.label === "Claude" ? "claude" : estimate.label;
+}
+
+/** Total actual cost across every participant — null (never a partial sum
+    passed off as the total) unless every participant's actual cost is
+    known. */
+function totalActualCostOf(participants: MultiAiParticipantResult[]): number | null {
+  if (participants.length === 0) return null;
+  const costs = participants.map((p) => p.actualCost);
+  if (costs.some((c) => c === null)) return null;
+  return roundCost((costs as number[]).reduce((sum, c) => sum + c, 0));
+}
+
+function roundCost(value: number): number {
+  return Math.round(value * 1_000_000) / 1_000_000;
 }
 
 function outcomeToRunStatus(outcome: DebateOutcome): MultiAiRunRecord["status"] {
@@ -301,12 +331,16 @@ export function MultiAiActions() {
       setOutcome(result);
       if (result.status !== "empty-question") {
         reportFailedSides(result.sides);
+        const estimateByKey = new Map(perParticipant.map((p) => [estimateKey(p), p.cost]));
+        const participants = result.sides.map((side) =>
+          sideToParticipantResult(side, estimateByKey.get(participantKey(side)) ?? null),
+        );
         persistRun({
           id: runId,
           status: outcomeToRunStatus(result),
-          participants: result.sides.map(sideToParticipantResult),
+          participants,
           totalEstimatedCost: total,
-          totalActualCost: null,
+          totalActualCost: totalActualCostOf(participants),
         });
       }
     } catch (error) {
@@ -422,10 +456,21 @@ export function MultiAiActions() {
         setOutcome(nextOutcome);
 
         if (activeRunId) {
+          // R15: preserve every OTHER participant's already-persisted
+          // estimatedCost (this retry only re-estimated the one side being
+          // retried) rather than dropping it back to null by replacing the
+          // whole participants array.
+          const existingParticipants = useSessionStore.getState()
+            .multiAiRuns.find((r) => r.id === activeRunId)?.participants ?? [];
+          const priorEstimateByLabel = new Map(existingParticipants.map((p) => [p.label, p.estimatedCost]));
+          const participants = newSides.map((s, i) =>
+            sideToParticipantResult(s, i === sideIndex ? estimate : priorEstimateByLabel.get(s.label) ?? null),
+          );
           persistRun({
             id: activeRunId,
             status: outcomeToRunStatus(nextOutcome),
-            participants: newSides.map(sideToParticipantResult),
+            participants,
+            totalActualCost: totalActualCostOf(participants),
           });
         }
       } catch (error) {
