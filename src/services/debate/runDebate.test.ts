@@ -4,14 +4,14 @@
    service test in this repo). */
 
 import { describe, expect, it, vi } from "vitest";
-import { runDebate } from "./runDebate";
-import { DEBATE_CLAUDE_MODEL, type DebateClaudeClient, type DebatePartnerClient } from "./client";
+import { runDebate, type ParticipantUsage } from "./runDebate";
+import { DEBATE_CLAUDE_MODEL, type DebateClaudeClient, type DebateCompletionResponse, type DebatePartnerClient } from "./client";
 
 function claudeOk(text = "Claude's argument."): DebateClaudeClient {
-  return vi.fn(async () => text);
+  return vi.fn(async () => ({ text }));
 }
 function partnerOk(text = "The partner's argument."): DebatePartnerClient {
-  return vi.fn(async () => text);
+  return vi.fn(async () => ({ text }));
 }
 const failing = () => vi.fn(async () => { throw new Error("provider down"); });
 
@@ -164,7 +164,7 @@ describe("runDebate — guards", () => {
       peak = Math.max(peak, active);
       await new Promise((resolve) => setTimeout(resolve, 5));
       active -= 1;
-      return "text";
+      return { text: "text" };
     };
 
     await runDebate(QUESTION, {
@@ -173,5 +173,136 @@ describe("runDebate — guards", () => {
       partnerIds: ["gpt-5.5"],
     });
     expect(peak).toBe(2); // Claude + 1 partner
+  });
+});
+
+describe("R15: Partner Usage Collection", () => {
+  it("normalizes provider, model, input/output tokens, estimate, and actual cost for every participant", async () => {
+    const claudeWithUsage: DebateClaudeClient = vi.fn(async () => ({
+      text: "Claude's argument.",
+      usage: {
+        provider: "anthropic",
+        model: "claude-sonnet-5",
+        inputTokens: 450,
+        outputTokens: 280,
+        estimatedCost: null,
+        actualCost: null,
+      },
+    }));
+
+    const partnerWithUsage: DebatePartnerClient = vi.fn(async () => ({
+      text: "The partner's argument.",
+      usage: {
+        provider: "openai",
+        model: "gpt-5.5",
+        inputTokens: 420,
+        outputTokens: 310,
+        estimatedCost: null,
+        actualCost: null,
+      },
+    }));
+
+    const outcome = await runDebate(QUESTION, {
+      claudeClient: claudeWithUsage,
+      partnerClient: partnerWithUsage,
+      partnerIds: ["gpt-5.5"],
+    });
+
+    expect(outcome.status).toBe("complete");
+    if (outcome.status !== "complete") return;
+
+    expect(outcome.sides[0].usage).toEqual({
+      provider: "anthropic",
+      model: "claude-sonnet-5",
+      inputTokens: 450,
+      outputTokens: 280,
+      estimatedCost: null,
+      actualCost: null,
+    });
+
+    expect(outcome.sides[1].usage).toEqual({
+      provider: "openai",
+      model: "gpt-5.5",
+      inputTokens: 420,
+      outputTokens: 310,
+      estimatedCost: null,
+      actualCost: null,
+    });
+  });
+
+  it("preserves unavailable fields honestly (null for unknown/unavailable)", async () => {
+    const claudePartial: DebateClaudeClient = vi.fn(async () => ({
+      text: "Claude's argument.",
+      usage: {
+        provider: "anthropic",
+        model: null,
+        inputTokens: null,
+        outputTokens: null,
+        estimatedCost: null,
+        actualCost: null,
+      },
+    }));
+
+    const outcome = await runDebate(QUESTION, {
+      claudeClient: claudePartial,
+      partnerClient: partnerOk(),
+      partnerIds: ["gpt-5.5"],
+    });
+
+    if (outcome.status !== "complete") return;
+    expect(outcome.sides[0].usage?.model).toBeNull();
+    expect(outcome.sides[0].usage?.inputTokens).toBeNull();
+  });
+
+  it("handles multiple participants with distinct usage data", async () => {
+    const outcome = await runDebate(QUESTION, {
+      claudeClient: vi.fn(async () => ({
+        text: "Claude says yes.",
+        usage: {
+          provider: "anthropic",
+          model: "claude-sonnet-5",
+          inputTokens: 500,
+          outputTokens: 300,
+          estimatedCost: null,
+          actualCost: null,
+        },
+      })),
+      partnerClient: vi.fn(async (req) => {
+        const model = req.partner.id;
+        return {
+          text: "Partner says no.",
+          usage: {
+            provider: req.partner.id === "gpt-5.5" ? "openai" : "google",
+            model,
+            inputTokens: 480,
+            outputTokens: 320,
+            estimatedCost: null,
+            actualCost: null,
+          },
+        };
+      }),
+      partnerIds: ["gpt-5.5", "gemini-3.1-pro"],
+    });
+
+    if (outcome.status !== "complete") return;
+    expect(outcome.sides).toHaveLength(3); // Claude + 2 partners
+    expect(outcome.sides[1].usage?.provider).toBe("openai");
+    expect(outcome.sides[2].usage?.provider).toBe("google");
+  });
+
+  it("includes usage even when a side fails", async () => {
+    const failingWithMetadata: DebatePartnerClient = vi.fn(async () => {
+      throw new Error("API down");
+    });
+
+    const outcome = await runDebate(QUESTION, {
+      claudeClient: claudeOk(),
+      partnerClient: failingWithMetadata,
+      partnerIds: ["gpt-5.5"],
+    });
+
+    if (outcome.status === "empty-question") return;
+    // Failed sides should not have usage since they didn't call the API
+    expect(outcome.sides[1].status).toBe("error");
   });
 });

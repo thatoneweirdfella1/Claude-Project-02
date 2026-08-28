@@ -7,6 +7,7 @@ import { useAccountStore } from "../../stores/accountStore";
 import {
   createPartnerClient,
   runDebate,
+  withDebateUsage,
   type DebateOutcome,
   type DebatePartnerId,
 } from "../../services/debate";
@@ -158,7 +159,7 @@ export function MultiAiActions() {
 
     try {
       const result = await runDebate(lastQuestion, {
-        claudeClient: (req) => completeTracked(req),
+        claudeClient: withDebateUsage((req) => completeTracked(req)),
         partnerClient,
         partnerIds: selectedPartnerIds,
         signal: controller.signal,
@@ -205,7 +206,7 @@ export function MultiAiActions() {
       setActionError(null);
 
       const rerun = await runDebate(lastQuestion, {
-        claudeClient: (req) => completeTracked(req),
+        claudeClient: withDebateUsage((req) => completeTracked(req)),
         partnerClient,
         partnerIds: selectedPartnerIds,
         // Keep Claude on the stance it already had, so a retry doesn't

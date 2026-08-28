@@ -16,9 +16,11 @@ export {
   DEBATE_CLAUDE_MODEL,
   createPartnerClient,
   partnerEndpoint,
+  withDebateUsage,
   type DebateClaudeClient,
   type DebateCompletionRequest,
+  type DebateCompletionResponse,
   type DebatePartnerClient,
 } from "./client";
 export { debateInput, debateSystemPrompt, type DebateStance } from "./prompt";
-export { runDebate, type DebateOutcome, type DebateSide, type RunDebateOptions } from "./runDebate";
+export { runDebate, type DebateOutcome, type DebateSide, type ParticipantUsage, type RunDebateOptions } from "./runDebate";

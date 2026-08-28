@@ -17,6 +17,7 @@
 import type { ModelId } from "../modelRegistry";
 import { appAccessHeaders } from "../appAccessClient";
 import type { DebatePartner, DebatePartnerId } from "./roster";
+import type { ParticipantUsage } from "./runDebate";
 
 export interface DebateCompletionRequest {
   system: string;
@@ -24,16 +25,21 @@ export interface DebateCompletionRequest {
   signal?: AbortSignal;
 }
 
+export interface DebateCompletionResponse {
+  text: string;
+  usage?: ParticipantUsage;
+}
+
 /** Claude's side of the debate. `model` is a real Claude ModelId. */
 export type DebateClaudeClient = (
   request: DebateCompletionRequest & { model: ModelId },
-) => Promise<string>;
+) => Promise<DebateCompletionResponse>;
 
 /** The partner's side. `partner` carries the roster entry so the client knows
     which endpoint to hit; the caller never builds a URL itself. */
 export type DebatePartnerClient = (
   request: DebateCompletionRequest & { partner: DebatePartner },
-) => Promise<string>;
+) => Promise<DebateCompletionResponse>;
 
 /** Claude's debate model. Sonnet, not Opus: Opus is reserved as the RUNTIME
     model for Consensus/Synthesis (MULTI_AI_RUNTIME_MODEL, Step 8.4) which
@@ -44,6 +50,32 @@ export type DebatePartnerClient = (
     the MODELS table or the complexity scorer." */
 export const DEBATE_CLAUDE_MODEL: ModelId = "claude-sonnet-5";
 
+/** Wrap a standard proxy client complete() call to capture usage alongside text. */
+export function withDebateUsage(
+  client: (req: DebateCompletionRequest & { model: ModelId }) => Promise<string>,
+): DebateClaudeClient {
+  return async (req) => {
+    let capturedUsage: { inputTokens?: number; outputTokens?: number } | undefined;
+    const text = await (client as any)({
+      ...req,
+      onUsage: (usage: any) => {
+        capturedUsage = usage;
+      },
+    });
+    return {
+      text,
+      usage: capturedUsage ? {
+        provider: "anthropic",
+        model: req.model,
+        inputTokens: capturedUsage.inputTokens ?? null,
+        outputTokens: capturedUsage.outputTokens ?? null,
+        estimatedCost: null,
+        actualCost: null,
+      } : undefined,
+    };
+  };
+}
+
 /** Endpoint per provider — mirrors api/proxy-<provider>.ts one-to-one. */
 export function partnerEndpoint(id: DebatePartnerId): string {
   const provider = id === "gpt-5.5" ? "openai" : id === "gemini-3.1-pro" ? "google" : id === "grok-4.3" ? "xai" : "deepseek";
@@ -53,6 +85,10 @@ export function partnerEndpoint(id: DebatePartnerId): string {
 interface PartnerProxyReply {
   text?: unknown;
   error?: unknown;
+  usage?: {
+    inputTokens?: number;
+    outputTokens?: number;
+  };
 }
 
 /** Real partner client: POSTs to that provider's proxy and returns its text.
@@ -82,6 +118,16 @@ export function createPartnerClient(fetchImpl: typeof fetch = fetch): DebatePart
     if (typeof payload.text !== "string" || payload.text.trim().length === 0) {
       throw new Error(`${partner.label} returned no text.`);
     }
-    return payload.text;
+    return {
+      text: payload.text,
+      usage: payload.usage ? {
+        provider: partner.id === "gpt-5.5" ? "openai" : partner.id === "gemini-3.1-pro" ? "google" : partner.id === "grok-4.3" ? "xai" : "deepseek",
+        model: partner.id,
+        inputTokens: payload.usage.inputTokens ?? null,
+        outputTokens: payload.usage.outputTokens ?? null,
+        estimatedCost: null,
+        actualCost: null,
+      } : undefined,
+    };
   };
 }

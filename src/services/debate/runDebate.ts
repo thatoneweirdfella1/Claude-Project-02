@@ -29,6 +29,22 @@ import {
 } from "./client";
 import { debateInput, debateSystemPrompt, type DebateStance } from "./prompt";
 import { getDebatePartner, type DebatePartnerId } from "./roster";
+import type { ConnectedProviderId } from "../providerStatus";
+
+export interface ParticipantUsage {
+  /** Provider for this participant (anthropic, openai, google, xai, deepseek). */
+  provider: ConnectedProviderId | null;
+  /** Model ID used. */
+  model: string | null;
+  /** Actual input tokens used. */
+  inputTokens: number | null;
+  /** Actual output tokens used. */
+  outputTokens: number | null;
+  /** Estimated cost before execution. */
+  estimatedCost: number | null;
+  /** Actual cost after execution. */
+  actualCost: number | null;
+}
 
 export interface DebateSide {
   /** Which position this side argued. */
@@ -43,6 +59,8 @@ export interface DebateSide {
   /** Present when status is "error" — neutral, non-blaming copy for display
       (CANON's ADHD Feedback rule applies to failures too). */
   message?: string;
+  /** Usage data: provider, model, tokens, and costs. Fields are null when unavailable. */
+  usage?: ParticipantUsage;
 }
 
 export type DebateOutcome =
@@ -83,17 +101,18 @@ function opposite(stance: DebateStance): DebateStance {
 }
 
 async function runSide(
-  call: () => Promise<string>,
+  call: () => Promise<{ text: string; usage?: ParticipantUsage }>,
   stance: DebateStance,
   label: string,
   partnerId?: DebatePartnerId,
 ): Promise<DebateSide> {
   try {
-    const text = (await call()).trim();
+    const result = await call();
+    const text = result.text.trim();
     if (text.length === 0) {
-      return { stance, label, status: "error", message: NEUTRAL_FAILURE, partnerId };
+      return { stance, label, status: "error", message: NEUTRAL_FAILURE, partnerId, usage: result.usage };
     }
-    return { stance, label, status: "ok", text, partnerId };
+    return { stance, label, status: "ok", text, partnerId, usage: result.usage };
   } catch {
     // The real error is deliberately not surfaced to the user — a provider
     // error string can echo request content or vendor internals. The retry
