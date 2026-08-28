@@ -260,33 +260,44 @@ passes, continue to R09 File Attachment.
 - R10 URL Context — IMPLEMENTED, AWAITING FRESH BROWSER VERIFICATION (commit `d0f01c0`, see Session 13)
 
 ### Group 2 — Execution truth, provider state, and cost foundations
-- R11 Provider Status Refresh — PENDING
-- R12 Busy-State Cleanup — PENDING
-- R13 Safe Provider Error Categories — PENDING
-- R14 Unknown Model Pricing — PENDING
-- R15 Partner Usage Collection — PENDING
-- R19 Prepared / Copied / Opened / Sent / Answered Truth — PENDING
-- R25 Connected Execution Truth — PENDING
-- R26 Provider Connection Lifecycle — PENDING
-- R27 Multi-AI Cost Estimates — PENDING
-- R28 Remove Placeholder Cost Logging — PENDING
-- R29 Honest Readiness and Workflow Wording — PENDING
+- R11 Provider Status Refresh — IMPLEMENTED AND TESTED (commit `65d475a`)
+- R12 Busy-State Cleanup — IMPLEMENTED AND TESTED (commit `91e82ce`)
+- R13 Safe Provider Error Categories — IMPLEMENTED AND TESTED (commit `3da9e7e`)
+- R14 Unknown Model Pricing — IMPLEMENTED AND TESTED (commit `5594de1`)
+- R15 Partner Usage Collection — IMPLEMENTED AND TESTED (commit `f7cff2f`)
+- R19 Prepared / Copied / Opened / Sent / Answered Truth — IMPLEMENTED AND TESTED (commit `e972848`)
+- R25 Connected Execution Truth — IMPLEMENTED AND TESTED (commit `23d3b4d`)
+- R26 Provider Connection Lifecycle — IMPLEMENTED AND TESTED (commit `0414c57`)
+- R27 Multi-AI Cost Estimates — IMPLEMENTED AND TESTED (commit `4b44c84`)
+- R28 Remove Placeholder Cost Logging — IMPLEMENTED AND TESTED (commit `4b44c84`)
+- R29 Honest Readiness and Workflow Wording — IMPLEMENTED AND TESTED (commit `8cd4807`)
 
 ### Group 3 — Core conversation management
-- R16 Messages Screen — PENDING
-- R17 Projects Workflow — PENDING
-- R18 Active Session Lifecycle — PENDING
+- R16 Messages Screen — IMPLEMENTED AND TESTED (commit `4d7dfe1`)
+- R17 Projects Workflow — IMPLEMENTED AND TESTED (commit `0902607`)
+- R18 Active Session Lifecycle — VERIFIED ALREADY (QuickActionsRow already implements Keep Active/Save/Archive/Discard/Undo/confirmation/persistence — see prior-session summary)
 
 ### Group 4 — Multi-AI unresolved-conversation workflow
-- R20 Select Unresolved Conversation — PENDING
-- R21 Persist Multi-AI Results — PENDING
-- R23 Use Every Participant in Consensus — PENDING
-- R22 Retry Only One Participant — PENDING
-- R24 Multi-AI Cancellation — PENDING
+- R20 Select Unresolved Conversation — IMPLEMENTED AND TESTED (commit `4b44c84`)
+- R21 Persist Multi-AI Results — IMPLEMENTED AND TESTED (commit `4b44c84`)
+- R23 Use Every Participant in Consensus — IMPLEMENTED AND TESTED (commit `4b44c84`)
+- R22 Retry Only One Participant — IMPLEMENTED AND TESTED (commit `4b44c84`)
+- R24 Multi-AI Cancellation — IMPLEMENTED AND TESTED (commit `4b44c84`)
 
 ### Group 5 — authorization-gated proof
-- R30 Exact Preview and Production Gate — PENDING
-- R31 Live Provider Proof Gate — PENDING
+- R30 Exact Preview and Production Gate — PASSED — EVIDENCE RECORDED for every
+  locally-testable sub-row (candidate SHA, clean build, 874/874 tests,
+  10/10 browser smoke matrix, overlay-preservation); BLOCKED — EXACT
+  EXTERNAL REQUIREMENT RECORDED for accessible preview (no deploy
+  credentials in this sandbox). See `docs/checkpoints/CLAUDE-REPAIR-GROUP-5.md`.
+- R31 Live Provider Proof Gate — PASSED — EVIDENCE RECORDED for
+  deterministic-simulation coverage (874/874 tests, all 5 providers'
+  code paths); BLOCKED — EXACT EXTERNAL REQUIREMENT RECORDED for the
+  live route-by-route matrix (5 provider API keys, none set or used).
+  See `docs/checkpoints/CLAUDE-REPAIR-GROUP-5.md`.
+
+**Candidate SHA at end of this pass:** `60ea548111783a3219e1e857af19b0402606c707`
+**Rollback target:** `e1a4b0cb97572ed023c281efe909f2bd41b880ca`
 
 ## Session Logs
 
