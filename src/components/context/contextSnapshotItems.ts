@@ -33,6 +33,8 @@ export interface SnapshotItem {
   /** Source/origin of this context item (e.g., "Uploaded", "Imported").
       Optional for non-file/url items. */
   provenance?: string;
+  fileType?: string;
+  included?: boolean;
 }
 
 const VARIABLE_ID_PREFIX = "variable:";
@@ -51,6 +53,10 @@ export function buildSnapshotItems(
     label: item.label,
     detail: formatBytes(item.bytes),
     provenance: item.provenance,
+    ...(item.kind === "file" && {
+      fileType: item.fileType,
+      included: item.included !== false,
+    }),
   }));
 
   const fromVariables: SnapshotItem[] = Object.entries(variables).map(([name, value]) => ({

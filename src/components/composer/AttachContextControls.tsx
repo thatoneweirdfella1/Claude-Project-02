@@ -248,7 +248,7 @@ export function AttachContextControls({ onAttach = () => {}, onContext = () => {
     </div>}
 
     {pendingFiles.length > 0 && <div className="attach-context-controls__status" role="status">{pendingFiles.map((name) => <span key={name}>{name} · Reading…</span>)}</div>}
-    {rejections.length > 0 && <div className="surface-smoked-glass attach-context-controls__rejections" role="status">{rejections.map(({ file, result }) => <p key={file.name}>{file.name}: {result.message}</p>)}<button type="button" onClick={() => setRejections([])}>Dismiss</button></div>}
+    {rejections.length > 0 && <div className="surface-smoked-glass attach-context-controls__rejections">{rejections.map(({ file, result }, index) => <p role="alert" className="attach-context-controls__rejection" key={`${file.name}-${index}`}>{result.message}</p>)}<button type="button" className="attach-context-controls__rejections-dismiss" aria-label="Dismiss file rejection" onClick={() => setRejections([])}>×</button></div>}
 
     {managerOpen && <ContextManagerDialog onClose={() => setManagerOpen(false)} onAddMore={() => { setManagerOpen(false); setOpen(true); setView("menu"); }} />}
   </div>;

@@ -102,6 +102,8 @@ export async function readFileAsContextItem(
     label: file.name,
     content,
     bytes: file.size,
+    fileType: file.type.trim() || `${extensionOf(file.name).slice(1).toUpperCase()} file`,
+    included: true,
     ...(options.provenance && { provenance: options.provenance }),
   };
 }

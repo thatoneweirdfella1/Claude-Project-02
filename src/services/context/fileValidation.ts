@@ -70,14 +70,14 @@ export function validateFile(
     return {
       ok: false,
       reason: "type",
-      message: `"${file.name}" isn't a supported file type yet. This app currently reads PDF, TXT, JSON, CSV, and image files.`,
+      message: `"${file.name}" isn't a supported file type. Choose a PDF, TXT, JSON, CSV, PNG, JPG, JPEG, GIF, WEBP, or BMP file.`,
     };
   }
   if (file.size > MAX_FILE_BYTES) {
     return {
       ok: false,
       reason: "file-too-large",
-      message: `"${file.name}" is ${formatBytes(file.size)}, over the ${formatBytes(MAX_FILE_BYTES)} per-file limit.`,
+      message: `"${file.name}" is ${formatBytes(file.size)}, over the ${formatBytes(MAX_FILE_BYTES)} per-file limit. Choose a file no larger than ${formatBytes(MAX_FILE_BYTES)}.`,
     };
   }
   if (sessionBytesSoFar + file.size > MAX_SESSION_BYTES) {

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useSessionStore } from "../../stores/sessionStore";
-import { ContextManagerDialog, isContextIncluded } from "./ContextManagerDialog";
+import { ContextManagerDialog, isContextIncluded, setContextIncluded } from "./ContextManagerDialog";
 import {
   SNAPSHOT_KIND_LABELS,
   buildSnapshotItems,
@@ -42,9 +42,18 @@ export function ContextSnapshotContent() {
           <div className="context-snapshot-panel__row-text">
             <span className="context-snapshot-panel__row-kind">{SNAPSHOT_KIND_LABELS[item.kind]}</span>
             <span className="context-snapshot-panel__row-label">{item.label}</span>
-            <span className="context-snapshot-panel__row-detail">{item.detail}{item.provenance ? ` · ${item.provenance}` : ""}</span>
+            <span className="context-snapshot-panel__row-detail">
+              {item.fileType ? `${item.fileType} · ` : ""}{item.detail}{item.provenance ? ` · ${item.provenance}` : ""}{item.included !== undefined ? ` · ${item.included ? "Included" : "Excluded"}` : ""}
+            </span>
           </div>
-          <button type="button" className="context-snapshot-panel__row-remove" aria-label={`Remove ${item.label} from context`} onClick={() => handleRemove(item.id)}>×</button>
+          <div className="context-snapshot-panel__row-actions">
+            {item.included !== undefined && <button
+              type="button"
+              aria-label={`${item.included ? "Exclude" : "Include"} ${item.label}`}
+              onClick={() => setContextIncluded(item.id, !item.included)}
+            >{item.included ? "Exclude" : "Include"}</button>}
+            <button type="button" className="context-snapshot-panel__row-remove" aria-label={`Remove ${item.label}`} onClick={() => handleRemove(item.id)}>Remove</button>
+          </div>
         </li>
       ))}
     </ul>}

@@ -11,7 +11,9 @@
 .context-snapshot-panel__row-kind { color:var(--accent-cyan); font-size:var(--font-size-metadata); text-transform:uppercase; letter-spacing:.03em; }
 .context-snapshot-panel__row-label { color:var(--text-primary); font-size:var(--font-size-label-secondary); overflow-wrap:break-word; }
 .context-snapshot-panel__row-detail { color:var(--text-secondary); font-size:var(--font-size-metadata); opacity:var(--text-metadata-opacity); overflow-wrap:break-word; }
-.context-snapshot-panel__row-remove { flex-shrink:0; min-width:24px; min-height:24px; border:none; background:transparent; color:var(--text-secondary); font-size:14px; cursor:pointer; }
+.context-snapshot-panel__row-actions { flex-shrink:0; display:flex; flex-direction:column; gap:4px; }
+.context-snapshot-panel__row-actions button { min-width:58px; min-height:28px; padding:2px 7px; border:1px solid var(--surface-smoked-glass-border); border-radius:7px; background:var(--surface-smoked-glass); color:var(--text-primary); font-size:var(--font-size-metadata); cursor:pointer; }
+.context-snapshot-panel__row-remove { color:var(--text-secondary); }
 .context-snapshot-panel__row-remove:hover { color:var(--action-destructive); }
 
 .input-box__field-shell { position:relative; min-width:0; }

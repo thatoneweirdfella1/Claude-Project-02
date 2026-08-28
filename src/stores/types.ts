@@ -287,6 +287,9 @@ export interface ContextItem {
   label: string;
   content: string;
   bytes: number;
+  /** Browser-reported MIME type for uploaded files (for example, text/plain).
+      Optional so older saved sessions continue to load. */
+  fileType?: string;
   /** Excluded items remain attached for later use but are not sent. */
   included?: boolean;
   /** Source/origin of this context item (e.g., "Uploaded", "Imported", "Pasted").

@@ -17,6 +17,7 @@ const FILE_ITEM: ContextItem = {
   label: "notes.txt",
   content: "hello",
   bytes: 2048,
+  fileType: "text/plain",
   provenance: "Uploaded",
 };
 
@@ -37,7 +38,7 @@ describe("buildSnapshotItems — combines session.context and session.variables"
   it("includes every session.context item, keyed by its own id", () => {
     const items = buildSnapshotItems([FILE_ITEM, URL_ITEM], {});
     expect(items.map((i) => i.id)).toEqual(["ctx-1", "ctx-2"]);
-    expect(items[0]).toEqual({ id: "ctx-1", kind: "file", label: "notes.txt", detail: "2.0 KB", provenance: "Uploaded" });
+    expect(items[0]).toEqual({ id: "ctx-1", kind: "file", label: "notes.txt", detail: "2.0 KB", provenance: "Uploaded", fileType: "text/plain", included: true });
     expect(items[1]).toEqual({
       id: "ctx-2",
       kind: "url",
