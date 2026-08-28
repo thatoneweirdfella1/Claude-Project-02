@@ -1,5 +1,6 @@
 import { useSessionStore } from "../../stores/sessionStore";
 import type { MultiAiRunRecord } from "../../stores/types";
+import { WORKFLOW_STAGE_LABEL } from "../../services/workflowVocabulary";
 
 /* R21: Persist Multi-AI Results — every finished/partial/failed/cancelled
    Multi-AI run is kept in session.multiAiRuns (persisted through autosave,
@@ -15,11 +16,18 @@ export interface MultiAiRunHistoryProps {
   sourceMessageIds?: string[];
 }
 
+/* R29: "Failed" and "Cancelled" are pulled straight from WORKFLOW_STAGE_LABEL
+   — the same exact words Settings' Provider Connections panel and
+   routeReadiness use for those states, not a locally-invented variant.
+   "Complete"/"Partial" describe a multi-participant OUTCOME (how many of
+   several sides landed), a different concept from the single-message
+   "Answered" state (R19) — forcing them to share a word would blur that
+   distinction rather than clarify it, so they keep their own precise terms. */
 const STATUS_LABEL: Record<MultiAiRunRecord["status"], string> = {
   complete: "Complete",
   partial: "Partial — not every participant landed",
-  failed: "Failed — no participant landed",
-  cancelled: "Cancelled",
+  failed: `${WORKFLOW_STAGE_LABEL.failed} — no participant landed`,
+  cancelled: WORKFLOW_STAGE_LABEL.cancelled,
 };
 
 function formatCost(value: number | null): string {

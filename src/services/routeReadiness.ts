@@ -14,6 +14,15 @@
 import type { DestinationSelection, DestinationProviderId } from "../stores/types";
 import { useAccountStore } from "../stores/accountStore";
 import { getProviderStatus, type ConnectedProviderId } from "./providerStatus";
+import { WORKFLOW_STAGE_LABEL } from "./workflowVocabulary";
+
+/* R29: every label below is built from WORKFLOW_STAGE_LABEL's "verified" and
+   "manual-handoff" terms rather than writing those words out ad hoc — the
+   same wording other screens (Settings' Provider Connections, Multi-AI run
+   history) also pull from, so "verified" and "manual handoff" never drift
+   into slightly different phrases across the app. */
+const VERIFIED_TERM = WORKFLOW_STAGE_LABEL.verified.toLowerCase();
+const MANUAL_HANDOFF_TERM = WORKFLOW_STAGE_LABEL["manual-handoff"].toLowerCase();
 
 export type ReadinessState = "ready" | "checking" | "not-configured" | "unavailable";
 
@@ -52,7 +61,7 @@ export async function computeRouteReadiness(
       providerId: destination.providerId,
       modelId: destination.modelId,
       verified: false,
-      label: "Local preparation — no provider connection required",
+      label: `${WORKFLOW_STAGE_LABEL["local-preparation"]} — no provider connection required`,
     };
   }
 
@@ -64,7 +73,7 @@ export async function computeRouteReadiness(
       providerId: destination.providerId,
       modelId: destination.modelId,
       verified: false,
-      label: `${destination.providerId} isn't set up for automatic verification yet — use manual handoff`,
+      label: `${destination.providerId} isn't set up for automatic verification yet — use ${MANUAL_HANDOFF_TERM}`,
     };
   }
 
@@ -77,7 +86,7 @@ export async function computeRouteReadiness(
       providerId: destination.providerId,
       modelId: destination.modelId,
       verified: false,
-      label: `${destination.providerId} is disconnected — reconnect it in Settings, or use manual handoff`,
+      label: `${destination.providerId} is disconnected — reconnect it in Settings, or use ${MANUAL_HANDOFF_TERM}`,
     };
   }
 
@@ -88,7 +97,7 @@ export async function computeRouteReadiness(
       providerId: destination.providerId,
       modelId: destination.modelId,
       verified: false,
-      label: `${destination.providerId} is not connected — use manual handoff instead`,
+      label: `${destination.providerId} is not connected — use ${MANUAL_HANDOFF_TERM} instead`,
     };
   }
 
@@ -97,7 +106,7 @@ export async function computeRouteReadiness(
     providerId: destination.providerId,
     modelId: destination.modelId,
     verified: true,
-    label: `${destination.providerId} verified and ready`,
+    label: `${destination.providerId} ${VERIFIED_TERM} and ready`,
   };
 }
 
