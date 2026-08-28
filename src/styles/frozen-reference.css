@@ -812,6 +812,12 @@ body {
 .accordion-panel:last-child .accordion-stats > div { min-height: 26px; }
 .accordion-stats strong { color: #0875cc; font-weight: 500; text-align: right; }
 :root[data-theme="dark"] .accordion-stats strong { color: #70cfff; }
+/* R25: readiness state colors — never implies "ready" unless verified. */
+.accordion-stats__readiness--unavailable,
+.accordion-stats__readiness--not-configured { color: #b3492f !important; }
+:root[data-theme="dark"] .accordion-stats__readiness--unavailable,
+:root[data-theme="dark"] .accordion-stats__readiness--not-configured { color: #ff8f6f !important; }
+.accordion-stats__readiness--checking { color: var(--frozen-muted) !important; }
 .accordion-session-link { display: flex; justify-content: space-between; gap: 8px; padding: 4px 0; border: 0; background: transparent; color: var(--frozen-text); font: inherit; cursor: pointer; }
 .accordion-session-link small { color: var(--frozen-muted); }
 

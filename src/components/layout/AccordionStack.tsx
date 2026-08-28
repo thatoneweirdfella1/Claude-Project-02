@@ -1,7 +1,8 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Activity, BarChart3, CalendarDays, ChevronDown, ChevronRight, ClipboardList, Cpu, ShieldCheck } from "lucide-react";
 import { ContextSnapshotContent } from "../context";
 import { destinationLabel, TRANSLATOR_ENGINES } from "../../services/providerNeutral";
+import { computeRouteReadiness, type RouteReadiness } from "../../services/routeReadiness";
 import { useAccountStore } from "../../stores/accountStore";
 import { useSessionStore } from "../../stores/sessionStore";
 
@@ -32,13 +33,35 @@ function TokenUsageContent() {
   return <p className="accordion-panel__placeholder">Usage appears here only when a provider reports it. No values are estimated.</p>;
 }
 
+/* R25: Connected Execution Truth — "Route status" is derived from an actual
+   health check (services/routeReadiness.ts -> providerStatus.ts), never
+   assumed. While the check is in flight it says "Checking…"; it never
+   defaults to a ready-looking label just because a check hasn't returned
+   yet (fail closed). */
 function AiStatusContent() {
   const destination = useSessionStore((s) => s.destination);
   const engine = useSessionStore((s) => s.translatorEngine);
+  const [readiness, setReadiness] = useState<RouteReadiness | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setReadiness(null);
+    computeRouteReadiness(destination).then((result) => {
+      if (!cancelled) setReadiness(result);
+    });
+    return () => { cancelled = true; };
+  }, [destination.providerId, destination.modelId]);
+
   return <div className="accordion-stats">
     <div><span>Destination</span><strong>{destinationLabel(destination)}</strong></div>
     <div><span>Translator</span><strong>{TRANSLATOR_ENGINES.find((option) => option.id === engine)?.label ?? "Managed translator"}</strong></div>
     <div><span>Cost route</span><strong>{engine === "local-rules" || engine === "auto-free-first" || engine === "local-ai" ? "No Divergence credits" : "Confirmation required"}</strong></div>
+    <div>
+      <span>Route status</span>
+      <strong data-testid="ai-status-readiness" className={`accordion-stats__readiness accordion-stats__readiness--${readiness?.state ?? "checking"}`}>
+        {readiness ? readiness.label : "Checking…"}
+      </strong>
+    </div>
   </div>;
 }
 
