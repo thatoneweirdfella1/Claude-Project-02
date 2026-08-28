@@ -56,6 +56,7 @@ import {
 import { composeFinalPrompt, type ComposedPrompt } from "../composition";
 import { streamAnswer, type PipelineStageName } from "../answerDisplay";
 import { makeResilientClient, type ResilienceOptions } from "./resilience";
+import { categorizeCaughtError } from "../providerErrorCategorization";
 
 /** The narrow slice of the Step 1.10 proxy client the pipeline needs.
     createProxyClient() satisfies it as-is; tests pass stubs. Callers should
@@ -102,8 +103,13 @@ export interface PipelineDeps {
   pretranslationUsage?: TokenUsage;
 }
 
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
+/* R13: every terminal `error` event carries a safe, categorized message and
+   next action — never the raw thrown error's own `.message` (which, for a
+   proxy/network failure, may be a ProxyClientError whose `.status` and
+   discarded `.detail` must never reach a user-visible string). */
+function safeErrorEvent(error: unknown): { kind: "error"; message: string; nextAction: string } {
+  const categorized = categorizeCaughtError(error);
+  return { kind: "error", message: categorized.message, nextAction: categorized.nextAction };
 }
 
 /** The finished answer plus everything the conversation store persists with
@@ -126,7 +132,7 @@ export type PipelineEvent =
   | { kind: "composed"; composed: ComposedPrompt }
   | { kind: "streaming"; text: string }
   | { kind: "done"; done: PipelineDone }
-  | { kind: "error"; message: string };
+  | { kind: "error"; message: string; nextAction?: string };
 
 /** Stage 3 dispatch on the session's stored technique mode (STORE-CONTRACT:
     ["auto-detect"] — or any array containing it — means auto mode; any other
@@ -196,7 +202,7 @@ export async function* runPipeline(
       gated = gateTranslation(outcome);
     }
   } catch (error) {
-    yield { kind: "error", message: errorMessage(error) };
+    yield safeErrorEvent(error);
     return;
   }
   yield { kind: "translation", gated };
@@ -225,7 +231,7 @@ export async function* runPipeline(
       override: overrideFromSelection(request.model === "auto" ? deps.learnedModel ?? "auto" : request.model),
     });
   } catch (error) {
-    yield { kind: "error", message: errorMessage(error) };
+    yield safeErrorEvent(error);
     return;
   }
   yield { kind: "route", result: routeResult };
@@ -254,7 +260,7 @@ export async function* runPipeline(
       context: request.context,
     });
   } catch (error) {
-    yield { kind: "error", message: errorMessage(error) };
+    yield safeErrorEvent(error);
     return;
   }
   yield { kind: "techniques", selection };
@@ -301,6 +307,6 @@ export async function* runPipeline(
        non-blaming copy regardless of this message (TranslationCard /
        StreamingAnswer, Steps 2.3/5.1) — the real message is kept here for
        whatever logs/telemetry (Step 5.4) read this event. */
-    yield { kind: "error", message: errorMessage(error) };
+    yield safeErrorEvent(error);
   }
 }

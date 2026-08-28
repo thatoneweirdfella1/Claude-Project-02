@@ -125,7 +125,10 @@ describe("R12: MultiAiActions retrySide busy-state cleanup", () => {
     const buttonsAfter = retryButtons(container);
     expect(buttonsAfter[0].disabled).toBe(false);
     expect(buttonsAfter[0].textContent).toBe("Try this side again");
-    expect(container.textContent).toContain("Retry failed: network exploded");
+    // R13: the thrown error's own raw text ("network exploded") must never
+    // reach the UI — only the safe, categorized message + next action.
+    expect(container.textContent).not.toContain("network exploded");
+    expect(container.textContent).toContain("Retry failed: Something went wrong with that request.");
   });
 
   it("a stale, superseded retry settling does not clear the busy state of the retry that replaced it", async () => {

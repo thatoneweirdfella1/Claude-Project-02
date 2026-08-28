@@ -11,6 +11,7 @@ import { observePipeline } from "./observePipeline";
 import { getTelemetryEntries, resetTelemetryForTests } from "./log";
 import { buildTranslateAskRequest, type TranslateAskSettings } from "../composer";
 import type { PipelineEvent, PipelineModelClient } from "../pipeline";
+import { ProxyClientError } from "../proxyClient";
 
 function translationJson(overrides: Record<string, unknown> = {}): string {
   return JSON.stringify({
@@ -178,13 +179,17 @@ describe("observePipeline — the clarify path", () => {
 });
 
 describe("observePipeline — execution failure", () => {
-  it("records outcome 'error' with the real underlying message", async () => {
+  /* R13: telemetry consumes the same typed 'error' event the UI does
+     (observePipeline.ts:162), which orchestrator.ts now always produces via
+     categorizeCaughtError — so the raw provider/HTTP internal never reaches
+     ANY consumer, telemetry included, not just the UI. */
+  it("records outcome 'error' with the safe, categorized message — never the raw provider/HTTP internal", async () => {
     await collect(
       observePipeline(request("how does quantum entanglement work?"), {
         client: stubClient({
           // eslint-disable-next-line require-yield
           stream: async function* () {
-            throw new Error("Proxy call failed (400): malformed");
+            throw new ProxyClientError(400, "malformed — raw provider body");
           },
         }),
         plan: "free",
@@ -194,7 +199,9 @@ describe("observePipeline — execution failure", () => {
 
     const [entry] = getTelemetryEntries();
     expect(entry.outcome).toBe("error");
-    expect(entry.errorMessage).toContain("400");
+    expect(entry.errorMessage).not.toContain("400");
+    expect(entry.errorMessage).not.toContain("raw provider body");
+    expect(entry.errorMessage).toBeTruthy();
     // Routing/techniques DID happen before the failure — still recorded.
     expect(entry.model).not.toBeNull();
     expect(entry.techniques).not.toBeNull();

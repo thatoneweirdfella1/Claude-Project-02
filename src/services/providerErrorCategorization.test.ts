@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { categorizeProviderError, isRetryable } from "./providerErrorCategorization";
+import {
+  categorizeCaughtError,
+  categorizeProviderError,
+  isRetryable,
+  type ProviderErrorCategory,
+} from "./providerErrorCategorization";
 
 describe("R13: Safe provider error categorization", () => {
   describe("HTTP status codes", () => {
@@ -119,25 +124,67 @@ describe("R13: Safe provider error categorization", () => {
     });
   });
 
-  describe("messages are actionable", () => {
-    it("provides next action for each error", () => {
-      const categories = [
-        "auth_failed",
-        "quota_exceeded",
-        "timeout",
-        "unavailable_model",
-        "content_policy",
-        "service_unavailable",
-        "unknown",
-      ] as const;
+  describe("messages carry a concrete next action and a matching retryable flag", () => {
+    const cases: Array<{ input: number; category: ProviderErrorCategory; retryable: boolean }> = [
+      { input: 401, category: "auth_failed", retryable: false },
+      { input: 429, category: "quota_exceeded", retryable: true },
+      { input: 408, category: "timeout", retryable: true },
+      { input: 404, category: "unavailable_model", retryable: false },
+      { input: 503, category: "service_unavailable", retryable: true },
+      { input: 418, category: "unknown", retryable: false },
+    ];
 
-      categories.forEach((category) => {
-        const err = categorizeProviderError(404); // Use a dummy input
-        // Override for testing
-        const testErr = categorizeProviderError(category === "auth_failed" ? 401 : 500);
-        expect(testErr.message).toBeTruthy();
-        expect(testErr.message.length > 20).toBe(true); // Should be more than just a code
+    it.each(cases)("category $category exposes its own next action and retryable flag", ({ input, category, retryable }) => {
+      const err = categorizeProviderError(input);
+      expect(err.category).toBe(category);
+      expect(err.retryable).toBe(retryable);
+      expect(err.retryable).toBe(isRetryable(category));
+      expect(err.nextAction).toBeTruthy();
+      // The next action must be distinct guidance, not a restatement of the message.
+      expect(err.nextAction).not.toBe(err.message);
+    });
+
+    it("content_policy gets its own distinct next action", () => {
+      const err = categorizeProviderError("request refused for policy reasons");
+      expect(err.category).toBe("content_policy");
+      expect(err.retryable).toBe(false);
+      expect(err.nextAction).toMatch(/different question|different approach/i);
+    });
+  });
+
+  describe("categorizeCaughtError — the real catch-block entry point", () => {
+    it("categorizes a structured proxy error by its numeric status, never its message text", () => {
+      const err = categorizeCaughtError({ status: 401, message: "raw provider body leaked here" });
+      expect(err.category).toBe("auth_failed");
+      expect(err.message).not.toContain("raw provider body");
+    });
+
+    it("falls back to keyword-matching a plain Error's message", () => {
+      const err = categorizeCaughtError(new Error("request timed out after 30s"));
+      expect(err.category).toBe("timeout");
+      expect(err.retryable).toBe(true);
+    });
+
+    it("categorizes a thrown non-Error value without throwing itself", () => {
+      const err = categorizeCaughtError("quota exceeded");
+      expect(err.category).toBe("quota_exceeded");
+    });
+
+    it("never leaks a raw HTTP status or provider response body from a proxy-shaped error", () => {
+      const err = categorizeCaughtError({
+        status: 500,
+        message: "Proxy call failed (500)",
+        detail: "sk-live-secret-should-never-appear-anywhere",
       });
+      expect(err.message).not.toContain("500");
+      expect(err.message).not.toContain("sk-live-secret");
+      expect(err.nextAction).not.toContain("sk-live-secret");
+    });
+
+    it("defaults to the unknown category for an unrecognized plain error", () => {
+      const err = categorizeCaughtError(new Error("ECONNRESET"));
+      expect(err.category).toBe("unknown");
+      expect(err.retryable).toBe(false);
     });
   });
 });

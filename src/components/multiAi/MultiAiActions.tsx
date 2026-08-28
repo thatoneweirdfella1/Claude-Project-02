@@ -35,6 +35,7 @@ import { addTokenUsage, getEstimatedCostForCall } from "../../services/costTrack
 import type { PaidRoutePolicy } from "../../services/paidRoutePolicy";
 import { reportProviderEvent, type ConnectedProviderId } from "../../services/providerStatus";
 import { isProviderConnected } from "../../services/routeReadiness";
+import { categorizeCaughtError } from "../../services/providerErrorCategorization";
 import type { MultiAiParticipantResult, MultiAiRunRecord } from "../../stores/types";
 
 /* MULTI-AI ACTIONS (Step 8.3) — the composer-footer control from the
@@ -103,6 +104,15 @@ function reportFailedSides(sides: DebateSide[]): void {
   if (sides.some((side) => side.status === "error")) {
     void reportProviderEvent("error");
   }
+}
+
+/* R13: every user-visible "X failed" string in this component goes through
+   categorizeCaughtError — never a caught error's own `.message` directly,
+   which for a proxy/network failure can carry raw HTTP internals (see
+   proxyClient.ts's ProxyClientError). */
+function safeFailureMessage(prefix: string, error: unknown): string {
+  const categorized = categorizeCaughtError(error);
+  return `${prefix}: ${categorized.message} ${categorized.nextAction}`;
 }
 
 async function configuredForDebate(partnerIds: DebatePartnerId[]): Promise<boolean> {
@@ -301,7 +311,7 @@ export function MultiAiActions() {
       }
     } catch (error) {
       if (!controller.signal.aborted) {
-        setActionError(`Debate failed: ${error instanceof Error ? error.message : String(error)}`);
+        setActionError(safeFailureMessage("Debate failed", error));
         setOutcome({ status: "failed", sides: [] });
         persistRun({ id: runId, status: "failed", participants: [], totalEstimatedCost: total, totalActualCost: null });
       } else {
@@ -420,7 +430,7 @@ export function MultiAiActions() {
         }
       } catch (error) {
         if (controllerRef.current === controller && !controller.signal.aborted) {
-          setActionError(`Retry failed: ${error instanceof Error ? error.message : String(error)}`);
+          setActionError(safeFailureMessage("Retry failed", error));
         }
       } finally {
         if (controllerRef.current === controller) setRetrying(null);
@@ -477,7 +487,7 @@ export function MultiAiActions() {
         // failed a real call — never keep authorizing further calls on a
         // stale "available" reading for the rest of the cache's TTL.
         void reportProviderEvent("error");
-        setActionError(`Consensus failed: ${error instanceof Error ? error.message : String(error)}`);
+        setActionError(safeFailureMessage("Consensus failed", error));
       }
     } finally {
       setPhase("idle");
@@ -529,7 +539,7 @@ export function MultiAiActions() {
     } catch (error) {
       if (!controller.signal.aborted) {
         void reportProviderEvent("error");
-        setActionError(`Synthesis failed: ${error instanceof Error ? error.message : String(error)}`);
+        setActionError(safeFailureMessage("Synthesis failed", error));
       }
     } finally {
       setPhase("idle");

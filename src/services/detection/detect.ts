@@ -22,6 +22,7 @@
 import { DETECTION_MODEL, type DetectionModelClient } from "./client";
 import { DETECTION_SYSTEM_PROMPT } from "./prompt";
 import { parseDetectionOutput, type StateDetectionResult } from "./schema";
+import { categorizeCaughtError } from "../providerErrorCategorization";
 
 /** Ceiling on detection-input size — shared value with translation
     (MAX_TRANSLATION_INPUT_CHARS), since detection classifies the SAME message
@@ -101,8 +102,11 @@ export async function detectState(
       signal: options.signal,
     });
   } catch (error) {
-    // Transport/API failure (network, timeout, abort, proxy down).
-    return { status: "error", message: errorMessage(error) };
+    // R13: transport/API failure (network, timeout, abort, proxy down) —
+    // categorized, never the raw error's own message (which for a proxy
+    // failure can carry raw HTTP internals; see proxyClient.ts).
+    const categorized = categorizeCaughtError(error);
+    return { status: "error", message: `${categorized.message} ${categorized.nextAction}` };
   }
 
   try {

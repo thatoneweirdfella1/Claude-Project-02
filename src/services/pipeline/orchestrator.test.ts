@@ -13,7 +13,7 @@ import {
   type PipelineModelClient,
 } from "./orchestrator";
 import { buildTranslateAskRequest, type TranslateAskSettings } from "../composer";
-import type { ProxyCompletionRequest } from "../proxyClient";
+import { ProxyClientError, type ProxyCompletionRequest } from "../proxyClient";
 import { route } from "../routingService";
 
 function translationJson(overrides: Record<string, unknown> = {}): string {
@@ -309,13 +309,13 @@ describe("runPipeline — Step 6.5 state bus (deps.stateTechniques / deps.stateT
 });
 
 describe("runPipeline — execution failure", () => {
-  it("a failed stream (proxy down — the sandbox's actual state) becomes a typed error event", async () => {
+  it("a failed stream (proxy down — the sandbox's actual state) becomes a typed error event with a safe, categorized message", async () => {
     const events = await collect(
       runPipeline(request("how does quantum entanglement work?"), {
         client: stubClient({
           // eslint-disable-next-line require-yield
           stream: async function* () {
-            throw new Error("Proxy call failed (502)");
+            throw new ProxyClientError(502);
           },
         }),
         plan: "free",
@@ -323,11 +323,17 @@ describe("runPipeline — execution failure", () => {
       }),
     );
     const last = events[events.length - 1];
-    expect(last).toMatchObject({ kind: "error", message: "Proxy call failed (502)" });
+    expect(last.kind).toBe("error");
+    // R13: the raw HTTP status/proxy internal must never reach the event —
+    // only the categorized, actionable message and next action.
+    const errorEvent = last as { kind: "error"; message: string; nextAction?: string };
+    expect(errorEvent.message).not.toContain("502");
+    expect(errorEvent.message).toBe("The AI service is temporarily unavailable.");
+    expect(errorEvent.nextAction).toBeTruthy();
     expect(events.some((e) => e.kind === "done")).toBe(false);
   });
 
-  it("a non-transient stream failure (e.g. 400) is NOT retried — fails on the first attempt", async () => {
+  it("a non-transient stream failure (e.g. 400) is NOT retried — fails on the first attempt, with no raw status or provider body in the event", async () => {
     let calls = 0;
     const events = await collect(
       runPipeline(request("how does quantum entanglement work?"), {
@@ -335,7 +341,7 @@ describe("runPipeline — execution failure", () => {
           // eslint-disable-next-line require-yield
           stream: async function* () {
             calls++;
-            throw new Error("Proxy call failed (400): malformed request");
+            throw new ProxyClientError(400, "malformed request — includes raw provider detail");
           },
         }),
         plan: "free",
@@ -343,7 +349,10 @@ describe("runPipeline — execution failure", () => {
       }),
     );
     expect(calls).toBe(1);
-    expect(events[events.length - 1]).toMatchObject({ kind: "error", message: expect.stringContaining("400") });
+    const last = events[events.length - 1] as { kind: "error"; message: string };
+    expect(last.kind).toBe("error");
+    expect(last.message).not.toContain("400");
+    expect(last.message).not.toContain("malformed request");
   });
 });
 

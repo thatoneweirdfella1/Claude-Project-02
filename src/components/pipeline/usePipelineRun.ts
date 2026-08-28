@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { AnswerDisplayState } from "../../services/answerDisplay";
 import type { PipelineDone, PipelineEvent } from "../../services/pipeline";
 import type { GatedTranslation } from "../../services/translation";
+import { categorizeCaughtError } from "../../services/providerErrorCategorization";
 
 /* Drives one runPipeline() generator into React state (Step 5.2) — the
    pipeline-shaped sibling of Step 5.1's useAnswerDisplay, consuming the richer
@@ -82,7 +83,7 @@ export function usePipelineRun(
               onDoneRef.current(event.done);
               break;
             case "error":
-              setDisplay({ kind: "error", message: event.message });
+              setDisplay({ kind: "error", message: event.message, nextAction: event.nextAction });
               break;
             default:
               // route/techniques/composed: logged above; consumed from the
@@ -92,10 +93,8 @@ export function usePipelineRun(
         }
       } catch (error) {
         if (!cancelled) {
-          setDisplay({
-            kind: "error",
-            message: error instanceof Error ? error.message : String(error),
-          });
+          const categorized = categorizeCaughtError(error);
+          setDisplay({ kind: "error", message: categorized.message, nextAction: categorized.nextAction });
         }
       }
     })();

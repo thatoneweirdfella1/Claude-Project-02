@@ -615,7 +615,10 @@ export function CenterColumn() {
 
   useEffect(() => {
     if (display?.kind !== "error") return;
-    setWorkflowMessage(`Request failed: ${display.message}. Your draft is ready to retry.`);
+    // R13: display.message/nextAction are already safe, categorized copy —
+    // never a raw provider/HTTP internal (see usePipelineRun.ts).
+    const action = display.nextAction ?? "Your draft is ready to retry.";
+    setWorkflowMessage(`Request failed: ${display.message} ${action}`);
     const session = useSessionStore.getState();
     if (!session.draftInput.trim() && lastRawRef.current) session.setDraftInput(lastRawRef.current);
   }, [display]);
@@ -647,7 +650,7 @@ export function CenterColumn() {
     : display?.kind === "streaming"
       ? "Waiting for response…"
       : display?.kind === "error"
-        ? `Request failed: ${display.message}`
+        ? `Request failed: ${display.message}${display.nextAction ? ` ${display.nextAction}` : ""}`
         : "";
   const composerStatus = pendingStateReview
     ? "A response adjustment may help. Choose how to continue."

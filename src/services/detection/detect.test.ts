@@ -8,6 +8,7 @@ import { describe, expect, it, vi } from "vitest";
 import { detectState, MAX_DETECTION_INPUT_CHARS } from "./detect";
 import { DETECTION_MODEL, type DetectionCompletionRequest } from "./client";
 import { DETECTION_SYSTEM_PROMPT } from "./prompt";
+import { ProxyClientError } from "../proxyClient";
 
 type ClientFn = (req: DetectionCompletionRequest) => Promise<string>;
 
@@ -93,13 +94,16 @@ describe("detectState — never throws, always a typed outcome", () => {
     expect(client).not.toHaveBeenCalled();
   });
 
-  it("returns 'error' (not a throw) on a transport failure", async () => {
+  it("returns 'error' (not a throw) on a transport failure, with a safe message — never the raw status", async () => {
     const client = vi.fn(async () => {
-      throw new Error("Proxy call failed (503)");
+      throw new ProxyClientError(503);
     });
     const outcome = await detectState("hello", { client });
     expect(outcome.status).toBe("error");
-    if (outcome.status === "error") expect(outcome.message).toContain("503");
+    if (outcome.status === "error") {
+      expect(outcome.message).not.toContain("503");
+      expect(outcome.message).toContain("temporarily unavailable");
+    }
   });
 
   it("returns 'error' (not a throw) on an unparseable reply", async () => {
