@@ -156,16 +156,24 @@ export function MultiAiActions() {
       });
     }
 
-    const result = await runDebate(lastQuestion, {
-      claudeClient: (req) => completeTracked(req),
-      partnerClient,
-      partnerIds: selectedPartnerIds,
-      signal: controller.signal,
-    });
+    try {
+      const result = await runDebate(lastQuestion, {
+        claudeClient: (req) => completeTracked(req),
+        partnerClient,
+        partnerIds: selectedPartnerIds,
+        signal: controller.signal,
+      });
 
-    if (controller.signal.aborted) return;
-    setOutcome(result);
-    setPhase("idle");
+      if (controller.signal.aborted) return;
+      setOutcome(result);
+    } catch (error) {
+      if (!controller.signal.aborted) {
+        setActionError(`Debate failed: ${error instanceof Error ? error.message : String(error)}`);
+        setOutcome({ status: "failed", sides: [] });
+      }
+    } finally {
+      setPhase("idle");
+    }
   }, [lastQuestion, selectedPartnerIds, useAutoSelectFeature, useAutoSelect, sessionId, logAutoSelectUsage]);
 
   /* Re-runs ONE side by index. The other sides' existing text is kept as-is
@@ -259,12 +267,17 @@ export function MultiAiActions() {
     if (!authorization.authorized) return;
     setPhase("consensus");
     setActionError(null);
-    const result = await runConsensus(transcript, {
-      client: (req) => completeTracked(req),
-    });
-    setPhase("idle");
-    if (result.status === "ok") setConsensus(result.result);
-    else setActionError("Consensus couldn't be produced from this debate. You can try again.");
+    try {
+      const result = await runConsensus(transcript, {
+        client: (req) => completeTracked(req),
+      });
+      if (result.status === "ok") setConsensus(result.result);
+      else setActionError("Consensus couldn't be produced from this debate. You can try again.");
+    } catch (error) {
+      setActionError(`Consensus failed: ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      setPhase("idle");
+    }
   }, [transcript]);
 
   const doSynthesis = useCallback(async () => {
@@ -289,12 +302,17 @@ export function MultiAiActions() {
     if (!authorization.authorized) return;
     setPhase("synthesis");
     setActionError(null);
-    const result = await runSynthesis(transcript, {
-      client: (req) => completeTracked(req),
-    });
-    setPhase("idle");
-    if (result.status === "ok") setSynthesis(result.result);
-    else setActionError("Synthesis couldn't be produced from this debate. You can try again.");
+    try {
+      const result = await runSynthesis(transcript, {
+        client: (req) => completeTracked(req),
+      });
+      if (result.status === "ok") setSynthesis(result.result);
+      else setActionError("Synthesis couldn't be produced from this debate. You can try again.");
+    } catch (error) {
+      setActionError(`Synthesis failed: ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      setPhase("idle");
+    }
   }, [transcript]);
 
   const busy = phase !== "idle" || retrying !== null;
