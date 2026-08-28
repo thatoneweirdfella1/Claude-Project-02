@@ -12,6 +12,7 @@
    alternative every unavailable/not-configured state can fall back to. */
 
 import type { DestinationSelection, DestinationProviderId } from "../stores/types";
+import { useAccountStore } from "../stores/accountStore";
 import { getProviderStatus, type ConnectedProviderId } from "./providerStatus";
 
 export type ReadinessState = "ready" | "checking" | "not-configured" | "unavailable";
@@ -67,6 +68,19 @@ export async function computeRouteReadiness(
     };
   }
 
+  // R26: a provider the user explicitly disconnected client-side is never
+  // "ready", even if the server still reports it configured — disconnect
+  // is a real, honored lifecycle action, not a cosmetic label.
+  if (useAccountStore.getState().disconnectedProviders.includes(destination.providerId)) {
+    return {
+      state: "not-configured",
+      providerId: destination.providerId,
+      modelId: destination.modelId,
+      verified: false,
+      label: `${destination.providerId} is disconnected — reconnect it in Settings, or use manual handoff`,
+    };
+  }
+
   const available = await getProviderStatus(destination.providerId);
   if (!available) {
     return {
@@ -85,4 +99,14 @@ export async function computeRouteReadiness(
     verified: true,
     label: `${destination.providerId} verified and ready`,
   };
+}
+
+/** R26: a provider is usable only when the server reports it configured AND
+    the user hasn't explicitly disconnected it client-side. Used everywhere
+    a route needs a plain yes/no on one specific connected provider (e.g.
+    the Multi-AI debate partner gate) rather than the full readiness label
+    above. */
+export async function isProviderConnected(providerId: ConnectedProviderId): Promise<boolean> {
+  if (useAccountStore.getState().disconnectedProviders.includes(providerId)) return false;
+  return getProviderStatus(providerId);
 }

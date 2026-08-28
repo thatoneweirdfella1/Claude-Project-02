@@ -862,4 +862,14 @@ export interface AccountState {
   learningSignalBuffer: SignalLearningAuditEntry[];
   /** 3-State Methodology tracking across sessions. Bounded to prevent unbounded growth. */
   methodologyLog: MethodologyEntry[];
+  /** R26 ADD — Provider Connection Lifecycle: providers the user has
+      explicitly disconnected client-side. A disconnected provider is never
+      offered or auto-selected even when the server reports it configured —
+      this is the one lifecycle action a client without credential storage
+      can genuinely perform (reconnecting just removes the entry; it cannot
+      create or verify credentials, which stay server-managed). Values are
+      ConnectedProviderId strings (services/providerStatus.ts); kept as a
+      plain string[] here since stores/types.ts must not depend on
+      services/. */
+  disconnectedProviders: string[];
 }

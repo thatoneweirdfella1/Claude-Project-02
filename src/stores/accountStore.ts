@@ -163,6 +163,7 @@ export function createInitialAccountState(): AccountState {
     learningSignalCount: 0,
     learningSignalBuffer: [],
     methodologyLog: [], // 3-State Methodology tracking
+    disconnectedProviders: [], // R26: Provider Connection Lifecycle
   };
 }
 
@@ -196,6 +197,7 @@ export const ACCOUNT_PERSISTED_KEYS: (keyof AccountState)[] = [
   "learningSignalCount",
   "learningSignalBuffer",
   "methodologyLog",
+  "disconnectedProviders",
 ];
 
 interface AccountActions {
@@ -235,6 +237,12 @@ interface AccountActions {
   removeVariable: (name: string) => void;
   /** Merge a partial visibility change (one or more of the seven checkboxes). */
   setVisibility: (patch: Partial<VisibilitySettings>) => void;
+  /** R26: Provider Connection Lifecycle — disconnect/reconnect a provider
+      client-side. Disconnecting stops it being offered or auto-selected
+      even if the server reports it configured; it never touches real
+      credentials (those stay server-managed). Idempotent either way. */
+  disconnectProvider: (providerId: string) => void;
+  reconnectProvider: (providerId: string) => void;
   /** CANON Feature 12's theme toggle — the user's raw preference, not the
       resolved light/dark value ("auto" is resolved at render time, see
       useThemeEffect.ts, not here). */
@@ -503,6 +511,14 @@ export const useAccountStore = create<AccountStore>((set, get) => ({
       return { variables: rest };
     }),
   setVisibility: (patch) => set((s) => ({ visibility: { ...s.visibility, ...patch } })),
+  disconnectProvider: (providerId) => set((s) =>
+    s.disconnectedProviders.includes(providerId)
+      ? s
+      : { disconnectedProviders: [...s.disconnectedProviders, providerId] },
+  ),
+  reconnectProvider: (providerId) => set((s) => ({
+    disconnectedProviders: s.disconnectedProviders.filter((id) => id !== providerId),
+  })),
   setTheme: (theme) => set({ theme }),
   setLayout: (layout) => set({ layout }),
   setLearnedPreferences: (learnedPreferences) => set({ learnedPreferences }),
@@ -696,6 +712,13 @@ export const useAccountStore = create<AccountStore>((set, get) => ({
           rememberedStateChoices: Array.isArray(state.rememberedStateChoices)
             ? state.rememberedStateChoices
             : current.rememberedStateChoices,
+        }
+      : {}),
+    ...(state.disconnectedProviders !== undefined
+      ? {
+          disconnectedProviders: Array.isArray(state.disconnectedProviders)
+            ? state.disconnectedProviders
+            : current.disconnectedProviders,
         }
       : {}),
   })),

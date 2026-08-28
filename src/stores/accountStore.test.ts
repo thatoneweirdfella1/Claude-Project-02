@@ -163,6 +163,7 @@ describe("ACCOUNT_PERSISTED_KEYS", () => {
         "autoSelectUsedThisMonth",
         "autoSelectUsageResetDate",
         "autoSelectUsageLogs",
+        "disconnectedProviders",
       ].sort(),
     );
   });

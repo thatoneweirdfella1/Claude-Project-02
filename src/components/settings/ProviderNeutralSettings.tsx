@@ -1,7 +1,8 @@
-import { TRANSLATOR_ENGINES, DESTINATION_PROVIDERS, destinationLabel } from "../../services/providerNeutral";
+import { TRANSLATOR_ENGINES, destinationLabel } from "../../services/providerNeutral";
 import { DEFAULT_VISIBILITY, useAccountStore } from "../../stores/accountStore";
 import { useSessionStore } from "../../stores/sessionStore";
 import type { TranslatorEngine, VisibilitySettings } from "../../stores/types";
+import { ProviderConnectionsPanel } from "./ProviderConnectionsPanel";
 
 const RAIL_OPTIONS: Array<{ key: keyof VisibilitySettings; label: string }> = [
   { key: "recentSessions", label: "Recent Sessions" },
@@ -28,11 +29,9 @@ export function ProviderNeutralSettings() {
   const selectedEngine = translatorEngine === "legacy-claude" ? "managed-translator" : translatorEngine;
 
   return <>
+    <ProviderConnectionsPanel />
     <div className="settings-section">
-      <h3>AI Connections</h3>
-      <p className="settings-section__note">Manual copy/open handoff works without connecting an account. Connections are optional and never silently charged.</p>
       <div className="settings-item"><div className="settings-item__label">Current destination</div><div className="settings-item__value">{destinationLabel(destination)}</div></div>
-      <div className="settings-item"><div className="settings-item__label">Provider registry</div><div className="settings-item__value">{DESTINATION_PROVIDERS.length} destinations</div></div>
     </div>
     <div className="settings-section">
       <h3>AI Behavior</h3>

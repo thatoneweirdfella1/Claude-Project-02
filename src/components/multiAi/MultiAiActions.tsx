@@ -33,7 +33,8 @@ import { MultiAiRunHistory } from "./MultiAiRunHistory";
 import { authorizeEstimatedCost } from "../../services/creditAuthorization";
 import { addTokenUsage, getEstimatedCostForCall } from "../../services/costTracking";
 import type { PaidRoutePolicy } from "../../services/paidRoutePolicy";
-import { getProviderAvailability, type ConnectedProviderId } from "../../services/providerStatus";
+import type { ConnectedProviderId } from "../../services/providerStatus";
+import { isProviderConnected } from "../../services/routeReadiness";
 import type { MultiAiParticipantResult, MultiAiRunRecord } from "../../stores/types";
 
 /* MULTI-AI ACTIONS (Step 8.3) — the composer-footer control from the
@@ -92,8 +93,12 @@ function providerForPartner(id: DebatePartnerId): ConnectedProviderId {
 }
 
 async function configuredForDebate(partnerIds: DebatePartnerId[]): Promise<boolean> {
-  const status = await getProviderAvailability();
-  return status.anthropic && partnerIds.every((id) => status[providerForPartner(id)]);
+  // R26: respects a client-side disconnect, not just server-reported status.
+  const checks = await Promise.all([
+    isProviderConnected("anthropic"),
+    ...partnerIds.map((id) => isProviderConnected(providerForPartner(id))),
+  ]);
+  return checks.every(Boolean);
 }
 
 /* R27: estimate every participant using its ACTUAL provider/model — never
@@ -314,12 +319,11 @@ export function MultiAiActions() {
 
       const targetProviderId = target.partnerId;
       if (targetProviderId) {
-        const status = await getProviderAvailability();
-        if (!status[providerForPartner(targetProviderId)]) {
+        if (!(await isProviderConnected(providerForPartner(targetProviderId)))) {
           setActionError(`${target.label} is not configured. No retry charge was reserved.`);
           return;
         }
-      } else if (!(await getProviderAvailability()).anthropic) {
+      } else if (!(await isProviderConnected("anthropic"))) {
         setActionError("Claude is not configured. No retry charge was reserved.");
         return;
       }
@@ -392,7 +396,7 @@ export function MultiAiActions() {
 
   const doConsensus = useCallback(async () => {
     if (!transcript) return;
-    if (!(await getProviderAvailability()).anthropic) {
+    if (!(await isProviderConnected("anthropic"))) {
       setActionError("Claude is not configured. No consensus charge was reserved.");
       return;
     }
@@ -443,7 +447,7 @@ export function MultiAiActions() {
 
   const doSynthesis = useCallback(async () => {
     if (!transcript) return;
-    if (!(await getProviderAvailability()).anthropic) {
+    if (!(await isProviderConnected("anthropic"))) {
       setActionError("Claude is not configured. No synthesis charge was reserved.");
       return;
     }
