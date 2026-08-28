@@ -82,11 +82,7 @@ test.describe("R30: browser smoke matrix — every primary screen loads with no 
     await page.goto("/");
     await afterReload(page);
     await page.getByTestId("col-left").getByRole("button", { name: "All Tools", exact: true }).click();
-    // Same pre-existing Playwright actionability quirk documented in
-    // docs/checkpoints/CLAUDE-REPAIR-PROGRESS.md (pointer-event interception
-    // by the frozen-canvas scaled layout) — force is the established
-    // workaround, not a masked real bug.
-    await page.getByRole("dialog", { name: "All tools" }).getByRole("button", { name: "Techniques", exact: true }).evaluate((el) => (el as HTMLElement).click());
+    await page.getByRole("dialog", { name: "All tools" }).getByRole("button", { name: "Techniques", exact: true }).click({ timeout: 10_000 });
 
     await expect(page.getByRole("heading", { name: "Techniques", exact: true })).toBeVisible({ timeout: 10_000 });
     expect(consoleErrors).toEqual([]);
@@ -99,7 +95,7 @@ test.describe("R30: browser smoke matrix — every primary screen loads with no 
     await page.goto("/");
     await afterReload(page);
     await page.getByTestId("col-left").getByRole("button", { name: "All Tools", exact: true }).click();
-    await page.getByRole("dialog", { name: "All tools" }).getByRole("button", { name: "AI Connections", exact: true }).evaluate((el) => (el as HTMLElement).click());
+    await page.getByRole("dialog", { name: "All tools" }).getByRole("button", { name: "AI Connections", exact: true }).click({ timeout: 10_000 });
 
     await expect(page.getByTestId("provider-connections-panel")).toBeVisible({ timeout: 10_000 });
     // All five providers report unavailable per the mock above — fail closed,

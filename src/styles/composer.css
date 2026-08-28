@@ -141,7 +141,18 @@
 .attach-context-controls__popover {
   position: absolute;
   top: 100%;
-  left: 0;
+  /* R10 second-pass fix: the "Add Context" trigger sits near the right edge
+     of the composer row (frozen-composer__heading). A left:0-anchored
+     300px-wide popover measured ~12px past col-center's overflow:hidden
+     clip boundary at every viewport tested (1280x720 and 1920x1200,
+     confirmed with real OS-level mouse clicks — not a Playwright-only
+     artifact) — every button pushed to the popover's right edge by
+     justify-content:space-between (Preview, Add Text, Add to context, Add
+     Selected) was therefore genuinely unclickable. Right-anchoring matches
+     this same fix already used elsewhere in this app for the identical
+     problem (.topbar-popover--right) and keeps the popover's whole width
+     inside the composer's left edge at every tested viewport. */
+  right: 0;
   z-index: 10;
   margin-top: 6px;
   width: min(300px, 90vw);

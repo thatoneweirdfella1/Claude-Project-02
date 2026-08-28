@@ -217,26 +217,26 @@ export function AttachContextControls({ onAttach = () => {}, onContext = () => {
       </>}
 
       {view === "text" && <form className="attach-context-controls__url-form" onSubmit={(event) => { event.preventDefault(); addPastedText(); }}>
-        <label>Context name<input autoFocus value={textName} onChange={(event) => setTextName(event.target.value)} placeholder="Meeting notes" /></label>
-        <label>Paste text<textarea value={textValue} onChange={(event) => setTextValue(event.target.value)} placeholder="Paste the text to include…" /></label>
-        <div className="attach-context-controls__url-actions"><button type="button" onClick={() => setView("menu")}>Back</button><button type="submit" disabled={!textName.trim() || !textValue.trim()}>Add Text</button></div>
+        <label className="attach-context-controls__url-label">Context name<input className="attach-context-controls__url-input" autoFocus value={textName} onChange={(event) => setTextName(event.target.value)} placeholder="Meeting notes" /></label>
+        <label className="attach-context-controls__url-label">Paste text<textarea className="attach-context-controls__url-input" value={textValue} onChange={(event) => setTextValue(event.target.value)} placeholder="Paste the text to include…" /></label>
+        <div className="attach-context-controls__url-actions"><button type="button" className="attach-context-controls__url-back" onClick={() => setView("menu")}>Back</button><button type="submit" className="attach-context-controls__url-fetch" disabled={!textName.trim() || !textValue.trim()}>Add Text</button></div>
       </form>}
 
       {view === "url" && <form className="attach-context-controls__url-form" onSubmit={(event) => { event.preventDefault(); void previewUrl(); }}>
-        <label htmlFor="attach-url-input">URL to load as context</label>
-        <input id="attach-url-input" autoFocus value={urlValue} onChange={(event) => { setUrlValue(event.target.value); setUrlPreview(null); setUrlError(null); }} placeholder="https://…" disabled={urlFetching} />
+        <label className="attach-context-controls__url-label" htmlFor="attach-url-input">URL to load as context</label>
+        <input id="attach-url-input" className="attach-context-controls__url-input" autoFocus value={urlValue} onChange={(event) => { setUrlValue(event.target.value); setUrlPreview(null); setUrlError(null); }} placeholder="https://…" disabled={urlFetching} />
         {urlFetching && <p role="status">Loading readable text…</p>}
-        {urlError && <div role="alert"><p>{urlError}</p><button type="button" onClick={addUrlReferenceOnly}>Add URL reference only</button></div>}
-        {urlPreview && <div className="context-manager-preview"><strong>{urlPreview.label}</strong><small>{urlPreview.bytes.toLocaleString()} bytes</small><pre>{urlPreview.content.slice(0, 1200)}</pre><button type="button" onClick={addUrlPreview}>Add to context</button></div>}
-        <div className="attach-context-controls__url-actions"><button type="button" onClick={() => setView("menu")} disabled={urlFetching}>Back</button><button type="submit" disabled={urlFetching || !urlValue.trim()}>{urlPreview ? "Refresh preview" : "Preview"}</button></div>
+        {urlError && <div role="alert" className="attach-context-controls__url-error"><p>{urlError}</p><button type="button" className="attach-context-controls__url-back" onClick={addUrlReferenceOnly}>Add URL reference only</button></div>}
+        {urlPreview && <div className="context-manager-preview"><strong>{urlPreview.label}</strong><small>{urlPreview.bytes.toLocaleString()} bytes</small><pre>{urlPreview.content.slice(0, 1200)}</pre><button type="button" className="attach-context-controls__url-fetch" onClick={addUrlPreview}>Add to context</button></div>}
+        <div className="attach-context-controls__url-actions"><button type="button" className="attach-context-controls__url-back" onClick={() => setView("menu")} disabled={urlFetching}>Back</button><button type="submit" className="attach-context-controls__url-fetch" disabled={urlFetching || !urlValue.trim()}>{urlPreview ? "Refresh preview" : "Preview"}</button></div>
       </form>}
 
       {view === "variable" && <div className="attach-context-controls__variable-form">
-        <label>Find saved variables<input autoFocus value={variableSearch} onChange={(event) => setVariableSearch(event.target.value)} placeholder="Search variables" /></label>
+        <label className="attach-context-controls__url-label">Find saved variables<input className="attach-context-controls__url-input" autoFocus value={variableSearch} onChange={(event) => setVariableSearch(event.target.value)} placeholder="Search variables" /></label>
         <div className="context-variable-list">
           {availableVariables.length === 0 ? <p>No saved variables match.</p> : availableVariables.map(([name, value]) => <label key={name}><input type="checkbox" checked={selectedVariables.includes(name)} onChange={() => toggleVariable(name)} /><span><strong>${name}</strong><small>{value.slice(0, 80)}</small></span></label>)}
         </div>
-        <button type="button" disabled={selectedVariables.length === 0} onClick={addSelectedVariables}>Add Selected</button>
+        <button type="button" className="attach-context-controls__url-fetch" disabled={selectedVariables.length === 0} onClick={addSelectedVariables}>Add Selected</button>
         <hr />
         <strong>Create variable</strong>
         <label>Name<input value={variableName} onChange={(event) => { setVariableName(event.target.value); setVariableError(null); }} placeholder="project_name" /></label>

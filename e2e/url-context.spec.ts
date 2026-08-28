@@ -1,4 +1,4 @@
-/* R10 URL Context verification
+/* R10 URL Context verification — second-pass audit rewrite.
    - User can enter and preview URLs
    - URL preview shows content preview
    - User can confirm or cancel before adding
@@ -9,7 +9,20 @@
    - Timeouts show actionable message ("That page took too long to load...")
    - Other errors show safe, friendly message ("Something went wrong loading that page...")
    - Changes persist through reload
- */
+
+   Second-pass fix: every interaction below is a genuine Playwright
+   `.click()`/`.fill()` — no `.evaluate()`, `dispatchEvent()`, or
+   `force:true`. The first-pass suite used `.evaluate(el => el.click())`
+   on every single button, which does not exercise the browser's real
+   hit-testing/pointer pipeline. That masked a genuine defect: the
+   "Preview"/"Add to context" buttons were positioned ~12px past
+   `col-center`'s `overflow:hidden` clip boundary and were unclickable by
+   real mouse input at every viewport tested (confirmed with a real
+   OS-level `page.mouse` click, not just Playwright's actionability
+   check). Fixed in src/styles/composer.css (popover now right-anchored
+   instead of left-anchored) and src/components/composer/
+   AttachContextControls.tsx (the action buttons were also missing their
+   intended CSS classes entirely — unstyled native buttons). */
 
 import { test, expect, type Page } from "@playwright/test";
 import { allowLocalAccess } from "./credit-helpers";
@@ -32,166 +45,72 @@ async function afterReload(page: Page): Promise<void> {
   await page.waitForSelector("#root > *", { timeout: 15_000 });
 }
 
+async function openUrlForm(page: Page): Promise<void> {
+  await page.getByRole("button", { name: /Add Context/ }).click({ timeout: 10_000 });
+  await page.getByRole("menuitem", { name: "URL" }).click({ timeout: 10_000 });
+  await expect(page.locator("#attach-url-input")).toBeVisible({ timeout: 5_000 });
+}
+
 test.describe("R10 URL Context", () => {
   test.beforeEach(async ({ page }) => {
     await allowLocalAccess(page);
     await mockAccountUnconfigured(page);
     await page.goto("/");
-    await page.waitForSelector("#root > *", { timeout: 15_000 });
-    // Wait for Add Context button to be visible
-    await page.waitForSelector("button:has-text('Add Context')");
+    await afterReload(page);
+    await expect(page.getByRole("button", { name: /Add Context/ })).toBeVisible({ timeout: 10_000 });
   });
 
   test("preview URL before adding to context", async ({ page }) => {
-    // Mock the /api/fetch-url endpoint to return a successful response
     await page.route("**/api/fetch-url", async (route) => {
-      if (route.request().method() === "POST") {
-        const body = route.request().postDataJSON();
-        if (body.url === "https://example.com/article") {
-          await route.fulfill({
-            status: 200,
-            contentType: "application/json",
-            body: JSON.stringify({
-              url: "https://example.com/article",
-              contentType: "text/html",
-              content: "<html><body><main><h1>Article Title</h1><p>This is the article content that should be extracted.</p></main></body></html>",
-            }),
-          });
-          return;
-        }
+      const body = route.request().postDataJSON();
+      if (body.url === "https://example.com/article") {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            url: "https://example.com/article",
+            contentType: "text/html",
+            content: "<html><body><main><h1>Article Title</h1><p>This is the article content that should be extracted.</p></main></body></html>",
+          }),
+        });
+        return;
       }
       await route.continue();
     });
 
-    // Open Add Context menu
-    const addContextButton = page.locator("button:has-text('Add Context')");
-    await addContextButton.evaluate((el: HTMLElement) => {
-      (el as HTMLButtonElement).click();
-    });
+    await openUrlForm(page);
+    await page.locator("#attach-url-input").fill("https://example.com/article");
 
-    // Wait for popover menu to appear and click URL option
-    const urlMenuButton = page.locator(".attach-context-controls__popover-row", { hasText: "URL" });
-    await expect(urlMenuButton).toBeVisible({ timeout: 5_000 });
-    await urlMenuButton.click();
+    const previewButton = page.getByRole("button", { name: /^Preview$/ });
+    await previewButton.click({ timeout: 10_000 });
 
-    // Enter URL (wait for input to be visible first)
-    const urlInput = page.locator("#attach-url-input");
-    await expect(urlInput).toBeVisible({ timeout: 5_000 });
-    await urlInput.fill("https://example.com/article");
-
-    // Click Preview (using evaluate to work around pointer-event interception)
-    const previewButton = page.locator(".attach-context-controls__url-actions button[type='submit']");
-    await previewButton.evaluate((el: HTMLElement) => {
-      (el as HTMLButtonElement).click();
-    });
-
-    // Wait for preview to load
-    await page.waitForSelector(".context-manager-preview");
-
-    // Verify preview shows content
+    await expect(page.locator(".context-manager-preview")).toBeVisible({ timeout: 5_000 });
     await expect(page.locator(".context-manager-preview strong")).toContainText("https://example.com/article");
     await expect(page.locator(".context-manager-preview")).toContainText("This is the article content");
 
-    // Click "Add to context" button
-    const addButton = page.locator(".context-manager-preview button:has-text('Add to context')");
-    await addButton.evaluate((el: HTMLElement) => {
-      (el as HTMLButtonElement).click();
-    });
+    const addButton = page.getByRole("button", { name: "Add to context" });
+    await addButton.click({ timeout: 10_000 });
 
-    // Verify it closes the popover (not just resets to menu)
-    const popover = page.locator(".attach-context-controls__popover");
-    await expect(popover).not.toBeVisible({ timeout: 5_000 });
+    await expect(page.getByTestId("attach-popover")).toBeHidden({ timeout: 5_000 });
 
-    // Expand Context Snapshot to verify it was added
     const contextPanel = page.locator(".accordion-panel").filter({ hasText: "Context Snapshot" });
-    const panelHeader = contextPanel.locator("button.accordion-panel__header");
-    await panelHeader.click();
+    await contextPanel.locator("button.accordion-panel__header").click();
 
-    // Check that URL appears in context snapshot
     await expect(page.locator(".context-snapshot-panel__row")).toContainText("https://example.com/article");
     await expect(page.locator(".context-snapshot-panel__row")).toContainText("Loaded from URL");
   });
 
   test("cancel URL preview without adding", async ({ page }) => {
-    // Mock the /api/fetch-url endpoint
     await page.route("**/api/fetch-url", async (route) => {
-      if (route.request().method() === "POST") {
-        const body = route.request().postDataJSON();
-        if (body.url === "https://example.com/test") {
-          await route.fulfill({
-            status: 200,
-            contentType: "application/json",
-            body: JSON.stringify({
-              url: "https://example.com/test",
-              contentType: "text/html",
-              content: "<html><body><p>Test content</p></body></html>",
-            }),
-          });
-          return;
-        }
-      }
-      await route.continue();
-    });
-
-    // Open Add Context menu
-    const addContextButton = page.locator("button:has-text('Add Context')");
-    await addContextButton.evaluate((el: HTMLElement) => {
-      (el as HTMLButtonElement).click();
-    });
-
-    // Wait for popover menu to appear and click URL option
-    const urlMenuButton = page.locator(".attach-context-controls__popover-row", { hasText: "URL" });
-    await expect(urlMenuButton).toBeVisible({ timeout: 5_000 });
-    await urlMenuButton.click();
-
-    // Enter URL (wait for input to be visible first)
-    const urlInput = page.locator("#attach-url-input");
-    await expect(urlInput).toBeVisible({ timeout: 5_000 });
-    await urlInput.fill("https://example.com/test");
-
-    // Click Preview (using evaluate to work around pointer-event interception)
-    const previewButton = page.locator(".attach-context-controls__url-actions button[type='submit']");
-    await previewButton.evaluate((el: HTMLElement) => {
-      (el as HTMLButtonElement).click();
-    });
-
-    // Wait for preview to load
-    await page.waitForSelector(".context-manager-preview");
-
-    // Click Back button without adding (using evaluate to work around pointer-event interception)
-    const backButton = page.locator(".attach-context-controls__url-actions button:has-text('Back')");
-    await backButton.evaluate((el: HTMLElement) => {
-      (el as HTMLButtonElement).click();
-    });
-
-    // Should be back at the menu (not the URL form)
-    const menuButtons = page.locator(".attach-context-controls__popover-row");
-    await expect(menuButtons.first()).toBeVisible({ timeout: 5_000 });
-
-    // Close popover
-    await page.keyboard.press("Escape");
-
-    // Expand Context Snapshot to verify nothing was added
-    const contextPanel = page.locator(".accordion-panel").filter({ hasText: "Context Snapshot" });
-    const panelHeader = contextPanel.locator("button.accordion-panel__header");
-    await panelHeader.click();
-
-    // Context should be empty or not contain the URL
-    const rows = page.locator(".context-snapshot-panel__row");
-    const rowCount = await rows.count();
-    expect(rowCount).toBe(0);
-  });
-
-  test("shows actionable error message for authentication failure", async ({ page }) => {
-    // Mock /api/fetch-url to return 401
-    await page.route("**/api/fetch-url", async (route) => {
-      if (route.request().method() === "POST") {
+      const body = route.request().postDataJSON();
+      if (body.url === "https://example.com/test") {
         await route.fulfill({
-          status: 502,
+          status: 200,
           contentType: "application/json",
           body: JSON.stringify({
-            error: "The page responded with 401.",
-            errorCode: "auth_required",
+            url: "https://example.com/test",
+            contentType: "text/html",
+            content: "<html><body><p>Test content</p></body></html>",
           }),
         });
         return;
@@ -199,89 +118,91 @@ test.describe("R10 URL Context", () => {
       await route.continue();
     });
 
-    // Open Add Context menu
-    const addContextButton = page.locator("button:has-text('Add Context')");
-    await addContextButton.evaluate((el: HTMLElement) => {
-      (el as HTMLButtonElement).click();
+    await openUrlForm(page);
+    await page.locator("#attach-url-input").fill("https://example.com/test");
+    await page.getByRole("button", { name: /^Preview$/ }).click({ timeout: 10_000 });
+
+    await expect(page.locator(".context-manager-preview")).toBeVisible({ timeout: 5_000 });
+
+    await page.getByRole("button", { name: "Back" }).click({ timeout: 10_000 });
+
+    await expect(page.getByRole("menuitem", { name: "URL" })).toBeVisible({ timeout: 5_000 });
+
+    await page.keyboard.press("Escape");
+
+    const contextPanel = page.locator(".accordion-panel").filter({ hasText: "Context Snapshot" });
+    await contextPanel.locator("button.accordion-panel__header").click();
+
+    expect(await page.locator(".context-snapshot-panel__row").count()).toBe(0);
+  });
+
+  test("shows actionable error message for authentication failure", async ({ page }) => {
+    await page.route("**/api/fetch-url", async (route) => {
+      await route.fulfill({
+        status: 502,
+        contentType: "application/json",
+        body: JSON.stringify({ error: "The page responded with 401.", errorCode: "auth_required" }),
+      });
     });
 
-    // Click URL option
-    await page.click("text=URL");
+    await openUrlForm(page);
+    await page.locator("#attach-url-input").fill("https://private.example.com/article");
+    await page.getByRole("button", { name: /^Preview$/ }).click({ timeout: 10_000 });
 
-    // Enter URL
-    const urlInput = page.locator("#attach-url-input");
-    await urlInput.fill("https://private.example.com/article");
-
-    // Click Preview (using evaluate to work around pointer-event interception)
-    const previewButton = page.locator(".attach-context-controls__url-actions button[type='submit']");
-    await previewButton.evaluate((el: HTMLElement) => {
-      (el as HTMLButtonElement).click();
-    });
-
-    // Wait for error message
-    await page.waitForSelector("[role='alert']");
-
-    // Verify error message is actionable (not "401 error")
     const errorMessage = page.locator("[role='alert']");
+    await expect(errorMessage).toBeVisible({ timeout: 5_000 });
     await expect(errorMessage).toContainText("requires login");
     await expect(errorMessage).toContainText("publicly accessible link");
   });
 
   test("shows actionable error message for blocked/unsafe URL", async ({ page }) => {
-    // Mock /api/fetch-url to return blocked_url error
     await page.route("**/api/fetch-url", async (route) => {
-      if (route.request().method() === "POST") {
-        await route.fulfill({
-          status: 400,
-          contentType: "application/json",
-          body: JSON.stringify({
-            error: "That URL can't be fetched.",
-            errorCode: "blocked_url",
-          }),
-        });
-        return;
-      }
-      await route.continue();
+      await route.fulfill({
+        status: 400,
+        contentType: "application/json",
+        body: JSON.stringify({ error: "That URL can't be fetched.", errorCode: "blocked_url" }),
+      });
     });
 
-    // Open Add Context menu
-    const addContextButton = page.locator("button:has-text('Add Context')");
-    await addContextButton.evaluate((el: HTMLElement) => {
-      (el as HTMLButtonElement).click();
-    });
+    await openUrlForm(page);
+    await page.locator("#attach-url-input").fill("http://192.168.1.1/internal-page");
+    await page.getByRole("button", { name: /^Preview$/ }).click({ timeout: 10_000 });
 
-    // Click URL option
-    await page.click("text=URL");
-
-    // Enter URL (this would be a private IP in real life, but we're just testing error message)
-    const urlInput = page.locator("#attach-url-input");
-    await urlInput.fill("http://192.168.1.1/internal-page");
-
-    // Click Preview (using evaluate to work around pointer-event interception)
-    const previewButton = page.locator(".attach-context-controls__url-actions button[type='submit']");
-    await previewButton.evaluate((el: HTMLElement) => {
-      (el as HTMLButtonElement).click();
-    });
-
-    // Wait for error message
-    await page.waitForSelector("[role='alert']");
-
-    // Verify error message mentions private/internal URL
     const errorMessage = page.locator("[role='alert']");
+    await expect(errorMessage).toBeVisible({ timeout: 5_000 });
     await expect(errorMessage).toContainText("private or internal URL");
     await expect(errorMessage).toContainText("publicly accessible");
   });
 
   test("shows actionable error message for timeout", async ({ page }) => {
-    // Mock /api/fetch-url to return timeout error
     await page.route("**/api/fetch-url", async (route) => {
-      if (route.request().method() === "POST") {
+      await route.fulfill({
+        status: 502,
+        contentType: "application/json",
+        body: JSON.stringify({ error: "Fetching that page failed: The operation was aborted", errorCode: "timeout" }),
+      });
+    });
+
+    await openUrlForm(page);
+    await page.locator("#attach-url-input").fill("https://slow-example.com/article");
+    await page.getByRole("button", { name: /^Preview$/ }).click({ timeout: 10_000 });
+
+    const errorMessage = page.locator("[role='alert']");
+    await expect(errorMessage).toBeVisible({ timeout: 5_000 });
+    await expect(errorMessage).toContainText("took too long to load");
+  });
+
+  test("shows actionable error message for unsupported page (no text content)", async ({ page }) => {
+    await page.route("**/api/fetch-url", async (route) => {
+      const body = route.request().postDataJSON();
+      if (body.url === "https://example.com/pdf") {
         await route.fulfill({
-          status: 502,
+          status: 200,
           contentType: "application/json",
           body: JSON.stringify({
-            error: "Fetching that page failed: The operation was aborted",
-            errorCode: "timeout",
+            url: "https://example.com/pdf",
+            contentType: "text/html",
+            content: "<html><body><script>only script</script></body></html>",
           }),
         });
         return;
@@ -289,92 +210,45 @@ test.describe("R10 URL Context", () => {
       await route.continue();
     });
 
-    // Open Add Context menu
-    const addContextButton = page.locator("button:has-text('Add Context')");
-    await addContextButton.evaluate((el: HTMLElement) => {
-      (el as HTMLButtonElement).click();
-    });
+    await openUrlForm(page);
+    await page.locator("#attach-url-input").fill("https://example.com/pdf");
+    await page.getByRole("button", { name: /^Preview$/ }).click({ timeout: 10_000 });
 
-    // Click URL option
-    await page.click("text=URL");
-
-    // Enter URL
-    const urlInput = page.locator("#attach-url-input");
-    await urlInput.fill("https://slow-example.com/article");
-
-    // Click Preview (using evaluate to work around pointer-event interception)
-    const previewButton = page.locator(".attach-context-controls__url-actions button[type='submit']");
-    await previewButton.evaluate((el: HTMLElement) => {
-      (el as HTMLButtonElement).click();
-    });
-
-    // Wait for error message
-    await page.waitForSelector("[role='alert']");
-
-    // Verify error message mentions timeout
     const errorMessage = page.locator("[role='alert']");
-    await expect(errorMessage).toContainText("took too long to load");
-  });
-
-  test("shows actionable error message for unsupported page (no text content)", async ({ page }) => {
-    // Mock /api/fetch-url to return a page with no readable text
-    await page.route("**/api/fetch-url", async (route) => {
-      if (route.request().method() === "POST") {
-        const body = route.request().postDataJSON();
-        if (body.url === "https://example.com/pdf") {
-          await route.fulfill({
-            status: 200,
-            contentType: "application/json",
-            body: JSON.stringify({
-              url: "https://example.com/pdf",
-              contentType: "text/html",
-              content: "<html><body><script>only script</script></body></html>",
-            }),
-          });
-          return;
-        }
-      }
-      await route.continue();
-    });
-
-    // Open Add Context menu
-    const addContextButton = page.locator("button:has-text('Add Context')");
-    await addContextButton.evaluate((el: HTMLElement) => {
-      (el as HTMLButtonElement).click();
-    });
-
-    // Click URL option
-    await page.click("text=URL");
-
-    // Enter URL
-    const urlInput = page.locator("#attach-url-input");
-    await urlInput.fill("https://example.com/pdf");
-
-    // Click Preview (using evaluate to work around pointer-event interception)
-    const previewButton = page.locator(".attach-context-controls__url-actions button[type='submit']");
-    await previewButton.evaluate((el: HTMLElement) => {
-      (el as HTMLButtonElement).click();
-    });
-
-    // Wait for error message
-    await page.waitForSelector("[role='alert']");
-
-    // Verify error message mentions no text content
-    const errorMessage = page.locator("[role='alert']");
+    await expect(errorMessage).toBeVisible({ timeout: 5_000 });
     await expect(errorMessage).toContainText("doesn't have text content");
     await expect(errorMessage).toContainText("PDFs and images");
   });
 
   test("shows actionable error message for generic errors", async ({ page }) => {
-    // Mock /api/fetch-url to return a generic error
     await page.route("**/api/fetch-url", async (route) => {
-      if (route.request().method() === "POST") {
+      await route.fulfill({
+        status: 502,
+        contentType: "application/json",
+        body: JSON.stringify({ error: "Fetching that page failed: network error", errorCode: "fetch_failed" }),
+      });
+    });
+
+    await openUrlForm(page);
+    await page.locator("#attach-url-input").fill("https://example.com/article");
+    await page.getByRole("button", { name: /^Preview$/ }).click({ timeout: 10_000 });
+
+    const errorMessage = page.locator("[role='alert']");
+    await expect(errorMessage).toBeVisible({ timeout: 5_000 });
+    await expect(errorMessage).toContainText("Couldn't reach that page");
+  });
+
+  test("persistence through reload", async ({ page }) => {
+    await page.route("**/api/fetch-url", async (route) => {
+      const body = route.request().postDataJSON();
+      if (body.url === "https://example.com/persistent") {
         await route.fulfill({
-          status: 502,
+          status: 200,
           contentType: "application/json",
           body: JSON.stringify({
-            error: "Fetching that page failed: network error",
-            errorCode: "fetch_failed",
+            url: "https://example.com/persistent",
+            contentType: "text/html",
+            content: "<html><body><p>Persistent URL content</p></body></html>",
           }),
         });
         return;
@@ -382,104 +256,27 @@ test.describe("R10 URL Context", () => {
       await route.continue();
     });
 
-    // Open Add Context menu
-    const addContextButton = page.locator("button:has-text('Add Context')");
-    await addContextButton.evaluate((el: HTMLElement) => {
-      (el as HTMLButtonElement).click();
-    });
+    await openUrlForm(page);
+    await page.locator("#attach-url-input").fill("https://example.com/persistent");
+    await page.getByRole("button", { name: /^Preview$/ }).click({ timeout: 10_000 });
 
-    // Click URL option
-    await page.click("text=URL");
+    await expect(page.locator(".context-manager-preview")).toBeVisible({ timeout: 5_000 });
+    await page.getByRole("button", { name: "Add to context" }).click({ timeout: 10_000 });
 
-    // Enter URL
-    const urlInput = page.locator("#attach-url-input");
-    await urlInput.fill("https://example.com/article");
-
-    // Click Preview (using evaluate to work around pointer-event interception)
-    const previewButton = page.locator(".attach-context-controls__url-actions button[type='submit']");
-    await previewButton.evaluate((el: HTMLElement) => {
-      (el as HTMLButtonElement).click();
-    });
-
-    // Wait for error message
-    await page.waitForSelector("[role='alert']");
-
-    // Verify error message is friendly and doesn't blame user
-    const errorMessage = page.locator("[role='alert']");
-    await expect(errorMessage).toContainText("Couldn't reach that page");
-  });
-
-  test("persistence through reload", async ({ page }) => {
-    // Mock the /api/fetch-url endpoint
-    await page.route("**/api/fetch-url", async (route) => {
-      if (route.request().method() === "POST") {
-        const body = route.request().postDataJSON();
-        if (body.url === "https://example.com/persistent") {
-          await route.fulfill({
-            status: 200,
-            contentType: "application/json",
-            body: JSON.stringify({
-              url: "https://example.com/persistent",
-              contentType: "text/html",
-              content: "<html><body><p>Persistent URL content</p></body></html>",
-            }),
-          });
-          return;
-        }
-      }
-      await route.continue();
-    });
-
-    // Open Add Context menu
-    const addContextButton = page.locator("button:has-text('Add Context')");
-    await addContextButton.evaluate((el: HTMLElement) => {
-      (el as HTMLButtonElement).click();
-    });
-
-    // Click URL option
-    await page.click("text=URL");
-
-    // Enter URL
-    const urlInput = page.locator("#attach-url-input");
-    await urlInput.fill("https://example.com/persistent");
-
-    // Click Preview (using evaluate to work around pointer-event interception)
-    const previewButton = page.locator(".attach-context-controls__url-actions button[type='submit']");
-    await previewButton.evaluate((el: HTMLElement) => {
-      (el as HTMLButtonElement).click();
-    });
-
-    // Wait for preview
-    await page.waitForSelector(".context-manager-preview");
-
-    // Add to context
-    const addButton = page.locator(".context-manager-preview button:has-text('Add to context')");
-    await addButton.evaluate((el: HTMLElement) => {
-      (el as HTMLButtonElement).click();
-    });
-
-    // Close popover
     await page.keyboard.press("Escape");
 
-    // Expand Context Snapshot to verify it was added
     const contextPanel = page.locator(".accordion-panel").filter({ hasText: "Context Snapshot" });
     const panelHeader = contextPanel.locator("button.accordion-panel__header");
     await panelHeader.click();
 
-    // Verify URL is there
     await expect(page.locator(".context-snapshot-panel__row")).toContainText("https://example.com/persistent");
 
-    // Wait a bit for autosave
     await page.waitForTimeout(1_000);
-
-    // Reload the page
     await page.reload();
     await afterReload(page);
 
-    // Expand the Context Snapshot panel again after reload
     await panelHeader.click();
 
-    // Check that the URL is still there
     await expect(page.locator(".context-snapshot-panel__row")).toContainText("https://example.com/persistent");
     await expect(page.locator(".context-snapshot-panel__row")).toContainText("Loaded from URL");
   });

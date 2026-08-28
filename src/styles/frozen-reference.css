@@ -145,9 +145,23 @@ body {
 }
 
 .topbar,
-.col-left,
 .col-center,
 .col-right { position: relative; z-index: 3; }
+
+/* R16/R26 second-pass fix: .col-left previously shared z-index:3 with
+   .col-center/.col-right (equal siblings), so equal-z-index paint order
+   fell back to DOM source order — .col-center, appearing later in the
+   grid's DOM, painted OVER .col-left's own overflowing content. The "All
+   Tools" popup (.leftnav-tools__popup, left:calc(100% + 8px)) deliberately
+   extends past col-left's own width into col-center's visual space by
+   design (it's a flyout menu, not a positioning bug) — every row in it
+   (Techniques, AI Connections, etc.) was therefore genuinely unclickable
+   by real mouse input, confirmed with a real OS-level click, not just a
+   Playwright actionability check. Raising col-left above its siblings
+   here is safe: these are non-overlapping side-by-side grid columns in
+   every other state: the only place they ever occupy the same screen
+   region is exactly this kind of intentional flyout overflow. */
+.col-left { position: relative; z-index: 6; }
 
 .topbar {
   grid-area: topbar;
