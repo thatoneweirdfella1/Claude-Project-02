@@ -69,11 +69,14 @@ test.describe("R10 URL Context", () => {
       (el as HTMLButtonElement).click();
     });
 
-    // Click URL option
-    await page.click("text=URL");
+    // Wait for popover menu to appear and click URL option
+    const urlMenuButton = page.locator(".attach-context-controls__popover-row", { hasText: "URL" });
+    await expect(urlMenuButton).toBeVisible({ timeout: 5_000 });
+    await urlMenuButton.click();
 
-    // Enter URL
+    // Enter URL (wait for input to be visible first)
     const urlInput = page.locator("#attach-url-input");
+    await expect(urlInput).toBeVisible({ timeout: 5_000 });
     await urlInput.fill("https://example.com/article");
 
     // Click Preview (using evaluate to work around pointer-event interception)
@@ -95,11 +98,9 @@ test.describe("R10 URL Context", () => {
       (el as HTMLButtonElement).click();
     });
 
-    // Verify it closes and goes back to menu
-    await page.waitForSelector(".attach-context-controls__popover-row");
-
-    // Close popover
-    await page.keyboard.press("Escape");
+    // Verify it closes the popover (not just resets to menu)
+    const popover = page.locator(".attach-context-controls__popover");
+    await expect(popover).not.toBeVisible({ timeout: 5_000 });
 
     // Expand Context Snapshot to verify it was added
     const contextPanel = page.locator(".accordion-panel").filter({ hasText: "Context Snapshot" });
@@ -138,11 +139,14 @@ test.describe("R10 URL Context", () => {
       (el as HTMLButtonElement).click();
     });
 
-    // Click URL option
-    await page.click("text=URL");
+    // Wait for popover menu to appear and click URL option
+    const urlMenuButton = page.locator(".attach-context-controls__popover-row", { hasText: "URL" });
+    await expect(urlMenuButton).toBeVisible({ timeout: 5_000 });
+    await urlMenuButton.click();
 
-    // Enter URL
+    // Enter URL (wait for input to be visible first)
     const urlInput = page.locator("#attach-url-input");
+    await expect(urlInput).toBeVisible({ timeout: 5_000 });
     await urlInput.fill("https://example.com/test");
 
     // Click Preview (using evaluate to work around pointer-event interception)
@@ -160,8 +164,9 @@ test.describe("R10 URL Context", () => {
       (el as HTMLButtonElement).click();
     });
 
-    // Should be back at URL form (not menu)
-    await expect(page.locator("#attach-url-input")).toBeVisible();
+    // Should be back at the menu (not the URL form)
+    const menuButtons = page.locator(".attach-context-controls__popover-row");
+    await expect(menuButtons.first()).toBeVisible({ timeout: 5_000 });
 
     // Close popover
     await page.keyboard.press("Escape");
