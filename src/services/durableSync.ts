@@ -80,6 +80,18 @@ function mergeById<T extends { id: string }>(local: T[], remote: T[]): T[] {
   return [...merged.values()];
 }
 
+function mergeProjectNames(local: string[], remote: string[]): string[] {
+  const merged: string[] = [];
+  const seen = new Set<string>();
+  for (const name of [...remote, ...local]) {
+    const key = name.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    merged.push(name);
+  }
+  return merged;
+}
+
 export function mergeDatasets(local: LocalDataset, remote: LocalDataset): LocalDataset {
   const account = {
     ...remote.account,
@@ -93,6 +105,10 @@ export function mergeDatasets(local: LocalDataset, remote: LocalDataset): LocalD
     tasks: mergeById(local.workspace.tasks, remote.workspace.tasks),
     resources: mergeById(local.workspace.resources, remote.workspace.resources),
     syntheticJobs: mergeById(local.workspace.syntheticJobs, remote.workspace.syntheticJobs),
+    // R17: union of both sides' project names, case-insensitively deduped —
+    // matches createLocalProject's own dedupe rule, so a project created
+    // locally or remotely is never lost or doubled by a merge.
+    projects: mergeProjectNames(local.workspace.projects ?? [], remote.workspace.projects ?? []),
   };
   const withoutChecksum = {
     ...remote,

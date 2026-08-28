@@ -23,9 +23,16 @@ export interface LocalWorkspaceSnapshot {
   tasks: LocalProjectTask[];
   resources: LocalProjectResource[];
   syntheticJobs: SyntheticJobUnit[];
+  /* R17: a project's EXISTENCE, independent of anything assigned to it yet.
+     Previously the Projects screen derived its whole project list from
+     session tags/tasks/resources, so typing a brand-new project name with
+     nothing added to it yet was pure component state — invisible anywhere
+     else and gone on the next reload, even though "create a project...
+     reload without loss" is this requirement's own wording. */
+  projects: string[];
 }
 
-let workspace: LocalWorkspaceSnapshot = { tasks: [], resources: [], syntheticJobs: [] };
+let workspace: LocalWorkspaceSnapshot = { tasks: [], resources: [], syntheticJobs: [], projects: [] };
 const subscribers = new Set<(snapshot: LocalWorkspaceSnapshot) => void>();
 
 function notifyWorkspace(): void {
@@ -47,6 +54,7 @@ export function getLocalWorkspace(): LocalWorkspaceSnapshot {
     tasks: workspace.tasks.map((task) => ({ ...task })),
     resources: workspace.resources.map((resource) => ({ ...resource })),
     syntheticJobs: workspace.syntheticJobs.map((unit) => ({ ...unit })),
+    projects: [...workspace.projects],
   };
 }
 
@@ -70,8 +78,27 @@ export function restoreLocalWorkspace(value: unknown): LocalWorkspaceSnapshot {
           (unit.result === null || typeof unit.result === "string") &&
           (unit.status === "pending" || unit.status === "complete"))
       : [],
+    // Absent on a snapshot saved before this field existed — an empty list,
+    // never a crash on old persisted data.
+    projects: Array.isArray(candidate.projects)
+      ? candidate.projects.filter((name): name is string => typeof name === "string" && name.trim().length > 0)
+      : [],
   };
   notifyWorkspace();
+  return getLocalWorkspace();
+}
+
+/** Create a project by name alone — it exists (and survives reload) even
+    with no session, task, or resource assigned to it yet. Idempotent: an
+    already-known name (case-insensitive) is left as-is, never duplicated. */
+export function createLocalProject(name: string): LocalWorkspaceSnapshot {
+  const cleanName = name.trim();
+  if (!cleanName) return getLocalWorkspace();
+  const alreadyExists = workspace.projects.some((existing) => existing.toLowerCase() === cleanName.toLowerCase());
+  if (!alreadyExists) {
+    workspace.projects.push(cleanName);
+    notifyWorkspace();
+  }
   return getLocalWorkspace();
 }
 

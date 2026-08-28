@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { addLocalResource, addLocalTask, getLocalWorkspace, planSyntheticJob, removeLocalResource, removeLocalTask, runNextSyntheticBatch, toggleLocalTask, type SyntheticJobUnit } from "../../services/localWorkspace";
+import { addLocalResource, addLocalTask, createLocalProject, getLocalWorkspace, planSyntheticJob, removeLocalResource, removeLocalTask, runNextSyntheticBatch, toggleLocalTask, type SyntheticJobUnit } from "../../services/localWorkspace";
 import { restoreLocalDataset, serializeLocalDataset } from "../../services/localDataset";
 import { Pencil, Star, Copy } from "lucide-react";
 import { useSessionStore } from "../../stores/sessionStore";
@@ -700,6 +700,10 @@ function ProjectsScreen() {
   const [resourceContent, setResourceContent] = useState("");
 
   const projectNames = Array.from(new Set([
+    // R17: a project created with nothing assigned to it yet — otherwise
+    // this list (and therefore "reload without loss") only ever knew about
+    // projects some session/task/resource happened to reference.
+    ...workspace.projects,
     ...sessions.map((session) => session.tag ? session.tag.split(":")[0].trim() : "Unsorted"),
     ...workspace.tasks.map((task) => task.project),
     ...workspace.resources.map((resource) => resource.project),
@@ -730,6 +734,9 @@ function ProjectsScreen() {
     }
   }
 
+  function createProject() {
+    setWorkspace(createLocalProject(project));
+  }
   function createTask() {
     setWorkspace(addLocalTask(project, taskText));
     setTaskText("");
@@ -747,7 +754,7 @@ function ProjectsScreen() {
         <nav className="screen-tabs" aria-label="Project sections">{(["overview", "sessions", "tasks", "resources", "integrations"] as const).map((id) => <button type="button" key={id} aria-current={section === id ? "page" : undefined} className={section === id ? "is-active" : ""} onClick={() => setScreenLocation("projects", id)}>{id[0].toUpperCase() + id.slice(1)}</button>)}</nav>
       </div>
       <div className="screen__content">
-        <label className="settings-section">Active local project<input aria-label="Active local project" value={project} onChange={(event) => setProject(event.target.value)} /></label>
+        <div className="settings-section"><label>Active local project<input aria-label="Active local project" value={project} onChange={(event) => setProject(event.target.value)} /></label><button type="button" onClick={createProject} disabled={!project.trim()}>Create project</button>{projectNames.includes(project.trim()) && <span className="settings-section__note"> Already exists — switched to it.</span>}</div>
         {section === "overview" && <div className="projects-list">
           {projectNames.length === 0 ? <p>No projects yet. Name one above, then add a task or resource.</p> : projectNames.map((name) => <div key={name} className="project-group"><h3 className="project-group__title">{name}</h3><p>{sessions.filter((session) => (session.tag ? session.tag.split(":")[0].trim() : "Unsorted") === name).length} sessions · {workspace.tasks.filter((task) => task.project === name).length} tasks · {workspace.resources.filter((resource) => resource.project === name).length} resources</p></div>)}
         </div>}

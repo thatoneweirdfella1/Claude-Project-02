@@ -23,7 +23,7 @@ function dataset(sessionId: string, label: string): LocalDataset {
       }],
     },
     session: {},
-    workspace: { tasks: [], resources: [], syntheticJobs: [] },
+    workspace: { tasks: [], resources: [], syntheticJobs: [], projects: [] },
   };
   return { ...payload, checksum: checksum(payload) };
 }

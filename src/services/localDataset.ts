@@ -32,6 +32,11 @@ function hasUnsafeKeys(value: unknown): boolean {
 
 function validWorkspace(value: unknown): value is LocalWorkspaceSnapshot {
   if (!isPlainRecord(value) || !Array.isArray(value.tasks) || !Array.isArray(value.resources) || !Array.isArray(value.syntheticJobs)) return false;
+  // `projects` (R17) is newer than this dataset's schemaVersion 2 and was
+  // absent from every export written before this change — optional here,
+  // same backward-compatible treatment restoreLocalWorkspace already gives
+  // it, so an older export is never rejected wholesale for lacking it.
+  if (value.projects !== undefined && !Array.isArray(value.projects)) return false;
   const validTask = (item: unknown) => isPlainRecord(item) &&
     typeof item.id === "string" && typeof item.project === "string" &&
     typeof item.text === "string" && typeof item.completed === "boolean";
@@ -42,7 +47,8 @@ function validWorkspace(value: unknown): value is LocalWorkspaceSnapshot {
     typeof item.id === "string" && typeof item.source === "string" &&
     (item.result === null || typeof item.result === "string") &&
     (item.status === "pending" || item.status === "complete");
-  return value.tasks.every(validTask) && value.resources.every(validResource) && value.syntheticJobs.every(validJob);
+  return value.tasks.every(validTask) && value.resources.every(validResource) && value.syntheticJobs.every(validJob)
+    && (value.projects === undefined || value.projects.every((name) => typeof name === "string"));
 }
 
 function compatibleShape(value: unknown, template: unknown): boolean {
