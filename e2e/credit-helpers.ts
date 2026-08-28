@@ -25,5 +25,10 @@ export async function clickWithCostConfirmation(
 ): Promise<void> {
   await action.click();
   const dialog = page.getByRole("dialog", { name: "Confirm AI Cost" });
-  await dialog.getByRole("button", { name: "Continue", exact: true }).click();
+  // Second-pass fix: the real CostConfirm.tsx button reads "Continue for up
+  // to $X.XX" (the request's hard maximum), never a bare "Continue" — the
+  // previous exact match here has never matched anything real (both call
+  // sites in access-gate.spec.ts are inside test.skip() blocks, so this
+  // was never exercised).
+  await dialog.getByRole("button", { name: /^Continue for up to/ }).click();
 }

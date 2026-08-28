@@ -365,46 +365,65 @@ export function MultiAiActions() {
       setRetrying(sideIndex);
       setActionError(null);
 
-      const retried = await retryDebateSide(effectiveQuestion, {
-        claudeClient: withDebateUsage((req) => completeTracked(req)),
-        partnerClient,
-        stance: target.stance,
-        partnerId: targetProviderId,
-        signal: controller.signal,
-      });
-
-      setRetrying(null);
-      if (controller.signal.aborted) return;
-
-      reportFailedSides([retried]);
-
-      const newSides = [...outcome.sides];
-      newSides[sideIndex] = retried;
-
-      const allOk = newSides.every((s) => s.status === "ok");
-      let nextOutcome: DebateOutcome;
-      if (allOk) {
-        nextOutcome = {
-          status: "complete",
-          sides: newSides,
-          transcript: {
-            question: effectiveQuestion.trim(),
-            participants: newSides.map((s) => ({ label: s.label, text: s.text! })),
-          },
-        };
-      } else if (newSides.some((s) => s.status === "ok")) {
-        nextOutcome = { status: "partial", sides: newSides };
-      } else {
-        nextOutcome = { status: "failed", sides: newSides };
-      }
-      setOutcome(nextOutcome);
-
-      if (activeRunId) {
-        persistRun({
-          id: activeRunId,
-          status: outcomeToRunStatus(nextOutcome),
-          participants: newSides.map(sideToParticipantResult),
+      /* R12: this whole block previously had no try/finally at all — an
+         unexpected throw (e.g. a bad partner id reaching getDebatePartner
+         before runSide's own try/catch, in runDebate.ts, even gets a
+         chance to wrap it) would leave `retrying` stuck non-null forever,
+         permanently disabling that side's retry control with no visible
+         recovery. The `controllerRef.current === controller` guard also
+         fixes a real race: starting a retry on a DIFFERENT side aborts
+         this one via controllerRef.current?.abort() above, but the
+         first retry's own promise still eventually settles and, without
+         this guard, would clear `retrying` out from under the second
+         (still in-flight) retry's own busy indicator. */
+      try {
+        const retried = await retryDebateSide(effectiveQuestion, {
+          claudeClient: withDebateUsage((req) => completeTracked(req)),
+          partnerClient,
+          stance: target.stance,
+          partnerId: targetProviderId,
+          signal: controller.signal,
         });
+
+        if (controllerRef.current !== controller) return;
+        if (controller.signal.aborted) return;
+
+        reportFailedSides([retried]);
+
+        const newSides = [...outcome.sides];
+        newSides[sideIndex] = retried;
+
+        const allOk = newSides.every((s) => s.status === "ok");
+        let nextOutcome: DebateOutcome;
+        if (allOk) {
+          nextOutcome = {
+            status: "complete",
+            sides: newSides,
+            transcript: {
+              question: effectiveQuestion.trim(),
+              participants: newSides.map((s) => ({ label: s.label, text: s.text! })),
+            },
+          };
+        } else if (newSides.some((s) => s.status === "ok")) {
+          nextOutcome = { status: "partial", sides: newSides };
+        } else {
+          nextOutcome = { status: "failed", sides: newSides };
+        }
+        setOutcome(nextOutcome);
+
+        if (activeRunId) {
+          persistRun({
+            id: activeRunId,
+            status: outcomeToRunStatus(nextOutcome),
+            participants: newSides.map(sideToParticipantResult),
+          });
+        }
+      } catch (error) {
+        if (controllerRef.current === controller && !controller.signal.aborted) {
+          setActionError(`Retry failed: ${error instanceof Error ? error.message : String(error)}`);
+        }
+      } finally {
+        if (controllerRef.current === controller) setRetrying(null);
       }
     },
     [outcome, effectiveQuestion, activeRunId, persistRun],
