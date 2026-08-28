@@ -33,7 +33,7 @@ import { MultiAiRunHistory } from "./MultiAiRunHistory";
 import { authorizeEstimatedCost } from "../../services/creditAuthorization";
 import { addTokenUsage, getEstimatedCostForCall } from "../../services/costTracking";
 import type { PaidRoutePolicy } from "../../services/paidRoutePolicy";
-import type { ConnectedProviderId } from "../../services/providerStatus";
+import { reportProviderEvent, type ConnectedProviderId } from "../../services/providerStatus";
 import { isProviderConnected } from "../../services/routeReadiness";
 import type { MultiAiParticipantResult, MultiAiRunRecord } from "../../stores/types";
 
@@ -90,6 +90,19 @@ function providerForPartner(id: DebatePartnerId): ConnectedProviderId {
     : id === "gemini-3.1-pro" ? "google"
       : id === "grok-4.3" ? "xai"
         : "deepseek";
+}
+
+/* R11: Refresh exact provider status after a failed execution — a debate
+   side failing (auth revoked mid-session, quota exhausted, outage) must
+   invalidate the cached availability immediately, so the NEXT authorization
+   check (this retry, or a fresh debate) re-verifies every provider instead
+   of trusting a stale "available" reading for up to providerStatus.ts's
+   60-second TTL. reportProviderEvent invalidates the whole cache (it isn't
+   scoped per-provider), so one call is enough once any side failed. */
+function reportFailedSides(sides: DebateSide[]): void {
+  if (sides.some((side) => side.status === "error")) {
+    void reportProviderEvent("error");
+  }
 }
 
 async function configuredForDebate(partnerIds: DebatePartnerId[]): Promise<boolean> {
@@ -277,6 +290,7 @@ export function MultiAiActions() {
       }
       setOutcome(result);
       if (result.status !== "empty-question") {
+        reportFailedSides(result.sides);
         persistRun({
           id: runId,
           status: outcomeToRunStatus(result),
@@ -362,6 +376,8 @@ export function MultiAiActions() {
       setRetrying(null);
       if (controller.signal.aborted) return;
 
+      reportFailedSides([retried]);
+
       const newSides = [...outcome.sides];
       newSides[sideIndex] = retried;
 
@@ -438,6 +454,10 @@ export function MultiAiActions() {
       }
     } catch (error) {
       if (!controller.signal.aborted) {
+        // R11: a transport failure here means Claude's own connection just
+        // failed a real call — never keep authorizing further calls on a
+        // stale "available" reading for the rest of the cache's TTL.
+        void reportProviderEvent("error");
         setActionError(`Consensus failed: ${error instanceof Error ? error.message : String(error)}`);
       }
     } finally {
@@ -489,6 +509,7 @@ export function MultiAiActions() {
       }
     } catch (error) {
       if (!controller.signal.aborted) {
+        void reportProviderEvent("error");
         setActionError(`Synthesis failed: ${error instanceof Error ? error.message : String(error)}`);
       }
     } finally {

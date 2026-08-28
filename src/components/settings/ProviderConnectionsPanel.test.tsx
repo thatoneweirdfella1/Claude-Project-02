@@ -118,6 +118,49 @@ describe("R26: ProviderConnectionsPanel", () => {
     expect(useAccountStore.getState().disconnectedProviders).not.toContain("openai");
   });
 
+  /* R11 second-pass correction: the first pass built providerStatus.ts's
+     cache-invalidation function (reportProviderEvent) and unit-tested it
+     in isolation, but never actually wired it to fire from any real user
+     action — "after connect, verify, disconnect, failed execution, and
+     manual refresh" (the requirement's own wording) was only true for
+     manual refresh. Disconnect/reconnect here now call it too (see
+     ProviderConnectionsPanel.tsx), verified below with a real click. */
+  it("R11: Disconnect invalidates the cached provider status, not just the disconnectedProviders list", async () => {
+    vi.spyOn(providerStatus, "refreshProviderStatus").mockResolvedValue({
+      anthropic: true, openai: true, google: true, xai: true, deepseek: true,
+    });
+    const reportSpy = vi.spyOn(providerStatus, "reportProviderEvent").mockResolvedValue(undefined);
+
+    mount(<ProviderConnectionsPanel />);
+    await flush();
+
+    const openaiRow = row("openai");
+    button(openaiRow, "Disconnect").click();
+
+    expect(reportSpy).toHaveBeenCalledWith("disconnected");
+  });
+
+  it("R11: Reconnect invalidates the cached provider status and re-verifies immediately", async () => {
+    vi.spyOn(providerStatus, "refreshProviderStatus").mockResolvedValue({
+      anthropic: true, openai: true, google: true, xai: true, deepseek: true,
+    });
+    const reportSpy = vi.spyOn(providerStatus, "reportProviderEvent").mockResolvedValue(undefined);
+    act(() => useAccountStore.getState().disconnectProvider("openai"));
+
+    mount(<ProviderConnectionsPanel />);
+    await flush();
+    const refreshCallsBeforeReconnect = vi.mocked(providerStatus.refreshProviderStatus).mock.calls.length;
+
+    const openaiRow = row("openai");
+    button(openaiRow, "Reconnect").click();
+    await flush();
+
+    expect(reportSpy).toHaveBeenCalledWith("connected");
+    // Reconnect doesn't just flip a flag — it re-runs the real health check
+    // immediately, the same "verify" action the Refresh button performs.
+    expect(vi.mocked(providerStatus.refreshProviderStatus).mock.calls.length).toBeGreaterThan(refreshCallsBeforeReconnect);
+  });
+
   it("shows 'Checking…' while the health check is in flight", () => {
     vi.spyOn(providerStatus, "refreshProviderStatus").mockReturnValue(new Promise(() => {}));
     mount(<ProviderConnectionsPanel />);

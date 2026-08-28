@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useAccountStore } from "../../stores/accountStore";
 import {
   refreshProviderStatus,
+  reportProviderEvent,
   type ConnectedProviderId,
   type ProviderAvailability,
 } from "../../services/providerStatus";
@@ -94,11 +95,29 @@ export function ProviderConnectionsPanel() {
               <span className="provider-connections-list__name">{PROVIDER_LABELS[id]}</span>
               <span className="provider-connections-list__status" data-testid={`provider-status-${id}`}>{label}</span>
               {disconnected ? (
-                <button type="button" className="settings-btn secondary" onClick={() => reconnectProvider(id)}>
+                <button
+                  type="button"
+                  className="settings-btn secondary"
+                  onClick={() => {
+                    reconnectProvider(id);
+                    // R11: reconnecting is this app's closest equivalent to
+                    // a "connect" event — the cached status must not keep
+                    // reporting whatever it last read before reconnect.
+                    void reportProviderEvent("connected");
+                    void verify();
+                  }}
+                >
                   Reconnect
                 </button>
               ) : (
-                <button type="button" className="settings-btn secondary" onClick={() => disconnectProvider(id)}>
+                <button
+                  type="button"
+                  className="settings-btn secondary"
+                  onClick={() => {
+                    disconnectProvider(id);
+                    void reportProviderEvent("disconnected");
+                  }}
+                >
                   Disconnect
                 </button>
               )}
