@@ -488,6 +488,12 @@ export function CenterColumn() {
 
     const appMode = useAccountStore.getState().appMode;
 
+    // Developer Mode forces paid translator to bypass the free flow path
+    // while still using the full translation/routing/provider pipeline
+    if (appMode === "developer" && isFreeTranslator(request.translatorEngine)) {
+      request = { ...request, translatorEngine: "managed-translator" };
+    }
+
     setPreparationGate(null);
     setWorkflowMessage("Recovery-saving…");
     try {
