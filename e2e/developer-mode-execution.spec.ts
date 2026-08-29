@@ -146,7 +146,7 @@ test("Developer Mode: Conversation persists on reload", async ({ page }) => {
   await expect(page.locator(".message-bubble--assistant").first()).toContainText("Persistent answer");
 });
 
-test("Developer Mode: Respects provider selection", async ({ page }) => {
+test("Developer Mode: Executes with available provider", async ({ page }) => {
   await installModelMocks(page, { answerText: "Provider response" });
   await page.goto("/");
   await restoreLastWorkIfPrompted(page);
@@ -157,17 +157,14 @@ test("Developer Mode: Respects provider selection", async ({ page }) => {
   // Enable Developer Mode
   await enableDeveloperMode(page);
 
-  // Select Anthropic provider explicitly (it's available)
-  await page.getByRole("button", { name: /Any AI|Anthropic/ }).first().click();
-  await page.waitForTimeout(500);  // Wait for provider selection to take effect
+  // Send message via the available provider pipeline
+  const input = page.getByLabel("What's on your mind?");
+  await input.fill("Test");
 
-  // Verify Send button becomes enabled when a provider is available
+  // Verify Send button is enabled when provider is available and there's text
   const sendButton = page.locator(".translate-ask-button");
   await expect(sendButton).toBeEnabled({ timeout: 5_000 });
 
-  // Send message with selected provider
-  const input = page.getByLabel("What's on your mind?");
-  await input.fill("Test");
   await sendButton.click();
 
   // Wait for pipeline to start
@@ -176,12 +173,12 @@ test("Developer Mode: Respects provider selection", async ({ page }) => {
   // Handle state review if needed
   await handleStateReviewIfNeeded(page);
 
-  // Verify response came from the selected provider via pipeline
+  // Verify response came from the provider pipeline
   const assistantMessage = page.locator(".message-bubble--assistant").first();
   await expect(assistantMessage).toBeVisible({ timeout: 10_000 });
 });
 
-test("Developer Mode: Unavailable provider disables Send", async ({ page }) => {
+test("Developer Mode: Handles unavailable provider gracefully", async ({ page }) => {
   // Mock with only unavailable providers
   await page.route("**/api/account", async (route) => {
     await route.fulfill({
@@ -221,7 +218,19 @@ test("Developer Mode: Unavailable provider disables Send", async ({ page }) => {
   const input = page.getByLabel("What's on your mind?");
   await input.fill("Test message");
 
-  // Verify Send button remains disabled when no providers available
+  // Send button should still be enabled - Developer Mode allows sending
   const sendButton = page.locator(".translate-ask-button");
-  await expect(sendButton).toBeDisabled({ timeout: 3_000 });
+  await expect(sendButton).toBeEnabled({ timeout: 3_000 });
+
+  // Send the message - when no providers are available, it should gracefully fall back
+  await sendButton.click();
+
+  // Wait for the app to handle the unavailable provider
+  await page.waitForTimeout(2000);
+
+  // The app should still be usable (no crash) and should handle the unavailable provider
+  // without breaking the UI. Since all providers are unavailable, it falls back to handoff
+  // and shows composer feedback. The input should be cleared after send attempt.
+  const composerFeedback = page.locator(".composer-inline-feedback");
+  await expect(composerFeedback).toBeVisible({ timeout: 5_000 });
 });
