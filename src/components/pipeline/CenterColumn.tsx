@@ -486,6 +486,8 @@ export function CenterColumn() {
   async function handleSubmit(request: TranslateAskRequest): Promise<boolean> {
     if (!request.rawInput.trim()) return false;
 
+    const appMode = useAccountStore.getState().appMode;
+
     setPreparationGate(null);
     setWorkflowMessage("Recovery-saving…");
     try {
@@ -517,6 +519,15 @@ export function CenterColumn() {
       setWorkflowMessage("Connected Claude is not configured. Prepared a no-charge handoff instead.");
       return true;
     }
+
+    // Developer Mode bypasses cost authorization (unlimited testing)
+    // but still uses the full translation/routing/provider pipeline
+    if (appMode === "developer") {
+      setWorkflowMessage("Sending (Developer Mode — unlimited)…");
+      await queuePaidFlow(paidRequest);
+      return true;
+    }
+
     const estimate = getEstimatedCostForPipeline(
       paidRequest.rawInput,
       selectedModel,
