@@ -139,10 +139,10 @@ export async function installModelMocks(page: Page, answer: MockAnswer): Promise
       contentType: "application/json",
       body: JSON.stringify({
         anthropic: true,
-        openai: true,
-        google: true,
-        xai: true,
-        deepseek: true,
+        openai: false,
+        google: false,
+        xai: false,
+        deepseek: false,
       }),
     });
   });

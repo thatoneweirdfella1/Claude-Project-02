@@ -95,9 +95,12 @@ test("Developer Mode: Respects provider selection", async ({ page }) => {
   // Enable Developer Mode
   await enableDeveloperMode(page);
 
-  // Verify Send button is enabled (provider is selected)
+  // Select Anthropic provider explicitly (it's available)
+  await page.getByRole("button", { name: /Any AI|Anthropic/ }).first().click();
+
+  // Verify Send button becomes enabled when a provider is available
   const sendButton = page.locator(".translate-ask-button");
-  await expect(sendButton).toBeEnabled();
+  await expect(sendButton).toBeEnabled({ timeout: 5_000 });
 
   // Send message with selected provider
   const input = page.getByLabel("What's on your mind?");
@@ -107,4 +110,49 @@ test("Developer Mode: Respects provider selection", async ({ page }) => {
   // Verify response came from the selected provider via pipeline
   const assistantMessage = page.locator(".message-bubble--assistant").first();
   await expect(assistantMessage).toBeVisible({ timeout: 10_000 });
+});
+
+test("Developer Mode: Unavailable provider disables Send", async ({ page }) => {
+  // Mock with only unavailable providers
+  await page.route("**/api/account", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ configured: false, user: null }),
+    });
+  });
+  await page.route("**/api/verify-access", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ requiresPassword: false, ok: true }),
+    });
+  });
+  await page.route("**/api/provider-status", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        anthropic: false,
+        openai: false,
+        google: false,
+        xai: false,
+        deepseek: false,
+      }),
+    });
+  });
+
+  await page.goto("/");
+  await restoreLastWorkIfPrompted(page);
+
+  // Enable Developer Mode
+  await enableDeveloperMode(page);
+
+  // Type a message
+  const input = page.getByLabel("What's on your mind?");
+  await input.fill("Test message");
+
+  // Verify Send button remains disabled when no providers available
+  const sendButton = page.locator(".translate-ask-button");
+  await expect(sendButton).toBeDisabled({ timeout: 3_000 });
 });
