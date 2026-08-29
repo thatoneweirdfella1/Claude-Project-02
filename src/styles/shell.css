@@ -10,8 +10,8 @@
   align-items: center;
   justify-content: space-between;
   height: 100%;
-  padding: 0 16px;
-  gap: 16px;
+  padding: 0 14px 0 18px;
+  gap: 10px;
 }
 
 .topbar-logo {
@@ -26,26 +26,75 @@
 .topbar-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+}
+
+.topbar-center { flex: 1 1 auto; justify-content: center; }
+.topbar-right { flex: 0 1 auto; min-width: 0; }
+.topbar-content .primitive-glass-button { min-height: 40px; padding-inline: 12px; white-space: nowrap; }
+.topbar-right .primitive-glass-button { padding-inline: 8px; font-size: 12px; gap: 5px; }
+.topbar-right .credit-counter { padding-inline: 8px; }
+.topbar-right .credit-counter__label { display: none; }
+.user-chip__label { display: block; max-width: 72px; overflow: hidden; text-overflow: ellipsis; }
+
+
+/* VISUAL-AUDIT V5 (fixed this session): avatar circle + chevron on the user
+   chip, matching V3. Reuses --accent-purple — the same purple already used
+   for the logo's "AI" text and the Emotion state pill, not a new one-off
+   color. */
+.user-chip__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent-purple);
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-metadata);
+  font-weight: var(--font-weight-card-title); /* 500 — tokens.css: "never a weight of 600 or heavier anywhere" */
+  flex-shrink: 0;
 }
 
 .leftnav-content {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  padding: var(--space-row-margin);
+  height: calc(100% - 20px);
+  margin-top: 12px;
+  /* Bottom padding removed, operator-directed fix this session: the group
+     below (Trash/System Status/Logout) is pushed to the bottom via
+     margin-top: auto (correct — confirmed with real measurements: 199px of
+     flex space collects above it, only 16px below, so it was NOT actually
+     centered), but that remaining 16px of matching padding below it still
+     read as a visible gap, undermining "pinned to the very bottom." Top/
+     left/right padding unchanged; only bottom is now 0, so the group's own
+     content — not container padding — defines the true bottom edge. */
+  padding: 14px 12px 8px;
   box-sizing: border-box;
+  border: 1px solid var(--surface-smoked-glass-border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--surface-smoked-glass) 84%, transparent);
+  backdrop-filter: blur(10px);
 }
 
 .leftnav-items {
   display: flex;
   flex-direction: column;
-  gap: var(--space-list-item-margin);
+  gap: 8px;
 }
 
 .leftnav-item {
   justify-content: flex-start;
   width: 100%;
+  min-height: 56px;
+  border-color: transparent;
+  background: transparent;
+}
+
+.leftnav-item--active {
+  background-color: color-mix(in srgb, var(--accent-cyan) 13%, transparent);
+  box-shadow: inset 0 0 0 1px var(--accent-cyan), 0 0 18px color-mix(in srgb, var(--accent-cyan) 28%, transparent);
 }
 
 .leftnav-bottom {
@@ -54,6 +103,7 @@
   flex-direction: column;
   gap: var(--space-list-item-margin);
   padding-top: var(--space-row-margin);
+  padding-bottom: 8px; /* small breathing room at the true edge, deliberately less than padding-top so the group still reads as bottom-anchored, not centered */
   border-top: 1px solid var(--surface-smoked-glass-border);
 }
 
@@ -68,12 +118,65 @@
   color: var(--text-secondary);
 }
 
+.system-status-wrapper {
+  position: relative;
+}
+
+.system-status {
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.system-status--interactive {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.system-status--interactive:hover {
+  background: var(--accent-cyan-tint-06);
+  border-radius: 4px;
+}
+
 .system-status-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   background: var(--status-online);
   flex-shrink: 0;
+}
+
+.system-status-dot--operational {
+  background: #4ade80;
+}
+
+.system-status-popover {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  z-index: 1000;
+  min-width: 220px;
+  margin-bottom: 8px;
+  padding: 12px;
+  border-radius: 6px;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.3);
+}
+
+.system-status-popover__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.system-status-popover__note {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.4;
 }
 
 .center-placeholder,

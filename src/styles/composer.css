@@ -13,9 +13,19 @@
   gap: 8px;
 }
 
+.input-box__field-shell {
+  position: relative;
+  height: 122px;
+  min-height: 122px;
+  max-height: 122px;
+}
+
 /* First real consumer of the section-header tokens (Step 1.2 built these,
    unused until now) — MATERIALS.md: cyan is used for "section headers". */
 .input-box__label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin: 0;
   color: var(--accent-cyan);
   font-family: var(--font-family-base);
@@ -28,9 +38,11 @@
 .input-box__textarea {
   width: 100%;
   box-sizing: border-box;
-  min-height: 96px;
-  max-height: 480px;
+  height: 122px;
+  min-height: 122px;
+  max-height: 122px;
   padding: var(--space-input-padding);
+  padding-bottom: 32px;
   border-radius: var(--radius-card);
   border: 1px solid var(--surface-smoked-glass-border);
   background: var(--surface-smoked-glass);
@@ -41,7 +53,7 @@
   font-size: var(--font-size-body);
   font-weight: var(--font-weight-body);
   line-height: var(--line-height-body);
-  resize: none; /* height is JS-driven (auto-grow); a manual resize handle would fight it */
+  resize: none;
   overflow-y: auto;
 }
 
@@ -59,9 +71,12 @@
   opacity: var(--text-metadata-opacity);
 }
 
-/* Informational only when over the soft target — never blocks typing. */
+/* Informational only when over the soft target — never blocks typing.
+   Step 11.5 (ADHD-AUDIT S1): was --state-cognitive, which collides with the
+   Cognitive Mode pill's own color one panel away — full-opacity
+   --text-secondary reads as "emphasized," not as a second state signal. */
 .input-box__counter--over {
-  color: var(--state-cognitive);
+  color: var(--text-secondary);
   opacity: 1;
 }
 
@@ -81,6 +96,16 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--space-row-margin);
+  flex-wrap: wrap;
+}
+
+/* Step 8.2 — the composer-footer row below ControlRow. Holds TRANSPARENCY
+   DETAILS today; MULTI-AI ACTIONS (Step 8.3, matching the screenshot's other
+   half of this row) slots in beside it without restructuring. */
+.composer__footer-row {
+  display: flex;
+  align-items: flex-start;
   gap: var(--space-row-margin);
   flex-wrap: wrap;
 }
@@ -106,6 +131,163 @@
   border: 0;
 }
 
+/* Step 7.3 — the "Attach ▾" popover: a menu (Upload a file / Paste a URL)
+   that swaps to an inline URL form, matching the technique-popover's own
+   positioning/material conventions. */
+/* Material (background/blur/border/radius) comes from the shared
+   `surface-smoked-glass` class (TSX applies both) — this rule is layout
+   only, plus the one property that differs from that class's own default
+   (box-shadow: modal-weight, not card-weight, for a floating popover). */
+.attach-context-controls__popover {
+  position: absolute;
+  top: 100%;
+  /* R10 second-pass fix: the "Add Context" trigger sits near the right edge
+     of the composer row (frozen-composer__heading). A left:0-anchored
+     300px-wide popover measured ~12px past col-center's overflow:hidden
+     clip boundary at every viewport tested (1280x720 and 1920x1200,
+     confirmed with real OS-level mouse clicks — not a Playwright-only
+     artifact) — every button pushed to the popover's right edge by
+     justify-content:space-between (Preview, Add Text, Add to context, Add
+     Selected) was therefore genuinely unclickable. Right-anchoring matches
+     this same fix already used elsewhere in this app for the identical
+     problem (.topbar-popover--right) and keeps the popover's whole width
+     inside the composer's left edge at every tested viewport. */
+  right: 0;
+  z-index: 10;
+  margin-top: 6px;
+  width: min(300px, 90vw);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-card-padding);
+  box-shadow: var(--shadow-modal);
+}
+
+.attach-context-controls__popover-row {
+  min-height: 44px;
+  padding: var(--space-button-vertical) var(--space-button-horizontal);
+  border: none;
+  border-radius: var(--radius-button);
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label);
+  font-weight: var(--font-weight-label);
+  text-align: left;
+  cursor: pointer;
+}
+
+.attach-context-controls__popover-row:hover {
+  background: var(--hover-tint);
+}
+
+.attach-context-controls__url-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.attach-context-controls__url-label {
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-metadata);
+  font-weight: var(--font-weight-metadata);
+}
+
+.attach-context-controls__url-input {
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 1px solid var(--surface-smoked-glass-border);
+  border-radius: var(--radius-button);
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-secondary);
+}
+
+.attach-context-controls__url-input:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
+
+.attach-context-controls__url-error {
+  margin: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-metadata);
+  font-weight: var(--font-weight-metadata);
+  line-height: var(--line-height-body);
+}
+
+.attach-context-controls__url-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.attach-context-controls__url-back,
+.attach-context-controls__url-fetch {
+  min-height: 36px;
+  padding: 6px 14px;
+  border: 1px solid var(--surface-smoked-glass-border);
+  border-radius: var(--radius-button);
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-secondary);
+  font-weight: var(--font-weight-label-secondary);
+  cursor: pointer;
+}
+
+.attach-context-controls__url-fetch {
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+
+.attach-context-controls__url-fetch:disabled,
+.attach-context-controls__url-back:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Step 7.4 — the variable-creation form reuses .url-form/.url-input/
+   .url-actions/.url-error wholesale (identical layout needs); only the
+   $-prefixed name row and the save-to-account checkbox are new. */
+.attach-context-controls__variable-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.attach-context-controls__variable-name-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.attach-context-controls__variable-prefix {
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-secondary);
+}
+
+.attach-context-controls__variable-name-row .attach-context-controls__url-input {
+  flex: 1;
+}
+
+.attach-context-controls__variable-save-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-metadata);
+  font-weight: var(--font-weight-metadata);
+}
+
+/* Material comes from the shared `surface-smoked-glass` class (TSX applies
+   both) — layout only here, plus box-shadow (modal-weight, differs from
+   that class's own card-weight default). */
 .attach-context-controls__rejections {
   position: absolute;
   top: 100%;
@@ -118,11 +300,6 @@
   flex-direction: column;
   gap: 6px;
   padding: 10px 32px 10px 10px;
-  background: var(--surface-smoked-glass);
-  backdrop-filter: blur(var(--blur-smoked-glass));
-  -webkit-backdrop-filter: blur(var(--blur-smoked-glass));
-  border: 1px solid var(--surface-smoked-glass-border);
-  border-radius: var(--radius-card);
   box-shadow: var(--shadow-modal);
 }
 
@@ -189,7 +366,7 @@
   margin: 0;
   padding: var(--space-input-padding);
   border-radius: var(--radius-button);
-  background: rgb(255 255 255 / 0.04);
+  background: var(--hover-tint);
   color: var(--text-primary);
   font-family: monospace;
   font-size: var(--font-size-metadata);
@@ -198,3 +375,117 @@
   max-height: 240px;
   overflow-y: auto;
 }
+
+/* Provider-neutral frozen composer recovery */
+.destination-field { position: relative; min-width: 0; }
+.destination-field > label, .advanced-controls__field > span { display:block; margin-bottom:4px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
+.destination-field__trigger { width:100%; min-height:40px; display:flex; align-items:center; justify-content:space-between; gap:8px; padding:7px 10px; border:1px solid var(--surface-smoked-glass-border); border-radius:var(--radius-button); background:var(--surface-smoked-glass); color:var(--text-primary); cursor:pointer; }
+.destination-field__popover { position:absolute; left:0; bottom:calc(100% + 6px); z-index:40; width:min(430px,80vw); max-height:360px; overflow:auto; padding:10px; box-shadow:var(--shadow-modal); }
+.destination-field__search { display:flex; align-items:center; gap:7px; padding:7px 9px; border:1px solid var(--surface-smoked-glass-border); border-radius:var(--radius-button); }
+.destination-field__search input { width:100%; border:0; outline:0; background:transparent; color:var(--text-primary); }
+.destination-field__group { padding:9px 0; border-bottom:1px solid var(--surface-smoked-glass-border); }
+.destination-field__group strong { display:block; margin-bottom:6px; font-size:12px; }
+.destination-field__group > div { display:flex; flex-wrap:wrap; gap:6px; }
+.destination-field__option { padding:6px 9px; border:1px solid var(--surface-smoked-glass-border); border-radius:var(--radius-button); background:transparent; color:var(--text-primary); cursor:pointer; }
+.destination-field__option[aria-pressed="true"] { border-color:var(--accent-cyan); color:var(--accent-cyan); }
+.utility-bar { width:100%; height:26px; min-height:26px; display:flex; align-items:center; justify-content:space-between; padding:0 9px; border:1px solid var(--surface-smoked-glass-border); border-radius:var(--radius-button); background:var(--surface-smoked-glass); color:var(--text-primary); cursor:pointer; }
+.advanced-controls { position:relative; }
+.advanced-controls__overlay { position:absolute; left:0; right:0; bottom:32px; z-index:35; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; padding:12px; box-shadow:var(--shadow-modal); }
+.advanced-controls__field { grid-column:span 2; }
+.advanced-controls__field select { width:100%; min-height:40px; }
+.advanced-controls__check { grid-column:1/-1; display:flex; align-items:center; gap:8px; font-size:12px; }
+.review-ready { position:fixed; inset:0; z-index:100; display:grid; place-items:center; padding:20px; background:rgba(0,0,0,.45); }
+.review-ready__card { width:min(760px,94vw); max-height:88vh; display:flex; flex-direction:column; gap:12px; padding:18px; box-shadow:var(--shadow-modal); }
+.review-ready__card h2,.review-ready__card p { margin:0; }
+.review-ready__card label { display:flex; flex-direction:column; gap:6px; }
+.review-ready__card textarea { min-height:280px; resize:vertical; padding:12px; border:1px solid var(--surface-smoked-glass-border); border-radius:var(--radius-button); background:var(--surface-smoked-glass); color:var(--text-primary); }
+.review-ready__actions { display:flex; justify-content:flex-end; gap:8px; }
+.review-ready__actions button { min-height:40px; padding:0 14px; }
+.conversation-empty { margin:auto; padding:24px; text-align:center; color:var(--text-secondary); }
+.conversation-empty h3 { margin:0 0 6px; color:var(--text-primary); }
+.workflow-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 2200;
+  display: grid;
+  place-items: center;
+  padding: 28px;
+  background: rgb(0 0 0 / .38);
+  backdrop-filter: blur(5px);
+}
+.workflow-dialog__card {
+  width: min(680px, calc(100% - 40px));
+  max-height: 86vh;
+  overflow: auto;
+  padding: 22px;
+  border: 1px solid var(--frozen-border);
+  border-radius: 12px;
+  box-shadow: 0 24px 80px rgb(0 0 0 / .42);
+}
+.workflow-dialog__card header h2 { margin: 0 0 4px; }
+.workflow-dialog__card header p { margin: 0 0 18px; color: var(--frozen-muted); }
+.workflow-dialog__card label { display: grid; gap: 6px; margin-block: 12px; }
+.workflow-dialog__card textarea { min-height: 180px; resize: vertical; }
+.workflow-dialog__card input,
+.workflow-dialog__card textarea,
+.workflow-dialog__card select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--frozen-line);
+  border-radius: 7px;
+  background: var(--frozen-control);
+  color: var(--frozen-text);
+}
+.workflow-dialog__actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.workflow-dialog__actions button, .handoff-status button, .handoff-chooser button {
+  padding: 9px 13px; border: 1px solid var(--frozen-line); border-radius: 7px;
+  background: var(--frozen-control); color: var(--frozen-text); cursor: pointer;
+}
+.workflow-dialog__actions .primary { border-color: var(--frozen-gold); background: color-mix(in srgb, var(--frozen-gold) 24%, var(--frozen-control)); }
+.workflow-dialog__actions .danger, .finish-session__choices .danger { border-color: #b94a48; color: #b32929; }
+.state-review-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; }
+.state-review-dialog { width: min(420px, calc(100% - 24px)); }
+.state-review-dialog > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.state-review-dismiss { flex: 0 0 32px; width: 32px !important; min-height: 32px; padding: 0; border: 0; background: transparent; color: var(--frozen-muted); font-size: 22px; cursor: pointer; }
+.state-review-chips { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.state-review-chip { display: grid; gap: 2px; padding: 7px 9px; border: 1px solid var(--frozen-line); border-radius: 7px; }
+.state-review-chip span { color: var(--frozen-muted); font-size: 10px; text-transform: uppercase; }
+.state-review-adjustments { margin-top: 10px; padding: 9px 11px; border: 1px solid var(--frozen-gold); border-radius: 7px; }
+.state-review-adjustments ul { margin: 6px 0 0; padding-left: 18px; }
+.state-review-remember { grid-template-columns: auto 1fr !important; align-items: center; }
+.state-review-remember input { width: auto; }
+.detection-failure-dialog { width: min(440px, calc(100% - 24px)); }
+.state-detection-status { position: relative; width: min(382px, 100%); margin-left: auto; }
+.state-detection-status__bar { height: 26px; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 8px; border: 1px solid var(--frozen-line); border-radius: 7px; color: var(--frozen-muted); font-size: 11px; }
+.state-detection-status.is-recommendation .state-detection-status__bar { border-color: var(--frozen-gold); color: var(--frozen-text); }
+.state-detection-status.is-unavailable .state-detection-status__bar { border-color: #b94a48; }
+.state-detection-status__bar button { border: 0; background: transparent; color: inherit; cursor: pointer; }
+.state-detection-details { position: absolute; right: 0; bottom: 32px; z-index: 80; width: min(382px, calc(100vw - 24px)); max-height: 206px; overflow: auto; padding: 10px; border: 1px solid var(--frozen-line); border-radius: 8px; box-shadow: var(--shadow-modal); }
+.state-detection-details p { margin: 8px 0; color: var(--frozen-muted); font-size: 11px; }
+.workflow-dialog__summary { padding: 10px; border-left: 3px solid var(--frozen-cyan); background: var(--frozen-cyan-soft); }
+.handoff-chooser { display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; max-height: 210px; overflow: auto; }
+.handoff-chooser button { display: grid; text-align: left; }
+.handoff-chooser button[aria-pressed="true"] { border-color: var(--frozen-cyan); }
+.import-response-preview, .session-preview { max-height: 180px; overflow: auto; padding: 12px; border: 1px solid var(--frozen-line); border-radius: 8px; white-space: pre-wrap; }
+.handoff-status { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 12px; border: 1px solid var(--frozen-gold); border-radius: 8px; }
+.handoff-status div { display: grid; }
+.handoff-status span { color: var(--frozen-muted); font-size: 12px; }
+.destination-field__provider, .destination-field__back {
+  width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 9px; border: 0; border-bottom: 1px solid var(--frozen-line); background: transparent; color: var(--frozen-text); text-align: left;
+}
+.destination-field__provider span, .destination-field__group { display: grid; }
+.destination-field__provider small, .destination-field__group small, .destination-field__option small { color: var(--frozen-muted); }
+.destination-field__option { display: flex !important; justify-content: space-between; gap: 10px; width: 100%; }
+.advanced-controls__connection { display: grid; gap: 5px; padding: 10px; border: 1px solid var(--frozen-line); border-radius: 8px; }
+
+.directness-field { position: relative; min-width: 0; }
+.directness-field__label { display: block; margin-bottom: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.directness-field__trigger { width: 100%; min-height: 40px; padding: 7px 10px; border: 1px solid var(--surface-smoked-glass-border); border-radius: var(--radius-button); color: var(--text-primary); text-align: left; cursor: pointer; }
+.directness-popover { position: absolute; left: 0; bottom: calc(100% + 6px); z-index: 45; width: 300px; max-width: min(300px, 80vw); padding: 8px; box-shadow: var(--shadow-modal); }
+.directness-popover__option { display: grid; grid-template-columns: 18px 1fr; gap: 7px; width: 100%; padding: 8px; border: 0; border-radius: var(--radius-button); background: transparent; color: var(--text-primary); text-align: left; cursor: pointer; }
+.directness-popover__option:hover, .directness-popover__option:focus-visible, .directness-popover__option.is-selected { background: color-mix(in srgb, var(--accent-cyan) 12%, transparent); }
+.directness-popover__option strong, .directness-popover__option small { display: block; }
+.directness-popover__option small { margin-top: 2px; color: var(--frozen-muted); }
+.advanced-controls__remember { margin-top: 4px; font-weight: 400; }
+.methodology-suggestion__actions { display: flex; gap: 6px; }

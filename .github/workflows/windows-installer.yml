@@ -1,0 +1,74 @@
+name: Windows Installer
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/windows-installer.yml"
+      - "desktop/**"
+      - "src/**"
+      - "public/**"
+      - "index.html"
+      - "package.json"
+      - "package-lock.json"
+      - "tsconfig*.json"
+      - "vite.config.ts"
+  push:
+    branches:
+      - agent/desktop-credit-system
+    paths:
+      - ".github/workflows/windows-installer.yml"
+      - "desktop/**"
+      - "src/**"
+      - "public/**"
+      - "index.html"
+      - "package.json"
+      - "package-lock.json"
+      - "tsconfig*.json"
+      - "vite.config.ts"
+
+permissions:
+  contents: read
+
+jobs:
+  package-windows:
+    name: Package Windows installer
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+      - name: Install web dependencies
+        run: npm ci
+      - name: Install desktop dependencies
+        run: npm ci --prefix desktop
+      - name: Test desktop database
+        run: npm run test:desktop
+      - name: Build renderer
+        run: npm run build
+      - name: Launch-test Electron renderer
+        run: npm --prefix desktop run test:app
+      - name: Build NSIS installer
+        run: npm run desktop:package
+      - name: Add installation note
+        shell: pwsh
+        run: |
+          @"
+          DIVERGENCE.AI WINDOWS TEST BUILD
+
+          Run the included .exe to install Divergence.AI.
+          This personal testing build is not code-signed, so Windows may show
+          an Unknown publisher warning. The installer was built directly from
+          the agent/desktop-credit-system branch in your GitHub repository.
+          "@ | Set-Content -Path WINDOWS-INSTALL.txt
+      - name: Upload installer ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: Divergence-AI-Windows-Installer-0.1.2
+          path: |
+            desktop/dist/*.exe
+            WINDOWS-INSTALL.txt
+          if-no-files-found: error
+          retention-days: 30

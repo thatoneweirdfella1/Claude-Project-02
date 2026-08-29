@@ -1,0 +1,24 @@
+# DIVERGENCE.AI — WORKFLOW LEDGER v2 ADDITIONS
+
+These workflows were absent from or too implicit in the old 34-workflow ledger.
+
+| Workflow ID | Workflow | Required steps/result | Feature IDs | Status |
+|---|---|---|---|---|
+| V2-WF-35 | Refresh provider/model registry | User opens Destination AI/AI Status, refreshes registry, sees current supported providers/models, freshness time, disabled/deprecated states, and no silent model substitution. | SPEC-PN-01; SPEC-PN-02; SPEC-PN-03; SPEC-PN-04 | NOT VERIFIED |
+| V2-WF-36 | Choose provider/model and execute supported destination route | User independently chooses Destination AI/provider/model and Translator Engine; route resolves only supported connection/capability and preserves requested meaning. | SPEC-PN-03; SPEC-PN-05; SPEC-PN-06; SPEC-PN-07; SPEC-PN-08; SPEC-PN-09; SPEC-PN-10; SPEC-PN-11; SPEC-PN-12; SPEC-PN-14; SPEC-TR-01 | NOT VERIFIED |
+| V2-WF-37 | BYOK connect, use, test, remove | User adds a provider API key through protected storage, tests it, uses a provider-billed request without Divergence-credit deduction, then removes/revokes the connection without exposing the secret. | SPEC-CN-01; SPEC-CN-05; SPEC-CC-08 | NOT VERIFIED |
+| V2-WF-38 | Official OAuth/licensed account lifecycle | Eligible user connects through external system-browser OAuth with minimum scopes, uses the supported route, handles expiry via Reconnect, then revokes/removes tokens. | SPEC-CN-02; SPEC-CN-05; SPEC-PN-11 | NOT VERIFIED |
+| V2-WF-39 | Optional Browser Companion handoff | User explicitly invokes the separately installed companion on an approved provider host; preview shows exact insertion; temporary permission is released; unsupported/manual-only providers fall back to manual handoff. | SPEC-CN-03; SPEC-CN-04 | NOT VERIFIED |
+| V2-WF-40 | Paid managed request with reservation, reconciliation and receipt | User sees cost preflight, confirms once, server reserves max, request executes once, actual usage reconciles, unused reservation releases, receipt appears, balance never goes negative. | SPEC-CC-02; SPEC-CC-03; SPEC-CC-04; SPEC-CC-05; SPEC-CC-06; SPEC-CC-07; SPEC-CC-09 | NOT VERIFIED |
+| V2-WF-41 | Automatic top-up opt-in and trigger | User explicitly enables top-up with threshold/amount/monthly max/payment method; trigger occurs at most as configured with notifications/idempotency; failure disables or falls back safely without duplicate credit. | SPEC-CC-01; SPEC-CC-07 | NOT VERIFIED |
+| V2-WF-42 | Large-job start, interrupt, resume and finish | User starts a large corpus job under a cap; bounded workers create checkpoints/evidence; interruption resumes from checkpoint; stronger audit/final synthesis completes without duplicating finished work. | SPEC-LJ-01; SPEC-LJ-02; SPEC-LJ-03; SPEC-LJ-04 | NOT VERIFIED |
+| V2-WF-43 | Enter operator Developer Mode | Authenticated operator enters Developer Mode from the approved operator-only entry; ordinary users cannot see/use it; exiting returns to ordinary adaptive interface without changing production billing invariants. | SPEC-DV-01; SPEC-DV-02; SPEC-CC-09 | NOT VERIFIED |
+| V2-WF-44 | Async testing iteration | Operator enables async testing, creates/switches recoverable scenarios, previews an exact request with no external call, simulates completion, reloads, and resumes saved testing state. | SPEC-DV-03; SPEC-DV-04; SPEC-DV-05; SPEC-DV-06; SPEC-DV-07 | NOT VERIFIED |
+| V2-WF-45 | Developer personal heavy-use workflow | Operator uses the eventually approved heavy-use routing strategy while preserving explicit cost controls and high-capability routing; exact permanent strategy remains decision-dependent. | SPEC-DV-08; SPEC-DV-09 | UNDECIDED |
+| V2-WF-46 | Fable selection and specialized integration | Fable appears only under Claude; model recommendation/prompt translation follows the separately approved/task-defined Fable behavior rather than merely sending a generic model label. | SPEC-PN-04; SPEC-FB-01 | NOT VERIFIED |
+| V2-WF-47 | Learning signal integration loop | Eligible feedback/corrections flow through the documented Learnable Signal Patterns logic into bounded preference routing and can be audited/rolled back according to the task specification. | SPEC-LS-01 | NOT VERIFIED |
+| V2-WF-48 | Completion evaluation gate run | Before completion is claimed, execute and record security/privacy, prompt-injection, accessibility, ADHD-friction, and historical-session migration gates in addition to ordinary build/unit tests. | SPEC-EG-01; SPEC-EG-02; SPEC-EG-03; SPEC-EG-04; SPEC-EG-05 | NOT VERIFIED |
+
+- Old workflow IDs retained: **34**.
+- New workflow IDs: **14**.
+- Corrected workflow denominator: **48**.

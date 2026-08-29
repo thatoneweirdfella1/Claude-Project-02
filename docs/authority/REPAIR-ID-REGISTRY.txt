@@ -1,0 +1,43 @@
+# source: docs/authority/DIVERGENCE-AI-REPAIR-QUEUE-v2.md
+# source_sha256: 7bc2d69f961aec436ef019aa3f886ecbde57591ebb011272ad7e66fa1d5f2c38
+# extraction: scripts/governance/derive-registries.mjs v2 repair
+# generated: deterministic; rerun after any source change
+V2-RQ-001
+V2-RQ-002
+V2-RQ-003
+V2-RQ-004
+V2-RQ-005
+V2-RQ-006
+V2-RQ-007
+V2-RQ-008
+V2-RQ-009
+V2-RQ-010
+V2-RQ-011
+V2-RQ-012
+V2-RQ-013
+V2-RQ-014
+V2-RQ-015
+V2-RQ-016
+V2-RQ-017
+V2-RQ-018
+V2-RQ-019
+V2-RQ-020
+V2-RQ-021
+V2-RQ-022
+V2-RQ-023
+V2-RQ-024
+V2-RQ-025
+V2-RQ-026
+V2-RQ-027
+V2-RQ-028
+V2-RQ-029
+V2-RQ-030
+V2-RQ-031
+V2-RQ-032
+V2-RQ-033
+V2-RQ-034
+V2-RQ-035
+V2-RQ-036
+V2-RQ-037
+V2-RQ-038
+V2-RQ-039

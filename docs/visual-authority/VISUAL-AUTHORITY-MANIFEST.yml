@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "source_checkpoint": "16beca26c305bd9bdae088eb8e977ca1e9730747",
+  "authority": [
+    "FROZEN-LAYOUT.md",
+    "docs/frozen-layout/light/LIGHT GOLD LAYOUT - IMAGE_2_ONLY_LIGHT_SPECS.md",
+    "docs/frozen-layout/light/LIGHT GOLD LAYOUT - LIGHT_MODE_IMAGE_AUDIT.md",
+    "docs/frozen-layout/light/LIGHT GOLD LAYOUT - MAIN LAYOUT DIVERGENCE FROZEN.png",
+    "docs/frozen-implementation-v1/DIVERGENCE-AI-COMPREHENSIVE-SPECIFICATION.md"
+  ],
+  "implementation": [
+    "src/styles/frozen-reference.css",
+    "cowork-preview/parts/**",
+    "scripts/apply-cowork-preview.cjs"
+  ],
+  "rule": "Images govern visual appearance and placement only; approved textual authority governs behavior and structure. The build overlay must be hashed in deployment identity when it participates."
+}

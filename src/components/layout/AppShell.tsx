@@ -1,51 +1,89 @@
-import { CenterColumn } from "../pipeline";
-import { GlassPanel } from "../primitives";
+import { useEffect, useState } from "react";
+import { QuickToolsGrid } from "../quicktools";
+import { AccordionStack } from "./AccordionStack";
 import { LeftNav } from "./LeftNav";
 import { TopBar } from "./TopBar";
+import { useThemeEffect } from "./useThemeEffect";
+import { useDesignLayoutEffect } from "./useDesignLayoutEffect";
+import { ScreenRouter } from "./ScreenRouter";
+import { ApprovedKeyboardShortcutsModal } from "../ApprovedKeyboardShortcutsModal";
+import { useApprovedKeyboardShortcuts } from "../../keyboard/useApprovedKeyboardShortcuts";
+import { CostConfirm } from "../credits";
+import { OperatorWorkspaceBar } from "../credits/OperatorWorkspaceBar";
+import { DevAdminPanel } from "../settings/DevAdminPanel";
+import { LocalDryRunPanel } from "../settings/LocalDryRunPanel";
+import { useAccountStore } from "../../stores/accountStore";
+import { useSessionStore } from "../../stores/sessionStore";
+import { destinationLabel } from "../../services/providerNeutral";
+import { VisibilityMenu } from "../visibility/VisibilityMenu";
+import { AppErrorBoundary } from "./AppErrorBoundary";
 
-/* AppShell — the structural frame from CANON.md "LAYOUT".
-   Regions were empty by design at Step 1.1 (skeleton only), then held
-   Step 1.3/1.4 demo content proving marble continuity and exercising
-   the primitive library. Step 1.5 replaces that demo content with the
-   real shell:
-     - TopBar (60px): logo, Search, Templates, Quick Reference, gear, bell, help, user chip
-     - LeftNav (200px): nav items, Trash, System Status, logout
-     - Center (flex): empty conversation placeholder — real content is
-       Steps 5.0+ (input composer, streaming display, state pills, etc.)
-     - RightSidebar (300px): placeholders for Quick Tools and the
-       accordion stack — real content is Steps 9.4-9.6
-
-   Structure and spacing only, per Step 1.5's own scope. Later feature
-   steps mount real content into center/right; they do not need to
-   touch the app-layer wrapper or the grid itself.
-
-   Step 5.2: the center region is now the live product — CenterColumn joins
-   the real ConversationArea and the real Composer through the pipeline
-   orchestrator (services/pipeline). The Step 5.0 ComposerSection (JSON
-   readout) and Step 5.1 StreamingAnswerDemo existed only because no
-   orchestrator did yet; both are superseded and removed. */
+function FrozenReferenceConnectors() {
+  return <svg className="frozen-connectors" viewBox="0 0 1600 1024" preserveAspectRatio="none" aria-hidden="true" data-testid="frozen-connectors">
+    <g fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round">
+      <path d="M1092 261 H1150 V188 H1212" /><path d="M1092 454 H1163 V374 H1212" />
+      <path d="M1092 454 H1163 V589 H1212" /><path d="M1092 923 H1163 V589" /><path d="M1163 589 V809 H1212" />
+    </g>
+    <g fill="var(--frozen-node-fill)" stroke="currentColor" strokeWidth="2">
+      <circle cx="1212" cy="188" r="4" /><circle cx="1212" cy="374" r="4" /><circle cx="1212" cy="589" r="4" /><circle cx="1212" cy="809" r="4" />
+    </g>
+  </svg>;
+}
 
 export function AppShell() {
-  return (
-    <div className="app-shell app-layer">
-      <header className="topbar" aria-label="Top bar" data-testid="topbar">
-        <TopBar />
-      </header>
-      <nav className="col-left" aria-label="Primary navigation" data-testid="col-left">
-        <LeftNav />
-      </nav>
-      <main className="col-center" data-testid="col-center">
-        <CenterColumn />
-      </main>
+  const currentScreen = useSessionStore((s) => s.currentScreen);
+  const destination = useSessionStore((s) => s.destination);
+  const quickTools = useAccountStore((s) => s.visibility.quickTools);
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  const [rightRailPanel, setRightRailPanel] = useState<string | null>(null);
+  const canvasScaleForViewport = () => {
+    if (typeof window === "undefined") return 0.72;
+    const edgeGutter = 48;
+    const widthScale = (window.innerWidth - edgeGutter * 2) / 1600;
+    const heightScale = (window.innerHeight - edgeGutter * 2) / 1024;
+    return Math.max(0.1, Math.min(0.72, widthScale, heightScale));
+  };
+  const [canvasScale, setCanvasScale] = useState(canvasScaleForViewport);
+  useThemeEffect(); useDesignLayoutEffect(); useApprovedKeyboardShortcuts();
+  useEffect(() => {
+    const resize = () => setCanvasScale(canvasScaleForViewport());
+    window.addEventListener("resize", resize);
+    resize();
+    return () => window.removeEventListener("resize", resize);
+  }, []);
+  useEffect(() => {
+    const updatePanel = (event: Event) => setRightRailPanel((event as CustomEvent<string | null>).detail ?? null);
+    window.addEventListener("divergence:right-rail-panel", updatePanel);
+    return () => window.removeEventListener("divergence:right-rail-panel", updatePanel);
+  }, []);
+  useEffect(() => {
+    const openShortcuts = () => setShowShortcuts(true);
+    window.addEventListener("divergence:open-shortcuts", openShortcuts);
+    return () => window.removeEventListener("divergence:open-shortcuts", openShortcuts);
+  }, []);
+
+  return <>
+    <div className="fixed-canvas-stage">
+    <div className="app-shell app-layer" style={{ transform: `scale(${canvasScale})` }} data-layout-authority="frozen-reference-1600x1024">
+      <header className="topbar" aria-label="Top bar" data-testid="topbar"><TopBar /></header>
+      <nav className="col-left" aria-label="Primary navigation" data-testid="col-left"><LeftNav /></nav>
+      <main className="col-center" data-testid="col-center"><div className="frozen-center-stack"><OperatorWorkspaceBar /><AppErrorBoundary resetKey={currentScreen}><ScreenRouter /></AppErrorBoundary><LocalDryRunPanel /><DevAdminPanel /></div></main>
       <aside className="col-right" aria-label="Sidebar panels" data-testid="col-right">
-        <GlassPanel className="sidebar-placeholder">
-          Quick Tools placeholder — hidden by default per CANON.md, built in Steps 9.4/9.6.
-        </GlassPanel>
-        <GlassPanel className="sidebar-placeholder">
-          Accordion stack placeholder (Recent Sessions, Context Snapshot, Recent Activity, Token
-          Usage, Model Status, Active Session) — built in Step 9.5.
-        </GlassPanel>
+        {rightRailPanel && <section className="right-rail-reference surface-smoked-glass" aria-label={rightRailPanel.startsWith("help:") ? "Help" : "Quick Reference"}>
+          <header><strong>{rightRailPanel.startsWith("help:") ? "Help" : "Quick Reference"}</strong><button type="button" aria-label="Close reference" onClick={() => setRightRailPanel(null)}>×</button></header>
+          <p>{currentScreen === "translate" ? "Write naturally, then use Send. Ctrl/Cmd + Enter uses the same Send action. Add Context keeps source material attached to the request." : `You are in ${currentScreen.replaceAll("-", " ")}. Use the visible tabs and controls; unavailable external actions say so before doing anything.`}</p>
+          <small>Ctrl/Cmd + K opens Search. Press ? outside a text field to reopen this reference.</small>
+        </section>}
+        <div className="right-rail-helpful surface-smoked-glass"><strong>Ready for {destinationLabel(destination)}</strong><span>Local preparation uses no Divergence credits.</span></div>
+        <VisibilityMenu />
+        {quickTools && <QuickToolsGrid />}
+        <AccordionStack />
       </aside>
+      <FrozenReferenceConnectors />
     </div>
-  );
+    </div>
+    <ApprovedKeyboardShortcutsModal open={showShortcuts} onClose={() => setShowShortcuts(false)} />
+    <CostConfirm />
+  </>;
 }
+

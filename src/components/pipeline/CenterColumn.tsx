@@ -1,54 +1,94 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { buildTranslateAskRequest, type TranslateAskRequest } from "../../services/composer";
-import { createProxyClient } from "../../services/proxyClient";
+import { createProxyClient, type TokenUsage } from "../../services/proxyClient";
 import type { PipelineDone } from "../../services/pipeline";
-import { observePipeline } from "../../services/telemetry";
+import { getTelemetryEntries, observePipeline } from "../../services/telemetry";
 import {
+  gateTranslation,
+  translate,
+  type GatedTranslation,
+  type TranslationResult,
+} from "../../services/translation";
+import {
+  applyStateRecommendation,
   buildAdaptationNote,
+  buildStateRecommendation,
   deriveStateFeeds,
   detectState,
+  detectStateLocally,
+  findRememberedStateChoice,
+  stateChoiceSignature,
   toStatePills,
   type StateDetectionResult,
+  type StateRecommendation,
 } from "../../services/detection";
+import { mergeVariables, substituteVariables } from "../../services/context";
 import { useAccountStore } from "../../stores/accountStore";
 import { useSessionStore } from "../../stores/sessionStore";
 import { Composer } from "../composer";
-import type { PillDimension } from "../detection";
+import { DetectionFailurePanel } from "../composer/DetectionFailurePanel";
+import { ReviewReadyRequest } from "../composer/ReviewReadyRequest";
+import { StateReviewPanel } from "../composer/StateReviewPanel";
+import { ImportResponseDialog } from "../composer/ImportResponseDialog";
+import {
+  buildAiReadyRequest,
+  compileMeaningPacket,
+  destinationLabel,
+  isFreeTranslator,
+  NO_CREDIT_BADGE,
+  resolvePaidAnswerModel,
+} from "../../services/providerNeutral";
+import type { StateDetectionUiStatus } from "../detection/StateDetectionStatusBar";
+import { QuickActionsRow } from "../session";
 import { ConversationArea, TranslationCard } from "../translation";
 import { StreamingAnswer } from "../streaming";
 import { usePipelineRun, type ActivePipelineRun } from "./usePipelineRun";
-
-/* CenterColumn (Step 5.2) — the live center column: the real ConversationArea
-   over the real Composer, joined by the pipeline orchestrator. This replaces
-   Step 5.0's ComposerSection (whose JSON-readout onSubmit existed only because
-   no orchestrator did yet) and Step 5.1's StreamingAnswerDemo (same reason).
-
-   TRANSLATE & ASK now does the real thing: the emitted TranslateAskRequest
-   goes straight into observePipeline() (Step 5.4's transparent telemetry tee
-   around runPipeline) against the Step 1.10 proxy client, the user's text is
-   appended to the conversation, the stage indicator / gated translation /
-   streamed answer render as the run progresses, and the finished answer is
-   appended to the session store (so it persists via the Step 1.8 autosave)
-   carrying confidence + routing's downgraded/notes.
-
-   The <60 clarify path finally closes the Step 2.3 loop: TranslationCard
-   renders the ClarifyPrompt, and onRefine re-runs the WHOLE pipeline with the
-   user's added detail appended to their original message (translation needs
-   both — the addition alone usually isn't self-contained).
-
-   Step 6.3: State Detection fires ALONGSIDE the pipeline, not inside it —
-   PIPELINE.md's RESOLVED note describes detection as its own single on-demand
-   classification on the same input, not one of the five orchestrator stages,
-   so it's a parallel side effect here rather than a change to orchestrator.ts
-   (already fresh-context-audited at 5.2, error-boundary-hardened at 5.3).
-   detectState()'s outcome feeds two places: the panel's local `detection`
-   state (rich — confidence, summary, for display/correction) and the session
-   store's `statePills` (Step 1.7's existing field — the durable, four-value
-   "current state" a later step, 6.5, delivers to its consumers). A failed or
-   absent detection just means no pills this turn; it never blocks or affects
-   the answer running beside it. */
+import { authorizeEstimatedCost } from "../../services/creditAuthorization";
+import { addTokenUsage, getEstimatedCostForPipeline } from "../../services/costTracking";
+import type { PaidRoutePolicy } from "../../services/paidRoutePolicy";
+import { saveNow } from "../../services/persistence";
+import { CONNECTED_EXECUTION_AVAILABLE } from "../../services/executionAvailability";
+import type { TechniqueId } from "../../stores/types";
+import { recommendModelAndTechniques } from "../../services/learningEngine";
+import { providerAvailable } from "../../services/providerStatus";
 
 const client = createProxyClient();
+const STATE_DIMENSIONS = ["emotion", "rsd", "interest", "cognitive"] as const;
+
+type RouteContext = { kind: "free" } | { kind: "paid" };
+
+interface PendingStateReview {
+  request: TranslateAskRequest;
+  result: StateDetectionResult;
+  recommendation: StateRecommendation;
+  route: RouteContext;
+}
+
+interface PendingDetectionFailure {
+  request: TranslateAskRequest;
+  route: RouteContext;
+  message: string;
+}
+
+interface PendingHandoffReview {
+  mode: "handoff";
+  request: TranslateAskRequest;
+  text: string;
+  decisionNote: string;
+}
+
+interface PendingPaidReview {
+  mode: "send";
+  request: TranslateAskRequest;
+  translation: TranslationResult;
+  translationUsage?: TokenUsage;
+  detection: StateDetectionResult | null;
+  recommendationApplied: boolean;
+  text: string;
+  decisionNote: string;
+}
+
+type PendingReview = PendingHandoffReview | PendingPaidReview;
 
 function newMessageId(): string {
   return typeof crypto !== "undefined" && "randomUUID" in crypto
@@ -56,33 +96,80 @@ function newMessageId(): string {
     : `msg-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
 }
 
+function includedContextCharacters(request: TranslateAskRequest): number {
+  return request.context
+    .filter((item) => item.included !== false)
+    .reduce((total, item) => total + item.label.length + item.content.length, 0);
+}
+
+function detectionFailureMessage(outcome: Exclude<Awaited<ReturnType<typeof detectState>>, { status: "ok" }>): string {
+  switch (outcome.status) {
+    case "error":
+      return outcome.message;
+    case "too-large":
+      return `The message has ${outcome.chars.toLocaleString()} characters; State Detection accepts up to ${outcome.limit.toLocaleString()}.`;
+    case "empty":
+      return "The message was empty.";
+  }
+}
+
 export function CenterColumn() {
   const addMessage = useSessionStore((s) => s.addMessage);
   const plan = useAccountStore((s) => s.plan);
-  const currentDirectness = useSessionStore((s) => s.directness);
-  const setDirectness = useSessionStore((s) => s.setDirectness);
 
   const [run, setRun] = useState<ActivePipelineRun | null>(null);
+  const [pendingReview, setPendingReview] = useState<PendingReview | null>(null);
+  const [preparationGate, setPreparationGate] = useState<GatedTranslation | null>(null);
+  const [pendingStateReview, setPendingStateReview] = useState<PendingStateReview | null>(null);
+  const [pendingDetectionFailure, setPendingDetectionFailure] = useState<PendingDetectionFailure | null>(null);
+  const [correctingDetection, setCorrectingDetection] = useState(false);
+  const [importingResponse, setImportingResponse] = useState(false);
   const [detection, setDetection] = useState<StateDetectionResult | null>(null);
+  const [detectionStatus, setDetectionStatus] = useState<StateDetectionUiStatus>("idle");
+  const [workflowMessage, setWorkflowMessage] = useState("");
   const runIdRef = useRef(0);
   const controllerRef = useRef<AbortController | null>(null);
-  /** The raw text behind the current run — the base a refinement extends. */
   const lastRawRef = useRef("");
+  const runDecisionNoteRef = useRef("");
+  const runHadDetectionRef = useRef(false);
+  const conversation = useSessionStore((s) => s.conversation);
+  const updateMessage = useSessionStore((s) => s.updateMessage);
+  const pendingHandoff = [...conversation].reverse().find((message) =>
+    message.messageKind === "handoff" && message.handoffStatus === "handed-off",
+  );
 
   const startRun = useCallback(
-    (request: TranslateAskRequest) => {
-      controllerRef.current?.abort(); // a resubmit cancels the in-flight call
+    (
+      request: TranslateAskRequest,
+      result: StateDetectionResult | null,
+      recommendationApplied: boolean,
+      decisionNote: string,
+      pretranslated?: TranslationResult,
+      pretranslationUsage?: TokenUsage,
+    ) => {
+      controllerRef.current?.abort();
       const controller = new AbortController();
       controllerRef.current = controller;
       runIdRef.current += 1;
       lastRawRef.current = request.rawInput;
-      // Step 6.5 state bus: read from whatever session.statePills CURRENTLY
-      // holds (the last completed detection — usually the prior turn's,
-      // since this turn's own detection runs in parallel and isn't in yet).
-      // One source (statePills), fed to two of its four consumers here —
-      // technique selection and answer tone; the other two (directness
-      // suggestion, transparency data) are consumed directly below/elsewhere.
-      const feeds = deriveStateFeeds(useSessionStore.getState().statePills);
+      runDecisionNoteRef.current = decisionNote;
+      runHadDetectionRef.current = result !== null;
+
+      if (result) {
+        setDetection(result);
+        useSessionStore.getState().setStatePills(toStatePills(result));
+      }
+      const feeds = result && recommendationApplied
+        ? deriveStateFeeds(toStatePills(result))
+        : { directnessSuggestion: null, techniqueCandidates: [], toneGuidance: null, transparency: [] };
+      const learnedPreferences = useAccountStore.getState().learnedPreferences;
+      const learnedTechniqueWeights = Object.fromEntries(
+        Object.entries(learnedPreferences.technique)
+          .map(([id, preference]) => [id, preference.weight]),
+      ) as Partial<Record<TechniqueId, number>>;
+      const learnedModel = recommendModelAndTechniques(request.rawInput, learnedPreferences).model;
+
+      setWorkflowMessage("Sending…");
       setRun({
         id: runIdRef.current,
         start: () =>
@@ -91,137 +178,708 @@ export function CenterColumn() {
             plan,
             signal: controller.signal,
             stateTechniques: feeds.techniqueCandidates,
+            learnedTechniqueWeights,
+            learnedModel,
             stateTone: feeds.toneGuidance,
+            pretranslated,
+            pretranslationUsage,
           }),
-      });
-
-      // State Detection — fires alongside translation, on the SAME raw input,
-      // sharing this submission's AbortController so a resubmit cancels both.
-      // Step 6.4: the adaptation note is built fresh from this user's current
-      // corrections every call (never stale — a correction made moments ago
-      // on THIS session already counts toward the next classification).
-      setDetection(null); // clear the panel immediately; this turn's read isn't in yet
-      const adaptationNote = buildAdaptationNote(useAccountStore.getState().stateCorrections);
-      void detectState(request.rawInput, {
-        client: (req) => client.complete(req),
-        signal: controller.signal,
-        adaptationNote,
-      }).then((outcome) => {
-        if (controller.signal.aborted) return; // superseded by a resubmit
-        if (outcome.status === "ok") {
-          setDetection(outcome.result);
-          useSessionStore.getState().setStatePills(toStatePills(outcome.result));
-        }
       });
     },
     [plan],
   );
 
-  function handleSubmit(request: TranslateAskRequest) {
-    // An empty submit still runs (translate() owns empty-handling, Step 5.0
-    // decision) but adds no empty bubble to the conversation.
-    if (request.rawInput.trim().length > 0) {
-      addMessage({
-        id: newMessageId(),
-        role: "user",
-        content: request.rawInput,
-        timestamp: Date.now(),
-      });
-    }
-    startRun(request);
+  function completeFreeHandoff(request: TranslateAskRequest, readyText: string, decisionNote: string, opened: boolean) {
+    const label = destinationLabel(request.destination);
+    addMessage({ id: newMessageId(), role: "user", content: request.rawInput, timestamp: Date.now(), messageState: "prepared" });
+    addMessage({
+      id: newMessageId(),
+      role: "assistant",
+      content: `AI-ready request handed off to ${label}. Paste the destination AI's answer back with Import Response.`,
+      timestamp: Date.now(),
+      messageKind: "handoff",
+      handoffStatus: "handed-off",
+      /* R19: a manual handoff is prepared and copied (and possibly opened),
+         never "sent" — the app itself never transmitted anything to an AI.
+         userCopied is always true here: completeFreeHandoff only runs after
+         ReviewReadyRequest's copyText() already succeeded (both "Copy only"
+         and "Copy & Open" copy first); userOpened reflects which button was
+         actually pressed — previously both produced an identical record. */
+      messageState: "prepared",
+      userCopied: true,
+      userOpened: opened,
+      sourceLabel: label,
+      preparedRequest: readyText,
+      notes: [NO_CREDIT_BADGE, "Handed off — not answered", decisionNote].filter(Boolean),
+    });
+    useSessionStore.getState().setDraftInput("");
+    setWorkflowMessage("Handed off — awaiting response.");
+    void saveNow({ reason: "autosave" }).catch(() => {
+      setWorkflowMessage("Handoff completed, but the recovery save failed. Your conversation remains on screen.");
+    });
   }
 
-  function handleRefine(refinedInput: string) {
+  function continueFreeFlow(
+    request: TranslateAskRequest,
+    result: StateDetectionResult | null,
+    recommendation: StateRecommendation | null,
+    recommendationApplied: boolean,
+    decisionNote: string,
+  ) {
+    if (result) {
+      setDetection(result);
+      useSessionStore.getState().setStatePills(toStatePills(result));
+    }
+    const packet = compileMeaningPacket({
+      ...request,
+      statePills: result ? toStatePills(result) : undefined,
+      stateApplied: recommendationApplied,
+      stateTechniques: recommendationApplied ? recommendation?.techniqueCandidates : undefined,
+      toneGuidance: recommendationApplied ? recommendation?.toneGuidance : null,
+    });
+    const readyText = buildAiReadyRequest(packet);
+    setPendingReview({ mode: "handoff", request, text: readyText, decisionNote });
+    setWorkflowMessage(request.reviewBeforeSend
+      ? "Review request before handoff."
+      : "Copy & Open to complete the handoff.");
+  }
+
+  async function preparePaidReview(
+    request: TranslateAskRequest,
+    result: StateDetectionResult | null,
+    recommendationApplied: boolean,
+    decisionNote: string,
+  ) {
+    controllerRef.current?.abort();
+    const controller = new AbortController();
+    controllerRef.current = controller;
+    let translationUsage: TokenUsage | undefined;
+
+    setPreparationGate(null);
+    setWorkflowMessage("Preparing…");
+    const outcome = await translate(request.rawInput, {
+      client: (translationRequest) => client.complete({
+        ...translationRequest,
+        onUsage: (usage) => {
+          translationUsage = usage;
+          addTokenUsage(usage.inputTokens, usage.outputTokens, translationRequest.model);
+        },
+      }),
+      signal: controller.signal,
+    });
+    if (controller.signal.aborted) return;
+
+    const gated = gateTranslation(outcome);
+    setPreparationGate(gated);
+    if (gated.kind === "proceed" || gated.kind === "moderate") {
+      setPendingReview({
+        mode: "send",
+        request,
+        translation: gated.result,
+        translationUsage,
+        detection: result,
+        recommendationApplied,
+        text: gated.result.translatedPrompt,
+        decisionNote,
+      });
+      setWorkflowMessage("Review request before sending.");
+      return;
+    }
+
+    setWorkflowMessage(gated.kind === "clarify"
+      ? "Please confirm what you meant before sending."
+      : gated.kind === "too-large"
+        ? "Request is too long to prepare. Your draft is unchanged."
+        : gated.kind === "empty"
+          ? "Nothing to send yet."
+          : `Request preparation failed: ${gated.message}. Your draft is ready to retry.`);
+  }
+
+  function continueRoute(
+    route: RouteContext,
+    request: TranslateAskRequest,
+    result: StateDetectionResult | null,
+    recommendation: StateRecommendation | null,
+    recommendationApplied: boolean,
+    decisionNote: string,
+    nextStatus: StateDetectionUiStatus,
+  ) {
+    const effectiveRequest = recommendationApplied && recommendation
+      ? applyStateRecommendation(request, recommendation)
+      : request;
+
+    setPendingStateReview(null);
+    setPendingDetectionFailure(null);
+    setDetectionStatus(nextStatus);
+
+    if (route.kind === "free") {
+      continueFreeFlow(effectiveRequest, result, recommendation, recommendationApplied, decisionNote);
+      return;
+    }
+
+    if (effectiveRequest.reviewBeforeSend) {
+      void preparePaidReview(effectiveRequest, result, recommendationApplied, decisionNote);
+      return;
+    }
+
+    // R19: this message goes straight into startRun's real pipeline call —
+    // genuinely "sent" to an AI, unlike a manual handoff.
+    addMessage({ id: newMessageId(), role: "user", content: request.rawInput, timestamp: Date.now(), messageState: "sent" });
+    lastRawRef.current = request.rawInput;
+    useSessionStore.getState().setDraftInput("");
+    startRun(effectiveRequest, result, recommendationApplied, decisionNote);
+  }
+
+  function rememberChoice(result: StateDetectionResult, action: "accept" | "keep-current" | "dismiss", remember: boolean) {
+    if (!remember) return;
+    useAccountStore.getState().rememberStateChoice({
+      signature: stateChoiceSignature(result),
+      action,
+      timestamp: Date.now(),
+    });
+  }
+
+  function rememberCorrections(
+    original: StateDetectionResult,
+    corrected: StateDetectionResult,
+    remember: boolean,
+  ) {
+    if (!remember) return;
+    for (const dimension of STATE_DIMENSIONS) {
+      const from = original[dimension]?.value;
+      const to = corrected[dimension]?.value;
+      if (to && from !== to) {
+        useAccountStore.getState().recordStateCorrection({
+          dimension,
+          from: from ?? "none",
+          to,
+          timestamp: Date.now(),
+        });
+      }
+    }
+  }
+
+  function resolveDetection(
+    request: TranslateAskRequest,
+    result: StateDetectionResult,
+    route: RouteContext,
+  ) {
+    setDetection(result);
+    useSessionStore.getState().setStatePills(toStatePills(result));
+
+    const recommendation = buildStateRecommendation(result, request);
+    if (!recommendation) {
+      setWorkflowMessage("State checked — no change suggested.");
+      continueRoute(
+        route,
+        request,
+        result,
+        null,
+        false,
+        "State checked — no change suggested.",
+        "no-change",
+      );
+      return;
+    }
+
+    const remembered = findRememberedStateChoice(
+      useAccountStore.getState().rememberedStateChoices,
+      result,
+    );
+    if (remembered) {
+      const accept = remembered.action === "accept";
+      const note = accept
+        ? "Remembered State choice applied to this similar request."
+        : "Remembered State choice kept the current request settings.";
+      setWorkflowMessage(note);
+      continueRoute(
+        route,
+        request,
+        result,
+        recommendation,
+        accept,
+        note,
+        "used",
+      );
+      return;
+    }
+
+    setPendingStateReview({ request, result, recommendation, route });
+    setDetectionStatus("recommendation");
+    setWorkflowMessage("A response adjustment may help. Choose how to continue.");
+  }
+
+  function failDetection(request: TranslateAskRequest, route: RouteContext, message: string) {
+    setPendingDetectionFailure({ request, route, message });
+    setDetectionStatus("unavailable");
+    setWorkflowMessage("State Detection could not run. Continue with current settings?");
+  }
+
+  function queueFreeFlow(request: TranslateAskRequest) {
+    setDetectionStatus("checking");
+    setWorkflowMessage("Checking state…");
+    try {
+      resolveDetection(request, detectStateLocally(request.rawInput), { kind: "free" });
+    } catch (error) {
+      failDetection(
+        request,
+        { kind: "free" },
+        error instanceof Error ? error.message : String(error),
+      );
+    }
+  }
+
+  async function queuePaidFlow(request: TranslateAskRequest) {
+    controllerRef.current?.abort();
+    const controller = new AbortController();
+    controllerRef.current = controller;
+    setDetectionStatus("checking");
+    setWorkflowMessage("Checking state…");
+
+    const adaptationNote = buildAdaptationNote(useAccountStore.getState().stateCorrections);
+    const outcome = await detectState(request.rawInput, {
+      client: (req) =>
+        client.complete({
+          ...req,
+          onUsage: (usage) => addTokenUsage(usage.inputTokens, usage.outputTokens, req.model),
+        }),
+      signal: controller.signal,
+      adaptationNote,
+    });
+    if (controller.signal.aborted) return;
+    if (outcome.status === "ok") {
+      resolveDetection(request, outcome.result, { kind: "paid" });
+    } else {
+      failDetection(request, { kind: "paid" }, detectionFailureMessage(outcome));
+    }
+  }
+
+  function paidRoutePolicy(
+    request: TranslateAskRequest,
+    selectedModel: string,
+    reasonLabel: string,
+  ): PaidRoutePolicy {
+    const session = useSessionStore.getState();
+    const account = useAccountStore.getState();
+    const routeLabel = request.translatorEngine === "destination-one-pass"
+      ? `Connected ${destinationLabel(request.destination)} · ${selectedModel}`
+      : request.translatorEngine === "managed-translator"
+        ? `Managed translator · Anthropic · ${selectedModel}`
+        : `Legacy or automatic Claude translator · Anthropic · ${selectedModel}`;
+
+    return {
+      maximum: session.maxRequestCost,
+      paidFallbackEnabled: session.paidFallbackEnabled,
+      requiresPaidFallback:
+        request.translatorEngine === "auto-free-first" ||
+        request.translatorEngine === "legacy-claude",
+      routeLabel,
+      payerLabel: account.appMode === "developer"
+        ? "Divergence developer workspace"
+        : "Your Divergence credits",
+      reasonLabel,
+      freeAlternativeLabel:
+        `Prepare an AI-ready request for ${destinationLabel(request.destination)} without a new charge`,
+    };
+  }
+
+  async function handleSubmit(request: TranslateAskRequest): Promise<boolean> {
+    if (!request.rawInput.trim()) return false;
+
+    const appMode = useAccountStore.getState().appMode;
+
+    // Developer Mode forces paid translator to bypass the free flow path
+    // while still using the full translation/routing/provider pipeline
+    if (appMode === "developer" && isFreeTranslator(request.translatorEngine)) {
+      request = { ...request, translatorEngine: "managed-translator" };
+    }
+
+    setPreparationGate(null);
+    setWorkflowMessage("Recovery-saving…");
+    try {
+      await saveNow({ reason: "autosave" });
+    } catch {
+      setWorkflowMessage("Recovery save failed. Request not sent; your draft is still here.");
+      return false;
+    }
+
+    if (isFreeTranslator(request.translatorEngine)) {
+      queueFreeFlow(request);
+      return true;
+    }
+
+    if (!CONNECTED_EXECUTION_AVAILABLE) {
+      queueFreeFlow({ ...request, translatorEngine: "local-rules" });
+      return true;
+    }
+
+    const paidModel = resolvePaidAnswerModel(request);
+    if (paidModel === null) {
+      queueFreeFlow(request);
+      return true;
+    }
+    const paidRequest = paidModel === request.model ? request : { ...request, model: paidModel };
+    const selectedModel = paidModel === "auto" ? "claude-haiku-4-5" : paidModel;
+    if (!(await providerAvailable("anthropic"))) {
+      queueFreeFlow({ ...paidRequest, translatorEngine: "local-rules" });
+      setWorkflowMessage("Connected Claude is not configured. Prepared a no-charge handoff instead.");
+      return true;
+    }
+
+    // Developer Mode bypasses cost authorization (unlimited testing)
+    // but still uses the full translation/routing/provider pipeline
+    if (appMode === "developer") {
+      setWorkflowMessage("Sending (Developer Mode — unlimited)…");
+      await queuePaidFlow(paidRequest);
+      return true;
+    }
+
+    const estimate = getEstimatedCostForPipeline(
+      paidRequest.rawInput,
+      selectedModel,
+      includedContextCharacters(paidRequest),
+    );
+    setWorkflowMessage("Confirm cost before sending.");
+    const authorization = await authorizeEstimatedCost(
+      estimate,
+      "Connected Claude translator",
+      paidRoutePolicy(
+        paidRequest,
+        selectedModel,
+        "This request uses a connected paid AI instead of the no-new-charge handoff.",
+      ),
+    );
+    if (!authorization.authorized) {
+      if (authorization.reason === "free-route-selected") {
+        queueFreeFlow(request);
+        return true;
+      }
+      setWorkflowMessage("Not sent. Your draft is still here.");
+      return false;
+    }
+
+    await queuePaidFlow(paidRequest);
+    return true;
+  }
+
+  async function handleRefine(refinedInput: string): Promise<void> {
+    const s = useSessionStore.getState();
+    const substitutedAddition = substituteVariables(
+      refinedInput,
+      mergeVariables(useAccountStore.getState().variables, s.variables),
+    );
+    const combinedInput = `${lastRawRef.current}\n\n${substitutedAddition}`;
+    const selectedModel = s.model === "auto" ? "claude-haiku-4-5" : s.model;
+    const rerunRequest = buildTranslateAskRequest(
+      combinedInput,
+      {
+        model: s.model,
+        destination: s.destination,
+        translatorEngine: s.translatorEngine,
+        reviewBeforeSend: s.reviewBeforeSend,
+        directness: s.directness,
+        techniques: s.techniques,
+      },
+      s.context,
+    );
+    if (!CONNECTED_EXECUTION_AVAILABLE) {
+      queueFreeFlow({ ...rerunRequest, translatorEngine: "local-rules" });
+      return;
+    }
+    const estimate = getEstimatedCostForPipeline(
+      combinedInput,
+      selectedModel,
+      includedContextCharacters(rerunRequest),
+    );
+    const authorization = await authorizeEstimatedCost(
+      estimate,
+      "Refine and rerun the answer",
+      paidRoutePolicy(
+        rerunRequest,
+        selectedModel,
+        "Refining reruns the connected paid AI pipeline.",
+      ),
+    );
+    if (!authorization.authorized) {
+      if (authorization.reason === "free-route-selected") queueFreeFlow(rerunRequest);
+      else setWorkflowMessage("Refine cancelled. Nothing was spent.");
+      return;
+    }
     addMessage({
       id: newMessageId(),
       role: "user",
-      content: refinedInput,
+      content: substitutedAddition,
       timestamp: Date.now(),
+      messageState: "sent",
     });
-    // Original + addition, so translation sees the whole thought; settings are
-    // read fresh from the store (the user may have changed a dropdown since).
-    // startRun also re-fires detection on this same combined text.
-    const s = useSessionStore.getState();
-    startRun(
-      buildTranslateAskRequest(
-        `${lastRawRef.current}\n\n${refinedInput}`,
-        { model: s.model, directness: s.directness, techniques: s.techniques },
-        s.context,
-      ),
-    );
+    startRun(rerunRequest, null, false, "Refine rerun used the current explicit settings.");
   }
 
   const handleDone = useCallback(
     (done: PipelineDone) => {
+      const entries = getTelemetryEntries();
+      const telemetryId = entries.length > 0 ? entries[entries.length - 1].id : undefined;
       addMessage({
         id: newMessageId(),
         role: "assistant",
         content: done.text,
         timestamp: Date.now(),
+        messageState: "answered",
         confidence: done.confidence,
         downgraded: done.downgraded,
-        notes: done.notes,
+        notes: [...(done.notes ?? []), runDecisionNoteRef.current].filter(Boolean),
+        telemetryId,
+        statePills: useSessionStore.getState().statePills,
       });
-      setRun(null); // the stored message takes over rendering from here
+      setWorkflowMessage("Response received.");
+      if (runHadDetectionRef.current) setDetectionStatus("used");
+      setRun(null);
+      void saveNow({ reason: "autosave" }).catch(() => {
+        setWorkflowMessage("Response received, but recovery save failed. Keep this page open until the next save succeeds.");
+      });
     },
     [addMessage],
   );
 
-  // Step 6.3: makes a correction visible immediately (updates the displayed
-  // pill + the committed session.statePills). Step 6.4: ALSO records it to
-  // the account store (persists across sessions) so countCorrectionsTo/
-  // adaptedValueFor can see it — this is the single call site both steps'
-  // BUILD-LOG PARKED notes named as where the correction store should hook in.
-  function handleCorrectState(dimension: PillDimension, value: string) {
-    setDetection((prev) => {
-      if (!prev) return prev;
-      const previousReading = prev[dimension];
-      // `value` is always one of this exact dimension's own valid values
-      // (PillCorrector only ever offers config.values for its own config) —
-      // safe by construction, though TS can't prove it through the generic
-      // PillDimension key here.
-      const corrected = { ...prev, [dimension]: { value, confidence: 100 } } as StateDetectionResult;
-      useSessionStore.getState().setStatePills(toStatePills(corrected));
-      if (previousReading && previousReading.value !== value) {
-        useAccountStore.getState().recordStateCorrection({
-          dimension,
-          from: previousReading.value,
-          to: value,
-          timestamp: Date.now(),
-        });
-      }
-      return corrected;
+  const { gated, display } = usePipelineRun(run, handleDone);
+
+  useEffect(() => {
+    if (display?.kind !== "error") return;
+    // R13: display.message/nextAction are already safe, categorized copy —
+    // never a raw provider/HTTP internal (see usePipelineRun.ts).
+    const action = display.nextAction ?? "Your draft is ready to retry.";
+    setWorkflowMessage(`Request failed: ${display.message} ${action}`);
+    const session = useSessionStore.getState();
+    if (!session.draftInput.trim() && lastRawRef.current) session.setDraftInput(lastRawRef.current);
+  }, [display]);
+
+  function confirmImportedResponse(response: string, sourceLabel: string) {
+    if (!pendingHandoff) return;
+    // R19: the prepared handoff is fulfilled — its own state moves to
+    // "imported" alongside the legacy handoffStatus, and the response the
+    // user pasted back and confirmed is itself an imported message, never
+    // "answered" (no AI call happened inside this app for it).
+    updateMessage(pendingHandoff.id, { handoffStatus: "imported", messageState: "imported" });
+    addMessage({
+      id: newMessageId(),
+      role: "assistant",
+      content: response,
+      timestamp: Date.now(),
+      messageKind: "imported",
+      handoffStatus: "imported",
+      messageState: "imported",
+      sourceLabel,
+      parentMessageId: pendingHandoff.id,
+      notes: [`Imported from ${sourceLabel}`, "Reviewed and confirmed by you"],
+    });
+    setImportingResponse(false);
+    setDetectionStatus(detection ? "used" : detectionStatus);
+    setWorkflowMessage("Imported response added to the conversation.");
+    void saveNow({ reason: "autosave" }).catch(() => {
+      setWorkflowMessage("Response imported, but recovery save failed. Keep this page open until the next save succeeds.");
     });
   }
 
-  const { gated, display } = usePipelineRun(run, handleDone);
-
-  // Step 6.5, directness consumer: a visible, never-silent suggestion — only
-  // shown when it actually differs from what's currently selected, and only
-  // applied on an explicit click (CenterColumn never calls setDirectness on
-  // its own). Derived from the SAME deriveStateFeeds() every other consumer
-  // reads, via this turn's detection result once it's in.
-  const directnessSuggestion = detection
-    ? deriveStateFeeds(toStatePills(detection)).directnessSuggestion
-    : null;
-  const suggestedDirectness =
-    directnessSuggestion !== null && directnessSuggestion !== currentDirectness
-      ? directnessSuggestion
-      : null;
+  const displayMessage = display?.kind === "stage"
+    ? `${display.stage}…`
+    : display?.kind === "streaming"
+      ? "Waiting for response…"
+      : display?.kind === "error"
+        ? `Request failed: ${display.message}${display.nextAction ? ` ${display.nextAction}` : ""}`
+        : "";
+  const composerStatus = pendingStateReview
+    ? "A response adjustment may help. Choose how to continue."
+    : pendingDetectionFailure
+      ? "State Detection could not run. Continue with current settings?"
+      : pendingReview
+        ? pendingReview.mode === "send"
+          ? "Review request before sending."
+          : pendingReview.request.reviewBeforeSend
+            ? "Review request before handoff."
+            : "Copy & Open to complete the handoff."
+        : displayMessage || workflowMessage;
+  const submitDisabled = Boolean(
+    pendingStateReview ||
+    pendingDetectionFailure ||
+    pendingReview ||
+    correctingDetection ||
+    detectionStatus === "checking" ||
+    (run && display?.kind !== "error"),
+  );
 
   return (
     <>
       <ConversationArea>
-        {gated && <TranslationCard gated={gated} onRefine={handleRefine} />}
+        {preparationGate && <TranslationCard gated={preparationGate} onRefine={(value) => void handleRefine(value)} />}
+        {!preparationGate && gated && <TranslationCard gated={gated} onRefine={(value) => void handleRefine(value)} />}
         {display && <StreamingAnswer state={display} />}
       </ConversationArea>
       <Composer
         onSubmit={handleSubmit}
         detection={detection}
-        onCorrectState={handleCorrectState}
-        suggestedDirectness={suggestedDirectness}
-        onApplyDirectness={() => setDirectness(suggestedDirectness!)}
+        detectionStatus={detectionStatus}
+        onOpenStateCorrection={detection ? () => setCorrectingDetection(true) : undefined}
+        statusMessage={composerStatus}
+        submitDisabled={submitDisabled}
       />
+      <QuickActionsRow />
+      {pendingHandoff && !importingResponse && (
+        <div className="handoff-status surface-smoked-glass" role="status">
+          <div><strong>Handed off — awaiting response</strong><span>{pendingHandoff.sourceLabel}</span></div>
+          <button type="button" onClick={() => setImportingResponse(true)}>Import Response</button>
+        </div>
+      )}
+      {pendingStateReview && (
+        <StateReviewPanel
+          initial={pendingStateReview.result}
+          recommendationChanges={pendingStateReview.recommendation.changes}
+          onAccept={(result, remember) => {
+            rememberCorrections(pendingStateReview.result, result, remember);
+            rememberChoice(pendingStateReview.result, "accept", remember);
+            const correctedRecommendation = buildStateRecommendation(result, pendingStateReview.request);
+            continueRoute(
+              pendingStateReview.route,
+              pendingStateReview.request,
+              result,
+              correctedRecommendation,
+              correctedRecommendation !== null,
+              correctedRecommendation
+                ? `State adjustment accepted: ${correctedRecommendation.changes.join(" ")}`
+                : "State corrected; no request adjustment was needed.",
+              correctedRecommendation ? "used" : "no-change",
+            );
+          }}
+          onKeepCurrent={(remember) => {
+            rememberChoice(pendingStateReview.result, "keep-current", remember);
+            continueRoute(
+              pendingStateReview.route,
+              pendingStateReview.request,
+              pendingStateReview.result,
+              pendingStateReview.recommendation,
+              false,
+              "State recommendation declined; current explicit settings kept.",
+              "used",
+            );
+          }}
+          onDismiss={(remember) => {
+            rememberChoice(pendingStateReview.result, "dismiss", remember);
+            continueRoute(
+              pendingStateReview.route,
+              pendingStateReview.request,
+              pendingStateReview.result,
+              pendingStateReview.recommendation,
+              false,
+              "State recommendation dismissed; current explicit settings kept.",
+              "used",
+            );
+          }}
+        />
+      )}
+      {pendingDetectionFailure && (
+        <DetectionFailurePanel
+          message={pendingDetectionFailure.message}
+          onContinue={() => continueRoute(
+            pendingDetectionFailure.route,
+            pendingDetectionFailure.request,
+            null,
+            null,
+            false,
+            "State Detection unavailable; continued with current explicit settings.",
+            "unavailable",
+          )}
+          onRetry={() => {
+            const pending = pendingDetectionFailure;
+            setPendingDetectionFailure(null);
+            if (pending.route.kind === "free") queueFreeFlow(pending.request);
+            else void queuePaidFlow(pending.request);
+          }}
+          onCancel={() => {
+            setPendingDetectionFailure(null);
+            setWorkflowMessage("Send cancelled. Your draft and settings are unchanged.");
+          }}
+        />
+      )}
+      {correctingDetection && detection && (
+        <StateReviewPanel
+          initial={detection}
+          initialMode="correct"
+          onAccept={(corrected, remember) => {
+            rememberCorrections(detection, corrected, remember);
+            setDetection(corrected);
+            useSessionStore.getState().setStatePills(toStatePills(corrected));
+            setCorrectingDetection(false);
+            setDetectionStatus("used");
+            setWorkflowMessage(remember
+              ? "State correction saved and remembered."
+              : "State correction saved for this request only.");
+          }}
+          onKeepCurrent={() => setCorrectingDetection(false)}
+          onDismiss={() => setCorrectingDetection(false)}
+          onCorrectionCancel={() => setCorrectingDetection(false)}
+        />
+      )}
+      {pendingReview?.mode === "handoff" && (
+        <ReviewReadyRequest
+          initialText={pendingReview.text}
+          originalText={pendingReview.request.rawInput}
+          destination={pendingReview.request.destination}
+          reviewRequired={pendingReview.request.reviewBeforeSend}
+          onCancel={() => {
+            setPendingReview(null);
+            setWorkflowMessage("Review cancelled. Your draft is still here.");
+          }}
+          onHandoff={(text, destination, opened) => {
+            completeFreeHandoff({ ...pendingReview.request, destination }, text, pendingReview.decisionNote, opened);
+            setPendingReview(null);
+          }}
+        />
+      )}
+      {pendingReview?.mode === "send" && (
+        <ReviewReadyRequest
+          mode="send"
+          initialText={pendingReview.text}
+          originalText={pendingReview.request.rawInput}
+          destination={pendingReview.request.destination}
+          onCancel={() => {
+            setPendingReview(null);
+            setPreparationGate(null);
+            setWorkflowMessage("Review cancelled. Your draft and settings are unchanged.");
+          }}
+          onSend={(text, sendAutomaticallyNextTime) => {
+            const reviewed = pendingReview;
+            const editedTranslation: TranslationResult = {
+              ...reviewed.translation,
+              translatedPrompt: text.trim(),
+              reasoning: text.trim() === reviewed.translation.translatedPrompt.trim()
+                ? reviewed.translation.reasoning
+                : `${reviewed.translation.reasoning} The prepared request was edited and approved in Review first.`,
+            };
+            if (sendAutomaticallyNextTime) {
+              useSessionStore.getState().setReviewBeforeSend(false);
+            }
+            addMessage({ id: newMessageId(), role: "user", content: reviewed.request.rawInput, timestamp: Date.now(), messageState: "sent" });
+            lastRawRef.current = reviewed.request.rawInput;
+            useSessionStore.getState().setDraftInput("");
+            setPendingReview(null);
+            setPreparationGate(null);
+            startRun(
+              reviewed.request,
+              reviewed.detection,
+              reviewed.recommendationApplied,
+              reviewed.decisionNote,
+              editedTranslation,
+              reviewed.translationUsage,
+            );
+          }}
+        />
+      )}
+      {importingResponse && pendingHandoff && (
+        <ImportResponseDialog
+          sourceLabel={pendingHandoff.sourceLabel ?? "Destination AI"}
+          onCancel={() => setImportingResponse(false)}
+          onConfirm={confirmImportedResponse}
+        />
+      )}
     </>
   );
 }

@@ -28,6 +28,9 @@ export interface TechniqueHints {
       (e.g. Emotion=frustrated → simplify). A HINT like the others, not a
       forced pick: still subject to conflicts/dependencies/the ≤4 cap below. */
   stateTechniques?: TechniqueId[];
+  /** Persisted learning nudges. Values are bounded account weights (-5..5)
+      and remain weaker than one explicit lexical match. */
+  learnedTechniqueWeights?: Partial<Record<TechniqueId, number>>;
 }
 
 export interface TechniqueScore {
@@ -44,6 +47,10 @@ export interface TechniqueSelection {
   scores: TechniqueScore[];
   /** User-facing one-liner on why these were chosen. */
   reasoning: string;
+  /** Step 8.2: which dispatch path produced this selection — the
+      Transparency card's Confidence sub-card treats an explicit manual stack
+      as fully certain, distinct from the auto-detect scorer's best guess. */
+  mode: "manual" | "auto-detect";
 }
 
 interface Signal {
@@ -129,6 +136,12 @@ function applyHints(
   // state hint alone doesn't overpower an actual lexical match in the text.
   for (const id of hints.stateTechniques ?? []) {
     bump(id, 1, "detected state");
+  }
+
+  for (const [rawId, rawWeight] of Object.entries(hints.learnedTechniqueWeights ?? {})) {
+    if (!isTechniqueId(rawId) || !Number.isFinite(rawWeight) || rawWeight === 0) continue;
+    const weight = Math.max(-5, Math.min(5, rawWeight));
+    bump(rawId, weight * 0.25, "learned from confirmed feedback");
   }
 }
 
@@ -220,7 +233,7 @@ export function autoDetectTechniques(
   if (selected.length === 0) selected.push(DEFAULT_TECHNIQUE);
 
   const reasoning = buildReasoning(selected, scores);
-  return { selected, scores: ranked, reasoning };
+  return { selected, scores: ranked, reasoning, mode: "auto-detect" };
 }
 
 function buildReasoning(
@@ -250,5 +263,6 @@ export function selectTechniques(
     selected: [id],
     scores: [{ id, score: 1, reasons: ["manually selected"] }],
     reasoning: `Manually selected: ${getTechnique(id).label}.`,
+    mode: "manual",
   };
 }

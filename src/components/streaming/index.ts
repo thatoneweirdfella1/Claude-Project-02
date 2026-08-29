@@ -4,4 +4,5 @@ export { AnswerMeta, type AnswerMetaProps } from "./AnswerMeta";
 export { RatingRow, type RatingRowProps } from "./RatingRow";
 export { StageIndicator } from "./StageIndicator";
 export { StreamingAnswer, type StreamingAnswerProps } from "./StreamingAnswer";
+export { TransparencyCard, type TransparencyCardProps } from "./TransparencyCard";
 export { useAnswerDisplay } from "./useAnswerDisplay";

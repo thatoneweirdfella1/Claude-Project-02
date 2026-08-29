@@ -1,7 +1,9 @@
 import type { ButtonHTMLAttributes } from "react";
 
-/* Secondary button. Same Smoked Glass material as GlassCard — no
-   marble, per MATERIALS.md ("Blue Marble ... primary buttons only"). */
+/* Secondary button. Same Dark Grey Marble material as GlassCard — no
+   marble texture, per MATERIALS.md ("Medium Gray Marble ... primary
+   buttons only"). Class/component name predates an operator-directed
+   grey override, this session; see MATERIALS.md THE THREE SURFACES. */
 
 export function GlassButton({
   className = "",

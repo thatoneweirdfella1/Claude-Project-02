@@ -14,12 +14,20 @@
    adaptation. CORRECTION_THRESHOLD = 15, verbatim from CANON/PIPELINE.md. */
 
 import type { StateCorrection } from "../../stores/types";
+import { COGNITIVE_MODES, EMOTION_STATES, INTEREST_LEVELS, RSD_LEVELS } from "./schema";
 
 export const CORRECTION_THRESHOLD = 15;
 
 export type CorrectionDimension = StateCorrection["dimension"];
 
 const ALL_DIMENSIONS: readonly CorrectionDimension[] = ["emotion", "rsd", "interest", "cognitive"];
+
+const APPROVED_VALUES: Record<CorrectionDimension, readonly string[]> = {
+  emotion: EMOTION_STATES,
+  rsd: RSD_LEVELS,
+  interest: INTEREST_LEVELS,
+  cognitive: COGNITIVE_MODES,
+};
 
 /** How many times the user has corrected `dimension` TO `value`. */
 export function countCorrectionsTo(
@@ -44,6 +52,7 @@ export function adaptedValueFor(
   const lastSeenAt = new Map<string, number>();
   for (const c of corrections) {
     if (c.dimension !== dimension) continue;
+    if (!APPROVED_VALUES[dimension].includes(c.to)) continue;
     counts.set(c.to, (counts.get(c.to) ?? 0) + 1);
     lastSeenAt.set(c.to, Math.max(lastSeenAt.get(c.to) ?? 0, c.timestamp));
   }

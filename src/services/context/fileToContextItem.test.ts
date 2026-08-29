@@ -17,6 +17,8 @@ describe("readFileAsContextItem — text-readable types", () => {
     expect(item.label).toBe("notes.txt");
     expect(item.content).toBe("hello from a text file");
     expect(item.bytes).toBe(file.size);
+    expect(item.fileType).toBe("text/plain");
+    expect(item.included).toBe(true);
     expect(item.id).toBeTruthy();
   });
 

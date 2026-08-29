@@ -1,131 +1,255 @@
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ChevronDown, Paperclip } from "lucide-react";
 import { GlassButton } from "../primitives";
+import { useDismissableLayer } from "../../keyboard";
+import { useAccountStore } from "../../stores/accountStore";
 import { useSessionStore } from "../../stores/sessionStore";
+import type { ContextItem } from "../../stores/types";
+import { ContextManagerDialog } from "../context/ContextManagerDialog";
 import {
   FILE_INPUT_ACCEPT,
-  createTesseractOcrClient,
+  fetchUrlContext,
+  getSharedOcrClient,
+  isValidVariableName,
   uploadFiles,
-  type OcrClient,
   type RejectedFile,
 } from "../../services/context";
-
-/* Attach and Context controls (Step 5.0 built the buttons; Step 7.1 gave
-   Attach its real behavior; Step 7.2 adds OCR for images). "Attach ▾" opens
-   a native file picker directly — CANON Feature 6's "upload files" — and
-   reads the CANON limits (10MB per file, 50MB per session, PDF/TXT/JSON/CSV/
-   images) through services/context/uploadFiles. Accepted files are added to
-   session.context immediately (Step 1.7's existing addContextItem action —
-   no new store field needed, ContextItem already had exactly this shape).
-   Rejected files surface a neutral, specific, non-blaming message (CANON
-   ADHD Feedback) rather than silently dropping them.
-
-   Step 7.2: an image upload runs real OCR through a lazily-created,
-   module-level tesseract client (one worker, reused across every image this
-   session — see services/context/ocr.ts) — never blocking the main thread,
-   since tesseract.js's worker does the recognition off-thread. Recognition
-   genuinely takes seconds, so CANON's "indicator for any wait over 1 second"
-   applies: `uploading` drives a status line for the whole upload+OCR pass
-   (shown immediately, a strict superset of "after 1s" — same reasoning as
-   the pipeline's stage indicator).
-
-   "Context ›" still defaults to a harmless no-op — the Context Snapshot
-   panel (showing everything loaded, with remove buttons) is Step 7.5's job;
-   paste-text and paste-URL (Steps 7.3/7.4) are separate entry points this
-   step doesn't invent ahead of their own steps. */
 
 export interface AttachContextControlsProps {
   onAttach?: () => void;
   onContext?: () => void;
 }
 
-/** One tesseract worker for the whole app session, created on first use —
-    not per component instance, so remounting AttachContextControls (or
-    rendering it twice) never spins up a second worker. */
-let sharedOcrClient: OcrClient | null = null;
-function getOcrClient(): OcrClient {
-  sharedOcrClient ??= createTesseractOcrClient();
-  return sharedOcrClient;
+type PopoverView = "menu" | "text" | "url" | "variable";
+
+function textBytes(value: string): number {
+  try { return new TextEncoder().encode(value).byteLength; } catch { return value.length * 2; }
 }
 
-export function AttachContextControls({
-  onAttach = () => {},
-  onContext = () => {},
-}: AttachContextControlsProps) {
-  const context = useSessionStore((s) => s.context);
-  const addContextItem = useSessionStore((s) => s.addContextItem);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [rejections, setRejections] = useState<RejectedFile[]>([]);
-  const [uploading, setUploading] = useState(false);
+function contextId(prefix: string): string {
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
 
-  function openPicker() {
+export function AttachContextControls({ onAttach = () => {}, onContext = () => {} }: AttachContextControlsProps) {
+  const context = useSessionStore((s) => s.context);
+  const sessionVariables = useSessionStore((s) => s.variables);
+  const addContextItem = useSessionStore((s) => s.addContextItem);
+  const setSessionVariable = useSessionStore((s) => s.setSessionVariable);
+  const accountVariables = useAccountStore((s) => s.variables);
+  const setAccountVariable = useAccountStore((s) => s.setVariable);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  const [open, setOpen] = useState(false);
+  const [view, setView] = useState<PopoverView>("menu");
+  const [managerOpen, setManagerOpen] = useState(false);
+  const [rejections, setRejections] = useState<RejectedFile[]>([]);
+  const [pendingFiles, setPendingFiles] = useState<string[]>([]);
+  const [textName, setTextName] = useState("");
+  const [textValue, setTextValue] = useState("");
+  const [urlValue, setUrlValue] = useState("");
+  const [urlFetching, setUrlFetching] = useState(false);
+  const [urlError, setUrlError] = useState<string | null>(null);
+  const [urlPreview, setUrlPreview] = useState<ContextItem | null>(null);
+  const [variableSearch, setVariableSearch] = useState("");
+  const [selectedVariables, setSelectedVariables] = useState<string[]>([]);
+  const [variableName, setVariableName] = useState("");
+  const [variableValue, setVariableValue] = useState("");
+  const [saveVariableToAccount, setSaveVariableToAccount] = useState(false);
+  const [variableError, setVariableError] = useState<string | null>(null);
+
+  useDismissableLayer(open, () => setOpen(false));
+
+  useEffect(() => {
+    if (!open) return;
+    function onPointerDown(event: MouseEvent) {
+      if (rootRef.current?.contains(event.target as Node)) return;
+      setOpen(false);
+    }
+    document.addEventListener("mousedown", onPointerDown);
+    return () => document.removeEventListener("mousedown", onPointerDown);
+  }, [open]);
+
+  const availableVariables = useMemo(() => {
+    const merged = { ...accountVariables, ...sessionVariables };
+    const needle = variableSearch.trim().toLowerCase();
+    return Object.entries(merged).filter(([name, value]) => !needle || `${name} ${value}`.toLowerCase().includes(needle));
+  }, [accountVariables, sessionVariables, variableSearch]);
+
+  function currentSessionBytes(): number {
+    return context.reduce((sum, item) => sum + item.bytes, 0);
+  }
+
+  function resetPopover() {
+    setView("menu");
+    setTextName("");
+    setTextValue("");
+    setUrlValue("");
+    setUrlError(null);
+    setUrlPreview(null);
+    setVariableSearch("");
+    setSelectedVariables([]);
+    setVariableName("");
+    setVariableValue("");
+    setSaveVariableToAccount(false);
+    setVariableError(null);
+  }
+
+  function closePopover() {
+    setOpen(false);
+    resetPopover();
+  }
+
+  function chooseUpload() {
     fileInputRef.current?.click();
-    onAttach();
+    setOpen(false);
   }
 
   async function handleFilesPicked(fileList: FileList | null) {
     if (!fileList || fileList.length === 0) return;
-    setUploading(true);
+    const names = Array.from(fileList).map((file) => file.name);
+    setPendingFiles(names);
+    setRejections([]);
     try {
-      const currentBytes = context.reduce((sum, item) => sum + item.bytes, 0);
-      const { accepted, rejected } = await uploadFiles(fileList, currentBytes, {
-        ocrClient: getOcrClient(),
-      });
+      const { accepted, rejected } = await uploadFiles(fileList, currentSessionBytes(), { ocrClient: getSharedOcrClient(), provenance: "Uploaded" });
       for (const item of accepted) addContextItem(item);
       setRejections(rejected);
     } finally {
-      setUploading(false);
+      setPendingFiles([]);
     }
   }
 
-  return (
-    <div className="attach-context-controls">
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept={FILE_INPUT_ACCEPT}
-        multiple
-        className="attach-context-controls__file-input"
-        aria-hidden="true"
-        tabIndex={-1}
-        onChange={(event) => {
-          void handleFilesPicked(event.target.files);
-          event.target.value = ""; // allow re-picking the same file later
-        }}
-      />
-      <GlassButton onClick={openPicker} aria-haspopup="dialog" disabled={uploading}>
-        Attach ▾
-      </GlassButton>
-      <GlassButton onClick={onContext} aria-haspopup="dialog">
-        Context ›
-      </GlassButton>
+  function addPastedText() {
+    const name = textName.trim();
+    const content = textValue.trim();
+    if (!name || !content) return;
+    addContextItem({ id: contextId("text"), kind: "text", label: name, content, bytes: textBytes(content), provenance: "Pasted" });
+    closePopover();
+  }
 
-      {uploading && (
-        <p className="attach-context-controls__status" role="status" data-testid="attach-uploading">
-          Reading files…
-        </p>
-      )}
+  async function previewUrl() {
+    setUrlFetching(true);
+    setUrlError(null);
+    setUrlPreview(null);
+    try {
+      const outcome = await fetchUrlContext(urlValue, currentSessionBytes());
+      if (outcome.ok) setUrlPreview(outcome.item);
+      else setUrlError(outcome.message);
+    } finally {
+      setUrlFetching(false);
+    }
+  }
 
-      {rejections.length > 0 && (
-        <div
-          className="attach-context-controls__rejections"
-          role="status"
-          data-testid="attach-rejections"
-        >
-          {rejections.map(({ file, result }) => (
-            <p key={file.name} className="attach-context-controls__rejection">
-              {result.message}
-            </p>
-          ))}
-          <button
-            type="button"
-            className="attach-context-controls__rejections-dismiss"
-            onClick={() => setRejections([])}
-            aria-label="Dismiss upload messages"
-          >
-            ×
-          </button>
+  function addUrlPreview() {
+    if (!urlPreview) return;
+    addContextItem(urlPreview);
+    closePopover();
+  }
+
+  function addUrlReferenceOnly() {
+    const value = urlValue.trim();
+    if (!value) return;
+    addContextItem({ id: contextId("url"), kind: "url", label: value, content: value, bytes: textBytes(value), provenance: "URL reference" });
+    closePopover();
+  }
+
+  function toggleVariable(name: string) {
+    setSelectedVariables((current) => current.includes(name) ? current.filter((item) => item !== name) : [...current, name]);
+  }
+
+  function addSelectedVariables() {
+    const merged = { ...accountVariables, ...sessionVariables };
+    for (const name of selectedVariables) {
+      if (merged[name] !== undefined) setSessionVariable(name, merged[name]);
+    }
+    closePopover();
+  }
+
+  function createVariable() {
+    const name = variableName.trim();
+    if (!isValidVariableName(name)) {
+      setVariableError("Use letters, numbers, and underscores only, starting with a letter or underscore.");
+      return;
+    }
+    setSessionVariable(name, variableValue);
+    if (saveVariableToAccount) setAccountVariable(name, variableValue);
+    closePopover();
+  }
+
+  function openManager() {
+    onContext();
+    setOpen(false);
+    setManagerOpen(true);
+  }
+
+  return <div className="attach-context-controls" ref={rootRef}>
+    <input
+      ref={fileInputRef}
+      type="file"
+      accept={FILE_INPUT_ACCEPT}
+      multiple
+      className="attach-context-controls__file-input"
+      aria-hidden="true"
+      tabIndex={-1}
+      onChange={(event) => { void handleFilesPicked(event.target.files); event.target.value = ""; }}
+    />
+
+    <GlassButton
+      className="attach-menu-toggle"
+      onClick={() => {
+        onAttach();
+        setOpen((current) => !current);
+        if (open) resetPopover();
+      }}
+      aria-haspopup="menu"
+      aria-expanded={open}
+    >
+      <Paperclip size={16} aria-hidden="true" /> Add Context <ChevronDown size={15} aria-hidden="true" />
+    </GlassButton>
+
+    {open && <div className="surface-smoked-glass attach-context-controls__popover" role="menu" data-testid="attach-popover">
+      {view === "menu" && <>
+        <button type="button" role="menuitem" className="attach-context-controls__popover-row" onClick={chooseUpload}>File</button>
+        <button type="button" role="menuitem" className="attach-context-controls__popover-row" onClick={() => setView("text")}>Paste Text</button>
+        <button type="button" role="menuitem" className="attach-context-controls__popover-row" onClick={() => setView("url")}>URL</button>
+        <button type="button" role="menuitem" className="attach-context-controls__popover-row" onClick={() => setView("variable")}>Variable</button>
+        <button type="button" role="menuitem" className="attach-context-controls__popover-row" onClick={openManager}>Manage All</button>
+      </>}
+
+      {view === "text" && <form className="attach-context-controls__url-form" onSubmit={(event) => { event.preventDefault(); addPastedText(); }}>
+        <label className="attach-context-controls__url-label">Context name<input className="attach-context-controls__url-input" autoFocus value={textName} onChange={(event) => setTextName(event.target.value)} placeholder="Meeting notes" /></label>
+        <label className="attach-context-controls__url-label">Paste text<textarea className="attach-context-controls__url-input" value={textValue} onChange={(event) => setTextValue(event.target.value)} placeholder="Paste the text to include…" /></label>
+        <div className="attach-context-controls__url-actions"><button type="button" className="attach-context-controls__url-back" onClick={() => setView("menu")}>Back</button><button type="submit" className="attach-context-controls__url-fetch" disabled={!textName.trim() || !textValue.trim()}>Add Text</button></div>
+      </form>}
+
+      {view === "url" && <form className="attach-context-controls__url-form" onSubmit={(event) => { event.preventDefault(); void previewUrl(); }}>
+        <label className="attach-context-controls__url-label" htmlFor="attach-url-input">URL to load as context</label>
+        <input id="attach-url-input" className="attach-context-controls__url-input" autoFocus value={urlValue} onChange={(event) => { setUrlValue(event.target.value); setUrlPreview(null); setUrlError(null); }} placeholder="https://…" disabled={urlFetching} />
+        {urlFetching && <p role="status">Loading readable text…</p>}
+        {urlError && <div role="alert" className="attach-context-controls__url-error"><p>{urlError}</p><button type="button" className="attach-context-controls__url-back" onClick={addUrlReferenceOnly}>Add URL reference only</button></div>}
+        {urlPreview && <div className="context-manager-preview"><strong>{urlPreview.label}</strong><small>{urlPreview.bytes.toLocaleString()} bytes</small><pre>{urlPreview.content.slice(0, 1200)}</pre><button type="button" className="attach-context-controls__url-fetch" onClick={addUrlPreview}>Add to context</button></div>}
+        <div className="attach-context-controls__url-actions"><button type="button" className="attach-context-controls__url-back" onClick={() => setView("menu")} disabled={urlFetching}>Back</button><button type="submit" className="attach-context-controls__url-fetch" disabled={urlFetching || !urlValue.trim()}>{urlPreview ? "Refresh preview" : "Preview"}</button></div>
+      </form>}
+
+      {view === "variable" && <div className="attach-context-controls__variable-form">
+        <label className="attach-context-controls__url-label">Find saved variables<input className="attach-context-controls__url-input" autoFocus value={variableSearch} onChange={(event) => setVariableSearch(event.target.value)} placeholder="Search variables" /></label>
+        <div className="context-variable-list">
+          {availableVariables.length === 0 ? <p>No saved variables match.</p> : availableVariables.map(([name, value]) => <label key={name}><input type="checkbox" checked={selectedVariables.includes(name)} onChange={() => toggleVariable(name)} /><span><strong>${name}</strong><small>{value.slice(0, 80)}</small></span></label>)}
         </div>
-      )}
-    </div>
-  );
+        <button type="button" className="attach-context-controls__url-fetch" disabled={selectedVariables.length === 0} onClick={addSelectedVariables}>Add Selected</button>
+        <hr />
+        <strong>Create variable</strong>
+        <label>Name<input value={variableName} onChange={(event) => { setVariableName(event.target.value); setVariableError(null); }} placeholder="project_name" /></label>
+        <label>Value<input value={variableValue} onChange={(event) => setVariableValue(event.target.value)} /></label>
+        <label><input type="checkbox" checked={saveVariableToAccount} onChange={(event) => setSaveVariableToAccount(event.target.checked)} /> Save for future sessions</label>
+        {variableError && <p role="alert">{variableError}</p>}
+        <div className="attach-context-controls__url-actions"><button type="button" onClick={() => setView("menu")}>Back</button><button type="button" disabled={!variableName.trim()} onClick={createVariable}>Create & Add</button></div>
+      </div>}
+    </div>}
+
+    {pendingFiles.length > 0 && <div className="attach-context-controls__status" role="status">{pendingFiles.map((name) => <span key={name}>{name} · Reading…</span>)}</div>}
+    {rejections.length > 0 && <div className="surface-smoked-glass attach-context-controls__rejections">{rejections.map(({ file, result }, index) => <p role="alert" className="attach-context-controls__rejection" key={`${file.name}-${index}`}>{result.message}</p>)}<button type="button" className="attach-context-controls__rejections-dismiss" aria-label="Dismiss file rejection" onClick={() => setRejections([])}>×</button></div>}
+
+    {managerOpen && <ContextManagerDialog onClose={() => setManagerOpen(false)} onAddMore={() => { setManagerOpen(false); setOpen(true); setView("menu"); }} />}
+  </div>;
 }

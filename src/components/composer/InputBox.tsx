@@ -1,52 +1,57 @@
 import { useLayoutEffect, useRef } from "react";
 import { useSessionStore } from "../../stores/sessionStore";
+import { ActiveContextChips } from "../context/ActiveContextChips";
 
-/* The input box (Step 5.0) — CANON LAYOUT's "the input box ('What's on your
-   mind?')". Bound directly to the session store's new `draftInput` field
-   (Step 5.0), so the existing 5-second autosave (Step 1.8) already covers it —
-   a crash mid-thought costs nothing, with zero new persistence code.
+export const MAX_COMPOSER_CHARACTERS = 20_000;
 
-   Auto-grows with content (never an internal-scroll box for normal input) up
-   to MAX_TEXTAREA_HEIGHT_PX, past which it scrolls internally rather than
-   pushing the rest of the page around indefinitely for a truly enormous
-   paste — nothing is ever clipped or truncated, and there is no character
-   limit that blocks typing (see the counter below). */
+export interface InputBoxProps { onSubmit?: () => void; }
 
-const SOFT_CHAR_TARGET = 2000; // matches the screenshot's "0 / 2000"; informational only, never enforced
-const MAX_TEXTAREA_HEIGHT_PX = 480; // roomy (many paragraphs) before internal scroll kicks in
-
-export function InputBox() {
+export function InputBox({ onSubmit }: InputBoxProps) {
   const draftInput = useSessionStore((s) => s.draftInput);
+  const draftSelectionStart = useSessionStore((s) => s.draftSelectionStart);
+  const draftSelectionEnd = useSessionStore((s) => s.draftSelectionEnd);
   const setDraftInput = useSessionStore((s) => s.setDraftInput);
+  const setDraftSelection = useSessionStore((s) => s.setDraftSelection);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useLayoutEffect(() => {
-    const el = textareaRef.current;
-    if (!el) return;
-    el.style.height = "auto";
-    el.style.height = `${Math.min(el.scrollHeight, MAX_TEXTAREA_HEIGHT_PX)}px`;
-  }, [draftInput]);
+    const element = textareaRef.current;
+    if (!element) return;
+    if (document.activeElement !== element) element.setSelectionRange(draftSelectionStart, draftSelectionEnd);
+  }, [draftInput, draftSelectionStart, draftSelectionEnd]);
 
-  const overSoftTarget = draftInput.length > SOFT_CHAR_TARGET;
+  const rememberSelection = (element: HTMLTextAreaElement) => setDraftSelection(
+    element.selectionStart ?? element.value.length,
+    element.selectionEnd ?? element.value.length,
+  );
 
-  return (
-    <div className="input-box">
-      <p className="input-box__label">What&rsquo;s on your mind?</p>
+  return <div className="input-box">
+    <div className="input-box__field-shell">
       <textarea
         ref={textareaRef}
         className="input-box__textarea"
         value={draftInput}
-        onChange={(event) => setDraftInput(event.target.value)}
+        maxLength={MAX_COMPOSER_CHARACTERS}
+        onChange={(event) => {
+          setDraftInput(event.target.value.slice(0, MAX_COMPOSER_CHARACTERS));
+          rememberSelection(event.currentTarget);
+        }}
+        onSelect={(event) => rememberSelection(event.currentTarget)}
+        onKeyDown={(event) => {
+          if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+            event.preventDefault();
+            if (draftInput.trim()) onSubmit?.();
+          }
+        }}
         placeholder="Type how you actually think…"
         aria-label="What's on your mind?"
-        rows={3}
+        aria-describedby="composer-character-count"
+        rows={6}
       />
-      <p
-        className={`input-box__counter ${overSoftTarget ? "input-box__counter--over" : ""}`}
-        aria-live="off"
-      >
-        {draftInput.length} / {SOFT_CHAR_TARGET}
-      </p>
+      <ActiveContextChips />
     </div>
-  );
+    <div id="composer-character-count" className="input-box__counter" aria-live="polite">
+      {draftInput.length.toLocaleString()} / {MAX_COMPOSER_CHARACTERS.toLocaleString()}
+    </div>
+  </div>;
 }

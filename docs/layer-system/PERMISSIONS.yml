@@ -1,0 +1,24 @@
+{
+  "schema_version": 7,
+  "default": "deny",
+  "branch_scope": "claude/whole-site-repair-v1",
+  "authorization_date": "2026-08-27",
+  "active_purpose": "Autonomously implement and independently verify the remaining whole-site repairs.",
+  "allowed": [
+    "inspect_repository",
+    "modify_application_and_tests_for_work_order",
+    "run_local_application_tests_and_build",
+    "delegate_fresh_implementation_and_verification_agents",
+    "commit_and_checkpoint_on_branch_scope"
+  ],
+  "forbidden": [
+    "modify_another_branch",
+    "merge_or_open_pull_request",
+    "deploy_preview_or_production",
+    "read_or_write_secrets",
+    "call_external_paid_or_live_providers",
+    "incur_charges",
+    "alter_real_user_data",
+    "configure_auth_payment_identity_or_environment"
+  ]
+}

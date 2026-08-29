@@ -1,0 +1,9 @@
+# Guidance and review routing only. A single owner cannot make review independent by itself.
+* @thatoneweirdfella1
+/AGENTS.md @thatoneweirdfella1
+/CLAUDE.md @thatoneweirdfella1
+/START-HERE-DIVERGENCE.md @thatoneweirdfella1
+/docs/authority/ @thatoneweirdfella1
+/docs/layer-system/ @thatoneweirdfella1
+/scripts/governance/ @thatoneweirdfella1
+/.github/workflows/divergence-governance.yml @thatoneweirdfella1

@@ -1,4 +1,5 @@
 import { DirectnessDropdown } from "../directness";
+import { MethodologyDropdown } from "../methodology";
 import { ModelDropdown } from "../routing";
 import { TechniqueDropdown } from "../techniques";
 import { AttachContextControls } from "./AttachContextControls";
@@ -24,6 +25,7 @@ export function ControlRow({ onAttach, onContext, onTranslateAsk }: ControlRowPr
         <ModelDropdown />
         <DirectnessDropdown />
         <TechniqueDropdown />
+        <MethodologyDropdown />
       </div>
       <div className="control-row__actions">
         <AttachContextControls onAttach={onAttach} onContext={onContext} />

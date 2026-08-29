@@ -1,0 +1,186 @@
+MASTER PROMPT FOR CLAUDE CODE
+=============================
+
+INSTRUCTION: Read this entire prompt first. Then execute Phase 0 and Phase 1 Pilot.
+
+YOU ARE IMPLEMENTING: Divergence.AI Training Dataset Extraction - 5-phase pattern analysis system for ADHD communication friction.
+
+CRITICAL: All methodology is frozen. You are implementing what has been designed, not redesigning.
+
+---
+
+REQUIRED DOCUMENTS
+==================
+
+Before doing anything:
+1. Read DIVERGENCE_DATASET_METHODOLOGY.md (complete extraction spec)
+
+ALL RULES ARE IN THAT FILE. If you have a question about what to do, find the answer there.
+
+---
+
+FOLDER STRUCTURE
+================
+
+/conversations/
+└── [~830 markdown conversation files from your harddrive]
+
+/extraction_output/ (you create this)
+├── phase_1_mechanical/
+│   ├── pilot_ledger.jsonl
+│   ├── pilot_report.txt
+│   ├── edge_cases.txt
+│   └── checkpoints/
+├── phase_2_preliminary/
+│   ├── pattern_frequency.txt
+│   ├── trigger_mapping.txt
+│   └── combination_analysis.txt
+├── phase_3_narratives/
+│   └── [narrative_C001.txt, narrative_C100.txt, ...]
+├── phase_4_validation/
+│   ├── pattern_validation.txt
+│   ├── reliability_analysis.txt
+│   └── edge_case_report.txt
+└── final_report/
+    └── DIVERGENCE_DATASET_REPORT.txt
+
+---
+
+PHASE 0: SETUP
+==============
+
+Execute FIRST:
+
+1. Verify ~830 conversation files are readable in your conversation directory
+2. Create /extraction_output/ and all subfolders listed above
+3. Load DIVERGENCE_DATASET_METHODOLOGY.md completely into memory
+4. Report: "Phase 0 complete. Ready for Phase 1 Pilot."
+
+---
+
+PHASE 1: PILOT EXTRACTION
+=========================
+
+Extract patterns from EXACTLY 5 conversations: first, 100th, 250th, 500th, 800th
+
+FOR EACH CONVERSATION:
+
+1. Read the markdown file
+2. Identify all 6 pattern types (see DIVERGENCE_DATASET_METHODOLOGY.md):
+   - TRANSLATION_MISMATCH (what you asked ≠ what you meant)
+   - ESCALATION_PATTERN (observable emotion escalation with markers)
+   - DE_ESCALATION_OPPORTUNITY (moments escalation could have been prevented)
+   - MOOD_SIGNAL (detectable patterns indicating your actual mood)
+   - BLUNTNESS_PREFERENCE (when you preferred direct vs. hedged answers)
+   - FRICTION_POINT (recurring patterns causing misunderstanding)
+
+3. For each pattern found, record in JSON Lines format:
+   - pattern_id (C[NNN]_P[NNN] format)
+   - conversation_id
+   - conversation_filename
+   - turn_number (which turn pattern appears)
+   - turn_label
+   - pattern_type (one of 6 types)
+   - raw_text (exact quote)
+   - extracted_content (10-20 word summary)
+   - confidence_level (DIRECT_OBSERVATION or INFERENCE_*)
+   - pattern_specific_fields (varies by type - see methodology)
+   - edge_case_encountered (true/false)
+   - edge_case_notes (if true)
+   - decision_log (why you classified as this pattern)
+   - extraction_timestamp (ISO 8601)
+
+4. Write all events to: /extraction_output/phase_1_mechanical/pilot_ledger.jsonl
+   Format: One JSON object per line (JSON Lines format)
+
+PILOT OUTPUT:
+
+- pilot_ledger.jsonl (all extracted patterns)
+- pilot_report.txt (summary of pilot results)
+  Include: total patterns extracted, distribution by type, edge cases, time taken, estimated time for all 830
+- edge_cases.txt (detailed documentation of all ambiguous patterns)
+
+PILOT RULES:
+
+- No checkpointing during pilot (just extract and save)
+- Document every edge case (ambiguous patterns)
+- Apply definitions from DIVERGENCE_DATASET_METHODOLOGY.md exactly as specified
+- Mark confidence levels using framework rules
+- Default: DIRECT_OBSERVATION (only use INFERENCE_* if judgment required)
+- If pattern is ambiguous: use INFERENCE_MEDIUM_AMBIGUITY and document in edge_case_notes
+
+---
+
+PHASE 1 APPROVAL GATE
+====================
+
+AFTER pilot is complete, STOP and report results.
+
+DO NOT proceed to Phase 1 full extraction until you receive approval.
+
+Your pilot report should answer:
+1. Could you extract patterns using the definitions? (extractable?)
+2. Did the definitions make sense and produce clear results? (interpretable?)
+3. How long did 5 conversations take? What's estimated time for all 830?
+4. Were any definitions unclear or confusing?
+5. How many edge cases encountered? Were they documented?
+
+---
+
+FROZEN METHODOLOGY (DO NOT CHANGE)
+===================================
+
+WORKFLOW: 5 phases, sequential, no merging or skipping
+SCOPE: All ~830 conversations, no sampling before Phase 1 completes
+PATTERNS: 6 types, definitions frozen (see DIVERGENCE_DATASET_METHODOLOGY.md)
+CONFIDENCE: Ceilings by finding type (see methodology)
+EPISTEMOLOGY: Off-limits questions are off-limits (no counterfactuals, causality, psychology)
+REPORTING: Mandatory sections in final report
+
+---
+
+ANTI-REDESIGN RULES (CRITICAL)
+===============================
+
+You MUST NOT:
+- Change the 5-phase workflow
+- Merge or skip phases
+- Introduce sampling before Phase 1 completes
+- Modify the 6 pattern type definitions
+- Change epistemological constraints
+- Remove confidence ceilings
+- Answer off-limits questions (counterfactuals, causality, learning claims)
+
+---
+
+PATTERN DEFINITIONS QUICK REFERENCE
+====================================
+
+See DIVERGENCE_DATASET_METHODOLOGY.md for complete definitions.
+
+1. TRANSLATION_MISMATCH: What you asked ≠ what you meant (markers: clarifications, frustration about misunderstanding)
+2. ESCALATION_PATTERN: Observable emotional escalation (caps, curse words, tone, punctuation)
+3. DE_ESCALATION_OPPORTUNITY: Moments escalation could have been prevented (AI's response failed, better approach exists)
+4. MOOD_SIGNAL: Detectable pattern indicating mood (caps patterns, sentence length, curse frequency, specific phrases)
+5. BLUNTNESS_PREFERENCE: When you preferred direct/harsh vs. softened answers (context-dependent)
+6. FRICTION_POINT: Recurring pattern causing misunderstanding (vague language, assumptions, redundant questions)
+
+DEFAULT CONFIDENCE: DIRECT_OBSERVATION (use INFERENCE_* only if judgment required)
+
+---
+
+NEXT IMMEDIATE STEPS
+====================
+
+1. Load DIVERGENCE_DATASET_METHODOLOGY.md
+2. Execute Phase 0 (verify structure, create folders)
+3. Execute Phase 1 Pilot (5 conversations)
+4. Generate pilot_report.txt
+5. Save pilot_ledger.jsonl
+6. STOP - wait for approval
+
+DO NOT proceed to Phase 1 full extraction until explicitly approved.
+
+---
+
+END MASTER PROMPT

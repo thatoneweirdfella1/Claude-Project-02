@@ -1,0 +1,2422 @@
+import { useEffect, useState, useRef } from "react";
+import { addLocalResource, addLocalTask, createLocalProject, getLocalWorkspace, planSyntheticJob, removeLocalResource, removeLocalTask, runNextSyntheticBatch, toggleLocalTask, type SyntheticJobUnit } from "../../services/localWorkspace";
+import { restoreLocalDataset, serializeLocalDataset } from "../../services/localDataset";
+import { Pencil, Star, Copy } from "lucide-react";
+import { useSessionStore } from "../../stores/sessionStore";
+import { useAccountStore } from "../../stores/accountStore";
+import { CenterColumn } from "../pipeline";
+import { InteractivePlanControls } from "../settings/InteractivePlanControls";
+import { InteractivePersonalOptimization } from "../settings/InteractivePersonalOptimization";
+import { ProviderNeutralSettings } from "../settings/ProviderNeutralSettings";
+import { AppearanceSettings } from "../settings/AppearanceSettings";
+import { COMPOSABLE_TECHNIQUE_IDS, MAX_TECHNIQUE_STACK, getTechnique } from "../../services/techniques";
+import { buildSessionRecord, sessionRecordStatus } from "../../services/sessionLifecycle";
+import { saveNow } from "../../services/persistence";
+import type { ModelSelection, SessionRecord, TechniqueId } from "../../stores/types";
+import { createSignal } from "../../services/learningEngine";
+import "./LayerScreens.css";
+
+function useLearningSearchSignal(searchTerm: string) {
+  const lastRecorded = useRef("");
+  useEffect(() => {
+    const term = searchTerm.trim();
+    if (term.length < 2 || term === lastRecorded.current) return;
+    const timer = window.setTimeout(() => {
+      const session = useSessionStore.getState();
+      useAccountStore.getState().recordSignal(createSignal(
+        { sessionId: session.sessionId, modelUsed: session.model, techniquesUsed: session.techniques },
+        "search_query",
+        term,
+        "unknown",
+        false,
+      ));
+      lastRecorded.current = term;
+    }, 750);
+    return () => window.clearTimeout(timer);
+  }, [searchTerm]);
+}
+
+function recordTopicReturnSignal(messageId: string) {
+  const session = useSessionStore.getState();
+  useAccountStore.getState().recordSignal(createSignal(
+    { sessionId: session.sessionId, messageId, modelUsed: session.model, techniquesUsed: session.techniques },
+    "topic_return",
+    true,
+    "unknown",
+    false,
+  ));
+}
+
+export function RetiredHomeScreen() {
+  const sessions = useAccountStore((s) => s.sessions);
+  const templates = useAccountStore((s) => s.templates);
+  const loadSessionRecord = useSessionStore((s) => s.loadSessionRecord);
+  const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
+  const setModel = useSessionStore((s) => s.setModel);
+  const setDirectness = useSessionStore((s) => s.setDirectness);
+  const setTechniques = useSessionStore((s) => s.setTechniques);
+
+  const recentSessions = [...sessions].reverse().slice(0, 3);
+  const starredSessions = sessions.filter((s) => s.starred);
+  const starredTemplates = templates.filter((t) => t.starred);
+
+  const handleLoadSession = (sessionId: string) => {
+    const session = sessions.find((s) => s.id === sessionId);
+    if (session) {
+      recordTopicReturnSignal(session.id);
+      loadSessionRecord(session);
+      setCurrentScreen("translate");
+    }
+  };
+
+  const handleLoadTemplate = (template: typeof templates[0]) => {
+    setModel(template.model);
+    setDirectness(template.directness);
+    setTechniques(template.techniques);
+    setCurrentScreen("translate");
+  };
+
+  return (
+    <div className="screen screen-home">
+      <div className="screen__header">
+        <h1>Welcome to Divergence.AI</h1>
+      </div>
+      <div className="screen__content">
+        <div className="home-section">
+          <h2>Get Started</h2>
+          <p>Divergence.AI is an ADHD-friendly AI translator that helps you communicate your thoughts clearly. Start composing in the <strong>Translate</strong> tab on the left.</p>
+          <div className="home-cta">
+            <button
+              type="button"
+              className="home-cta__btn"
+              onClick={() => setCurrentScreen("translate")}
+            >
+              Go to Translate
+            </button>
+          </div>
+        </div>
+
+        {recentSessions.length > 0 && (
+          <div className="home-section">
+            <h2>Recent Sessions</h2>
+            <div className="home-session-list">
+              {recentSessions.map((session) => (
+                <button
+                  key={session.id}
+                  type="button"
+                  className="home-session-card"
+                  onClick={() => handleLoadSession(session.id)}
+                >
+                  <div className="home-session-card__title">
+                    {session.tag || `Session ${session.id.slice(0, 6)}`}
+                  </div>
+                  <div className="home-session-card__meta">
+                    {new Date(session.createdAt).toLocaleDateString()} •{" "}
+                    {session.conversation.length} messages
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {(starredSessions.length > 0 || starredTemplates.length > 0) && (
+          <div className="home-section">
+            <h2>⭐ Favorites</h2>
+            {starredSessions.length > 0 && (
+              <div style={{ marginBottom: "20px" }}>
+                <h3 style={{ fontSize: "14px", fontWeight: "600", marginBottom: "12px", color: "var(--text-secondary)" }}>Favorite Sessions</h3>
+                <div className="home-session-list">
+                  {starredSessions.slice(0, 3).map((session) => (
+                    <button
+                      key={session.id}
+                      type="button"
+                      className="home-session-card"
+                      onClick={() => handleLoadSession(session.id)}
+                    >
+                      <div className="home-session-card__title">
+                        {session.tag || `Session ${session.id.slice(0, 6)}`}
+                      </div>
+                      <div className="home-session-card__meta">
+                        {new Date(session.createdAt).toLocaleDateString()} •{" "}
+                        {session.conversation.length} messages
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {starredTemplates.length > 0 && (
+              <div>
+                <h3 style={{ fontSize: "14px", fontWeight: "600", marginBottom: "12px", color: "var(--text-secondary)" }}>Favorite Templates</h3>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: "12px" }}>
+                  {starredTemplates.slice(0, 4).map((template) => (
+                    <button
+                      key={template.id}
+                      type="button"
+                      onClick={() => handleLoadTemplate(template)}
+                      style={{
+                        padding: "12px",
+                        background: "var(--surface-tint-01)",
+                        border: "1px solid var(--accent-cyan-tint-06)",
+                        borderRadius: "6px",
+                        cursor: "pointer",
+                        textAlign: "left",
+                        color: "var(--text-primary)",
+                      }}
+                    >
+                      <div style={{ fontSize: "13px", fontWeight: "500", marginBottom: "4px" }}>
+                        {template.title}
+                      </div>
+                      <div style={{ fontSize: "11px", color: "var(--text-secondary)" }}>
+                        {template.model} • D:{template.directness}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="home-section">
+          <h2>Quick Tips</h2>
+          <ul className="home-tips">
+            <li>Use <strong>Directness</strong> (1–5) to control formality: low is casual, high is professional</li>
+            <li>Try different <strong>Techniques</strong> (Socratic, Chain-of-thought, etc.) to explore response styles</li>
+            <li>Save frequently used settings as <strong>Templates</strong> for quick reuse</li>
+            <li>Search past sessions and templates from the top bar</li>
+          </ul>
+        </div>
+
+        <div className="home-section">
+          <h2>Features</h2>
+          <ul className="home-features">
+            <li><strong>Sessions:</strong> Save and load complete conversations</li>
+            <li><strong>Templates:</strong> Reuse your favorite settings</li>
+            <li><strong>Search:</strong> Quickly find sessions and templates</li>
+            <li><strong>Dashboard:</strong> View your account statistics</li>
+            <li><strong>Archive:</strong> Browse closed and saved sessions</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DashboardScreen() {
+  const sessions = useAccountStore((s) => s.sessions);
+  const trashed = useAccountStore((s) => s.trashed);
+  const templates = useAccountStore((s) => s.templates);
+  const ratings = useAccountStore((s) => s.ratings);
+  const archivedPairs = useAccountStore((s) => s.archivedPairs);
+  const currentSection = useSessionStore((s) => s.currentSection);
+  const setScreenLocation = useSessionStore((s) => s.setScreenLocation);
+  const section = currentSection === "usage" || currentSection === "activity" || currentSection === "patterns" ? currentSection : "overview";
+
+  const totalSessions = sessions.length;
+  const totalArchivedSessions = sessions.filter((s) => s.archived).length;
+  const totalTrashed = trashed.length;
+  const customTemplates = templates.filter((t) => !t.id.startsWith("template-")).length;
+  const totalRatings = ratings.length;
+  const totalArchivedPairs = archivedPairs.length;
+
+  const totalMessages = sessions.reduce((sum, s) => sum + (s.conversation?.length || 0), 0);
+  const avgMessagesPerSession = totalSessions > 0 ? Math.round(totalMessages / totalSessions) : 0;
+
+  const modelCounts = sessions.reduce(
+    (acc, s) => {
+      const model = s.model || "auto";
+      acc[model] = (acc[model] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
+
+  const topModel =
+    Object.entries(modelCounts).sort(([, a], [, b]) => b - a)[0]?.[0] || "auto";
+
+  const techniqueCounts = sessions.reduce(
+    (acc, s) => {
+      (s.techniques || []).forEach((tech) => {
+        acc[tech] = (acc[tech] || 0) + 1;
+      });
+      return acc;
+    },
+    {} as Record<string, number>
+  );
+
+  const topTechnique =
+    Object.entries(techniqueCounts).sort(([, a], [, b]) => b - a)[0]?.[0] || "None";
+
+  const olderSessions = sessions.filter((s) => s.createdAt && Date.now() - s.createdAt > 86400000);
+  const recentActivity = sessions.length - olderSessions.length;
+
+  return (
+    <div className="screen screen-dashboard">
+      <div className="screen__header">
+        <h1>Insights</h1>
+        <nav className="screen-tabs" aria-label="Insight sections">{(["overview", "usage", "activity", "patterns"] as const).map((id) => <button type="button" key={id} aria-current={section === id ? "page" : undefined} className={section === id ? "is-active" : ""} onClick={() => setScreenLocation("insights", id)}>{id === "patterns" ? "Communication Patterns" : id[0].toUpperCase() + id.slice(1)}</button>)}</nav>
+      </div>
+      <div className="screen__content">
+        <p className="settings-section__note" role="status">Showing {section === "patterns" ? "communication patterns" : section}. Values reflect locally available data only.</p>
+        <div className="dashboard-grid">
+          <div className="dashboard-card">
+            <h3 className="dashboard-card__title">Sessions</h3>
+            <div className="dashboard-card__metric">{totalSessions}</div>
+            <p className="dashboard-card__label">saved sessions</p>
+            {totalArchivedSessions > 0 && (
+              <p className="dashboard-card__subtext">
+                {totalArchivedSessions} archived
+              </p>
+            )}
+          </div>
+          <div className="dashboard-card">
+            <h3 className="dashboard-card__title">Messages</h3>
+            <div className="dashboard-card__metric">{totalMessages}</div>
+            <p className="dashboard-card__label">total messages</p>
+            {avgMessagesPerSession > 0 && (
+              <p className="dashboard-card__subtext">
+                ~{avgMessagesPerSession} per session
+              </p>
+            )}
+          </div>
+          <div className="dashboard-card">
+            <h3 className="dashboard-card__title">Trash</h3>
+            <div className="dashboard-card__metric">{totalTrashed}</div>
+            <p className="dashboard-card__label">deleted items</p>
+          </div>
+          <div className="dashboard-card">
+            <h3 className="dashboard-card__title">Templates</h3>
+            <div className="dashboard-card__metric">{templates.length}</div>
+            <p className="dashboard-card__label">templates available</p>
+            {customTemplates > 0 && (
+              <p className="dashboard-card__subtext">
+                {customTemplates} custom
+              </p>
+            )}
+          </div>
+          <div className="dashboard-card">
+            <h3 className="dashboard-card__title">Feedback</h3>
+            <div className="dashboard-card__metric">{totalRatings}</div>
+            <p className="dashboard-card__label">ratings given</p>
+          </div>
+          <div className="dashboard-card">
+            <h3 className="dashboard-card__title">Q/A Pairs</h3>
+            <div className="dashboard-card__metric">{totalArchivedPairs}</div>
+            <p className="dashboard-card__label">archived pairs</p>
+          </div>
+        </div>
+
+        {totalSessions > 0 && (
+          <div style={{ marginTop: "32px" }}>
+            <h2 style={{ marginBottom: "16px", fontSize: "16px", fontWeight: "600" }}>
+              Session Analytics
+            </h2>
+            <div className="dashboard-grid">
+              <div className="dashboard-card">
+                <h3 className="dashboard-card__title">Top Model</h3>
+                <div className="dashboard-card__metric" style={{ fontSize: "14px" }}>
+                  {topModel === "auto" ? "Auto" : topModel.replace("claude-", "")}
+                </div>
+                <p className="dashboard-card__label">most used in sessions</p>
+                {modelCounts[topModel] !== undefined && (
+                  <p className="dashboard-card__subtext">
+                    {modelCounts[topModel]} session{modelCounts[topModel] !== 1 ? "s" : ""}
+                  </p>
+                )}
+              </div>
+              <div className="dashboard-card">
+                <h3 className="dashboard-card__title">Top Technique</h3>
+                <div className="dashboard-card__metric" style={{ fontSize: "14px" }}>
+                  {topTechnique}
+                </div>
+                <p className="dashboard-card__label">most used technique</p>
+                {techniqueCounts[topTechnique] !== undefined && (
+                  <p className="dashboard-card__subtext">
+                    {techniqueCounts[topTechnique]} session{techniqueCounts[topTechnique] !== 1 ? "s" : ""}
+                  </p>
+                )}
+              </div>
+              <div className="dashboard-card">
+                <h3 className="dashboard-card__title">Recent Activity</h3>
+                <div className="dashboard-card__metric">{recentActivity}</div>
+                <p className="dashboard-card__label">sessions in last 24h</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export function RetiredArchiveScreen() {
+  const sessions = useAccountStore((s) => s.sessions);
+  const loadSessionRecord = useSessionStore((s) => s.loadSessionRecord);
+  const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
+  const moveSessionToTrash = useAccountStore((s) => s.moveSessionToTrash);
+  const updateSessionTag = useAccountStore((s) => s.updateSessionTag);
+  const toggleSessionStar = useAccountStore((s) => s.toggleSessionStar);
+  const duplicateSession = useAccountStore((s) => s.duplicateSession);
+
+  const [searchTerm, setSearchTerm] = useState("");
+  useLearningSearchSignal(searchTerm);
+  const [sortBy, setSortBy] = useState<"recent" | "oldest" | "name" | "archived">("archived");
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renamingText, setRenamingText] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const archivedSessions = sessions.filter((s) => s.archived);
+
+  const handleLoadSession = (sessionId: string) => {
+    const session = sessions.find((s) => s.id === sessionId);
+    if (session) {
+      recordTopicReturnSignal(session.id);
+      loadSessionRecord(session);
+      setCurrentScreen("translate");
+    }
+  };
+
+  const handleDeleteSession = (sessionId: string) => {
+    moveSessionToTrash(sessionId);
+  };
+
+  const handleRenameStart = (sessionId: string, currentTag: string) => {
+    setRenamingId(sessionId);
+    setRenamingText(currentTag);
+  };
+
+  const handleRenameSave = (sessionId: string) => {
+    if (renamingText.trim()) {
+      updateSessionTag(sessionId, renamingText.trim());
+    }
+    setRenamingId(null);
+    setRenamingText("");
+  };
+
+  const addSessionRecord = useAccountStore((s) => s.addSessionRecord);
+
+  const handleExportSession = (session: typeof sessions[0]) => {
+    const sessionData = JSON.stringify(session, null, 2);
+    const dataBlob = new Blob([sessionData], { type: "application/json" });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `divergence-session-${session.tag || session.id}-${new Date().toISOString().slice(0, 10)}.json`;
+    link.click();
+  };
+
+  const handleImportSession = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const sessionData = JSON.parse(e.target?.result as string);
+        if (sessionData.id && sessionData.conversation && sessionData.model) {
+          addSessionRecord(sessionData);
+        } else {
+          alert("Invalid session file format");
+        }
+      } catch {
+        alert("Error reading session file");
+      }
+    };
+    reader.readAsText(file);
+    event.target.value = "";
+  };
+
+  const filteredSessions = archivedSessions.filter((session) => {
+    const searchLower = searchTerm.toLowerCase();
+    const tag = (session.tag || `Session ${session.id.slice(0, 6)}`).toLowerCase();
+    return tag.includes(searchLower) || session.id.includes(searchTerm);
+  });
+
+  const sortedSessions = [...filteredSessions].sort((a, b) => {
+    switch (sortBy) {
+      case "recent":
+        return b.createdAt - a.createdAt;
+      case "oldest":
+        return a.createdAt - b.createdAt;
+      case "name":
+        return ((a.tag || a.id) || "").localeCompare((b.tag || b.id) || "");
+      case "archived":
+        return (b.closedAt || 0) - (a.closedAt || 0);
+      default:
+        return 0;
+    }
+  });
+
+  return (
+    <div className="screen screen-archive">
+      <div className="screen__header">
+        <h1>Archive</h1>
+      </div>
+      <div className="screen__content">
+        {archivedSessions.length === 0 ? (
+          <p>No archived sessions yet. Use "Close Session → Save and Archive" to archive conversations.</p>
+        ) : (
+          <>
+            <div style={{ display: "flex", gap: "12px", marginBottom: "24px" }}>
+              <input
+                type="text"
+                placeholder="Search archived sessions..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{
+                  flex: 1,
+                  padding: "10px 12px",
+                  fontSize: "13px",
+                  border: "1px solid var(--accent-cyan-tint-06)",
+                  borderRadius: "4px",
+                  background: "var(--surface-base)",
+                  color: "var(--text-primary)",
+                }}
+              />
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as "recent" | "oldest" | "name" | "archived")}
+                style={{
+                  padding: "10px 12px",
+                  fontSize: "13px",
+                  border: "1px solid var(--accent-cyan-tint-06)",
+                  borderRadius: "4px",
+                  background: "var(--surface-base)",
+                  color: "var(--text-primary)",
+                }}
+              >
+                <option value="archived">Most Recently Archived</option>
+                <option value="recent">Most Recently Created</option>
+                <option value="oldest">Oldest First</option>
+                <option value="name">By Name</option>
+              </select>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                style={{
+                  padding: "10px 16px",
+                  fontSize: "13px",
+                  border: "1px solid var(--accent-cyan-tint-06)",
+                  borderRadius: "4px",
+                  background: "var(--surface-base)",
+                  color: "var(--text-primary)",
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Import
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".json"
+                onChange={handleImportSession}
+                style={{ display: "none" }}
+              />
+            </div>
+
+            {sortedSessions.length === 0 ? (
+              <p style={{ color: "var(--text-secondary)" }}>
+                No archived sessions match your search.
+              </p>
+            ) : (
+              <div className="session-list">
+                {sortedSessions.map((session) => (
+                  <div key={session.id} className="session-item">
+                    <div className="session-item__header">
+                      {renamingId === session.id ? (
+                        <div style={{ display: "flex", gap: "8px", alignItems: "center", flex: 1 }}>
+                          <input
+                            type="text"
+                            value={renamingText}
+                            onChange={(e) => setRenamingText(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") handleRenameSave(session.id);
+                              if (e.key === "Escape") {
+                                setRenamingId(null);
+                                setRenamingText("");
+                              }
+                            }}
+                            autoFocus
+                            style={{
+                              flex: 1,
+                              padding: "6px 8px",
+                              fontSize: "14px",
+                              border: "1px solid var(--accent-cyan)",
+                              borderRadius: "4px",
+                              background: "var(--surface-base)",
+                              color: "var(--text-primary)",
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleRenameSave(session.id)}
+                            style={{
+                              padding: "6px 12px",
+                              fontSize: "12px",
+                              background: "var(--accent-cyan)",
+                              color: "var(--text-on-accent)",
+                              border: "none",
+                              borderRadius: "4px",
+                              cursor: "pointer",
+                            }}
+                          >
+                            Save
+                          </button>
+                        </div>
+                      ) : (
+                        <div>
+                          <h3>{session.tag || `Session ${session.id.slice(0, 8)}`}</h3>
+                          {session.closedAt && (
+                            <span className="session-item__closed-date">
+                              Archived: {new Date(session.closedAt).toLocaleString()}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      {renamingId !== session.id && (
+                        <span className="session-item__date">
+                          Created: {new Date(session.createdAt).toLocaleString()}
+                        </span>
+                      )}
+                    </div>
+                    <p className="session-item__description">
+                      Model: {session.model} • Directness: {session.directness} •{" "}
+                      {session.conversation.length} messages
+                    </p>
+                    {renamingId !== session.id && (
+                      <div className="session-item__actions">
+                        <button
+                          type="button"
+                          className="session-item__action-btn session-item__action-btn--primary"
+                          onClick={() => handleLoadSession(session.id)}
+                        >
+                          Load
+                        </button>
+                        <button
+                          type="button"
+                          className="session-item__action-btn"
+                          onClick={() => toggleSessionStar(session.id)}
+                          title={session.starred ? "Remove from favorites" : "Add to favorites"}
+                          style={{ padding: "8px 10px", minWidth: "auto", color: session.starred ? "var(--accent-cyan)" : "var(--text-primary)" }}
+                        >
+                          <Star size={16} fill={session.starred ? "currentColor" : "none"} />
+                        </button>
+                        <button
+                          type="button"
+                          className="session-item__action-btn"
+                          onClick={() => handleRenameStart(session.id, session.tag || `Session ${session.id.slice(0, 8)}`)}
+                          title="Rename session"
+                          style={{ padding: "8px 10px", minWidth: "auto" }}
+                        >
+                          <Pencil size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          className="session-item__action-btn"
+                          onClick={() => duplicateSession(session.id)}
+                          title="Duplicate session"
+                          style={{ padding: "8px 10px", minWidth: "auto" }}
+                        >
+                          <Copy size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          className="session-item__action-btn"
+                          onClick={() => handleExportSession(session)}
+                          style={{ background: "var(--accent-cyan-tint-12)", color: "var(--text-primary)" }}
+                        >
+                          Export
+                        </button>
+                        <button
+                          type="button"
+                          className="session-item__action-btn session-item__action-btn--danger"
+                          onClick={() => handleDeleteSession(session.id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ResourcesScreen() {
+  const current = useSessionStore((s) => s.techniques);
+  const setTechniques = useSessionStore((s) => s.setTechniques);
+  const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
+  const [staged, setStaged] = useState<TechniqueId[]>(current);
+
+  function toggle(id: TechniqueId) {
+    if (id === "auto-detect") return;
+    setStaged((selected) => {
+      const manual = selected.filter((item) => item !== "auto-detect");
+      if (manual.includes(id)) return manual.filter((item) => item !== id);
+      if (manual.length >= MAX_TECHNIQUE_STACK) return manual;
+      return [...manual, id];
+    });
+  }
+
+  return (
+    <div className="screen screen-resources">
+      <div className="screen__header">
+        <h1>Techniques</h1>
+        <p>Choose the same response techniques used by the composer.</p>
+      </div>
+      <div className="screen__content">
+        <div className="resources-grid" role="group" aria-label="Technique choices">
+          <label className="resource-card"><input type="radio" checked={staged.includes("auto-detect")} onChange={() => setStaged(["auto-detect"])} /><strong>Auto recommend</strong><span>Choose techniques for each request.</span></label>
+          {COMPOSABLE_TECHNIQUE_IDS.map((id) => {
+            const technique = getTechnique(id);
+            return <label key={id} className="resource-card"><input type="checkbox" checked={staged.includes(id)} disabled={!staged.includes(id) && staged.filter((item) => item !== "auto-detect").length >= MAX_TECHNIQUE_STACK} onChange={() => toggle(id)} /><strong>{technique.label}</strong><span>{technique.effect}</span></label>;
+          })}
+        </div>
+        <div className="screen__actions"><button type="button" onClick={() => setCurrentScreen("translate")}>Back</button><button type="button" className="primary" disabled={staged.length === 0} onClick={() => { setTechniques(staged); setCurrentScreen("translate"); }}>Apply to composer</button></div>
+      </div>
+    </div>
+  );
+}
+
+function ProjectsScreen() {
+  const sessions = useAccountStore((s) => s.sessions);
+  const updateSessionTag = useAccountStore((s) => s.updateSessionTag);
+  const addContextItem = useSessionStore((s) => s.addContextItem);
+  const currentSection = useSessionStore((s) => s.currentSection);
+  const setScreenLocation = useSessionStore((s) => s.setScreenLocation);
+  const section = currentSection === "sessions" ? "sessions" : currentSection === "tasks" || currentSection === "resources" || currentSection === "integrations" ? currentSection : "overview";
+  const [workspace, setWorkspace] = useState(() => getLocalWorkspace());
+  const [project, setProject] = useState("Local project");
+  const [taskText, setTaskText] = useState("");
+  const [resourceLabel, setResourceLabel] = useState("");
+  const [resourceContent, setResourceContent] = useState("");
+
+  const projectNames = Array.from(new Set([
+    // R17: a project created with nothing assigned to it yet — otherwise
+    // this list (and therefore "reload without loss") only ever knew about
+    // projects some session/task/resource happened to reference.
+    ...workspace.projects,
+    ...sessions.map((session) => session.tag ? session.tag.split(":")[0].trim() : "Unsorted"),
+    ...workspace.tasks.map((task) => task.project),
+    ...workspace.resources.map((resource) => resource.project),
+  ])).filter(Boolean).sort((a, b) => a.localeCompare(b));
+
+  const sessionsInProject = sessions.filter((session) =>
+    (session.tag ? session.tag.split(":")[0].trim() : "Unsorted") === project
+  );
+
+  const unassignedSessions = sessions.filter((session) =>
+    !session.tag || !session.tag.split(":")[0].trim()
+  );
+
+  function assignSessionToProject(sessionId: string) {
+    const session = sessions.find((s) => s.id === sessionId);
+    if (session) {
+      const newTag = `${project}: ${session.tag || "Untitled"}`;
+      updateSessionTag(sessionId, newTag);
+    }
+  }
+
+  function removeSessionFromProject(sessionId: string) {
+    const session = sessions.find((s) => s.id === sessionId);
+    if (session && session.tag) {
+      const parts = session.tag.split(":");
+      const newTag = parts.slice(1).join(":").trim() || "Unassigned";
+      updateSessionTag(sessionId, newTag);
+    }
+  }
+
+  function createProject() {
+    setWorkspace(createLocalProject(project));
+  }
+  function createTask() {
+    setWorkspace(addLocalTask(project, taskText));
+    setTaskText("");
+  }
+  function createResource() {
+    setWorkspace(addLocalResource(project, resourceLabel, resourceContent));
+    setResourceLabel("");
+    setResourceContent("");
+  }
+
+  return (
+    <div className="screen screen-projects">
+      <div className="screen__header">
+        <h1>Projects</h1>
+        <nav className="screen-tabs" aria-label="Project sections">{(["overview", "sessions", "tasks", "resources", "integrations"] as const).map((id) => <button type="button" key={id} aria-current={section === id ? "page" : undefined} className={section === id ? "is-active" : ""} onClick={() => setScreenLocation("projects", id)}>{id[0].toUpperCase() + id.slice(1)}</button>)}</nav>
+      </div>
+      <div className="screen__content">
+        <div className="settings-section"><label>Active local project<input aria-label="Active local project" value={project} onChange={(event) => setProject(event.target.value)} /></label><button type="button" onClick={createProject} disabled={!project.trim()}>Create project</button>{projectNames.includes(project.trim()) && <span className="settings-section__note"> Already exists — switched to it.</span>}</div>
+        {section === "overview" && <div className="projects-list">
+          {projectNames.length === 0 ? <p>No projects yet. Name one above, then add a task or resource.</p> : projectNames.map((name) => <div key={name} className="project-group"><h3 className="project-group__title">{name}</h3><p>{sessions.filter((session) => (session.tag ? session.tag.split(":")[0].trim() : "Unsorted") === name).length} sessions · {workspace.tasks.filter((task) => task.project === name).length} tasks · {workspace.resources.filter((resource) => resource.project === name).length} resources</p></div>)}
+        </div>}
+        {section === "sessions" && <div className="settings-section"><h3>Project Sessions</h3><p className="settings-section__note">Manage which sessions belong to {project}.</p>{sessionsInProject.length === 0 ? <p>No sessions assigned to {project} yet.</p> : <div>{sessionsInProject.map((session) => <div className="settings-item" key={session.id}><div><strong>{session.tag || "Untitled"}</strong><p>{session.conversation.length} messages</p></div><button type="button" onClick={() => removeSessionFromProject(session.id)}>Remove from project</button></div>)}</div>}{unassignedSessions.length > 0 && <div><h4 style={{ marginTop: "20px" }}>Available to assign</h4>{unassignedSessions.map((session) => <div className="settings-item" key={session.id}><div><strong>{session.tag || "Untitled"}</strong><p>{session.conversation.length} messages</p></div><button type="button" onClick={() => assignSessionToProject(session.id)}>Assign to project</button></div>)}</div>}</div>}
+        {section === "tasks" && <div className="settings-section"><h3>Project Tasks</h3><div className="template-form"><input aria-label="New project task" placeholder="Task" value={taskText} onChange={(event) => setTaskText(event.target.value)} /><button type="button" onClick={createTask} disabled={!taskText.trim()}>Create task</button></div>{workspace.tasks.filter((task) => task.project === (project.trim() || "Local project")).map((task) => <div className="settings-item" key={task.id}><label><input type="checkbox" checked={task.completed} onChange={() => setWorkspace(toggleLocalTask(task.id))} /> {task.text}</label><button type="button" onClick={() => setWorkspace(removeLocalTask(task.id))}>Delete</button></div>)}</div>}
+        {section === "resources" && <div className="settings-section"><h3>Project Resources</h3><div className="template-form"><input aria-label="Resource label" placeholder="Label" value={resourceLabel} onChange={(event) => setResourceLabel(event.target.value)} /><textarea aria-label="Resource content" placeholder="Paste local reference text" value={resourceContent} onChange={(event) => setResourceContent(event.target.value)} /><button type="button" onClick={createResource} disabled={!resourceLabel.trim() || !resourceContent.trim()}>Add resource</button></div>{workspace.resources.filter((resource) => resource.project === (project.trim() || "Local project")).map((resource) => <div className="settings-item" key={resource.id}><div><strong>{resource.label}</strong><p>{resource.content}</p></div><div><button type="button" onClick={() => addContextItem({ id: `project-resource:${resource.id}:${Date.now()}`, kind: "text", label: resource.label, content: resource.content, bytes: resource.content.length })}>Add to current request</button><button type="button" onClick={() => setWorkspace(removeLocalResource(resource.id))}>Delete</button></div></div>)}</div>}
+        {section === "integrations" && <div className="settings-section"><h3>Project Integrations</h3><p className="settings-section__note">No project integration is configured. Local tasks and resources remain usable without one.</p><button type="button" onClick={() => setScreenLocation("settings", "connections")}>Open AI Connections</button></div>}
+      </div>
+    </div>
+  );
+}
+
+export function RetiredIntegrationsScreen() {
+  const integrations = [
+    {
+      name: "Email",
+      icon: "📧",
+      description: "Send translated thoughts directly to your inbox or email them to others",
+      status: "planned",
+    },
+    {
+      name: "Slack",
+      icon: "💬",
+      description: "Post translated messages to Slack channels and save them to your workspace",
+      status: "planned",
+    },
+    {
+      name: "Google Docs",
+      icon: "📄",
+      description: "Export translated conversations to Google Docs for further editing and sharing",
+      status: "planned",
+    },
+    {
+      name: "Notion",
+      icon: "📝",
+      description: "Save sessions and templates to your Notion workspace for centralized knowledge management",
+      status: "planned",
+    },
+    {
+      name: "GitHub",
+      icon: "🐙",
+      description: "Create GitHub issues with translated problem descriptions and technical details",
+      status: "planned",
+    },
+    {
+      name: "Discord",
+      icon: "🎮",
+      description: "Share translated messages with your Discord communities and servers",
+      status: "planned",
+    },
+  ];
+
+  return (
+    <div className="screen screen-integrations">
+      <div className="screen__header">
+        <h1>Integrations</h1>
+      </div>
+      <div className="screen__content">
+        <div className="integrations-intro">
+          <p>
+            Divergence.AI integrations let you send your translated thoughts to the tools you already use. Connect your favorite apps to streamline your workflow.
+          </p>
+          <p style={{ color: "var(--text-secondary)", fontSize: "13px" }}>
+            Integrations are planned for a future release. All features listed below are coming soon.
+          </p>
+        </div>
+        <div className="integrations-grid">
+          {integrations.map((integration) => (
+            <div key={integration.name} className="integration-card">
+              <div className="integration-card__icon">{integration.icon}</div>
+              <h3 className="integration-card__title">{integration.name}</h3>
+              <p className="integration-card__description">{integration.description}</p>
+              <div className="integration-card__status">
+                <span className="integration-card__badge integration-card__badge--planned">
+                  Coming Soon
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function RetiredTasksScreen() {
+  const sessions = useAccountStore((s) => s.sessions);
+
+  const extractedTasks: Array<{
+    content: string;
+    sessionId: string;
+    sessionTag: string;
+    timestamp?: number;
+  }> = [];
+
+  const taskPatterns = [
+    /(?:^|\n)[-*]\s+(\[[ x]\]\s+)?(.+)/gm,
+    /(?:^|\n)(?:TODO|FIXME|NOTE)[\s:]+(.+)/gm,
+  ];
+
+  sessions.forEach((session) => {
+    session.conversation.forEach((msg) => {
+      if (msg.role === "assistant") {
+        taskPatterns.forEach((pattern) => {
+          let match;
+          while ((match = pattern.exec(msg.content)) !== null) {
+            const taskContent = match[2] || match[1];
+            if (taskContent && taskContent.length < 150) {
+              extractedTasks.push({
+                content: taskContent.trim(),
+                sessionId: session.id,
+                sessionTag: session.tag || `Session ${session.id.slice(0, 6)}`,
+                timestamp: msg.timestamp,
+              });
+            }
+          }
+        });
+      }
+    });
+  });
+
+  const uniqueTasks = Array.from(
+    new Map(extractedTasks.map((t) => [t.content, t])).values()
+  ).slice(0, 20);
+
+  if (uniqueTasks.length === 0) {
+    return (
+      <div className="screen screen-tasks">
+        <div className="screen__header">
+          <h1>Tasks</h1>
+        </div>
+        <div className="screen__content">
+          <p>No tasks found. Tasks are automatically extracted from AI responses that contain action items or bullet points.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="screen screen-tasks">
+      <div className="screen__header">
+        <h1>Tasks</h1>
+      </div>
+      <div className="screen__content">
+        <div className="tasks-list">
+          {uniqueTasks.map((task) => (
+            <div key={task.content} className="task-item">
+              <div className="task-item__checkbox" />
+              <div className="task-item__content">
+                <p className="task-item__text">{task.content}</p>
+                <span className="task-item__session">{task.sessionTag}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TemplatesScreen() {
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  useLearningSearchSignal(searchTerm);
+  const [selectedTemplateIds, setSelectedTemplateIds] = useState<Set<string>>(new Set());
+  const [formData, setFormData] = useState({
+    title: "",
+    model: "auto" as ModelSelection,
+    directness: 2,
+    techniques: [] as string[],
+    starterQuestion: "",
+  });
+
+  const templates = useAccountStore((s) => s.templates);
+  const removeTemplate = useAccountStore((s) => s.removeTemplate);
+  const addTemplate = useAccountStore((s) => s.addTemplate);
+  const updateTemplate = useAccountStore((s) => s.updateTemplate);
+  const toggleTemplateStar = useAccountStore((s) => s.toggleTemplateStar);
+  const setModel = useSessionStore((s) => s.setModel);
+  const setDirectness = useSessionStore((s) => s.setDirectness);
+  const setTechniques = useSessionStore((s) => s.setTechniques);
+  const addContextItem = useSessionStore((s) => s.addContextItem);
+  const setDraftInput = useSessionStore((s) => s.setDraftInput);
+  const currentContext = useSessionStore((s) => s.context);
+  const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
+  const setScreenLocation = useSessionStore((s) => s.setScreenLocation);
+
+  const allTemplates = templates.filter((t) => {
+    const searchLower = searchTerm.toLowerCase();
+    return t.title.toLowerCase().includes(searchLower);
+  });
+
+  const builtInTemplates = allTemplates.filter((t) => t.id.startsWith("template-"));
+  const customTemplates = allTemplates.filter((t) => !t.id.startsWith("template-"));
+
+  const allTechniques = ["auto-detect", "socratic", "chain-of-thought", "verify", "examples"];
+
+  const handleLoadTemplate = (template: typeof templates[0]) => {
+    setModel(template.model);
+    setDirectness(template.directness);
+    setTechniques(template.techniques);
+    for (const item of template.context ?? []) addContextItem(item);
+    if (template.starterQuestion) setDraftInput(template.starterQuestion);
+    setCurrentScreen("translate");
+  };
+
+  const handleDeleteTemplate = (templateId: string) => {
+    removeTemplate(templateId);
+  };
+
+  const handleCreateTemplate = () => {
+    if (formData.title.trim()) {
+      addTemplate({
+        id: `custom-${Date.now()}`,
+        title: formData.title,
+        model: formData.model,
+        directness: formData.directness as 1 | 2 | 3,
+        techniques: formData.techniques as any,
+        // Optional per CANON ("optional context and starter question") —
+        // snapshot the current session's loaded context (same array
+        // handleLoadTemplate re-populates via addContextItem) only when
+        // there's something to capture, mirroring the dead LoadTemplateMenu's
+        // saveCurrentAsTemplate precedent.
+        ...(currentContext.length > 0 && { context: currentContext }),
+        ...(formData.starterQuestion.trim() && { starterQuestion: formData.starterQuestion.trim() }),
+      });
+      setFormData({ title: "", model: "auto", directness: 2, techniques: [], starterQuestion: "" });
+      setShowCreateForm(false);
+    }
+  };
+
+  const handleEditTemplate = (template: typeof templates[0]) => {
+    setEditingId(template.id);
+    setFormData({
+      title: template.title,
+      model: template.model,
+      directness: template.directness,
+      techniques: template.techniques || [],
+      starterQuestion: template.starterQuestion || "",
+    });
+  };
+
+  const handleSaveEdit = () => {
+    if (editingId && formData.title.trim()) {
+      updateTemplate(editingId, {
+        title: formData.title,
+        model: formData.model,
+        directness: formData.directness as 1 | 2 | 3,
+        techniques: formData.techniques as any,
+        // Note: `context` is intentionally omitted here — updateTemplate
+        // merges these updates onto the existing template (`{ ...t, ...updates
+        // }`), so any context captured at creation time survives an edit
+        // untouched since this form has no context-editing UI.
+        starterQuestion: formData.starterQuestion.trim() || undefined,
+      });
+      setEditingId(null);
+      setFormData({ title: "", model: "auto", directness: 2, techniques: [], starterQuestion: "" });
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setFormData({ title: "", model: "auto", directness: 2, techniques: [], starterQuestion: "" });
+  };
+
+  const toggleTechnique = (technique: string) => {
+    setFormData((prev: typeof formData) => ({
+      ...prev,
+      techniques: prev.techniques.includes(technique)
+        ? prev.techniques.filter((t: string) => t !== technique)
+        : [...prev.techniques, technique],
+    }));
+  };
+
+  const toggleTemplateSelect = (templateId: string) => {
+    const newSelected = new Set(selectedTemplateIds);
+    if (newSelected.has(templateId)) {
+      newSelected.delete(templateId);
+    } else {
+      newSelected.add(templateId);
+    }
+    setSelectedTemplateIds(newSelected);
+  };
+
+  const toggleSelectAllTemplates = () => {
+    if (selectedTemplateIds.size === customTemplates.length) {
+      setSelectedTemplateIds(new Set());
+    } else {
+      setSelectedTemplateIds(new Set(customTemplates.map((t) => t.id)));
+    }
+  };
+
+  const handleBulkDeleteTemplates = () => {
+    if (confirm(`Delete ${selectedTemplateIds.size} template(s)?`)) {
+      selectedTemplateIds.forEach((id) => removeTemplate(id));
+      setSelectedTemplateIds(new Set());
+    }
+  };
+
+  return (
+    <div className="screen screen-templates">
+      <div className="screen__header">
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div><h1>Saved Tools</h1><p><strong>Templates</strong> · <button type="button" onClick={() => setScreenLocation("saved-tools", "saved-prompts")}>Saved Prompts</button></p></div>
+          <button
+            type="button"
+            className="settings-btn"
+            onClick={() => setShowCreateForm(!showCreateForm)}
+            style={{ margin: 0 }}
+          >
+            {showCreateForm ? "Cancel" : "Create Template"}
+          </button>
+        </div>
+      </div>
+      <div className="screen__content">
+        {templates.length > 0 && (
+          <div style={{ marginBottom: "24px" }}>
+            <input
+              type="text"
+              placeholder="Search templates..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "10px 12px",
+                fontSize: "13px",
+                border: "1px solid var(--accent-cyan-tint-06)",
+                borderRadius: "4px",
+                background: "var(--surface-base)",
+                color: "var(--text-primary)",
+              }}
+            />
+          </div>
+        )}
+
+        {showCreateForm && (
+          <div className="template-form">
+            <div className="form-group">
+              <label className="form-group__label">Template Name</label>
+              <input
+                type="text"
+                className="form-group__input"
+                placeholder="e.g., Quick FAQ"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                autoFocus
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-group__label">Model</label>
+              <select
+                className="form-group__input"
+                value={formData.model}
+                onChange={(e) => setFormData({ ...formData, model: e.target.value as any })}
+              >
+                <option value="auto">Auto (Recommended)</option>
+                <option value="claude-haiku-4-5">Claude Haiku 4.5</option>
+                <option value="claude-sonnet-5">Claude Sonnet 5</option>
+                <option value="claude-opus-4-8">Claude Opus 4.8</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label className="form-group__label">Directness ({formData.directness})</label>
+              <input
+                type="range"
+                min="1"
+                max="5"
+                value={formData.directness}
+                onChange={(e) => setFormData({ ...formData, directness: parseInt(e.target.value) })}
+                className="form-group__slider"
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-group__label">Techniques</label>
+              <div className="form-group__techniques">
+                {allTechniques.map((tech) => (
+                  <label key={tech} className="form-group__checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={formData.techniques.includes(tech)}
+                      onChange={() => toggleTechnique(tech)}
+                    />
+                    {tech}
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div className="form-group">
+              <label className="form-group__label">Starter Question (optional)</label>
+              <textarea
+                className="form-group__input"
+                placeholder="Pre-fill this question when the template is used"
+                value={formData.starterQuestion}
+                onChange={(e) => setFormData({ ...formData, starterQuestion: e.target.value })}
+                rows={2}
+              />
+            </div>
+            <button
+              type="button"
+              className="settings-btn"
+              onClick={handleCreateTemplate}
+            >
+              Create
+            </button>
+          </div>
+        )}
+
+        {builtInTemplates.length > 0 && (
+          <div className="templates-section">
+            <h3 className="templates-section__title">Built-in Templates</h3>
+            <div className="template-list">
+              {builtInTemplates.map((template) => (
+                <div key={template.id} className="template-card">
+                  <div className="template-card__header">
+                    <h4>{template.title}</h4>
+                  </div>
+                  <div className="template-card__meta">
+                    <span className="template-card__badge">Model: {template.model}</span>
+                    <span className="template-card__badge">Directness: {template.directness}</span>
+                  </div>
+                  {template.techniques && template.techniques.length > 0 && (
+                    <div className="template-card__techniques">
+                      {template.techniques.map((t) => (
+                        <span key={t} className="template-card__technique">
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {template.starterQuestion && (
+                    <p className="template-card__description">{template.starterQuestion}</p>
+                  )}
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <button
+                      type="button"
+                      className="template-card__btn template-card__btn--primary"
+                      onClick={() => handleLoadTemplate(template)}
+                    >
+                      Use Template
+                    </button>
+                    <button
+                      type="button"
+                      className="template-card__btn"
+                      onClick={() => toggleTemplateStar(template.id)}
+                      title={template.starred ? "Remove from favorites" : "Add to favorites"}
+                      style={{ padding: "8px 10px", minWidth: "auto", color: template.starred ? "var(--accent-cyan)" : "var(--text-primary)" }}
+                    >
+                      <Star size={16} fill={template.starred ? "currentColor" : "none"} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {customTemplates.length > 0 && (
+          <div className="templates-section">
+            <h3 className="templates-section__title">Custom Templates</h3>
+            {selectedTemplateIds.size > 0 && (
+              <div
+                style={{
+                  display: "flex",
+                  gap: "12px",
+                  marginBottom: "16px",
+                  padding: "12px",
+                  background: "var(--accent-cyan-tint-12)",
+                  borderRadius: "4px",
+                  alignItems: "center",
+                }}
+              >
+                <span style={{ flex: 1, fontSize: "14px", fontWeight: "500" }}>
+                  {selectedTemplateIds.size} template{selectedTemplateIds.size !== 1 ? "s" : ""} selected
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedTemplateIds(new Set())}
+                  style={{
+                    padding: "8px 12px",
+                    fontSize: "13px",
+                    border: "1px solid var(--accent-cyan)",
+                    borderRadius: "4px",
+                    background: "transparent",
+                    color: "var(--text-primary)",
+                    cursor: "pointer",
+                  }}
+                >
+                  Clear
+                </button>
+                <button
+                  type="button"
+                  onClick={handleBulkDeleteTemplates}
+                  style={{
+                    padding: "8px 12px",
+                    fontSize: "13px",
+                    border: "none",
+                    borderRadius: "4px",
+                    background: "var(--accent-danger)",
+                    color: "white",
+                    cursor: "pointer",
+                  }}
+                >
+                  Delete Selected
+                </button>
+              </div>
+            )}
+            <div className="template-list">
+              {customTemplates.length > 0 && (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    marginBottom: "12px",
+                    paddingBottom: "12px",
+                    borderBottom: "1px solid var(--accent-cyan-tint-06)",
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedTemplateIds.size === customTemplates.length && customTemplates.length > 0}
+                    onChange={toggleSelectAllTemplates}
+                    style={{ marginRight: "12px", cursor: "pointer" }}
+                  />
+                  <span style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
+                    Select All
+                  </span>
+                </div>
+              )}
+              {customTemplates.map((template) => (
+                <div key={template.id} style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
+                  <input
+                    type="checkbox"
+                    checked={selectedTemplateIds.has(template.id)}
+                    onChange={() => toggleTemplateSelect(template.id)}
+                    style={{ marginTop: "12px", cursor: "pointer" }}
+                  />
+                  <div className="template-card" style={{ flex: 1 }}>
+                    {editingId === template.id ? (
+                    <>
+                      <div className="form-group">
+                        <label className="form-group__label">Template Name</label>
+                        <input
+                          type="text"
+                          className="form-group__input"
+                          value={formData.title}
+                          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                          autoFocus
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-group__label">Model</label>
+                        <select
+                          className="form-group__input"
+                          value={formData.model}
+                          onChange={(e) => setFormData({ ...formData, model: e.target.value as any })}
+                        >
+                          <option value="auto">Auto (Recommended)</option>
+                          <option value="claude-haiku-4-5">Claude Haiku 4.5</option>
+                          <option value="claude-sonnet-5">Claude Sonnet 5</option>
+                          <option value="claude-opus-4-8">Claude Opus 4.8</option>
+                        </select>
+                      </div>
+                      <div className="form-group">
+                        <label className="form-group__label">Directness ({formData.directness})</label>
+                        <input
+                          type="range"
+                          min="1"
+                          max="5"
+                          value={formData.directness}
+                          onChange={(e) => setFormData({ ...formData, directness: parseInt(e.target.value) })}
+                          className="form-group__slider"
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-group__label">Techniques</label>
+                        <div className="form-group__techniques">
+                          {allTechniques.map((tech) => (
+                            <label key={tech} className="form-group__checkbox-label">
+                              <input
+                                type="checkbox"
+                                checked={formData.techniques.includes(tech)}
+                                onChange={() => toggleTechnique(tech)}
+                              />
+                              {tech}
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="form-group">
+                        <label className="form-group__label">Starter Question (optional)</label>
+                        <textarea
+                          className="form-group__input"
+                          placeholder="Pre-fill this question when the template is used"
+                          value={formData.starterQuestion}
+                          onChange={(e) => setFormData({ ...formData, starterQuestion: e.target.value })}
+                          rows={2}
+                        />
+                      </div>
+                      <div style={{ display: "flex", gap: "8px" }}>
+                        <button
+                          type="button"
+                          className="settings-btn"
+                          onClick={handleSaveEdit}
+                        >
+                          Save
+                        </button>
+                        <button
+                          type="button"
+                          className="settings-btn"
+                          onClick={handleCancelEdit}
+                          style={{ background: "var(--surface-elevated)" }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="template-card__header">
+                        <h4>{template.title}</h4>
+                      </div>
+                      <div className="template-card__meta">
+                        <span className="template-card__badge">Model: {template.model}</span>
+                        <span className="template-card__badge">Directness: {template.directness}</span>
+                      </div>
+                      {template.techniques && template.techniques.length > 0 && (
+                        <div className="template-card__techniques">
+                          {template.techniques.map((t) => (
+                            <span key={t} className="template-card__technique">
+                              {t}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {template.starterQuestion && (
+                        <p className="template-card__description">{template.starterQuestion}</p>
+                      )}
+                      <div className="template-card__actions">
+                        <button
+                          type="button"
+                          className="template-card__btn template-card__btn--primary"
+                          onClick={() => handleLoadTemplate(template)}
+                        >
+                          Use Template
+                        </button>
+                        <button
+                          type="button"
+                          className="template-card__btn"
+                          onClick={() => handleEditTemplate(template)}
+                          title="Edit template"
+                          style={{ padding: "8px 10px", minWidth: "auto" }}
+                        >
+                          <Pencil size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          className="template-card__btn"
+                          onClick={() => toggleTemplateStar(template.id)}
+                          title={template.starred ? "Remove from favorites" : "Add to favorites"}
+                          style={{ padding: "8px 10px", minWidth: "auto", color: template.starred ? "var(--accent-cyan)" : "var(--text-primary)" }}
+                        >
+                          <Star size={16} fill={template.starred ? "currentColor" : "none"} />
+                        </button>
+                        <button
+                          type="button"
+                          className="template-card__btn template-card__btn--danger"
+                          onClick={() => handleDeleteTemplate(template.id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </>
+                  )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {templates.length === 0 && (
+          <p>No templates yet. Create one here, or save current settings from Talk to AI.</p>
+        )}
+
+        {templates.length > 0 && builtInTemplates.length === 0 && customTemplates.length === 0 && (
+          <p style={{ color: "var(--text-secondary)" }}>
+            No templates match your search. Try a different search term.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SavedPromptsScreen() {
+  const savedPrompts = useAccountStore((s) => s.savedPrompts);
+  const addSavedPrompt = useAccountStore((s) => s.addSavedPrompt);
+  const removeSavedPrompt = useAccountStore((s) => s.removeSavedPrompt);
+  const toggleSavedPromptStar = useAccountStore((s) => s.toggleSavedPromptStar);
+  const setDraftInput = useSessionStore((s) => s.setDraftInput);
+  const setScreenLocation = useSessionStore((s) => s.setScreenLocation);
+  const [searchTerm, setSearchTerm] = useState("");
+  useLearningSearchSignal(searchTerm);
+  const [title, setTitle] = useState("");
+  const [text, setText] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  const prompts = savedPrompts.filter((prompt) => `${prompt.title} ${prompt.text}`.toLowerCase().includes(searchTerm.toLowerCase()))
+    .sort((a, b) => Number(Boolean(b.starred)) - Number(Boolean(a.starred)) || a.title.localeCompare(b.title));
+
+  function savePrompt() {
+    if (!title.trim() || !text.trim()) return;
+    const existing = editingId ? savedPrompts.find((prompt) => prompt.id === editingId) : undefined;
+    if (editingId) removeSavedPrompt(editingId);
+    addSavedPrompt({ id: editingId ?? `prompt-${Date.now()}`, title: title.trim(), text: text.trim(), starred: existing?.starred });
+    setTitle(""); setText(""); setEditingId(null);
+  }
+  function editPrompt(id: string) {
+    const prompt = savedPrompts.find((item) => item.id === id);
+    if (!prompt) return;
+    setEditingId(id); setTitle(prompt.title); setText(prompt.text);
+  }
+  function applyPrompt(promptText: string) {
+    setDraftInput(promptText);
+    setScreenLocation("translate", null);
+  }
+
+  return <div className="screen screen-saved-prompts">
+    <div className="screen__header"><h1>Saved Tools</h1><p><button type="button" onClick={() => setScreenLocation("saved-tools", "templates")}>Templates</button> · <strong>Saved Prompts</strong></p></div>
+    <div className="screen__content">
+      <div className="template-form"><input aria-label="Prompt title" placeholder="Prompt title" value={title} onChange={(event) => setTitle(event.target.value)} /><textarea aria-label="Prompt text" placeholder="Prompt text" value={text} onChange={(event) => setText(event.target.value)} /><button type="button" className="primary" disabled={!title.trim() || !text.trim()} onClick={savePrompt}>{editingId ? "Save changes" : "Create prompt"}</button>{editingId && <button type="button" onClick={() => { setEditingId(null); setTitle(""); setText(""); }}>Cancel edit</button>}</div>
+      <input type="search" aria-label="Search saved prompts" placeholder="Search prompts..." value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} />
+      {prompts.map((prompt) => <div className="template-card" key={prompt.id}><h4>{prompt.starred ? "★ " : ""}{prompt.title}</h4><p>{prompt.text}</p><div className="template-card__actions"><button type="button" onClick={() => applyPrompt(prompt.text)}>Use</button><button type="button" onClick={() => editPrompt(prompt.id)}>Edit</button><button type="button" onClick={() => addSavedPrompt({ ...prompt, id: `prompt-${Date.now()}`, title: `${prompt.title} — Copy`, starred: false })}>Duplicate</button><button type="button" onClick={() => toggleSavedPromptStar(prompt.id)}>{prompt.starred ? "Unfavorite" : "Favorite"}</button><button type="button" onClick={() => removeSavedPrompt(prompt.id)}>Delete</button></div></div>)}
+      {prompts.length === 0 && <p>No saved prompts match. Create one above.</p>}
+    </div>
+  </div>;
+}
+
+function SettingsScreen() {
+  const plan = useAccountStore((s) => s.plan);
+  const sessions = useAccountStore((s) => s.sessions);
+  const trashed = useAccountStore((s) => s.trashed);
+  const currentSection = useSessionStore((s) => s.currentSection);
+  const setScreenLocation = useSessionStore((s) => s.setScreenLocation);
+  const [exportOpen, setExportOpen] = useState(false);
+  const [restoreStatus, setRestoreStatus] = useState("");
+  const section = currentSection ?? "account";
+
+  const totalSessions = sessions.length;
+  const totalTrashed = trashed.length;
+  const totalMessages = sessions.reduce((sum, s) => sum + s.conversation.length, 0);
+
+  function downloadDataset() {
+    const blob = new Blob([serializeLocalDataset()], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `divergence-local-dataset-${new Date().toISOString().slice(0, 10)}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function restoreDataset(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const restored = await restoreLocalDataset(await file.text());
+    setRestoreStatus(restored ? "Local dataset restored." : "That file is not a valid Divergence local dataset.");
+    event.target.value = "";
+  }
+
+  const sections = [
+    ["account", "Account"], ["plan", "Plan & credits"], ["connections", "AI Connections"],
+    ["personalization", "Personal Optimization"], ["appearance", "Appearance"],
+    ["data", "Data & sync"], ["status", "System status"],
+  ] as const;
+
+  return (
+    <div className="screen screen-settings">
+      <div className="screen__header">
+        <h1>Settings</h1>
+        <nav className="screen-tabs" aria-label="Settings sections">{sections.map(([id, label]) => <button type="button" key={id} aria-current={section === id ? "page" : undefined} className={section === id ? "is-active" : ""} onClick={() => setScreenLocation("settings", id)}>{label}</button>)}</nav>
+      </div>
+      <div className="screen__content">
+        {section === "account" && <div className="settings-section">
+          <h3>Account</h3>
+          <div className="settings-item">
+            <div className="settings-item__label">Plan</div>
+            <div className="settings-item__value" style={{ textTransform: "capitalize" }}>
+              {plan === "pro-plus" ? "Insane" : plan}
+            </div>
+          </div>
+          <div className="settings-item">
+            <div className="settings-item__label">Profile</div>
+            <div className="settings-item__value">Local workspace</div>
+          </div>
+        </div>}
+
+        {section === "plan" && <InteractivePlanControls />}
+
+        {section === "personalization" && <InteractivePersonalOptimization />}
+
+        {section === "connections" && <><div className="settings-section"><h3>Connection status</h3><p className="settings-section__note">No external provider is connected. Provider setup controls prepare configuration only; they do not claim a successful connection or send data.</p></div><ProviderNeutralSettings /></>}
+
+        {section === "appearance" && <AppearanceSettings />}
+
+        {section === "data" && <div className="settings-section">
+          <h3>Storage & Sync</h3>
+          <div className="settings-item">
+            <div className="settings-item__label">Sessions Saved</div>
+            <div className="settings-item__value">{totalSessions}</div>
+          </div>
+          <div className="settings-item">
+            <div className="settings-item__label">Items in Trash</div>
+            <div className="settings-item__value">{totalTrashed}</div>
+          </div>
+          <div className="settings-item">
+            <div className="settings-item__label">Total Messages</div>
+            <div className="settings-item__value">{totalMessages}</div>
+          </div>
+          <button
+            type="button"
+            className="settings-btn"
+            onClick={() => setExportOpen(true)}
+          >
+            Review data export
+          </button>
+        </div>}
+
+        {section === "status" && <div className="settings-section">
+          <h3>System Status</h3>
+          <div className="settings-item">
+            <div className="settings-item__label">Local preparation and storage</div>
+            <div className="settings-item__value">Available</div>
+          </div>
+          <div className="settings-item">
+            <div className="settings-item__label">External providers</div>
+            <div className="settings-item__value">Not configured</div>
+          </div>
+          <p className="settings-section__note">
+            Version 0.1.2 · No remote provider success is being claimed.
+          </p>
+        </div>}
+      </div>
+      {exportOpen && <div className="workflow-dialog" role="dialog" aria-modal="true" aria-labelledby="data-export-title"><div className="workflow-dialog__card surface-smoked-glass"><header><h2 id="data-export-title">Complete local data export</h2><p>Download or restore the locally available workspace. No data is sent anywhere, and cross-device sync is not claimed.</p></header><div className="workflow-dialog__summary"><strong>Included locally</strong><p>{totalSessions} sessions · {totalTrashed} trashed items · {totalMessages} messages · templates, prompts, variables, settings, tasks, and resources</p></div><input type="file" accept="application/json,.json" aria-label="Restore local dataset" onChange={(event) => void restoreDataset(event)} />{restoreStatus && <p role="status">{restoreStatus}</p>}<footer className="workflow-dialog__actions"><button type="button" onClick={() => setExportOpen(false)}>Close</button><button type="button" className="primary" onClick={downloadDataset}>Download restorable dataset</button></footer></div></div>}
+    </div>
+  );
+}
+
+function CustomizeScreen() {
+  const variables = useAccountStore((s) => s.variables);
+  const setVariable = useAccountStore((s) => s.setVariable);
+  const removeVariable = useAccountStore((s) => s.removeVariable);
+  const addContextItem = useSessionStore((s) => s.addContextItem);
+  const [name, setName] = useState("");
+  const [value, setValue] = useState("");
+
+  function saveVariable() {
+    const cleanName = name.trim().replace(/^\$/, "");
+    if (!cleanName || !value.trim()) return;
+    setVariable(cleanName, value.trim()); setName(""); setValue("");
+  }
+  return (
+    <div className="screen screen-customize">
+      <div className="screen__header">
+        <h1>Variables</h1>
+        <p>Create, edit, remove, or add saved variables to this request.</p>
+      </div>
+      <div className="screen__content">
+        <div className="template-form"><input aria-label="Variable name" placeholder="Name" value={name} onChange={(event) => setName(event.target.value)} /><textarea aria-label="Variable value" placeholder="Value" value={value} onChange={(event) => setValue(event.target.value)} /><button type="button" onClick={saveVariable} disabled={!name.trim() || !value.trim()}>Save variable</button></div>
+        {Object.entries(variables).map(([variableName, variableValue]) => <div className="template-card" key={variableName}><strong>${variableName}</strong><p>{variableValue}</p><div className="template-card__actions"><button type="button" onClick={() => addContextItem({ id: `variable:${variableName}:${Date.now()}`, kind: "variable", label: `$${variableName}`, content: variableValue, bytes: variableValue.length })}>Add to context</button><button type="button" onClick={() => removeVariable(variableName)}>Delete</button></div></div>)}
+        {Object.keys(variables).length === 0 && <p>No saved variables yet.</p>}
+      </div>
+    </div>
+  );
+}
+
+/* Session-file import preview (R08). A picked file is read and validated
+   into this shape before anything touches the store — nothing is applied
+   until the user explicitly confirms, and a rejected file changes nothing.
+   The id is always regenerated (never trusted from the file) so an import
+   can never silently overwrite an existing session that happens to share
+   an id — same posture as services/import/envelope.ts. */
+interface SessionImportPreview {
+  fileName: string;
+  ok: boolean;
+  message: string;
+  record?: SessionRecord;
+}
+
+function newImportedSessionId(): string {
+  return `session-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function buildSessionImportPreview(fileName: string, raw: string): SessionImportPreview {
+  if (!raw.trim()) {
+    return { fileName, ok: false, message: "That file is empty, so there's nothing to import." };
+  }
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return { fileName, ok: false, message: "That file isn't valid JSON, so it can't be read as a session." };
+  }
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    return { fileName, ok: false, message: "That file doesn't look like a session export." };
+  }
+  const data = parsed as Record<string, unknown>;
+  const missing: string[] = [];
+  if (typeof data.id !== "string" || !data.id) missing.push("id");
+  if (!Array.isArray(data.conversation)) missing.push("conversation");
+  if (typeof data.model !== "string" || !data.model) missing.push("model");
+  if (missing.length > 0) {
+    return {
+      fileName,
+      ok: false,
+      message: `That file is missing what a session export needs (${missing.join(", ")}), so it can't be imported. Try exporting the session again.`,
+    };
+  }
+
+  const conversation = data.conversation as SessionRecord["conversation"];
+  const rawContext = Array.isArray(data.context) ? (data.context as SessionRecord["context"]) : [];
+  // R09: Set provenance to "Imported" for context items from imported session
+  const context = rawContext.map((item) => ({
+    ...item,
+    provenance: item.provenance || "Imported",
+  }));
+  const variables = (data.variables && typeof data.variables === "object" && !Array.isArray(data.variables))
+    ? (data.variables as SessionRecord["variables"])
+    : {};
+  const techniques = Array.isArray(data.techniques) ? (data.techniques as SessionRecord["techniques"]) : [];
+  const directness: SessionRecord["directness"] = data.directness === 1 || data.directness === 2 || data.directness === 3
+    ? data.directness
+    : 2;
+  const tag = typeof data.tag === "string" ? data.tag : undefined;
+
+  const record: SessionRecord = {
+    ...(data as unknown as SessionRecord),
+    id: newImportedSessionId(),
+    createdAt: typeof data.createdAt === "number" ? data.createdAt : Date.now(),
+    archived: typeof data.archived === "boolean" ? data.archived : false,
+    model: data.model as ModelSelection,
+    directness,
+    techniques,
+    context,
+    variables,
+    conversation,
+    tag,
+  };
+
+  const messageCount = conversation.length;
+  const contextCount = context.length;
+  return {
+    fileName,
+    ok: true,
+    message: `Will import "${tag || "Untitled session"}" — ${messageCount} message${messageCount === 1 ? "" : "s"}, ${contextCount} context item${contextCount === 1 ? "" : "s"}. This adds a new session; it never replaces an existing one.`,
+    record,
+  };
+}
+
+function SessionsScreen() {
+  const sessions = useAccountStore((s) => s.sessions);
+  const loadSessionRecord = useSessionStore((s) => s.loadSessionRecord);
+  const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
+  const currentSection = useSessionStore((s) => s.currentSection);
+  const setScreenLocation = useSessionStore((s) => s.setScreenLocation);
+  const moveSessionToTrash = useAccountStore((s) => s.moveSessionToTrash);
+  const updateSessionTag = useAccountStore((s) => s.updateSessionTag);
+  const toggleSessionStar = useAccountStore((s) => s.toggleSessionStar);
+  const duplicateSession = useAccountStore((s) => s.duplicateSession);
+
+  const [searchTerm, setSearchTerm] = useState("");
+  useLearningSearchSignal(searchTerm);
+  const [sortBy, setSortBy] = useState<"recent" | "oldest" | "name">("recent");
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renamingText, setRenamingText] = useState("");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [importPreview, setImportPreview] = useState<SessionImportPreview | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleLoadSession = (sessionId: string) => {
+    const session = sessions.find((s) => s.id === sessionId);
+    if (session) {
+      recordTopicReturnSignal(session.id);
+      loadSessionRecord(session);
+      setCurrentScreen("translate");
+    }
+  };
+
+  const handleDeleteSession = (sessionId: string) => {
+    moveSessionToTrash(sessionId);
+  };
+
+  const handleRenameStart = (sessionId: string, currentTag: string) => {
+    setRenamingId(sessionId);
+    setRenamingText(currentTag);
+  };
+
+  const handleRenameSave = (sessionId: string) => {
+    if (renamingText.trim()) {
+      updateSessionTag(sessionId, renamingText.trim());
+    }
+    setRenamingId(null);
+    setRenamingText("");
+  };
+
+  const addSessionRecord = useAccountStore((s) => s.addSessionRecord);
+
+  const handleExportSession = (session: typeof sessions[0]) => {
+    const sessionData = JSON.stringify(session, null, 2);
+    const dataBlob = new Blob([sessionData], { type: "application/json" });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `divergence-session-${session.tag || session.id}-${new Date().toISOString().slice(0, 10)}.json`;
+    link.click();
+  };
+
+  const handleImportSession = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = typeof e.target?.result === "string" ? e.target.result : "";
+      setImportPreview(buildSessionImportPreview(file.name, text));
+    };
+    reader.onerror = () => {
+      setImportPreview({ fileName: file.name, ok: false, message: "That file couldn't be read. Try selecting it again." });
+    };
+    reader.readAsText(file);
+  };
+
+  const confirmImportSession = () => {
+    if (!importPreview?.ok || !importPreview.record) return;
+    addSessionRecord(importPreview.record);
+    setImportPreview(null);
+  };
+
+  const cancelImportSession = () => setImportPreview(null);
+
+  const toggleSessionSelect = (sessionId: string) => {
+    const newSelected = new Set(selectedIds);
+    if (newSelected.has(sessionId)) {
+      newSelected.delete(sessionId);
+    } else {
+      newSelected.add(sessionId);
+    }
+    setSelectedIds(newSelected);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === sortedSessions.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(sortedSessions.map((s) => s.id)));
+    }
+  };
+
+  const handleBulkDelete = () => {
+    if (confirm(`Delete ${selectedIds.size} session(s)?`)) {
+      selectedIds.forEach((id) => moveSessionToTrash(id));
+      setSelectedIds(new Set());
+    }
+  };
+
+  const section = currentSection === "saved" || currentSection === "archived" || currentSection === "trash" ? currentSection : "active";
+  if (section === "trash") return <TrashScreen />;
+
+  const filteredSessions = sessions.filter((session) => {
+    if (sessionRecordStatus(session) !== section) return false;
+    const searchLower = searchTerm.toLowerCase();
+    const tag = (session.tag || `Session ${session.id.slice(0, 6)}`).toLowerCase();
+    return tag.includes(searchLower) || session.id.includes(searchTerm);
+  });
+
+  const sortedSessions = [...filteredSessions].sort((a, b) => {
+    switch (sortBy) {
+      case "recent":
+        return b.createdAt - a.createdAt;
+      case "oldest":
+        return a.createdAt - b.createdAt;
+      case "name":
+        return ((a.tag || a.id) || "").localeCompare((b.tag || b.id) || "");
+      default:
+        return 0;
+    }
+  });
+
+  return (
+    <div className="screen screen-sessions">
+      <div className="screen__header">
+        <h1>Sessions</h1>
+        <nav className="screen-tabs" aria-label="Session states">{(["active", "saved", "archived", "trash"] as const).map((id) => <button type="button" key={id} aria-current={section === id ? "page" : undefined} className={section === id ? "is-active" : ""} onClick={() => setScreenLocation("sessions", id)}>{id[0].toUpperCase() + id.slice(1)}</button>)}</nav>
+      </div>
+      <div className="screen__content">
+        {/* The search/sort/Import toolbar renders unconditionally (R08.1):
+            it must stay visible even with zero sessions in this section, or
+            with a search term that currently matches nothing — otherwise
+            the file chooser vanishes exactly when a first-time user most
+            needs it. */}
+        <div style={{ display: "flex", gap: "12px", marginBottom: "24px" }}>
+              <input
+                type="text"
+                placeholder="Search sessions..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{
+                  flex: 1,
+                  padding: "10px 12px",
+                  fontSize: "13px",
+                  border: "1px solid var(--accent-cyan-tint-06)",
+                  borderRadius: "4px",
+                  background: "var(--surface-base)",
+                  color: "var(--text-primary)",
+                }}
+              />
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as "recent" | "oldest" | "name")}
+                style={{
+                  padding: "10px 12px",
+                  fontSize: "13px",
+                  border: "1px solid var(--accent-cyan-tint-06)",
+                  borderRadius: "4px",
+                  background: "var(--surface-base)",
+                  color: "var(--text-primary)",
+                }}
+              >
+                <option value="recent">Most Recent</option>
+                <option value="oldest">Oldest First</option>
+                <option value="name">By Name</option>
+              </select>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                style={{
+                  padding: "10px 16px",
+                  fontSize: "13px",
+                  border: "1px solid var(--accent-cyan-tint-06)",
+                  borderRadius: "4px",
+                  background: "var(--surface-base)",
+                  color: "var(--text-primary)",
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Import
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".json"
+                onChange={handleImportSession}
+                style={{ display: "none" }}
+              />
+            </div>
+
+            {selectedIds.size > 0 && (
+              <div
+                style={{
+                  display: "flex",
+                  gap: "12px",
+                  marginBottom: "24px",
+                  padding: "12px",
+                  background: "var(--accent-cyan-tint-12)",
+                  borderRadius: "4px",
+                  alignItems: "center",
+                }}
+              >
+                <span style={{ flex: 1, fontSize: "14px", fontWeight: "500" }}>
+                  {selectedIds.size} session{selectedIds.size !== 1 ? "s" : ""} selected
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedIds(new Set())}
+                  style={{
+                    padding: "8px 12px",
+                    fontSize: "13px",
+                    border: "1px solid var(--accent-cyan)",
+                    borderRadius: "4px",
+                    background: "transparent",
+                    color: "var(--text-primary)",
+                    cursor: "pointer",
+                  }}
+                >
+                  Clear
+                </button>
+                <button
+                  type="button"
+                  onClick={handleBulkDelete}
+                  style={{
+                    padding: "8px 12px",
+                    fontSize: "13px",
+                    border: "none",
+                    borderRadius: "4px",
+                    background: "var(--accent-danger)",
+                    color: "white",
+                    cursor: "pointer",
+                  }}
+                >
+                  Delete Selected
+                </button>
+              </div>
+            )}
+
+            {sortedSessions.length === 0 ? (
+              <p style={{ color: "var(--text-secondary)" }}>
+                {sessions.filter((s) => sessionRecordStatus(s) === section).length === 0
+                  ? `No ${section} sessions yet.`
+                  : "No sessions match your search. Try adjusting your search term."}
+              </p>
+            ) : (
+              <div className="session-list">
+                {sortedSessions.length > 0 && (
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      marginBottom: "12px",
+                      paddingBottom: "12px",
+                      borderBottom: "1px solid var(--accent-cyan-tint-06)",
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.size === sortedSessions.length && sortedSessions.length > 0}
+                      onChange={toggleSelectAll}
+                      style={{ marginRight: "12px", cursor: "pointer" }}
+                    />
+                    <span style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
+                      Select All
+                    </span>
+                  </div>
+                )}
+                {sortedSessions.map((session) => (
+                  <div key={session.id} className="session-item">
+                    <div style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(session.id)}
+                        onChange={() => toggleSessionSelect(session.id)}
+                        style={{ marginTop: "8px", cursor: "pointer" }}
+                      />
+                      <div style={{ flex: 1 }}>
+                        <div className="session-item__header">
+                          {renamingId === session.id ? (
+                            <div style={{ display: "flex", gap: "8px", alignItems: "center", flex: 1 }}>
+                              <input
+                                type="text"
+                                value={renamingText}
+                                onChange={(e) => setRenamingText(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") handleRenameSave(session.id);
+                                  if (e.key === "Escape") {
+                                    setRenamingId(null);
+                                    setRenamingText("");
+                                  }
+                                }}
+                                autoFocus
+                                style={{
+                                  flex: 1,
+                                  padding: "6px 8px",
+                                  fontSize: "14px",
+                                  border: "1px solid var(--accent-cyan)",
+                                  borderRadius: "4px",
+                                  background: "var(--surface-base)",
+                                  color: "var(--text-primary)",
+                                }}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleRenameSave(session.id)}
+                                style={{
+                                  padding: "6px 12px",
+                                  fontSize: "12px",
+                                  background: "var(--accent-cyan)",
+                                  color: "var(--text-on-accent)",
+                                  border: "none",
+                                  borderRadius: "4px",
+                                  cursor: "pointer",
+                                }}
+                              >
+                                Save
+                              </button>
+                            </div>
+                          ) : (
+                            <>
+                              <h3>{session.tag || `Session ${session.id.slice(0, 8)}`}</h3>
+                              <span className="session-item__date">
+                                {new Date(session.createdAt).toLocaleString()}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                        <p className="session-item__description">
+                          Model: {session.model} • Directness: {session.directness} •{" "}
+                          {session.conversation.length} messages
+                        </p>
+                        {renamingId !== session.id && (
+                          <div className="session-item__actions">
+                            <button
+                              type="button"
+                              className="session-item__action-btn session-item__action-btn--primary"
+                              onClick={() => handleLoadSession(session.id)}
+                            >
+                              Load
+                            </button>
+                            <button
+                              type="button"
+                              className="session-item__action-btn"
+                              onClick={() => toggleSessionStar(session.id)}
+                              title={session.starred ? "Remove from favorites" : "Add to favorites"}
+                              style={{ padding: "8px 10px", minWidth: "auto", color: session.starred ? "var(--accent-cyan)" : "var(--text-primary)" }}
+                            >
+                              <Star size={16} fill={session.starred ? "currentColor" : "none"} />
+                            </button>
+                            <button
+                              type="button"
+                              className="session-item__action-btn"
+                              onClick={() => handleRenameStart(session.id, session.tag || `Session ${session.id.slice(0, 8)}`)}
+                              title="Rename session"
+                              style={{ padding: "8px 10px", minWidth: "auto" }}
+                            >
+                              <Pencil size={16} />
+                            </button>
+                            <button
+                              type="button"
+                              className="session-item__action-btn"
+                              onClick={() => duplicateSession(session.id)}
+                              title="Duplicate session"
+                              style={{ padding: "8px 10px", minWidth: "auto" }}
+                            >
+                              <Copy size={16} />
+                            </button>
+                            <button
+                              type="button"
+                              className="session-item__action-btn"
+                              onClick={() => handleExportSession(session)}
+                              style={{ background: "var(--accent-cyan-tint-12)", color: "var(--text-primary)" }}
+                            >
+                              Export
+                            </button>
+                            <button
+                              type="button"
+                              className="session-item__action-btn session-item__action-btn--danger"
+                              onClick={() => handleDeleteSession(session.id)}
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+      </div>
+      {importPreview && (
+        <div className="workflow-dialog" role="dialog" aria-modal="true" aria-labelledby="import-session-title">
+          <div className="workflow-dialog__card surface-smoked-glass">
+            <header>
+              <h2 id="import-session-title">Import a session file</h2>
+              <p>Review "{importPreview.fileName}" before it's added. Nothing changes until you confirm.</p>
+            </header>
+            <div className="workflow-dialog__summary">
+              <p role={importPreview.ok ? "status" : "alert"}>{importPreview.message}</p>
+            </div>
+            <footer className="workflow-dialog__actions">
+              <button type="button" onClick={cancelImportSession}>Cancel</button>
+              <button type="button" className="primary" disabled={!importPreview.ok} onClick={confirmImportSession}>
+                Confirm import
+              </button>
+            </footer>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CheckpointsScreen() {
+  const sessions = useAccountStore((s) => s.sessions);
+  const addSession = useAccountStore((s) => s.addSessionRecord);
+  const loadSession = useSessionStore((s) => s.loadSessionRecord);
+  const setCurrentScreen = useSessionStore((s) => s.setCurrentScreen);
+  const [status, setStatus] = useState("");
+
+  async function createCheckpoint() {
+    const now = Date.now();
+    const snapshot = buildSessionRecord(useSessionStore.getState(), { status: "active", recoveryReason: "navigation" });
+    addSession({ ...snapshot, id: `checkpoint-${now}`, createdAt: now, updatedAt: now, tag: `Checkpoint · ${new Date(now).toLocaleString()}` });
+    await saveNow({ snapshotActiveSession: false });
+    setStatus("Checkpoint created.");
+  }
+
+  return <div className="screen screen-sessions"><div className="screen__header"><h1>Checkpoints</h1><p>Create or restore a recoverable snapshot of your work.</p></div><div className="screen__content">
+    <button type="button" className="primary" onClick={() => void createCheckpoint()}>Create checkpoint</button>{status && <p role="status">{status}</p>}
+    <div className="sessions-list">{sessions.filter((session) => session.id.startsWith("checkpoint-")).map((session) => <div className="session-card" key={session.id}><strong>{session.tag}</strong><span>{session.conversation.length} messages</span><button type="button" onClick={() => { loadSession(session); setCurrentScreen("translate"); }}>Restore</button></div>)}</div>
+    {!sessions.some((session) => session.id.startsWith("checkpoint-")) && <p>No checkpoints yet.</p>}
+  </div></div>;
+}
+
+function TrashScreen() {
+  const trashed = useAccountStore((s) => s.trashed);
+  const restoreSessionFromTrash = useAccountStore((s) => s.restoreSessionFromTrash);
+  const deleteSessionFromTrash = useAccountStore((s) => s.deleteSessionFromTrash);
+  const updateSessionTag = useAccountStore((s) => s.updateSessionTag);
+  const toggleSessionStar = useAccountStore((s) => s.toggleSessionStar);
+
+  const [searchTerm, setSearchTerm] = useState("");
+  useLearningSearchSignal(searchTerm);
+  const [sortBy, setSortBy] = useState<"recent" | "oldest" | "name">("recent");
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renamingText, setRenamingText] = useState("");
+
+  const handleRestoreSession = (sessionId: string) => {
+    restoreSessionFromTrash(sessionId);
+  };
+
+  const handlePermanentlyDelete = (sessionId: string) => {
+    deleteSessionFromTrash(sessionId);
+  };
+
+  const handleRenameStart = (sessionId: string, currentTag: string) => {
+    setRenamingId(sessionId);
+    setRenamingText(currentTag);
+  };
+
+  const handleRenameSave = (sessionId: string) => {
+    if (renamingText.trim()) {
+      updateSessionTag(sessionId, renamingText.trim());
+    }
+    setRenamingId(null);
+    setRenamingText("");
+  };
+
+  const filteredSessions = trashed.filter((session) => {
+    const searchLower = searchTerm.toLowerCase();
+    const tag = (session.tag || `Session ${session.id.slice(0, 6)}`).toLowerCase();
+    return tag.includes(searchLower) || session.id.includes(searchTerm);
+  });
+
+  const sortedSessions = [...filteredSessions].sort((a, b) => {
+    switch (sortBy) {
+      case "recent":
+        return b.createdAt - a.createdAt;
+      case "oldest":
+        return a.createdAt - b.createdAt;
+      case "name":
+        return ((a.tag || a.id) || "").localeCompare((b.tag || b.id) || "");
+      default:
+        return 0;
+    }
+  });
+
+  return (
+    <div className="screen screen-trash">
+      <div className="screen__header">
+        <h1>Trash</h1>
+      </div>
+      <div className="screen__content">
+        {trashed.length === 0 ? (
+          <p>No deleted sessions. Items you delete from Sessions will appear here.</p>
+        ) : (
+          <>
+            <div style={{ display: "flex", gap: "12px", marginBottom: "24px" }}>
+              <input
+                type="text"
+                placeholder="Search trash..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{
+                  flex: 1,
+                  padding: "10px 12px",
+                  fontSize: "13px",
+                  border: "1px solid var(--accent-cyan-tint-06)",
+                  borderRadius: "4px",
+                  background: "var(--surface-base)",
+                  color: "var(--text-primary)",
+                }}
+              />
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as "recent" | "oldest" | "name")}
+                style={{
+                  padding: "10px 12px",
+                  fontSize: "13px",
+                  border: "1px solid var(--accent-cyan-tint-06)",
+                  borderRadius: "4px",
+                  background: "var(--surface-base)",
+                  color: "var(--text-primary)",
+                }}
+              >
+                <option value="recent">Most Recent</option>
+                <option value="oldest">Oldest First</option>
+                <option value="name">By Name</option>
+              </select>
+            </div>
+
+            {sortedSessions.length === 0 ? (
+              <p style={{ color: "var(--text-secondary)" }}>
+                No deleted sessions match your search.
+              </p>
+            ) : (
+              <div className="trashed-list">
+                {sortedSessions.map((session) => (
+                  <div key={session.id} className="trashed-item">
+                    <div className="trashed-item__header">
+                      {renamingId === session.id ? (
+                        <div style={{ display: "flex", gap: "8px", alignItems: "center", flex: 1 }}>
+                          <input
+                            type="text"
+                            value={renamingText}
+                            onChange={(e) => setRenamingText(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") handleRenameSave(session.id);
+                              if (e.key === "Escape") {
+                                setRenamingId(null);
+                                setRenamingText("");
+                              }
+                            }}
+                            autoFocus
+                            style={{
+                              flex: 1,
+                              padding: "6px 8px",
+                              fontSize: "14px",
+                              border: "1px solid var(--accent-cyan)",
+                              borderRadius: "4px",
+                              background: "var(--surface-base)",
+                              color: "var(--text-primary)",
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleRenameSave(session.id)}
+                            style={{
+                              padding: "6px 12px",
+                              fontSize: "12px",
+                              background: "var(--accent-cyan)",
+                              color: "var(--text-on-accent)",
+                              border: "none",
+                              borderRadius: "4px",
+                              cursor: "pointer",
+                            }}
+                          >
+                            Save
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          <h3>{session.tag || `Session ${session.id.slice(0, 8)}`}</h3>
+                          <span className="trashed-item__date">
+                            {new Date(session.createdAt).toLocaleString()}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                    <p className="trashed-item__description">
+                      Model: {session.model} • Directness: {session.directness} •{" "}
+                      {session.conversation.length} messages
+                    </p>
+                    {renamingId !== session.id && (
+                      <div className="trashed-item__actions">
+                        <button
+                          type="button"
+                          className="trashed-item__action-btn trashed-item__action-btn--primary"
+                          onClick={() => handleRestoreSession(session.id)}
+                        >
+                          Restore
+                        </button>
+                        <button
+                          type="button"
+                          className="trashed-item__action-btn"
+                          onClick={() => toggleSessionStar(session.id)}
+                          title={session.starred ? "Remove from favorites" : "Add to favorites"}
+                          style={{ padding: "8px 10px", minWidth: "auto", color: session.starred ? "var(--accent-cyan)" : "var(--text-primary)" }}
+                        >
+                          <Star size={16} fill={session.starred ? "currentColor" : "none"} />
+                        </button>
+                        <button
+                          type="button"
+                          className="trashed-item__action-btn"
+                          onClick={() => handleRenameStart(session.id, session.tag || `Session ${session.id.slice(0, 8)}`)}
+                          title="Rename session"
+                          style={{ padding: "8px 10px", minWidth: "auto" }}
+                        >
+                          <Pencil size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          className="trashed-item__action-btn trashed-item__action-btn--danger"
+                          onClick={() => handlePermanentlyDelete(session.id)}
+                        >
+                          Delete Permanently
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function LargeJobsScreen() {
+  const [source, setSource] = useState("");
+  const [batchSize, setBatchSize] = useState(2);
+  const [units, setUnits] = useState<SyntheticJobUnit[]>([]);
+  const [paused, setPaused] = useState(false);
+  const complete = units.filter((unit) => unit.status === "complete").length;
+  function prepare() { setUnits(planSyntheticJob(source, batchSize)); setPaused(false); }
+  function runNext() { if (!paused) setUnits((current) => runNextSyntheticBatch(current)); }
+  function downloadEvidence() {
+    const blob = new Blob([JSON.stringify({ kind: "divergence-synthetic-job", source, batchSize, units }, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = "divergence-synthetic-job-evidence.json"; link.click(); URL.revokeObjectURL(url);
+  }
+  return <div className="screen screen-large-jobs">
+    <div className="screen__header"><h1>Large Jobs</h1><p>Exercise deterministic batching, progress, stop, resume, and evidence without a provider or cost.</p></div>
+    <div className="screen__content"><div className="settings-section">
+      <label>One local item per line<textarea aria-label="Synthetic job source items" value={source} onChange={(event) => setSource(event.target.value)} /></label>
+      <label>Items per batch<input type="number" min="1" max="25" value={batchSize} onChange={(event) => setBatchSize(Number(event.target.value))} /></label>
+      <button type="button" className="primary" onClick={prepare} disabled={!source.trim()}>Prepare synthetic job</button>
+      {units.length > 0 && <div className="workflow-dialog__summary" role="region" aria-label="Synthetic job progress"><strong>{complete} of {units.length} batches complete</strong><progress max={units.length} value={complete} /><p>No provider is connected and no credits can be spent.</p><div className="screen__actions"><button type="button" onClick={runNext} disabled={paused || complete === units.length}>Run next local batch</button>{paused ? <button type="button" onClick={() => setPaused(false)}>Resume</button> : <button type="button" onClick={() => setPaused(true)} disabled={complete === units.length}>Stop</button>}<button type="button" onClick={downloadEvidence}>Download evidence</button></div>{units.map((unit) => <div className="settings-item" key={unit.id}><strong>{unit.id}</strong><span>{unit.status}</span>{unit.result && <p>{unit.result}</p>}</div>)}</div>}
+    </div></div>
+  </div>;
+}
+
+export function ScreenRouter() {
+  const currentScreen = useSessionStore((s) => s.currentScreen);
+  const currentSection = useSessionStore((s) => s.currentSection);
+
+  switch (currentScreen) {
+    case "translate":
+      return <CenterColumn />;
+    case "insights":
+      return <DashboardScreen />;
+    case "techniques":
+      return <ResourcesScreen />;
+    case "projects":
+      return <ProjectsScreen />;
+    case "variables":
+      return <CustomizeScreen />;
+    case "sessions":
+      return <SessionsScreen />;
+    case "saved-tools":
+      return currentSection === "saved-prompts" ? <SavedPromptsScreen /> : <TemplatesScreen />;
+    case "settings":
+      return <SettingsScreen />;
+    case "checkpoints":
+      return <CheckpointsScreen />;
+    case "large-jobs":
+      return <LargeJobsScreen />;
+    case "trash":
+      return <TrashScreen />;
+    default:
+      return <CenterColumn />;
+  }
+}

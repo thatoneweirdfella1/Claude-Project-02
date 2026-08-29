@@ -1,0 +1,11 @@
+{
+  "schema_version": 2,
+  "rule": "Every exception is exact, user-authorized, batch-scoped, and hash-bounded. Wildcard exceptions are forbidden.",
+  "required_fields": ["path","old_blob_sha","new_blob_sha","affected_permanent_ids","authorization_date","user_attestation","expires_after_commit"],
+  "superseded_unbounded_entries": {
+    "source_commit":"3871b160b7ab217216e100149061058382c1bf2f",
+    "paths":["docs/layer-system/PERMISSIONS.yml","scripts/governance/preflight.mjs","scripts/governance/verify-protected-paths.mjs","docs/layer-system/PROTECTED-PATHS.yml","docs/layer-system/PROTECTED-PATH-EXCEPTIONS.yml","docs/layer-system/RECOVERY.md"],
+    "status":"REJECTED AS ACTIVE EXCEPTIONS — authorization prose without old/new blob hashes, affected IDs, batch scope, and expiry cannot bypass protection"
+  },
+  "exceptions": []
+}

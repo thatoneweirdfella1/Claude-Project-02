@@ -13,7 +13,7 @@ import {
   type PipelineModelClient,
 } from "./orchestrator";
 import { buildTranslateAskRequest, type TranslateAskSettings } from "../composer";
-import type { ProxyCompletionRequest } from "../proxyClient";
+import { ProxyClientError, type ProxyCompletionRequest } from "../proxyClient";
 import { route } from "../routingService";
 
 function translationJson(overrides: Record<string, unknown> = {}): string {
@@ -118,6 +118,17 @@ describe("runPipeline — a confident question flows through all five stages", (
     expect(done.notes).toEqual(routed.notes);
   });
 
+  it("carries only included attached context into the connected final prompt", async () => {
+    const req = buildTranslateAskRequest("Use my attached notes.", DEFAULT_SETTINGS, [
+      { id: "included", kind: "text", label: "Current notes", content: "PIPELINE_CONTEXT_INCLUDED_4432", bytes: 30 },
+      { id: "excluded", kind: "text", label: "Old notes", content: "PIPELINE_CONTEXT_EXCLUDED_8821", bytes: 30, included: false },
+    ]);
+    const events = await collect(runPipeline(req, { client: stubClient(), plan: "free" }));
+    const prompt = byKind(events, "composed").composed.prompt;
+    expect(prompt).toContain("PIPELINE_CONTEXT_INCLUDED_4432");
+    expect(prompt).not.toContain("PIPELINE_CONTEXT_EXCLUDED_8821");
+  });
+
   it("sends the COMPOSED prompt to the ROUTED model through the client", async () => {
     const streamSpy = vi.fn(async function* (_req: ProxyCompletionRequest) {
       yield "answer";
@@ -135,6 +146,29 @@ describe("runPipeline — a confident question flows through all five stages", (
       model: routed.apiString,
       input: composed.prompt,
     });
+  });
+
+  it("uses an approved edited translation without paying for a duplicate translation call", async () => {
+    const completeSpy = vi.fn(async () => translationJson());
+    const editedRequest = "Explain entanglement with one concrete analogy and no equations.";
+    const events = await collect(
+      runPipeline(request("raw wording that was already translated and reviewed"), {
+        client: stubClient({ complete: completeSpy }),
+        plan: "free",
+        pretranslated: {
+          translatedPrompt: editedRequest,
+          confidence: 94,
+          detectedGaps: ["tangential-preamble"],
+          reasoning: "The user reviewed and approved this prepared request.",
+        },
+      }),
+    );
+
+    expect(completeSpy).not.toHaveBeenCalled();
+    const gated = byKind(events, "translation").gated;
+    expect(gated.kind).toBe("proceed");
+    expect(byKind(events, "composed").composed.prompt).toContain(editedRequest);
+    expect(byKind(events, "done").done.text).toBe(ANSWER_TOKENS.join(""));
   });
 });
 
@@ -206,7 +240,7 @@ describe("runPipeline — user choices are honored", () => {
     const events = await collect(
       runPipeline(request("how does quantum entanglement work?", { model: "claude-opus-4-8" }), {
         client: stubClient(),
-        plan: "paid",
+        plan: "pro",
       }),
     );
     expect(byKind(events, "route").result.model).toBe("opus");
@@ -275,13 +309,13 @@ describe("runPipeline — Step 6.5 state bus (deps.stateTechniques / deps.stateT
 });
 
 describe("runPipeline — execution failure", () => {
-  it("a failed stream (proxy down — the sandbox's actual state) becomes a typed error event", async () => {
+  it("a failed stream (proxy down — the sandbox's actual state) becomes a typed error event with a safe, categorized message", async () => {
     const events = await collect(
       runPipeline(request("how does quantum entanglement work?"), {
         client: stubClient({
           // eslint-disable-next-line require-yield
           stream: async function* () {
-            throw new Error("Proxy call failed (502)");
+            throw new ProxyClientError(502);
           },
         }),
         plan: "free",
@@ -289,11 +323,17 @@ describe("runPipeline — execution failure", () => {
       }),
     );
     const last = events[events.length - 1];
-    expect(last).toMatchObject({ kind: "error", message: "Proxy call failed (502)" });
+    expect(last.kind).toBe("error");
+    // R13: the raw HTTP status/proxy internal must never reach the event —
+    // only the categorized, actionable message and next action.
+    const errorEvent = last as { kind: "error"; message: string; nextAction?: string };
+    expect(errorEvent.message).not.toContain("502");
+    expect(errorEvent.message).toBe("The AI service is temporarily unavailable.");
+    expect(errorEvent.nextAction).toBeTruthy();
     expect(events.some((e) => e.kind === "done")).toBe(false);
   });
 
-  it("a non-transient stream failure (e.g. 400) is NOT retried — fails on the first attempt", async () => {
+  it("a non-transient stream failure (e.g. 400) is NOT retried — fails on the first attempt, with no raw status or provider body in the event", async () => {
     let calls = 0;
     const events = await collect(
       runPipeline(request("how does quantum entanglement work?"), {
@@ -301,7 +341,7 @@ describe("runPipeline — execution failure", () => {
           // eslint-disable-next-line require-yield
           stream: async function* () {
             calls++;
-            throw new Error("Proxy call failed (400): malformed request");
+            throw new ProxyClientError(400, "malformed request — includes raw provider detail");
           },
         }),
         plan: "free",
@@ -309,7 +349,10 @@ describe("runPipeline — execution failure", () => {
       }),
     );
     expect(calls).toBe(1);
-    expect(events[events.length - 1]).toMatchObject({ kind: "error", message: expect.stringContaining("400") });
+    const last = events[events.length - 1] as { kind: "error"; message: string };
+    expect(last.kind).toBe("error");
+    expect(last.message).not.toContain("400");
+    expect(last.message).not.toContain("malformed request");
   });
 });
 
@@ -377,5 +420,21 @@ describe("resolveTechniqueSelection", () => {
       routed,
     );
     expect(fromAuto.selected).toEqual(fromEmpty.selected);
+  });
+});
+
+
+describe("resolveTechniqueSelection — Auto recommend with checked choices", () => {
+  it("keeps manually checked techniques while Auto recommend fills compatible open slots", () => {
+    const routed = route({ prompt: "Explain this in simple terms", confidence: 95, plan: "free" });
+    const selection = resolveTechniqueSelection(
+      ["auto-detect", "examples"],
+      "Explain this in simple terms",
+      routed,
+    );
+    expect(selection.selected).toContain("examples");
+    expect(selection.selected).toContain("simplify");
+    expect(selection.selected.length).toBeLessThanOrEqual(4);
+    expect(selection.mode).toBe("auto-detect");
   });
 });

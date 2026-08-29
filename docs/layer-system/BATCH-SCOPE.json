@@ -1,0 +1,11 @@
+{
+  "schema_version": 4,
+  "active_branch": "claude/whole-site-repair-v1",
+  "starting_commit": "e1a4b0cb97572ed023c281efe909f2bd41b880ca",
+  "work_order": "docs/repair-authority/CLAUDE-WHOLE-SITE-REPAIR-WORK-ORDER.md",
+  "active_requirements": "R07-R31",
+  "already_verified_baseline": "six contained repairs recorded before this branch",
+  "completion_authority": "CLAUDE.md implementation-to-fresh-verification loop",
+  "allowed_paths": ["src/**","api/**","e2e/**","tests/**","test/**","scripts/**","package*.json","*config.*","docs/checkpoints/**","docs/repair-authority/**","CLAUDE.md","AGENTS.md","START-HERE-DIVERGENCE.md","docs/layer-system/PERMISSIONS.yml","docs/layer-system/BATCH-SCOPE.json"],
+  "exact_next_action": "Create the progress ledger, begin R07 with a fresh implementation agent, then send its commit to a different fresh verification agent."
+}

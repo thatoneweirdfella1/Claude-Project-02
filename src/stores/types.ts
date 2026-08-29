@@ -9,13 +9,59 @@
 
 /* ── Small fixed enums (settled by CANON/ROUTING, won't change) ───────── */
 
-/** The three model ids, fixed by CANON "LOCKED DECISIONS" and ROUTING.md.
+/** Model IDs across all supported providers.
+    Fixed by CANON "LOCKED DECISIONS" and ROUTING.md.
     Full model registry (labels, tiers, capabilities) is Step 1.10. */
-export type ModelId = "claude-haiku-4-5" | "claude-sonnet-5" | "claude-opus-4-8";
+export type ModelId =
+  // Anthropic
+  | "claude-haiku-4-5"
+  | "claude-sonnet-5"
+  | "claude-opus-4-8"
+  // OpenAI
+  | "gpt-4o"
+  | "gpt-5"
+  // Google Gemini
+  | "gemini-flash"
+  | "gemini-pro"
+  // xAI Grok
+  | "grok"
+  // DeepSeek
+  | "deepseek"
+  | "deepseek-reasoner";
 
 /** What the user picks in the Model dropdown. "auto" hands the choice to
     the routing engine (ROUTING.md); a ModelId is a manual override. */
 export type ModelSelection = ModelId | "auto";
+
+/** Provider-neutral destination selected by the user. The legacy Claude model
+    remains separate so historical sessions can migrate without pretending it
+    was always a destination choice. */
+export type DestinationProviderId =
+  | "universal"
+  | "anthropic"
+  | "openai"
+  | "google"
+  | "xai"
+  | "perplexity"
+  | "deepseek"
+  | "mistral"
+  | "microsoft"
+  | "local"
+  | "custom";
+
+export interface DestinationSelection {
+  providerId: DestinationProviderId;
+  /** Registry model id, or "universal" for provider-neutral manual handoff. */
+  modelId: string;
+}
+
+export type TranslatorEngine =
+  | "auto-free-first"
+  | "local-rules"
+  | "local-ai"
+  | "destination-one-pass"
+  | "managed-translator"
+  | "legacy-claude";
 
 /** Directness levels (CANON Feature 3): 1 supportive, 2 balanced, 3 blunt. */
 export type DirectnessLevel = 1 | 2 | 3;
@@ -37,9 +83,99 @@ export type TechniqueId =
   | "metaphor"
   | "auto-detect";
 
-/** Free/paid flag. NOT billing — there is no payment or account system
-    (ROUTING.md is explicit). It gates Opus + extended thinking in
-    routing.js. Lives in the account store, defaults "free". */
+/** Subscription tier — internal app tier system for Pro features.
+    Not a billing system — no payment or auth (ROUTING.md explicit).
+    Gates auto-select features and usage limits. Maps to routing's PlanFlag
+    for routing.js calls: free→"free", pro/"pro-plus"→"paid". */
+export type SubscriptionTier = "free" | "plus" | "pro" | "insane" | "pro-plus";
+
+/** The desktop build has two deliberately different experiences. User mode
+    is the sellable, credit-limited product. Developer mode is an operator
+    testing surface with unlimited calls and diagnostic controls. */
+export type AppMode = "user" | "developer";
+
+export type CreditLedgerKind =
+  | "subscription"
+  | "top-up"
+  | "api-call"
+  | "refund"
+  | "admin-adjustment"
+  | "migration";
+
+export interface CreditLedgerEntry {
+  id: string;
+  timestamp: number;
+  kind: CreditLedgerKind;
+  /** Positive adds credit; negative spends it. Dollar-denominated credits. */
+  amount: number;
+  balanceAfter: number;
+  note: string;
+  referenceId?: string;
+}
+
+export interface ManualPaymentRequest {
+  id: string;
+  createdAt: number;
+  resolvedAt?: number;
+  kind: "subscription" | "top-up";
+  paidAmount: number;
+  creditAmount: number;
+  tier?: Exclude<SubscriptionTier, "pro-plus">;
+  status: "pending" | "approved" | "rejected";
+}
+
+/** User-facing personalization choices. Conversation selection is
+    intentionally absent: the optimizer evaluates all eligible saved
+    conversations and lets the user choose only the outcome to improve. */
+export type OptimizationGoalId =
+  | "reduce-overwhelm"
+  | "recover-frustration"
+  | "increase-clarity"
+  | "right-size-detail"
+  | "support-completion";
+
+export interface OptimizationProfile {
+  enabled: boolean;
+  selectedGoals: OptimizationGoalId[];
+  minimumEvidence: number;
+  lastRunAt: number | null;
+}
+
+export interface OptimizationEvidenceRef {
+  sessionId: string;
+  messageId: string;
+  timestamp: number;
+  excerpt: string;
+  signal: string;
+}
+
+export interface OptimizationChange {
+  target: string;
+  before: string;
+  after: string;
+  reason: string;
+  confidence: number;
+  evidenceCount: number;
+}
+
+export type OptimizationRunStatus = "preview" | "applied" | "failed" | "bad" | "rolled-back";
+
+export interface OptimizationRun {
+  id: string;
+  timestamp: number;
+  goals: OptimizationGoalId[];
+  status: OptimizationRunStatus;
+  scannedSessions: number;
+  evidence: OptimizationEvidenceRef[];
+  changes: OptimizationChange[];
+  beforePreferences: LearnedPreferences;
+  afterPreferences: LearnedPreferences;
+  summary: string;
+}
+
+/** routing.js's plan flag (ROUTING.md) — "free" is free tier, "paid" is any
+    paid tier (pro or pro-plus). This is the type for routing.js calls.
+    Convert SubscriptionTier via mapTierToRoutingPlan(). */
 export type PlanFlag = "free" | "paid";
 
 /* ── Session-store domain types ───────────────────────────────────────── */
@@ -47,10 +183,28 @@ export type PlanFlag = "free" | "paid";
 /* State pills (CANON Feature 5). Provisional — detection architecture and
    the authoritative pill model are Steps 6.1–6.3. Values mirror CANON's
    named dimensions; null means "not yet detected this session". */
-export type EmotionState = "overwhelmed" | "frustrated" | "calm" | "excited" | "anxious";
+export type EmotionState =
+  | "neutral"
+  | "calm"
+  | "focused"
+  | "frustrated"
+  | "overwhelmed"
+  | "anxious"
+  | "low-energy"
+  | "excited";
 export type RsdLevel = "low" | "medium" | "high";
 export type InterestLevel = "low" | "medium" | "high";
-export type CognitiveMode = "analytical" | "creative" | "processing" | "racing" | "stuck";
+/** New writes use the approved five-value vocabulary. The last three values
+ * remain readable only so pre-migration saved sessions do not fail to load. */
+export type CognitiveMode =
+  | "exploratory"
+  | "analytical"
+  | "creative"
+  | "decision"
+  | "execution"
+  | "processing"
+  | "racing"
+  | "stuck";
 
 export interface StatePills {
   emotion: EmotionState | null;
@@ -63,6 +217,16 @@ export interface StatePills {
    routing decision, applied techniques, transparency data, rating) is
    attached by Steps 5.x/8.x. Kept minimal and open here. */
 export type MessageRole = "user" | "assistant";
+
+/* R19: Message state lifecycle — distinct, persistent states enforcing
+   valid transitions (copying/opening never transition to sent/answered). */
+export type MessageState =
+  | "prepared"  // Message composed but not sent (user messages in draft, handoffs waiting)
+  | "sent"      // Message successfully transmitted to system (user to AI, or AI response confirmed)
+  | "answered"  // Response received (assistant messages following user messages)
+  | "imported"  // Message imported from external source
+  | "cancelled" // User cancelled sending this message
+  | "failed";   // Sending or receiving failed
 
 export interface ConversationMessage {
   id: string;
@@ -84,6 +248,56 @@ export interface ConversationMessage {
   /** routing.js's own notes (escalation, downgrade, override, health floor),
       shown verbatim alongside the confidence line, quiet monochrome. */
   notes?: string[];
+  /** Step 8.1 ADD — CANON Feature 7: the 5-star rating + optional "What
+      could be better?" comment for THIS answer. Denormalized here (mirroring
+      confidence/downgraded/notes above) so the UI can render "you already
+      rated this N stars" straight from the message being displayed, with no
+      cross-store lookup; the durable, learning-loop-consumable record is
+      accountStore.ratings (a Rating per messageId, upserted — see
+      accountStore.setRating). Both are written together, never one without
+      the other. */
+  ratingStars?: number;
+  ratingComment?: string;
+  /** Step 8.5 ADD — CANON Feature 10: Download and Export needs "transparency"
+      and "state pills" as exportable per-message content, but neither is
+      stored on the message itself anywhere before this. `telemetryId`
+      references the TelemetryEntry (services/telemetry/log.ts) this answer's
+      pipeline run recorded — set once, at the same moment confidence/
+      downgraded/notes are, in CenterColumn.handleDone. It is only a lookup
+      key, not a copy: telemetry's own log is in-memory-only and bounded
+      (MAX_TELEMETRY_ENTRIES), so an old enough message's transparency data
+      may no longer be resolvable — the export modal disables that checkbox
+      when the lookup misses, same "don't fabricate what isn't there" posture
+      as everything else in this build. `statePills` is a snapshot of
+      session.statePills at the moment this answer finished — best-effort,
+      since state detection runs in parallel and may not have resolved THIS
+      turn's own reading by the time the answer completes (same known
+      tension Step 6.5's DECISIONS already logged for deriveStateFeeds). */
+  telemetryId?: string;
+  statePills?: StatePills;
+  /* R19: Distinct message lifecycle state (prepared/sent/answered/imported/
+     cancelled/failed) replacing the handoffStatus-only model. Backward
+     compatible: existing messages without messageState derive their state
+     from messageKind/handoffStatus legacy fields (see services/migration). */
+  messageState?: MessageState;
+  /* R19: User action tracking — separate concerns from message state.
+     Copying/opening never affect sent/answered state; they are independent
+     read-only user actions tracked per message. */
+  userCopied?: boolean;
+  userOpened?: boolean;
+  /* Legacy fields (pre-R19): For backward compatibility. Migration layer
+     derives messageState from these if not present. New code should use
+     messageState exclusively. */
+  /** Prepared handoffs are not answers. Imported responses become answers only
+      after the user previews and confirms them. */
+  messageKind?: "answer" | "handoff" | "imported";
+  handoffStatus?: "prepared" | "handed-off" | "imported";
+  sourceLabel?: string;
+  preparedRequest?: string;
+  parentMessageId?: string;
+  branchId?: string;
+  branchIndex?: number;
+  branchCount?: number;
 }
 
 /* Loaded context. Provisional — upload limits, OCR, URL fetch, and
@@ -96,17 +310,91 @@ export interface ContextItem {
   label: string;
   content: string;
   bytes: number;
+  /** Browser-reported MIME type for uploaded files (for example, text/plain).
+      Optional so older saved sessions continue to load. */
+  fileType?: string;
+  /** Excluded items remain attached for later use but are not sent. */
+  included?: boolean;
+  /** Source/origin of this context item (e.g., "Uploaded", "Imported", "Pasted").
+      Optional for backward compatibility; display layer provides sensible defaults. */
+  provenance?: string;
 }
 
 /* ── Account-store domain types ───────────────────────────────────────── */
 
 /* Archived question/answer pair. Provisional — archive/session lifecycle
-   is Steps 9.1–9.2; minimal here. */
+   is Steps 9.1–9.2; minimal here. Step 9.1 confirmed this per-PAIR shape
+   doesn't fit Feature 11's actual needs (Duplicate/Close Session and the
+   Recent Sessions/Archive screens all operate on a whole SESSION —
+   conversation + context + settings — not one Q/A pair at a time), so it's
+   left exactly as-is here: unused, not repurposed, not deleted. See
+   SessionRecord below and the Step 9.1 DECISIONS entry. */
 export interface ArchivedPair {
   id: string;
   question: string;
   answer: string;
   timestamp: number;
+}
+
+/* A complete lifecycle/recovery snapshot. Active and Saved records remain in
+   sessions; Archived records are marked explicitly; Discard moves the same
+   recoverable record to accountStore.trashed instead of erasing it. */
+export type SessionLifecycleStatus = "active" | "saved" | "archived";
+export type SessionRecoveryReason =
+  | "autosave"
+  | "navigation"
+  | "new-session"
+  | "resume"
+  | "duplicate"
+  | "finish-save"
+  | "finish-archive"
+  | "discard"
+  | "start-fresh";
+
+export interface SessionRecord {
+  id: string;
+  createdAt: number;
+  /** Last recovery write; legacy records fall back to createdAt. */
+  updatedAt?: number;
+  /** Explicit lifecycle state. Legacy records derive this from archived. */
+  status?: SessionLifecycleStatus;
+  recoveryReason?: SessionRecoveryReason;
+  /** Set only when archived via Close Session; undefined for a duplicated,
+      still-conceptually-open copy. */
+  closedAt?: number;
+  archived: boolean;
+  /** User-entered label from "archive tagged" — absent for a plain "save
+      and archive". */
+  tag?: string;
+  /** True when user has starred/favorited this session for quick access. */
+  starred?: boolean;
+  model: ModelSelection;
+  /** Provider/model that receives the AI-ready request. */
+  destination?: DestinationSelection;
+  /** Engine that prepares the request; local-rules is the free-first default. */
+  translatorEngine?: TranslatorEngine;
+  /** Whether the user reviews the AI-ready request before handoff. */
+  reviewBeforeSend?: boolean;
+  paidFallbackEnabled?: boolean;
+  maxRequestCost?: number;
+  directness: DirectnessLevel;
+  techniques: TechniqueId[];
+  context: ContextItem[];
+  variables: SavedVariables;
+  conversation: ConversationMessage[];
+  /** Recovery saves include an unfinished composer draft. */
+  draftInput?: string;
+  draftSelectionStart?: number;
+  draftSelectionEnd?: number;
+  conversationScrollTop?: number;
+  statePills?: StatePills;
+  currentScreen?: ScreenId;
+  currentSection?: ScreenSectionId | null;
+  methodology?: MethodologyType;
+  methodologyPhase?: MethodologyPhase;
+  lockedProblemStatement?: string;
+  /** R21: persisted Multi-AI runs, carried through save/archive/resume. */
+  multiAiRuns?: MultiAiRunRecord[];
 }
 
 /* Feedback rating (CANON Feature 7). Full rating UI + learning loop is
@@ -116,18 +404,83 @@ export interface Rating {
   stars: number; // 1–5
   comment?: string;
   timestamp: number;
+  /** Snapshot of the actual answer configuration, used by learning. */
+  sessionId?: string;
+  modelUsed?: ModelSelection;
+  techniquesUsed?: TechniqueId[];
 }
 
-/* Saved prompt (CANON Feature 11). */
+/* Saved prompt (CANON Feature 11: "reuse previous questions"). */
 export interface SavedPrompt {
   id: string;
   title: string;
   text: string;
+  /** True when user has starred/favorited this prompt for quick access. */
+  starred?: boolean;
+}
+
+/* Prompt template (CANON Feature 11: "Load Template — pre-populate settings
+   and a starter question"; Feature 12's Prompt Library tile is "save/load
+   prompt templates" — the same list, a fuller management view over it,
+   Step 9.6). `context`/`starterQuestion` are optional per CANON's own
+   wording ("optional context and starter question"); model/directness/
+   techniques are always set since CANON lists them as the template's actual
+   settings, not optional extras. */
+export interface PromptTemplate {
+  id: string;
+  title: string;
+  model: ModelSelection;
+  directness: DirectnessLevel;
+  techniques: TechniqueId[];
+  context?: ContextItem[];
+  starterQuestion?: string;
+  /** True when user has starred/favorited this template for quick access. */
+  starred?: boolean;
 }
 
 /* Explicitly-saved variables ($name -> value), CANON Feature 6/11.
    Record, not Map, so it serializes straight to IndexedDB. */
 export type SavedVariables = Record<string, string>;
+
+/* Saved session (RQ-016: Session Management). Stores snapshot of a session
+   for archiving and resuming. */
+export interface SavedSession {
+  id: string;
+  title: string;
+  createdAt: number;
+  lastModifiedAt: number;
+  archivedAt?: number;
+  /** Snapshot of SessionState for resuming */
+  snapshot: Partial<SessionState>;
+  messageCount: number;
+  cost: number;
+}
+
+/* Trash item (RQ-017: Archive & Trash). Stores deleted sessions for recovery. */
+export interface TrashItem {
+  id: string;
+  sessionId: string;
+  title: string;
+  deletedAt: number;
+  expiresAt: number; /** Auto-purge after 30 days */
+  snapshot: Partial<SavedSession>;
+}
+
+/* Theme preference (CANON Feature 12: "gear dropdown... with theme toggle
+   (Light / Dark / Auto)"). Built this session, alongside the actual light
+   token set (MATERIALS.md/tokens.css) — CANON named this feature back at
+   Step 10.1-adjacent but nothing implemented it until now (VISUAL-AUDIT
+   V16). "auto" resolves against prefers-color-scheme at render time, not
+   stored as a resolved value — see useThemeEffect.ts. */
+export type ThemePreference = "light" | "dark" | "auto";
+
+/* Layout — a complete visual re-skin (accent color, marble textures, logo
+   treatment, card/button styling), independent of ThemePreference above:
+   every layout works in both light and dark. See CLAUDE.md "Design
+   layouts" for the standing rule this exists to serve — new operator-
+   uploaded designs become new LayoutId values here, added alongside
+   "original", never replacing it. */
+export type LayoutId = "original" | "gold";
 
 /* Visibility settings (CANON Feature 12) — the seven sidebar checkboxes.
    Fully specified by CANON now, including exact defaults below. */
@@ -141,17 +494,90 @@ export interface VisibilitySettings {
   activeSession: boolean;
 }
 
-/* Learned routing and technique preferences. Provisional — the pattern
-   analysis and rule refinement engines are Steps 10.1/10.2. Shape kept
-   open (Record) until then. (State-DETECTION correction learning is a
-   separate concept — see StateCorrection/AccountState.stateCorrections,
-   Step 6.4 — not stored here: this Record pair is specifically the
-   ratings-driven routing/technique rule refinement PIPELINE.md's LEARNING
-   LOOP describes, e.g. "low ratings + 'too verbose' reduce Detailed".) */
+/* Learned routing and technique preferences (CANON "STORES AND
+   PERSISTENCE": "learned routing and technique preferences"). Written by
+   Step 10.2's applier from Step 10.1's analyzer proposals. (State-
+   DETECTION correction learning is a separate concept — see
+   StateCorrection/AccountState.stateCorrections, Step 6.4 — not stored
+   here: this pair is specifically the ratings-driven routing/technique
+   rule refinement PIPELINE.md's LEARNING LOOP describes, e.g. "low
+   ratings + 'too verbose' reduce Detailed".)
+
+   `routing` stays an open Record — Step 10.1's analyzer computes routing/
+   complexity patterns but never actually emits a routing-targeted
+   RefinementProposal (only "technique-weight" proposals are produced),
+   so there is nothing yet to give this a firmer shape. A future step
+   that adds routing proposals should shape this the same way `technique`
+   is shaped below, not invent a second convention. */
 export interface LearnedPreferences {
   routing: Record<string, unknown>;
-  technique: Record<string, unknown>;
+  technique: Record<string, TechniquePreference>;
 }
+
+/* One technique's learned weight (Step 10.2). `weight` is a small signed
+   integer nudge (not a percentage or multiplier) — +1 per applied
+   "increase" proposal, -1 per "decrease", clamped to
+   [MIN_TECHNIQUE_WEIGHT, MAX_TECHNIQUE_WEIGHT] (services/learningLoop/
+   applier.ts) so repeated learning-loop runs over an account's lifetime
+   can't drift a technique's standing without bound. A negative weight
+   deprioritizes a technique in auto-detect scoring; it never fully
+   suppresses one (CANON "never a black box" — no technique silently
+   vanishes from the registry). Consuming this weight in the actual
+   auto-detect scorer (services/techniques/autoDetect.ts) is NOT wired by
+   Step 10.2 — this is the seam, a future step is the consumer, same
+   "seam ready, owning step consumes it" pattern as Step 6.5's
+   deriveStateFeeds().transparency sitting unconsumed until Step 8.2. */
+export interface TechniquePreference {
+  weight: number;
+  lastAdjustedAt: number;
+  totalAdjustments: number;
+}
+
+/* One audit entry for a learning-loop refinement actually applied to
+   learnedPreferences (Step 10.2, PIPELINE.md LEARNING LOOP: "An applier
+   writes accepted refinements to the account store with an audit log").
+   One entry per proposal applied, in the same batch a background
+   analysis run produces (services/learningLoop/backgroundJob.ts). */
+export type SignalType =
+  | "rating" | "comment"
+  | "usage_time" | "edit_distance" | "model_switch" | "technique_switch"
+  | "session_close" | "download" | "search_query" | "topic_return";
+export type SignalHierarchy = "primary" | "secondary" | "tertiary";
+export type SignalOutcome = "positive" | "negative" | "neutral" | "unknown";
+
+export interface RefinementLearningAuditEntry {
+  id: string;
+  timestamp: number;
+  kind?: "refinement";
+  proposalType: "technique-weight" | "detection-threshold";
+  target: string;
+  adjustment: "increase" | "decrease";
+  previousWeight: number;
+  newWeight: number;
+  confidence: number;
+  reasoning: string;
+  affectedRunCount: number;
+}
+
+export interface SignalLearningAuditEntry {
+  id: string;
+  timestamp: number;
+  kind: "signal";
+  sessionId: string;
+  messageId: string;
+  signalType: SignalType;
+  signalValue: number | string | boolean;
+  signalConfidence: 0.1 | 0.3 | 0.5 | 0.7 | 0.9;
+  hierarchy: SignalHierarchy;
+  modelUsed: ModelSelection;
+  techniquesUsed: TechniqueId[];
+  outcome: SignalOutcome;
+  verified: boolean;
+}
+
+export type LearningAuditEntry =
+  | RefinementLearningAuditEntry
+  | SignalLearningAuditEntry;
 
 /* One state-pill correction (CANON Feature 5 / PIPELINE.md STATE DETECTION,
    Step 6.4 — "Correction learning"). Recorded every time a user picks a
@@ -170,16 +596,174 @@ export interface StateCorrection {
   timestamp: number;
 }
 
+export type RememberedStateAction = "accept" | "keep-current" | "dismiss";
+
+/** A deliberately conservative "similar situation" rule: a remembered
+ * choice is reused only when all four detected values match this signature.
+ * The recommendation itself is recomputed against the current request, so a
+ * remembered Accept never replays a stale or now-conflicting adjustment. */
+export interface RememberedStateChoice {
+  signature: string;
+  action: RememberedStateAction;
+  timestamp: number;
+}
+
+/* Auto-select usage tracking (Step 12.3+ Pro tier). Records when user
+   triggers auto-select (discussion type or model selection), result
+   quality, and whether the selection was kept. Bounded array to prevent
+   unbounded growth. */
+export interface AutoSelectUsageLog {
+  id: string;
+  timestamp: number;
+  type: "discussion_type" | "models";
+  sessionId: string;
+  /** Estimated API cost for this auto-select call */
+  estimatedCost: number;
+  /** User's quality rating (1-5) after seeing the result, or null if not rated */
+  resultQuality?: number;
+  /** True if user kept/used the auto-selected value, false if they rejected it */
+  kept?: boolean;
+}
+
+/* 3-State Methodology tracking (DEFINE → TEST → STABILIZE). Records which
+   problem-solving approach was used in a session, the phase it reached,
+   and validation/audit results from the TEST phase. */
+export type MethodologyType = "standard" | "3-state";
+export type MethodologyPhase = "define" | "test" | "stabilize";
+
+export interface HallucinationAudit {
+  claimId: string;
+  text: string;
+  confidence: number;
+  verified: boolean;
+  notes: string;
+}
+
+export interface MethodologyEntry {
+  id: string;
+  sessionId: string;
+  methodology: MethodologyType;
+  phase: MethodologyPhase;
+  lockedProblemStatement: string;
+  hallucinations: HallucinationAudit[];
+  timestamp: number;
+}
+
+/* R20/R21: Multi-AI unresolved-conversation workflow — a persisted handoff
+   from a selected message/range of the conversation to a Debate/Consensus/
+   Synthesis run, rendered as a branch linked back to its source messages.
+   `sourceMessageIds` are the exact stable ConversationMessage ids the run
+   was created from (R20) — never a copy of their text, so the link survives
+   edits to how a message is displayed. */
+export type MultiAiParticipantStatus = "ok" | "error";
+
+export interface MultiAiParticipantResult {
+  /** Display name — "Claude" or the roster label (e.g. "GPT-5.5"). */
+  label: string;
+  provider: string | null;
+  model: string | null;
+  status: MultiAiParticipantStatus;
+  /** Present when status is "ok". */
+  text?: string;
+  /** Present when status is "error" — neutral, non-blaming copy. */
+  message?: string;
+  inputTokens?: number | null;
+  outputTokens?: number | null;
+  estimatedCost?: number | null;
+  actualCost?: number | null;
+}
+
+export interface MultiAiConsensusRecord {
+  disagreement: string;
+  commonGround: string;
+  unifiedView: string;
+}
+
+export interface MultiAiSynthesisRecord {
+  refinedAnswer: string;
+}
+
+export type MultiAiRunStatus = "complete" | "partial" | "failed" | "cancelled";
+
+export interface MultiAiRunRecord {
+  id: string;
+  /** R20: stable source message ids — the single message or range this run
+      was created from. */
+  sourceMessageIds: string[];
+  createdAt: number;
+  /** The exact question/context bundle sent to every participant. */
+  question: string;
+  /** R21/R23: every participant's result, Claude included, in stable
+      debate order — attribution preserved even for failed sides. */
+  participants: MultiAiParticipantResult[];
+  status: MultiAiRunStatus;
+  consensus?: MultiAiConsensusRecord;
+  synthesis?: MultiAiSynthesisRecord;
+  totalEstimatedCost: number;
+  totalActualCost: number | null;
+}
+
 /* ── The two store state shapes (top-level: authoritative at Step 1.7) ── */
 
 /** Session store — cleared when a session closes (CANON). */
+export type ScreenId =
+  | "translate"
+  | "insights"
+  | "projects"
+  | "techniques"
+  | "variables"
+  | "sessions"
+  | "saved-tools"
+  | "settings"
+  | "checkpoints"
+  | "large-jobs"
+  | "trash";
+
+/** Optional subsection within a canonical destination. Sections are part of
+ * the location contract so navigation never substitutes a merely similar
+ * screen (for example, Account for Connections). */
+export type ScreenSectionId =
+  | "active"
+  | "saved"
+  | "archived"
+  | "trash"
+  | "templates"
+  | "saved-prompts"
+  | "overview"
+  | "sessions"
+  | "usage"
+  | "activity"
+  | "patterns"
+  | "tasks"
+  | "resources"
+  | "integrations"
+  | "account"
+  | "plan"
+  | "connections"
+  | "personalization"
+  | "appearance"
+  | "data"
+  | "status";
+
 export interface SessionState {
+  /** Stable identity for the live session so autosave updates one record. */
+  sessionId: string;
+  sessionCreatedAt: number;
+  sessionTitle: string;
   /** The composer's in-progress, not-yet-submitted text (Step 5.0). Lives here
       (not local component state) so autosave (Step 1.8) covers it — CANON's
       persistence rule that a crash mid-thought must not cost the user the
       thought. Cleared to "" only on TRANSLATE & ASK submit or session close. */
   draftInput: string;
+  draftSelectionStart: number;
+  draftSelectionEnd: number;
+  conversationScrollTop: number;
   model: ModelSelection;
+  destination: DestinationSelection;
+  translatorEngine: TranslatorEngine;
+  reviewBeforeSend: boolean;
+  paidFallbackEnabled: boolean;
+  maxRequestCost: number;
   directness: DirectnessLevel;
   /** Widened from a single TechniqueId to an array at Step 4.5: CANON Feature 4
       allows manually stacking up to MAX_TECHNIQUE_STACK techniques (not just
@@ -190,16 +774,61 @@ export interface SessionState {
   context: ContextItem[];
   conversation: ConversationMessage[];
   statePills: StatePills;
+  /** Step 7.4 ADD — CANON Feature 6 "create variables ($name)": named values
+      the user creates for prompt substitution. Session store by DEFAULT
+      (this field); explicitly savable to the account store's own,
+      already-existing `variables` field (Step 1.7) for persistence across
+      sessions — same `SavedVariables` shape (Record<string,string>, keys are
+      the bare name without the "$"), reused rather than redeclared. */
+  variables: SavedVariables;
+  /** Step 9.7 ADD — Current screen for left-nav routing. Determines which
+      screen's content is shown in the center column. Defaults to "translate"
+      (the composer view). */
+  currentScreen: ScreenId;
+  currentSection: ScreenSectionId | null;
+  /** 3-State Methodology selection. Defaults to "standard". */
+  methodology: MethodologyType;
+  /** Current phase in 3-State Methodology (if active). */
+  methodologyPhase: MethodologyPhase;
+  /** Locked problem statement for DEFINE phase. Prevents drift. */
+  lockedProblemStatement: string;
+  /** R21: persisted Multi-AI (Debate/Consensus/Synthesis) runs, each linked
+      back to its source message(s) — survives reload/navigation and renders
+      as a branch under the originating conversation. */
+  multiAiRuns: MultiAiRunRecord[];
 }
 
 /** Account store — persists across browser closes (CANON). */
 export interface AccountState {
-  plan: PlanFlag;
+  plan: SubscriptionTier;
+  /** Dollar-denominated usable API credits. Never allowed below zero. */
+  creditBalance: number;
+  /** Next renewal timestamp; 0 means no active renewal. */
+  billingDate: number;
+  appMode: AppMode;
+  creditLedger: CreditLedgerEntry[];
+  manualPaymentRequests: ManualPaymentRequest[];
+  optimizationProfile: OptimizationProfile;
+  optimizationRuns: OptimizationRun[];
+  /** Auto-select usage tracking for this month. Resets on the 1st. */
+  autoSelectUsedThisMonth: number;
+  /** Last reset date (timestamp). Used to detect when we've rolled into a new month. */
+  autoSelectUsageResetDate: number;
+  /** Bounded log of auto-select usage for analytics. */
+  autoSelectUsageLogs: AutoSelectUsageLog[];
   archivedPairs: ArchivedPair[];
   ratings: Rating[];
   savedPrompts: SavedPrompt[];
   variables: SavedVariables;
   visibility: VisibilitySettings;
+  /** CANON Feature 12's theme toggle. Default "dark" — matches every prior
+      session's only rendered theme; this field didn't exist before, so a
+      default that changes nothing for existing users is correct. */
+  theme: ThemePreference;
+  /** Design layout (CLAUDE.md "Design layouts") — default "original" for
+      the same reason theme defaults to "dark": changes nothing for
+      existing users until they explicitly pick something else. */
+  layout: LayoutId;
   learnedPreferences: LearnedPreferences;
   /** Step 6.4 ADD: every state-pill correction the user has made, across all
       sessions (this store persists across browser closes — corrections must
@@ -207,4 +836,40 @@ export interface AccountState {
       Bounded (see accountStore.ts) so a very long-lived account can't grow
       this unboundedly. */
   stateCorrections: StateCorrection[];
+  rememberedStateChoices?: RememberedStateChoice[];
+  /** Step 9.1 ADD — CANON Feature 11: every duplicated or closed-and-archived
+      session (a plain "discard" close writes nothing here). Feeds the
+      Recent Sessions accordion (Step 9.5) and the Archive screen (LEFT
+      NAVIGATION, Step 9.7) — both read this same list, filtered by
+      `archived`. */
+  sessions: SessionRecord[];
+  /** Deleted sessions moved to trash (not permanently deleted). Can be
+      restored or permanently deleted from here. */
+  trashed: SessionRecord[];
+  /** Step 9.2 ADD — CANON Feature 11 "Load Template" / Feature 12's Prompt
+      Library tile ("save/load prompt templates") — the same list. Seeded
+      with a few built-in presets (accountStore.ts) so the feature is
+      immediately usable before any user has saved one of their own. */
+  templates: PromptTemplate[];
+  /** Step 10.2 ADD — PIPELINE.md LEARNING LOOP: "An applier writes accepted
+      refinements to the account store with an audit log." One entry per
+      refinement actually applied to learnedPreferences. Bounded (see
+      accountStore.ts) — same reasoning as stateCorrections/telemetry. */
+  learningAuditLog: LearningAuditEntry[];
+  /** Monotonic signal total and unprocessed remainder. The audit log is capped,
+      so its current length cannot serve as the lifetime batching cursor. */
+  learningSignalCount: number;
+  learningSignalBuffer: SignalLearningAuditEntry[];
+  /** 3-State Methodology tracking across sessions. Bounded to prevent unbounded growth. */
+  methodologyLog: MethodologyEntry[];
+  /** R26 ADD — Provider Connection Lifecycle: providers the user has
+      explicitly disconnected client-side. A disconnected provider is never
+      offered or auto-selected even when the server reports it configured —
+      this is the one lifecycle action a client without credential storage
+      can genuinely perform (reconnecting just removes the entry; it cannot
+      create or verify credentials, which stay server-managed). Values are
+      ConnectedProviderId strings (services/providerStatus.ts); kept as a
+      plain string[] here since stores/types.ts must not depend on
+      services/. */
+  disconnectedProviders: string[];
 }

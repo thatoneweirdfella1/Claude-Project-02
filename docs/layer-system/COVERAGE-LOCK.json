@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "gate": "L0 COVERAGE LOCKED",
+  "governance_checkpoint_under_audit": "ffc6935a921cdc298ad5c6259402b7eded73f41b",
+  "status": "PASS",
+  "required_counts": {
+    "permanent_ids": 218,
+    "repair_ids": 39,
+    "decision_ids": 7,
+    "workflow_ids": 48,
+    "acceptance_test_ids": 266
+  },
+  "required_artifacts": [
+    "docs/layer-system/LAYER-OBLIGATION-PROFILES.yml",
+    "docs/layer-system/LAYER-OBLIGATION-MATRIX.csv",
+    "docs/layer-system/LAYER-COVERAGE-LEDGER.csv",
+    "docs/layer-system/LAYER-EVIDENCE-INDEX.jsonl",
+    "docs/layer-system/AUDIT-GATE.json"
+  ],
+  "independent_audit_required": true,
+  "independent_audit_verdict": "PASS",
+  "application_permission_required": "modify_application_behavior",
+  "application_permission_currently_granted": false,
+  "protected_governance_ref_required_before_app_edits": true,
+  "protected_governance_ref_currently_available": true,
+  "exact_next_action": "Create horizontal-layer-3-implementation-v1 from the verified current tip of the read-only Layer 1–2 checkpoint branch, switch to it, and run read-only preflight."
+}

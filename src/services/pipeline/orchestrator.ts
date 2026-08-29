@@ -35,17 +35,20 @@
    see resilience.ts), they just get the same catch-and-report boundary. */
 
 import type { TranslateAskRequest } from "../composer";
-import type { PlanFlag, TechniqueId } from "../../stores/types";
-import type { ProxyCompletionRequest } from "../proxyClient";
+import type { ModelSelection, SubscriptionTier, TechniqueId } from "../../stores/types";
+import type { ProxyCompletionRequest, TokenUsage } from "../proxyClient";
+import { mapTierToRoutingPlan } from "../../stores/accountStore";
+import { addTokenUsage } from "../costTracking";
 import {
   translate,
   gateTranslation,
   type GatedTranslation,
+  type TranslationResult,
 } from "../translation";
 import { overrideFromSelection, route, type RouteResult } from "../routingService";
 import {
   MAX_TECHNIQUE_STACK,
-  autoDetectTechniques,
+  autoDetectWithPinned,
   getTechnique,
   isTechniqueId,
   type TechniqueSelection,
@@ -53,6 +56,7 @@ import {
 import { composeFinalPrompt, type ComposedPrompt } from "../composition";
 import { streamAnswer, type PipelineStageName } from "../answerDisplay";
 import { makeResilientClient, type ResilienceOptions } from "./resilience";
+import { categorizeCaughtError } from "../providerErrorCategorization";
 
 /** The narrow slice of the Step 1.10 proxy client the pipeline needs.
     createProxyClient() satisfies it as-is; tests pass stubs. Callers should
@@ -65,8 +69,9 @@ export interface PipelineModelClient {
 
 export interface PipelineDeps {
   client: PipelineModelClient;
-  /** accountStore.plan — routing.js's free/paid gate (a flag, not billing). */
-  plan: PlanFlag;
+  /** accountStore.plan — the subscription tier (free/pro/pro-plus). Converted to
+      routing.js's free/paid gate via mapTierToRoutingPlan() before passing to routing. */
+  plan: SubscriptionTier;
   /** Cancels the in-flight model call when the user re-submits mid-run. */
   signal?: AbortSignal;
   /** Retry/timeout tuning (Step 5.3) — omit for the production defaults (3
@@ -81,14 +86,30 @@ export interface PipelineDeps {
       "state detection" is the source, the same way it's unaware routing.js
       is a vendor scorer; it just consumes typed hints. */
   stateTechniques?: TechniqueId[];
+  /** Bounded account-level feedback weights consumed only by Auto mode. */
+  learnedTechniqueWeights?: Partial<Record<TechniqueId, number>>;
+  /** Learned model recommendation. An explicit user model always overrides it. */
+  learnedModel?: ModelSelection;
   /** Step 6.5 state bus — RSD's tone guidance
       (deriveStateFeeds().toneGuidance), fed into composition's directness
       section. Same reasoning as stateTechniques above. */
   stateTone?: string | null;
+  /** A translation that was already prepared and approved in Review first.
+      When present, Stage 1 emits and gates this exact result without making a
+      second translation call. */
+  pretranslated?: TranslationResult;
+  /** Usage from the preparation call, retained for the telemetry record even
+      though the orchestrator correctly skips that already-completed call. */
+  pretranslationUsage?: TokenUsage;
 }
 
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
+/* R13: every terminal `error` event carries a safe, categorized message and
+   next action — never the raw thrown error's own `.message` (which, for a
+   proxy/network failure, may be a ProxyClientError whose `.status` and
+   discarded `.detail` must never reach a user-visible string). */
+function safeErrorEvent(error: unknown): { kind: "error"; message: string; nextAction: string } {
+  const categorized = categorizeCaughtError(error);
+  return { kind: "error", message: categorized.message, nextAction: categorized.nextAction };
 }
 
 /** The finished answer plus everything the conversation store persists with
@@ -111,7 +132,7 @@ export type PipelineEvent =
   | { kind: "composed"; composed: ComposedPrompt }
   | { kind: "streaming"; text: string }
   | { kind: "done"; done: PipelineDone }
-  | { kind: "error"; message: string };
+  | { kind: "error"; message: string; nextAction?: string };
 
 /** Stage 3 dispatch on the session's stored technique mode (STORE-CONTRACT:
     ["auto-detect"] — or any array containing it — means auto mode; any other
@@ -125,6 +146,7 @@ export function resolveTechniqueSelection(
   question: string,
   routeResult: RouteResult,
   stateTechniques?: TechniqueId[],
+  learnedTechniqueWeights?: Partial<Record<TechniqueId, number>>,
 ): TechniqueSelection {
   const manual = stored
     .filter((id) => isTechniqueId(id) && !getTechnique(id).isMeta)
@@ -133,19 +155,20 @@ export function resolveTechniqueSelection(
     // persisted array, keeping the ≤4 guarantee unconditional.
     .slice(0, MAX_TECHNIQUE_STACK);
   if (stored.includes("auto-detect") || manual.length === 0) {
-    return autoDetectTechniques(question, {
+    return autoDetectWithPinned(question, manual, {
       complexity: routeResult.complexity,
       domain: routeResult.dimensions.domain,
-      // Step 6.5: state-derived candidates only ever apply in AUTO mode —
-      // same reasoning as Step 4.2's manual-selection decision (the user's
-      // explicit literal choice is honored as-is, never augmented).
+      // State-derived candidates may fill open Auto slots. Manually checked
+      // techniques were seeded first and cannot be displaced.
       stateTechniques,
+      learnedTechniqueWeights,
     });
   }
   return {
     selected: manual,
     scores: manual.map((id) => ({ id, score: 1, reasons: ["manually selected"] })),
     reasoning: `Manually selected: ${manual.map((id) => getTechnique(id).label).join(", ")}.`,
+    mode: "manual",
   };
 }
 
@@ -165,13 +188,21 @@ export async function* runPipeline(
   yield { kind: "stage", stage: "translating" };
   let gated: GatedTranslation;
   try {
-    const outcome = await translate(request.rawInput, {
-      client: (req) => client.complete(req),
-      signal: deps.signal,
-    });
-    gated = gateTranslation(outcome);
+    if (deps.pretranslated) {
+      gated = gateTranslation({ status: "ok", result: deps.pretranslated });
+    } else {
+      const outcome = await translate(request.rawInput, {
+        client: (req) =>
+          client.complete({
+            ...req,
+            onUsage: (usage) => addTokenUsage(usage.inputTokens, usage.outputTokens, req.model),
+          }),
+        signal: deps.signal,
+      });
+      gated = gateTranslation(outcome);
+    }
   } catch (error) {
-    yield { kind: "error", message: errorMessage(error) };
+    yield safeErrorEvent(error);
     return;
   }
   yield { kind: "translation", gated };
@@ -196,11 +227,11 @@ export async function* runPipeline(
       prompt: result.translatedPrompt,
       confidence: result.confidence,
       gaps: result.detectedGaps,
-      plan: deps.plan,
-      override: overrideFromSelection(request.model),
+      plan: mapTierToRoutingPlan(deps.plan),
+      override: overrideFromSelection(request.model === "auto" ? deps.learnedModel ?? "auto" : request.model),
     });
   } catch (error) {
-    yield { kind: "error", message: errorMessage(error) };
+    yield safeErrorEvent(error);
     return;
   }
   yield { kind: "route", result: routeResult };
@@ -218,6 +249,7 @@ export async function* runPipeline(
       result.translatedPrompt,
       routeResult,
       deps.stateTechniques,
+      deps.learnedTechniqueWeights,
     );
     composed = composeFinalPrompt({
       question: result.translatedPrompt,
@@ -225,9 +257,10 @@ export async function* runPipeline(
       directness: request.directness,
       confidence: result.confidence,
       stateTone: deps.stateTone ?? undefined,
+      context: request.context,
     });
   } catch (error) {
-    yield { kind: "error", message: errorMessage(error) };
+    yield safeErrorEvent(error);
     return;
   }
   yield { kind: "techniques", selection };
@@ -250,6 +283,8 @@ export async function* runPipeline(
       input: composed.prompt,
       signal: deps.signal,
       extendedThinking: routeResult.thinkingApplied || undefined,
+      onUsage: (usage) =>
+        addTokenUsage(usage.inputTokens, usage.outputTokens, routeResult.apiString),
     });
     for await (const state of streamAnswer(tokens, meta)) {
       if (state.kind === "streaming") {
@@ -272,6 +307,6 @@ export async function* runPipeline(
        non-blaming copy regardless of this message (TranslationCard /
        StreamingAnswer, Steps 2.3/5.1) — the real message is kept here for
        whatever logs/telemetry (Step 5.4) read this event. */
-    yield { kind: "error", message: errorMessage(error) };
+    yield safeErrorEvent(error);
   }
 }

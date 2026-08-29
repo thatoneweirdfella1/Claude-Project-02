@@ -1,0 +1,56 @@
+{
+  "schema_version": 3,
+  "source": "docs/layer-system/HORIZONTAL-LAYER-COMPLETION-SYSTEM.md",
+  "obligation_profiles": "docs/layer-system/LAYER-OBLIGATION-PROFILES.yml",
+  "resolved_obligation_matrix": "docs/layer-system/LAYER-OBLIGATION-MATRIX.csv",
+  "allowed_statuses": ["PROVEN","IMPLEMENTED — NOT FULLY PROVEN","PARTIAL","NOT STARTED","BLOCKED — <reason>","CONFLICT — UNRESOLVED","UNKNOWN — INSPECTION REQUIRED","N/A AT THIS DEPTH — <exact matrix reason>"],
+  "completion_predicate": {
+    "completes_applicable_row": ["PROVEN"],
+    "completes_nonapplicable_row": ["N/A AT THIS DEPTH — <exact resolved-matrix reason>"],
+    "gate_only_statuses": ["PASS", "FAIL"],
+    "all_218_rows_required": true,
+    "blocked_or_unresolved_rows_complete_layer": false,
+    "rule": "For every permanent ID, the resolved matrix supplies the exact obligation code, applicability, assertion, and required evidence types. A generic layer statement may not replace that row-specific obligation."
+  },
+  "platform_scope": {
+    "web_layers": ["L1", "L2", "L3", "L4", "L5", "L6", "L7"],
+    "separate_track_ids": ["SPEC-DS-01"],
+    "separate_track": "Desktop/Windows",
+    "clause": "A web L7 result means WEB TRACK COMPLETE only. Whole-product completion additionally requires the separately activated and proven desktop track."
+  },
+  "decision_blockers": [
+    {"id":"V2-DQ-001","affected_ids":["KB-01"],"blocks_from":"L2"},
+    {"id":"V2-DQ-002","affected_ids":["KB-04"],"blocks_from":"L2"},
+    {"id":"V2-DQ-003","affected_ids":["KB-05"],"blocks_from":"L2"},
+    {"id":"V2-DQ-004","affected_ids":["KB-07"],"blocks_from":"L2"},
+    {"id":"V2-DQ-005","affected_ids":["SRC-VIS-01","SPEC-SE-02"],"blocks_from":null,"rule":"approved fixed-desktop scope remains provable while mobile/reflow is unresolved"},
+    {"id":"V2-DQ-006","affected_ids":["SPEC-DV-08","SPEC-DV-09"],"blocks_from":"L6"},
+    {"id":"V2-DQ-007","affected_ids":["SPEC-DV-01","SPEC-DV-02"],"blocks_from":"L1"}
+  ],
+  "project_task_blockers": [
+    {"id":"PROJECT-TASK-DATA-CONTRACT","affected_ids":["USR-ACCOUNT-01","USR-DATA-01","USR-OPT-01","USR-SC-01","USR-SC-02","USR-SC-03","USR-SC-04","USR-SC-05","USR-SC-06","USR-SC-07","USR-SC-08","USR-SC-09","SPEC-SE-09"],"blocks_from":"L4","reason":"the authoritative data ownership, local/remote source-of-truth, migration, deletion, export, and rollback contract must be derived from existing authority before implementation"},
+    {"id":"PROJECT-TASK-CROSS-DEVICE-CONFLICT","affected_ids":["USR-ACCOUNT-01","USR-DATA-01","USR-OPT-01","USR-SC-01","USR-SC-02","USR-SC-03","USR-SC-04","USR-SC-05","USR-SC-06","USR-SC-07","USR-SC-08","USR-SC-09"],"blocks_from":"L4","reason":"existing authority must resolve synchronization, concurrent edit, deletion, and recovery behavior; the implementer may not invent a conflict policy"},
+    {"id":"SPEC-LS-01","affected_ids":["SPEC-LS-01"],"blocks_from":"L3","reason":"documented Learnable Signal Patterns source and acceptance contract remain unavailable"},
+    {"id":"SPEC-FB-01","affected_ids":["SPEC-FB-01"],"blocks_from":"L6","reason":"documented Fable recommendation/translation source and acceptance contract remain unavailable"}
+  ],
+  "test_result_contract": {
+    "required_fields": ["test_id", "layer", "obligation_codes", "assertions", "environment", "result", "artifact_paths"],
+    "result_values": ["PASS", "FAIL", "BLOCKED"],
+    "rule": "A verdict proves only its named layer, permanent IDs, obligation codes, exact assertions, environment, artifacts, and commit. A full-depth or generic verdict cannot promote another obligation."
+  },
+  "stable_preview_contract": {
+    "immutable_deployment_per_gate_commit": true,
+    "stable_alias_moves_only_after_gate_pass": true,
+    "required_permission": "promote_stable_preview",
+    "rollback": "Move the stable alias back to the last completed layer's immutable deployment; never rewrite the evidence for that deployment."
+  },
+  "layers": [
+    {"id":"L1","name":"REACHABLE","entry":"L0 independently audited PASS, user accepted, protected governance ref available, and app-change permission granted","exit":"every L1 matrix obligation is PROVEN or carries its exact matrix N/A status on an immutable matching preview","aggregate_gate_evidence":["route_inventory_result","blank_and_router_error_sweep","deployment_identity"],"walkthrough":"Click every visible navigation control once and confirm that it reaches the destination named by its approved label."},
+    {"id":"L2","name":"INTERACTIVE","entry":"L1 complete","exit":"every L2 matrix obligation is PROVEN or carries its exact matrix N/A status","aggregate_gate_evidence":["keyboard_focus_accessibility_result","adhd_friction_result","deployment_identity"],"walkthrough":"Click through every screen and confirm that each control reacts honestly without claiming an external success."},
+    {"id":"L3","name":"LOCALLY USEFUL","entry":"L2 complete","exit":"every L3 matrix obligation is PROVEN or carries its exact matrix N/A status","aggregate_gate_evidence":["local_representative_flows","no_fake_external_success_check","untrusted_content_boundary_result","deployment_identity"],"walkthrough":"Complete one local/manual session from context through request handoff, response import, save, and export."},
+    {"id":"L4","name":"DURABLE","entry":"L3 complete and the data/conflict contracts are resolved from authority","exit":"every L4 matrix obligation is PROVEN or carries its exact matrix N/A status; authoritative money mutations remain disabled","aggregate_gate_evidence":["persistence_recovery_suite","identity_privacy_security_result","migration_result","authoritative_mutation_disabled_result","deployment_identity"],"walkthrough":"Create work, close and reopen, then verify approved work and settings restore in the correct account state."},
+    {"id":"L5","name":"MONEY-SAFE","entry":"L4 complete","exit":"every L5 matrix obligation is PROVEN or carries its exact matrix N/A status and the authoritative money-safety checkpoint is recorded","aggregate_gate_evidence":["sandbox_money_suite","concurrency_idempotency_result","money_gate_checkpoint","deployment_identity"],"walkthrough":"Using test money only, verify an allowed, cancelled, and over-cap request each disclose payer, maximum, and no-charge alternative."},
+    {"id":"L6","name":"CONNECTED","entry":"L5 complete with recorded money-safety checkpoint","exit":"every L6 matrix obligation is PROVEN or carries its exact matrix N/A status; a missing credential is a blocker, never completion evidence","aggregate_gate_evidence":["provider_adapter_suite","secret_boundary_result","prompt_injection_result","deployment_identity"],"walkthrough":"Complete one Universal/manual and one authorized connected journey and verify both preserve meaning and recover safely from provider failure."},
+    {"id":"L7","name":"WEB PRODUCTION-VERIFIED","entry":"L6 complete","exit":"every L7 web matrix obligation is PROVEN or carries its exact matrix N/A status on the immutable production candidate; this does not claim desktop completion","aggregate_gate_evidence":["full_web_regression","security_privacy","prompt_injection","accessibility","adhd_friction","recovery","migration","representative_live_flows","deployment_identity"],"walkthrough":"Use the supported web product end to end once; formal promotion still requires the complete automated and independent evidence set."}
+  ]
+}

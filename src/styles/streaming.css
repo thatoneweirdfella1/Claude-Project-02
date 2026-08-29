@@ -1,12 +1,31 @@
 /* streaming.css — message bubbles, confidence/honesty line, rating/download
    row, stage indicator, streaming text (Step 5.1). Tokens only. */
 
+/* Fix, this session: never had a surface class (no background, no card
+   treatment — see the operator-directed Dark Grey Marble texture change,
+   marble.css) or anything forcing it to occupy space, so an empty
+   conversation was fully invisible against the marble slab, indistinguishable
+   from "not rendering." Now a real Dark Grey Marble panel (class added in
+   ConversationArea.tsx: `surface-smoked-glass`, same content-tier treatment
+   as every other card/panel per MATERIALS.md) that fills the remaining
+   height of the center column (flex: 1, .col-center is the flex parent —
+   layout.css) and never disappears, empty or not. */
 .conversation-area {
   display: flex;
   flex-direction: column;
   gap: var(--space-row-margin);
   padding: var(--space-card-padding);
   overflow-y: auto;
+  flex: 1 1 auto;
+  min-height: 240px;
+  margin-bottom: var(--space-row-margin);
+}
+
+.conversation-area__empty {
+  margin: auto; /* centers in both axes within the flex column when it's the only child */
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-body);
 }
 
 .message-bubble {
@@ -96,6 +115,12 @@
 
 .rating-row {
   display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rating-row__top {
+  display: flex;
   align-items: center;
   justify-content: space-between;
 }
@@ -130,6 +155,24 @@
   color: var(--text-secondary);
   font-size: 16px;
   cursor: pointer;
+}
+
+.rating-row__comment {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 48px;
+  resize: vertical;
+  padding: 8px 10px;
+  border: 1px solid var(--surface-smoked-glass-border);
+  border-radius: var(--radius-button);
+  background: var(--surface-smoked-glass);
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-secondary);
+}
+
+.rating-row__comment::placeholder {
+  color: var(--text-secondary);
 }
 
 .stage-indicator {
@@ -178,3 +221,22 @@
   font-weight: var(--font-weight-metadata);
   opacity: var(--text-metadata-opacity);
 }
+.message-status { margin-left: 8px; padding: 2px 7px; border-radius: 999px; font-size: 11px; text-transform: capitalize; background: var(--frozen-cyan-soft); }
+.message-status--handed-off { border: 1px solid var(--frozen-gold); }
+.response-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; margin-top: 12px; }
+.response-actions > button, .response-actions__menu > button, .branch-switcher button {
+  display: inline-flex; align-items: center; gap: 4px; padding: 6px 8px; border: 1px solid var(--frozen-line);
+  border-radius: 6px; background: transparent; color: var(--frozen-text); cursor: pointer;
+}
+.response-actions__menu { position: relative; }
+.response-actions__popover {
+  position: absolute; z-index: 100; top: calc(100% + 4px); left: 0; display: grid; min-width: 150px;
+  padding: 5px; border: 1px solid var(--frozen-border); border-radius: 8px;
+}
+.response-actions__popover button { padding: 7px; border: 0; background: transparent; color: var(--frozen-text); text-align: left; }
+.branch-switcher { display: inline-flex; align-items: center; gap: 4px; }
+.why-this-worked { margin-top: 8px; padding: 9px; border-left: 3px solid var(--frozen-cyan); background: var(--frozen-cyan-soft); }
+.why-this-worked p { margin: 4px 0 0; }
+.prepared-request { margin-top: 8px; }
+.prepared-request pre { max-height: 180px; overflow: auto; white-space: pre-wrap; padding: 9px; background: rgb(0 0 0 / .08); }
+.message-bubble--handoff { border-inline-start: 3px solid var(--frozen-gold); }

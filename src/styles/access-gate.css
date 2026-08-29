@@ -1,0 +1,84 @@
+/* access-gate.css — AppAccessGate (operator-directed, post-12.3). Mirrors
+   import.css/export.css's modal-overlay shell rather than inventing a new
+   one; the card itself is a real GlassCard (surface-smoked-glass +
+   primitive-glass-card), same material/theme handling as every other card
+   in the app, so this doesn't need its own light/dark override rules. */
+
+.app-access-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 200; /* above every modal (100) — nothing in the app should ever show through this */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--modal-backdrop);
+}
+
+.app-access-gate__card {
+  width: min(360px, 90vw);
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-modal);
+}
+
+.app-access-gate__title {
+  margin: 0 0 var(--space-list-item-margin);
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-body);
+}
+
+.app-access-gate__label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-label-secondary);
+  font-weight: var(--font-weight-label-secondary);
+}
+
+.app-access-gate__input {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: var(--space-input-padding);
+  border-radius: var(--radius-button);
+  border: 1px solid var(--surface-smoked-glass-border);
+  background: var(--surface-smoked-glass);
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-body);
+}
+
+.app-access-gate__error {
+  margin: 8px 0 0;
+  color: var(--action-destructive);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-metadata);
+  font-weight: var(--font-weight-metadata);
+}
+
+.app-access-gate__submit {
+  margin-top: var(--space-list-item-margin);
+  min-height: 44px;
+  padding: 0 var(--space-row-margin);
+  border: 1px solid var(--accent-cyan);
+  border-radius: var(--radius-button);
+  background: var(--surface-smoked-glass);
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+  font-weight: var(--font-weight-label);
+  cursor: pointer;
+}
+
+.app-access-gate__submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.app-access-gate__submit:focus-visible,
+.app-access-gate__input:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}

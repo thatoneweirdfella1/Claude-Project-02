@@ -1,6 +1,3 @@
-/* Technique selection — public surface. Step 4.1: registry + matrix. Step 4.2
-   adds the auto-detect scoring/stacking service here. */
-
 export {
   TECHNIQUES,
   TECHNIQUE_IDS,
@@ -20,6 +17,7 @@ export {
   type TechniqueScore,
   type TechniqueSelection,
 } from "./autoDetect";
+export { autoDetectWithPinned } from "./autoDetectWithPinned";
 export {
   AUTO_MODE,
   isAutoMode,

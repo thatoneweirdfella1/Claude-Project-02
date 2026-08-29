@@ -1,0 +1,62 @@
+import { create } from "zustand";
+import type { DestinationSelection, DirectnessLevel, MethodologyType, TechniqueId, TranslatorEngine } from "./types";
+
+export interface RequestDefaults {
+  destination: DestinationSelection;
+  translatorEngine: TranslatorEngine;
+  reviewBeforeSend: boolean;
+  paidFallbackEnabled: boolean;
+  maxRequestCost: number;
+  techniques: TechniqueId[];
+  methodology: MethodologyType;
+}
+interface SettingsDefaultsState {
+  directness: DirectnessLevel;
+  methodologyPinned: boolean;
+  requestDefaults: RequestDefaults;
+  setDirectness: (directness: DirectnessLevel) => void;
+  setMethodologyPinned: (pinned: boolean) => void;
+  setRequestDefaults: (defaults: RequestDefaults) => void;
+}
+const STORAGE_KEY = "divergence-ai-request-defaults-v2";
+export const DEFAULT_REQUEST_SETTINGS: Pick<SettingsDefaultsState, "directness" | "methodologyPinned" | "requestDefaults"> = {
+  directness: 2,
+  methodologyPinned: false,
+  requestDefaults: {
+    destination: { providerId: "universal", modelId: "universal" }, translatorEngine: "auto-free-first",
+    reviewBeforeSend: true, paidFallbackEnabled: false, maxRequestCost: 0.25,
+    techniques: ["auto-detect"], methodology: "standard",
+  },
+};
+function readPersistedDefaults(): Pick<SettingsDefaultsState, "directness" | "methodologyPinned" | "requestDefaults"> {
+  if (typeof localStorage === "undefined") return DEFAULT_REQUEST_SETTINGS;
+  try {
+    const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "null") as Partial<SettingsDefaultsState> | null;
+    const directness = parsed?.directness === 1 || parsed?.directness === 2 || parsed?.directness === 3 ? parsed.directness : 2;
+    const saved = parsed?.requestDefaults;
+    return {
+      directness,
+      methodologyPinned: Boolean(parsed?.methodologyPinned),
+      requestDefaults: saved ? {
+        ...DEFAULT_REQUEST_SETTINGS.requestDefaults, ...saved,
+        destination: saved.destination ?? DEFAULT_REQUEST_SETTINGS.requestDefaults.destination,
+        techniques: Array.isArray(saved.techniques) && saved.techniques.length ? [...saved.techniques] : ["auto-detect"],
+        maxRequestCost: Math.max(0, Number(saved.maxRequestCost) || 0),
+      } : { ...DEFAULT_REQUEST_SETTINGS.requestDefaults, techniques: ["auto-detect"] },
+    };
+  } catch { return DEFAULT_REQUEST_SETTINGS; }
+}
+function persist(state: Pick<SettingsDefaultsState, "directness" | "methodologyPinned" | "requestDefaults">): void {
+  if (typeof localStorage === "undefined") return;
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch { /* active-session IndexedDB still protects work */ }
+}
+export const useSettingsDefaultsStore = create<SettingsDefaultsState>((set, get) => ({
+  ...readPersistedDefaults(),
+  setDirectness: (directness) => { set({ directness }); persist({ directness, methodologyPinned: get().methodologyPinned, requestDefaults: get().requestDefaults }); },
+  setMethodologyPinned: (methodologyPinned) => { set({ methodologyPinned }); persist({ directness: get().directness, methodologyPinned, requestDefaults: get().requestDefaults }); },
+  setRequestDefaults: (requestDefaults) => {
+    const next = { ...requestDefaults, techniques: [...requestDefaults.techniques] };
+    set({ requestDefaults: next });
+    persist({ directness: get().directness, methodologyPinned: get().methodologyPinned, requestDefaults: next });
+  },
+}));

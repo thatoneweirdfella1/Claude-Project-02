@@ -18,8 +18,16 @@ export { MAX_TECHNIQUE_STACK };
     still being truthful when manual mode has multiple techniques stacked —
     something the screenshot's single static frame never shows, since it only
     depicts one technique selected. */
-export function techniqueSummaryLabel(techniques: TechniqueId[]): string {
-  if (techniques.length === 0 || techniques.includes("auto-detect")) return "Auto-detect";
+export function techniqueSummaryLabel(
+  techniques: TechniqueId[],
+  autoSelection: TechniqueId[] = [],
+): string {
+  if (techniques.length === 0) return "Choose technique";
+  if (techniques.includes("auto-detect")) {
+    if (autoSelection.length === 1) return getTechnique(autoSelection[0]).label;
+    if (autoSelection.length > 1) return `${autoSelection.length} techniques`;
+    return "Auto recommend";
+  }
   if (techniques.length === 1) return getTechnique(techniques[0]).label;
   return `${techniques.length} techniques`;
 }

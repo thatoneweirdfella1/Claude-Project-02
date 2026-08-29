@@ -43,3 +43,11 @@ export {
   type CorrectionDimension,
 } from "./correctionLearning";
 export { deriveStateFeeds, type StateFeeds, type TransparencyEntry } from "./stateBus";
+export { detectStateLocally } from "./localDetect";
+export {
+  buildStateRecommendation,
+  applyStateRecommendation,
+  stateChoiceSignature,
+  findRememberedStateChoice,
+  type StateRecommendation,
+} from "./recommendation";

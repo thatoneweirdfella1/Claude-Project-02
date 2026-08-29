@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "web": {
+    "status":"ACTIVE GOVERNANCE — IMPLEMENTATION NOT AUTHORIZED",
+    "layers":["L1","L2","L3","L4","L5","L6","L7"],
+    "ledger":"docs/layer-system/LAYER-COVERAGE-LEDGER.csv",
+    "completion_label":"WEB L7 PRODUCTION-VERIFIED",
+    "does_not_mean":"complete desktop/Windows application"
+  },
+  "desktop_windows": {
+    "status":"DEFERRED — NOT AUTHORIZED",
+    "entry_gate":"web behavior stable and a separate user grant exists",
+    "seed_requirement_ids":["SPEC-DS-01"],
+    "required_before_activation":["desktop requirement recovery","desktop applicability ledger","desktop layer definitions","Windows/Electron test registry","desktop evidence index"],
+    "completion_label":"DESKTOP/WINDOWS TRACK COMPLETE",
+    "web_na_clause":"desktop/Windows requirement is retained in the master denominator but is proven only on the separate desktop track"
+  },
+  "whole_application_completion":"Requires both WEB L7 PRODUCTION-VERIFIED and DESKTOP/WINDOWS TRACK COMPLETE."
+}

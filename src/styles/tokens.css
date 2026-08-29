@@ -3,52 +3,130 @@
    (color, screenshot wins where they disagree — CANON.md).
    No component may hold a hardcoded hex, px, or shadow value. Every visual
    value a component needs is a var() reference to a token defined here.
-   Tokens are named for what they are FOR, not what they look like. */
+   Tokens are named for what they are FOR, not what they look like.
+
+   EXCEPTION (operator-directed, this session): the surfaces section below now
+   deliberately diverges from Divergence_AI_App_Screenshot_V3.png's blue
+   button/near-black-blue glass — the operator explicitly overrode
+   MATERIALS.md's Blue Marble/Smoked Glass color spec with a three-tone grey
+   system (Black/Medium Gray/Dark Grey), real hex values sampled from
+   public/textures/medium-gray-marble-slab.jpg and dark-grey-marble-slab.jpg
+   (renamed, this session, from grey-marble-slab-1.jpg/grey-marble-slab-2.jpg
+   to match their actual measured darkness — see BUILD-LOG.md DECISIONS).
+   This is a deliberate exception to "screenshot wins," not a regression —
+   do not silently revert these two toward the screenshot's blue in a future
+   audit. */
 
 :root {
   /* ---------------------------------------------------------------------
-     SURFACES — the three-material system (MATERIALS.md "THE THREE SURFACES")
+     SURFACES — the three-material system (MATERIALS.md "THE THREE SURFACES").
+     Class/token names below (surface-blue-marble, surface-smoked-glass) are
+     legacy from before this override — kept to avoid a large mechanical
+     rename across ~20 files under this same change; see BUILD-LOG.md PARKED.
      --------------------------------------------------------------------- */
 
-  /* 1. Black Marble — full-viewport background slab. */
-  --surface-black-marble-start: #0b0c0e;
-  --surface-black-marble-end: #151618;
+  /* 1. Black Marble — full-viewport background slab. Corrected against a real
+     per-pixel sample of public/textures/black-marble-slab.jpg (the actual
+     locked asset, not eyeballed) — the old #0B0C0E/#151618 pair was labeled
+     "sampled from the texture file" in MATERIALS.md but didn't match it; the
+     real trimmed mean excluding vein highlights is #050505, with a
+     #020202-#060702 20th/60th percentile spread. Used only as the flat
+     background-color fallback if the image fails to load (marble.css
+     .marble-slab) — the rendered slab itself is the actual texture image,
+     unaffected by this token. */
+  --surface-black-marble-start: #020202;
+  --surface-black-marble-end: #060702;
+  /* Step 11.5 (VISUAL-AUDIT V14, applied): the raw texture asset
+     (public/textures/black-marble-slab.jpg) reads visibly brighter/busier
+     than V3's near-flat-black slab with barely-visible veining — a flat
+     black scrim over the texture, at this opacity, is what brought a real
+     rendered capture in line with V3 (calibrated by side-by-side comparison
+     against Divergence_AI_App_Screenshot_V3.png, not derived from a written
+     spec value — MATERIALS.md names the base hex range and "barely
+     noticeable" veining but no overlay/opacity number). Locked texture
+     asset itself is untouched; see MARBLE-CONTRACT.md "THE ASSETS". */
+  /* REVISED, operator-directed override, this session: 0.75 was calibrated
+     to match V3's "barely noticeable" veining — the operator has since
+     explicitly asked for the opposite, "clearly visible, not faint" veins
+     across all three surfaces, a deliberate departure from the V3-screenshot
+     target for this specific property. Lowered so more of the raw texture's
+     real contrast survives the scrim; recalibrated by real rendered capture,
+     same iterative method as the original V14 fix, not guessed. */
+  --slab-darken-opacity: 0.35;
+  /* Step 11.5 (VISUAL-AUDIT V8, applied): once the button's blend mode
+     stopped letting the texture crush its luminance (marble.css
+     .surface-blue-marble), the gradient's own true brightness read
+     noticeably more vivid/saturated than V3's darker, moodier button —
+     MATERIALS.md: "not neon." This scrim brings it back down; calibrated
+     the same way as --slab-darken-opacity, by comparing a real rendered
+     capture against Divergence_AI_App_Screenshot_V3.png's own button crop,
+     not a spec value (none exists for this).
+     REVISED, operator-directed override, this session, same reasoning as
+     --slab-darken-opacity above: lowered to let more vein contrast through
+     now that "clearly visible" is the target, not "not neon" restraint. */
+  --button-darken-opacity: 0.15;
 
-  /* 2. Smoked Glass — cards and panels. 88-92% opaque so the slab blurs
-     through (picked 90%, the midpoint). Never opaque, never carries its
-     own marble. Base tone is a hair lighter/bluer than the black marble
-     so panels read as a distinct layer floating on the slab. */
-  --surface-smoked-glass: rgba(17, 19, 24, 0.9);
-  --surface-smoked-glass-border: rgba(0, 0, 0, 0.5); /* hairline darker-charcoal edge */
+  /* 2. Dark Grey Marble (operator-directed override, this session) — content
+     areas: cards, panels, dialogs, messages. Replaces Smoked Glass's blue-
+     tinted near-black with a neutral dark grey sampled from real pixel data:
+     public/textures/dark-grey-marble-slab.jpg (renamed from
+     grey-marble-slab-2.jpg to match its actual measured darkness — it's the
+     darker of the two grey textures, so it's used here for the RECESSIVE
+     content tier, not the interactive tier). 10th/85th percentile of the
+     non-vein base stone: #161513-#1e1d1a; used the mid value. Same
+     translucent-glass mechanics as before (88-92% opaque, slab blurs
+     through, never carries its own marble texture) — only the tint changed,
+     not the material behavior. */
+  --surface-smoked-glass: rgba(25, 24, 22, 0.9);
+  --surface-smoked-glass-border: rgba(0, 0, 0, 0.5); /* hairline darker-charcoal edge, unchanged */
   --blur-smoked-glass: 24px; /* heavy backdrop blur, glassmorphism */
 
-  /* 3. Blue Marble — primary buttons only. Deep sapphire, glossy stone. */
-  --surface-blue-marble-start: #2b4e9c;
-  --surface-blue-marble-end: #4478e5;
-  --surface-blue-marble-glow: rgba(255, 255, 255, 0.18); /* soft top glow, light on a curve */
+  /* 3. Medium Gray Marble (operator-directed override, this session) —
+     interactive elements: buttons, nav, borders. Replaces Blue Marble's
+     sapphire with a neutral warm grey sampled from real pixel data:
+     public/textures/medium-gray-marble-slab.jpg (renamed from
+     grey-marble-slab-1.jpg to match its actual measured darkness — it's the
+     lighter of the two grey textures, so it's used here for the PROMINENT
+     interactive tier: background < content < interactive is the resulting
+     lightness ladder, background darkest, interactive most visible). 10th/
+     85th percentile of the non-vein base stone: #2A2925-#302F2B. Sampling
+     architecture UNCHANGED from Blue Marble (marble.css .surface-blue-marble
+     still samples the same continuous black-marble-slab.jpg at the same
+     coordinates, MARBLE-CONTRACT.md's "one continuous slab" rule — only the
+     gradient's base color changed, exactly like V8's fix; introducing a
+     second, different texture image into the button would break slab
+     continuity). */
+  --surface-blue-marble-start: #2a2925;
+  --surface-blue-marble-end: #302f2b;
+  --surface-blue-marble-glow: rgba(255, 255, 255, 0.18); /* soft top glow, light on a curve — material-independent, unchanged */
 
   /* ---------------------------------------------------------------------
      EARNED COLOR — used sparingly, with meaning (MATERIALS.md "COLOR")
      --------------------------------------------------------------------- */
 
   --accent-cyan: #00d9ff; /* secondary interactive: headers, links, gear, checkboxes, dropdown arrows */
-  --accent-purple: #8b5cf6; /* logo "AI" text; same purple reused for the Emotion pill, intentionally */
+  --accent-purple: #8b5cf6; /* Emotion pill; no longer the logo's color — see below */
 
-  /* Logo aurora mix (CANON "THE LOGO"): neon green, purple, pink blended.
-     Logo-scoped — this three-color aurora is the brand mark's identity, not
-     a general-purpose accent. Purple reuses --accent-purple so the "AI" text
-     stays the one purple the rest of the app uses. Green/pink are exact hex
-     here because CANON names only the hue ("neon green", "pink"); a future
-     session with the brand source can retune these two token values without
-     touching the logo component. */
-  --logo-aurora-green: #39ff14;
-  --logo-aurora-purple: var(--accent-purple);
-  --logo-aurora-pink: #ff4fd8;
-  --logo-aurora-gradient: linear-gradient(
+  /* Logo gradient — REPLACED, operator-directed override, this session: the
+     real brand asset (DivergenceAILogo.png, added to the repo root)
+     replaced the hand-rolled green/purple/pink aurora placeholder CANON's
+     "THE LOGO" text described before any real asset existed. Real hex
+     values, sampled from the actual icon (public/logo-mark.png, extracted
+     from the source file — see BUILD-LOG.md DECISIONS for the extraction
+     method), not eyeballed: 6-band average across the icon's width,
+     start≈#039ef7, ~66%≈#4241f9, end≈#af0ef5 — a blue-to-violet-to-magenta
+     sweep, not the old green-to-purple-to-pink. Still used for the ".AI"
+     wordmark text (background-clip: text) — the icon itself is a static
+     PNG asset now and carries its own baked-in gradient, this token only
+     drives the text. */
+  --logo-gradient-start: #039ef7;
+  --logo-gradient-mid: #4241f9;
+  --logo-gradient-end: #af0ef5;
+  --logo-gradient: linear-gradient(
     100deg,
-    var(--logo-aurora-green),
-    var(--logo-aurora-purple),
-    var(--logo-aurora-pink)
+    var(--logo-gradient-start),
+    var(--logo-gradient-mid),
+    var(--logo-gradient-end)
   );
 
   /* ---------------------------------------------------------------------
@@ -67,6 +145,30 @@
   --action-destructive: #ef4444; /* red, destructive actions only (Close Session, Replace Answer) */
 
   --status-online: #22c55e; /* System Status dot. Same value as --state-interest — MATERIALS.md defines only one green in the palette — but a separate token, since the two concepts (system health vs. detected interest level) are unrelated and could diverge later. */
+
+  /* Step 11.5 (ADHD-AUDIT S2/S3): confidence-badge colors, decoupled from the
+     Emotion-detection state tokens they used to borrow (--state-cognitive,
+     --status-online) — a badge and a state pill can render on the same
+     message, so they need their own tokens even where the color matches. */
+  --confidence-high: #22c55e; /* same green as --state-interest/--status-online (the codebase's one green — MATERIALS.md), own token so the three concepts can diverge later */
+  --confidence-moderate: var(--accent-cyan); /* cyan was already the documented intent (translation.css); --accent-cyan is a general secondary-interactive color, not a single-meaning state token, so reusing it here doesn't reintroduce the collision */
+
+  /* Step 11.5 (VISUAL-AUDIT V2): Quick Tools per-tile icon color, matching
+     V3's screenshot — Router/Techniques/Variables/Checkpoints/Dashboard reuse
+     existing tokens whose meaning aligns; Prompt Library's orange has no
+     existing token, so it gets its own rather than a hardcoded hex. */
+  --tile-prompt-library: #f97316;
+
+  /* Step 11.5 (VISUAL-AUDIT V10): rgb() literals that were re-encoding token
+     values (or duplicating the same one-off tint across many files) — no
+     hex-outside-tokens.css violation existed, but retuning the underlying
+     token silently wouldn't reach these. Named for what they're for, not
+     what they look like, same convention as the rest of this file. */
+  --accent-cyan-tint-06: rgb(0 217 255 / 0.06); /* re-encodes --accent-cyan at 6% */
+  --accent-cyan-tint-12: rgb(0 217 255 / 0.12); /* re-encodes --accent-cyan at 12% */
+  --accent-cyan-tint-25: rgb(0 217 255 / 0.25); /* re-encodes --accent-cyan at 25% — Blue Marble's hairline border (Step 11.5 V8) */
+  --hover-tint: rgb(255 255 255 / 0.04); /* generic subtle hover background, reused across 6 files */
+  --modal-backdrop: rgb(0 0 0 / 0.5); /* modal/dialog backdrop scrim */
 
   /* ---------------------------------------------------------------------
      TEXT — monochrome base, 85% of the interface (MATERIALS.md "COLOR")
@@ -145,4 +247,180 @@
      --------------------------------------------------------------------- */
 
   --slab-tile-size: 2508px; /* native resolution of the seamless mirrored supertile texture; never cover/contain/percent/vw/vh */
+
+  /* Gold layout's own slab textures (public/textures/gold-marble-{light,dark}-slab.png)
+     are real generated images at their own native 1536x1024 resolution — NOT square
+     like the original slab's 2508x2508, so this can't reuse --slab-tile-size (which
+     would stretch a 3:2 image into a square and distort every vein). Two dimensions,
+     not one, same "never rescaled" rule as the original, just an actual aspect ratio
+     preserved instead of assumed square. */
+  --gold-slab-tile-width: 1536px;
+  --gold-slab-tile-height: 1024px;
+}
+
+/* -----------------------------------------------------------------------
+   LIGHT THEME (CANON Feature 12, VISUAL-AUDIT V16) — built this session
+   against Divergence_AI_Light_App_Screenshot_V2.png, the first time this
+   repo has had a real light-mode reference. Real per-pixel sampling of
+   that file, not eyeballed, is documented in BUILD-LOG.md DECISIONS.
+
+   THE RULE, derived from the reference image itself, not invented: every
+   BUTTON-ish surface (nav items, top-bar controls, Quick Actions,
+   Attach/Context, TRANSLATE & ASK, Quick Tools tiles, accordion rows —
+   `.primitive-glass-button`, `.surface-blue-marble`, `.primitive-glass-panel`,
+   `.quick-tools-tile__button`) stays the EXACT SAME dark, marble-textured
+   surface in BOTH themes — confirmed by sampling their fill colors in the
+   light screenshot and finding them near-identical to dark theme's own
+   values. Only the background slab and genuinely passive CONTENT surfaces
+   (`.primitive-glass-card`, `.conversation-area` — message bubbles, form
+   cards, modals, popovers) actually invert to light.
+
+   FIRST ATTEMPT AT THIS WAS WRONG, caught with a real rendered capture, not
+   assumed correct: redefining --surface-smoked-glass itself to a light
+   value broke every nav/top-bar/quick-actions button, because GlassButton
+   applies BOTH `surface-smoked-glass` (fill) AND `primitive-glass-button`
+   (layout) together — most consumers of that token are actually buttons,
+   not content. --surface-smoked-glass/-border are left COMPLETELY
+   UNCHANGED here as a result (still always-dark) — correct for the
+   majority of what reads them; the minority that needs to go light
+   (GlassCard, ConversationArea) gets its own explicit override below
+   instead, scoped to the actual content classes. */
+:root[data-theme="light"] {
+  /* Text default: flips for anything sitting on the background directly or
+     inside a content card (both go light). Button-ish surfaces counter-
+     override this back to white further down, same reasoning as above —
+     they didn't change, so their white text shouldn't either. */
+  --text-primary: #16151a;
+  --text-secondary: #55565f;
+
+  /* Surfaces flip to light in light theme — sidebar backgrounds now light/cream */
+  --surface-smoked-glass: rgba(245, 245, 245, 0.95);
+  --surface-smoked-glass-border: rgba(200, 200, 200, 0.5);
+
+  /* Black Marble (background) — real sampled base from the reference
+     (multiple non-veined sample points, #f3f3f3-#fcfcfc): used only as the
+     flat-color fallback if the texture image fails, same convention as
+     dark theme's own --surface-black-marble-*. The actual rendered slab
+     uses marble.css's filter: invert() on the same locked texture asset —
+     see MARBLE-CONTRACT.md for why that's safe here (the slab has no
+     children, so nothing but the slab itself is affected). */
+  --surface-black-marble-start: #f5f5f5;
+  --surface-black-marble-end: #fcfcfc;
+}
+
+/* Button-ish surfaces stay dark/white-text in light theme too — explicit
+   counter-override so the root text flip above doesn't cascade into them.
+
+   REWORKED this session, operator-directed: this used to be an enumerated
+   list of every individual class that happens to sit on dark chrome
+   (.primitive-glass-button, .state-detection-panel__adjust,
+   .visibility-menu__popover, ...) — and a real sweep across the app found
+   SIX MORE places with the exact same bug (technique dropdown/popover,
+   Attach popover + its rejection notice, pill-corrector, the "More"
+   popover, Quick Tools tile button/popover, partner-picker, import-modal
+   rows) that had simply been forgotten from that list, because every new
+   popover had to remember to add itself. Root cause: most of these never
+   used the shared `.surface-smoked-glass` class at all — they reimplemented
+   the same background/blur/border declarations inline via the bare
+   `var(--surface-smoked-glass)` custom property, which is why the old
+   class-name list could never have caught them by construction.
+
+   Fixed at the root instead of patching each finding individually: every
+   one of those components now actually carries the `surface-smoked-glass`
+   class (marble.css) rather than reimplementing its material, so this
+   single rule covers all of them, including any future consumer that does
+   the same — no tokens.css edit required for the next popover.
+   .primitive-glass-panel (AccordionStack's wrapper, GlassPanel.tsx) needed
+   no separate entry — it already always carries `surface-smoked-glass`
+   alongside it, so the rule below covers it for free. The one surface that
+   genuinely needs its own explicit entry is BlueMarbleButton's
+   `.surface-blue-marble`: a different material (medium-gray marble, not
+   dark-grey/surface-smoked-glass), so it was never going to match the
+   shared class rule no matter how it's factored. */
+:root[data-theme="light"] .surface-smoked-glass,
+:root[data-theme="light"] .surface-blue-marble {
+  --text-primary: #ffffff;
+  --text-secondary: #a6abb5; /* dark theme's own --text-secondary value, unchanged */
+}
+
+/* Content tier — the actual "goes light" surfaces: GlassCard (form/info
+   cards, modals, popovers — TranslationCard, ClarifyPrompt, DownloadModal,
+   TransparencyCard body, ImportModal, StateDetectionPanel, MultiAiActions
+   body) and ConversationArea (message bubbles). Real sampled fill from the
+   reference (composer textarea, state-detection card, message content area
+   all landed in the same narrow band, #f9f9fd-#fdfefe): near-white, same
+   88-92%-opaque translucent-glass convention as dark theme, not opaque.
+   .input-box__textarea joined this selector list this session — the sample
+   list above already named "composer textarea" as one of the three points
+   this fill was measured from, but the selector itself was never added, so
+   it was still rendering on --surface-smoked-glass (always-dark) same as
+   every button-ish surface. A real gap, not a new call: the reference
+   screenshot (Divergence_AI_Light_App_Screenshot_V2.png) shows it light.
+
+   .clarify-prompt__input (translation.css), .import-modal__input
+   (import.css), .rating-row__comment (streaming.css), and
+   .debate-view__column (multi-ai.css) joined this session, same reasoning
+   as .input-box__textarea: each is a TEXT surface (a field to type into, or
+   a transcript to read), not a control, sitting inside a card that's
+   already content-tier — ClarifyPrompt/ImportModal/MultiAiActions body are
+   all named as GlassCard content-tier consumers in the sample list above,
+   and the message bubble (rating comment's parent) already goes light too;
+   these four just hadn't been wired to match yet.
+
+   --text-primary/--text-secondary are set explicitly here (not just
+   background/border) because .primitive-glass-card and .conversation-area
+   also carry the shared `.surface-smoked-glass` class as of this session's
+   refactor above — without this re-declaration they'd inherit that rule's
+   white text instead of the dark text a light-colored card needs. Harmless
+   on the other five selectors here, which never carried that class and
+   already got dark text for free from the root-level flip. */
+:root[data-theme="light"] .primitive-glass-card,
+:root[data-theme="light"] .conversation-area,
+:root[data-theme="light"] .input-box__textarea,
+:root[data-theme="light"] .clarify-prompt__input,
+:root[data-theme="light"] .import-modal__input,
+:root[data-theme="light"] .rating-row__comment,
+:root[data-theme="light"] .debate-view__column {
+  background-color: rgba(250, 250, 252, 0.9);
+  border-color: rgba(0, 0, 0, 0.12); /* was rgba(0,0,0,0.5) on dark fills — a much darker
+    line was needed there to show up against near-black; this reads fine as a hairline
+    against a near-white fill */
+  --text-primary: #16151a;
+  --text-secondary: #55565f;
+}
+
+/* ===========================================================================
+   GOLD LAYOUT (CLAUDE.md "Design layouts") — a complete re-skin, independent
+   of theme. Overrides --accent-cyan itself (rather than introducing a
+   parallel --accent-gold and updating every one of its consumers) so every
+   accent-colored surface in the app — borders, focus rings, section-header
+   text, dropdown chevrons, hover glows, all already reading this one token —
+   recolors for free. Same "keep the token name, change the value" precedent
+   marble.css already set for .surface-smoked-glass/.surface-blue-marble when
+   those went from blue/smoked-glass to grey, logged there as intentional
+   naming debt, not an oversight.
+
+   Real sampled values (Python/PIL, most-common-saturated-gold-hued-pixel
+   bucket scan), not guessed, from the operator's own reference mockups:
+   Gold_Layout_Dark_Reference.png's gold reads bright/warm (#e69628);
+   Gold_Layout_Light_Reference.png's own gold is a deeper, more muted bronze
+   (#a08246) — the mockups themselves use different shades per theme, same
+   "chrome needs more contrast punch on white than on black" reasoning as
+   every other theme-aware color in this build. tint-06/12/25 are derived
+   with color-mix so they can't drift out of sync with the base color the
+   way three independently-hardcoded rgb() values could. */
+:root[data-layout="gold"] {
+  --accent-cyan: #e69628;
+  --accent-cyan-tint-06: color-mix(in srgb, #e69628 6%, transparent);
+  --accent-cyan-tint-12: color-mix(in srgb, #e69628 12%, transparent);
+  --accent-cyan-tint-25: color-mix(in srgb, #e69628 25%, transparent);
+}
+
+:root[data-layout="gold"][data-theme="light"] {
+  --accent-cyan: #a08246;
+  --accent-cyan-tint-06: color-mix(in srgb, #a08246 6%, transparent);
+  --accent-cyan-tint-12: color-mix(in srgb, #a08246 12%, transparent);
+  --accent-cyan-tint-25: color-mix(in srgb, #a08246 25%, transparent);
+  --text-primary: #2a2520;
+  --text-secondary: #6b6259;
 }

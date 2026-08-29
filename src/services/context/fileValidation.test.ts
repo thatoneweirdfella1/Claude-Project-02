@@ -61,7 +61,7 @@ describe("validateFile — type", () => {
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.reason).toBe("type");
-      expect(result.message).toContain("archive.zip");
+      expect(result.message).toBe('"archive.zip" isn\'t a supported file type. Choose a PDF, TXT, JSON, CSV, PNG, JPG, JPEG, GIF, WEBP, or BMP file.');
       expect(result.message).not.toMatch(/wrong|mistake|shouldn't|invalid/i); // never blaming
     }
   });
@@ -75,7 +75,10 @@ describe("validateFile — per-file size", () => {
   it("rejects a file one byte over the 10MB cap", () => {
     const result = validateFile(file("big.txt", MAX_FILE_BYTES + 1), 0);
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.reason).toBe("file-too-large");
+    if (!result.ok) {
+      expect(result.reason).toBe("file-too-large");
+      expect(result.message).toBe('"big.txt" is 10.0 MB, over the 10.0 MB per-file limit. Choose a file no larger than 10.0 MB.');
+    }
   });
 });
 

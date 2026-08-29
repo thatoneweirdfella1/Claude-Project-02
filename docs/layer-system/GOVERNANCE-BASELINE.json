@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "baseline_commit": "ffc6935a921cdc298ad5c6259402b7eded73f41b",
+  "protected_ref": "refs/heads/governance-baseline-ffc6935",
+  "server_protection": "Immutable governance anchor branch created at ffc6935a921cdc298ad5c6259402b7eded73f41b. Server-enforced branch protection is unavailable through the current repository connector; the implementation branch never updates this ref.",
+  "replacement_protocol": "A user-authorized governance-only commit must update authority, manifest, affected ledger status, change record, and this baseline; app behavior cannot share that commit."
+}

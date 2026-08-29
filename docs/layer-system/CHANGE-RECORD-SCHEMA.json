@@ -1,0 +1,14 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "type":"object",
+  "additionalProperties":false,
+  "required":["date","type","scope","authorization","commit","result"],
+  "properties":{
+    "date":{"type":"string"},
+    "type":{"type":"string"},
+    "scope":{"type":"string"},
+    "authorization":{"type":"string"},
+    "commit":{"type":["string","null"]},
+    "result":{"type":"string"}
+  }
+}

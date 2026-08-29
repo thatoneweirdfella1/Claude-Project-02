@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["audited_commit","layer","applicable_permanent_ids_sha256","implementation_session_id","auditor","independent_from_implementation_session","report_path","report_sha256","findings","verdict","user_acceptance"],
+  "properties": {
+    "audited_commit": {"type":"string","pattern":"^[0-9a-f]{40}$"},
+    "layer": {"enum":["L0","L1","L2","L3","L4","L5","L6","L7"]},
+    "applicable_permanent_ids_sha256": {"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "implementation_session_id": {"type":"string","minLength":1},
+    "auditor": {"type":"object","required":["provider","model","session_reference","session_export_path","session_export_sha256"],"properties":{"provider":{"type":"string","minLength":1},"model":{"type":"string","minLength":1},"session_reference":{"type":"string","minLength":1},"session_export_path":{"type":"string","minLength":1},"session_export_sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"}},"additionalProperties":false},
+    "independent_from_implementation_session": {"const":true},
+    "report_path": {"type":"string","minLength":1},
+    "report_sha256": {"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "findings": {"type":"array","items":{"type":"string"}},
+    "verdict": {"enum":["PASS","FAIL"]},
+    "user_acceptance": {"enum":["ACCEPTED","REJECTED","PENDING"]}
+  }
+}

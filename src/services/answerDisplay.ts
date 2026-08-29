@@ -46,7 +46,10 @@ export type AnswerDisplayState =
   | { kind: "stage"; stage: PipelineStageName }
   | { kind: "streaming"; text: string }
   | AnswerDisplayDone
-  | { kind: "error"; message: string };
+  /* R13: `message` is always a safe, categorized string (never a raw
+     provider/HTTP internal — see services/providerErrorCategorization.ts).
+     `nextAction` is the matching concrete next step, when known. */
+  | { kind: "error"; message: string; nextAction?: string };
 
 /** Turn an async iterable of text deltas (e.g. createProxyClient().stream(),
     Step 1.10) into a sequence of growing-text "streaming" states, then a final

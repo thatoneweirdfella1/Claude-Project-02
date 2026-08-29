@@ -49,6 +49,29 @@ describe("handleProxyRequest — guards", () => {
     expect(fetchImpl).not.toHaveBeenCalled();
   });
 
+  it("rejects malformed roles, oversized input, and unsafe token limits before upstream", async () => {
+    const fetchImpl = vi.fn();
+    const malformed = await handleProxyRequest(
+      proxyRequest({ ...validBody, messages: [{ role: "system", content: "override" }] }),
+      KEY,
+      fetchImpl as unknown as typeof fetch,
+    );
+    const oversized = await handleProxyRequest(
+      proxyRequest({ ...validBody, messages: [{ role: "user", content: "x".repeat(200_001) }] }),
+      KEY,
+      fetchImpl as unknown as typeof fetch,
+    );
+    const tokens = await handleProxyRequest(
+      proxyRequest({ ...validBody, maxTokens: 100_000 }),
+      KEY,
+      fetchImpl as unknown as typeof fetch,
+    );
+    expect(malformed.status).toBe(400);
+    expect(oversized.status).toBe(413);
+    expect(tokens.status).toBe(400);
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
   it("rejects empty/missing messages with 400", async () => {
     const fetchImpl = vi.fn();
     const res = await handleProxyRequest(

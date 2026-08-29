@@ -8,6 +8,9 @@
    fetchImpl is injectable for tests; the sandbox has no network, so live calls
    are exercised only once the proxy is deployed (parked, BUILD-LOG.md). */
 
+import { appAccessHeaders } from "./appAccessClient";
+import { desktopBridge } from "./desktopBridge";
+
 export interface ProxyMessage {
   role: "user" | "assistant";
   content: string;
@@ -45,6 +48,27 @@ export interface ProxyClientConfig {
 
 const DEFAULT_ENDPOINT = "/api/proxy";
 
+/** R13: thrown for a non-OK proxy response. `.status` lets callers (e.g.
+    services/providerErrorCategorization's categorizeCaughtError) categorize
+    the failure by its real HTTP status without string-parsing `.message`.
+    The raw response body is kept on `.detail`, deliberately never folded
+    into `.message` — resilience.ts's isTransientError() and existing tests
+    depend on `.message` staying exactly `Proxy call failed (<status>)`, and
+    nothing should be able to accidentally surface the provider/proxy's raw
+    body text (which may include implementation detail beyond just a status
+    code) to the user by treating `.message` as display copy. */
+export class ProxyClientError extends Error {
+  readonly status: number;
+  readonly detail?: string;
+
+  constructor(status: number, detail?: string) {
+    super(`Proxy call failed (${status})`);
+    this.name = "ProxyClientError";
+    this.status = status;
+    this.detail = detail;
+  }
+}
+
 function buildMessages(req: ProxyCompletionRequest): ProxyMessage[] {
   if (req.messages && req.messages.length > 0) return req.messages;
   return [{ role: "user", content: req.input ?? "" }];
@@ -81,7 +105,7 @@ export function createProxyClient(config: ProxyClientConfig = {}): ProxyClient {
   ): Promise<Response> {
     const res = await doFetch(endpoint, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", ...appAccessHeaders() },
       body: JSON.stringify({
         model: req.model,
         system: req.system,
@@ -93,14 +117,22 @@ export function createProxyClient(config: ProxyClientConfig = {}): ProxyClient {
     });
     if (!res.ok) {
       const detail = await res.text().catch(() => "");
-      throw new Error(
-        `Proxy call failed (${res.status})${detail ? `: ${detail.slice(0, 200)}` : ""}`,
-      );
+      throw new ProxyClientError(res.status, detail || undefined);
     }
     return res;
   }
 
   async function complete(req: ProxyCompletionRequest): Promise<string> {
+    const desktop = desktopBridge();
+    if (desktop) {
+      const result = await desktop.ai.complete({
+        model: req.model,
+        system: req.system,
+        messages: buildMessages(req),
+      });
+      req.onUsage?.(result.usage);
+      return result.text;
+    }
     const res = await post(req, false);
     const data = (await res.json()) as AnthropicMessageResponse;
     reportUsage(req.onUsage, data.usage);
@@ -113,6 +145,19 @@ export function createProxyClient(config: ProxyClientConfig = {}): ProxyClient {
   async function* stream(
     req: ProxyCompletionRequest,
   ): AsyncGenerator<string> {
+    const desktop = desktopBridge();
+    if (desktop) {
+      const result = await desktop.ai.complete({
+        model: req.model,
+        system: req.system,
+        messages: buildMessages(req),
+      });
+      req.onUsage?.(result.usage);
+      // IPC returns one complete response. Yield natural text chunks so the
+      // existing progressive-answer UI still behaves consistently.
+      for (const chunk of result.text.match(/\S+\s*/g) ?? []) yield chunk;
+      return;
+    }
     const res = await post(req, true);
     if (!res.body) return;
     const reader = res.body.getReader();
