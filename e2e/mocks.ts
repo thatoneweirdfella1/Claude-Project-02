@@ -133,6 +133,20 @@ export async function installModelMocks(page: Page, answer: MockAnswer): Promise
     });
   });
 
+  await page.route("**/api/provider-status", async (route: Route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        anthropic: true,
+        openai: true,
+        google: true,
+        xai: true,
+        deepseek: true,
+      }),
+    });
+  });
+
   await page.route("**/api/proxy", async (route: Route) => {
     await delay(MOCK_LATENCY_MS);
     const request = route.request();
