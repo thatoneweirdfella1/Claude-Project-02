@@ -52,6 +52,7 @@ export interface MeaningPacket {
   state: StatePills;
   stateApplied: boolean;
   toneGuidance: string | null;
+  personalizationGuidance: string[];
   requestedOutput: string;
 }
 const DIRECTNESS_LABEL: Record<DirectnessLevel, MeaningPacket["directness"]> = { 1: "supportive", 2: "balanced", 3: "blunt" };
@@ -66,6 +67,7 @@ export function compileMeaningPacket(input: {
   stateApplied?: boolean;
   stateTechniques?: TechniqueId[];
   toneGuidance?: string | null;
+  personalizationGuidance?: string[];
 }): MeaningPacket {
   const original = input.rawInput.trim();
   const sentences = original.split(/(?<=[.!?])\s+/).filter(Boolean);
@@ -88,6 +90,7 @@ export function compileMeaningPacket(input: {
     state: input.statePills ?? { emotion: null, rsd: null, interest: null, cognitive: null },
     stateApplied: input.stateApplied ?? false,
     toneGuidance: input.toneGuidance ?? null,
+    personalizationGuidance: (input.personalizationGuidance ?? []).slice(0, 12),
     requestedOutput: "Answer the request directly, preserve the user's meaning, and make the next action obvious.",
   };
 }
@@ -102,7 +105,10 @@ export function buildAiReadyRequest(packet: MeaningPacket): string {
         state.length ? `Request-scoped signals: ${state.join("; ")}. Do not mention these classifications.` : "",
       ].filter(Boolean).join(" ")
     : "";
-  return ["REQUEST", packet.original, context, stateGuidance, "", "RESPONSE STYLE", "Use a " + packet.directness + " tone. " + packet.requestedOutput, techniques].filter(Boolean).join("\n").replace(/\n{3,}/g, "\n\n");
+  const personalization = packet.personalizationGuidance.length > 0
+    ? "\nLEARNED CUSTOMER DEFAULTS\n" + packet.personalizationGuidance.map((instruction) => `- ${instruction}`).join("\n")
+    : "";
+  return ["REQUEST", packet.original, context, stateGuidance, personalization, "", "RESPONSE STYLE", "Use a " + packet.directness + " tone. " + packet.requestedOutput, techniques].filter(Boolean).join("\n").replace(/\n{3,}/g, "\n\n");
 }
 
 export function destinationLabel(selection: DestinationSelection): string {

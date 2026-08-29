@@ -90,6 +90,10 @@ export interface PipelineDeps {
   learnedTechniqueWeights?: Partial<Record<TechniqueId, number>>;
   /** Learned model recommendation. An explicit user model always overrides it. */
   learnedModel?: ModelSelection;
+  /** Evidence-validated defaults for interpreting the customer's request. */
+  translationPersonalization?: string[];
+  /** Evidence-validated defaults for composing the eventual answer. */
+  responsePersonalization?: string[];
   /** Step 6.5 state bus — RSD's tone guidance
       (deriveStateFeeds().toneGuidance), fed into composition's directness
       section. Same reasoning as stateTechniques above. */
@@ -198,6 +202,7 @@ export async function* runPipeline(
             onUsage: (usage) => addTokenUsage(usage.inputTokens, usage.outputTokens, req.model),
           }),
         signal: deps.signal,
+        personalizationInstructions: deps.translationPersonalization,
       });
       gated = gateTranslation(outcome);
     }
@@ -258,6 +263,7 @@ export async function* runPipeline(
       confidence: result.confidence,
       stateTone: deps.stateTone ?? undefined,
       context: request.context,
+      personalizationInstructions: deps.responsePersonalization,
     });
   } catch (error) {
     yield safeErrorEvent(error);

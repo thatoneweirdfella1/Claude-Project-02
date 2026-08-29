@@ -24,6 +24,7 @@ import type {
   VisibilitySettings,
 } from "./types";
 import { applySignalLearning } from "../services/learningEngine";
+import { isOptimizationGoalId } from "../services/optimization/customerOptimizerRegistry";
 
 /* Account store (CANON "STORES AND PERSISTENCE") — persists across browser
    closes. Holds everything that outlives a single session: archived Q/A
@@ -137,6 +138,7 @@ export function createInitialAccountState(): AccountState {
     creditLedger: [],
     manualPaymentRequests: [],
     optimizationProfile: {
+      schemaVersion: 1,
       enabled: false,
       selectedGoals: [],
       minimumEvidence: 3,
@@ -420,7 +422,7 @@ export const useAccountStore = create<AccountStore>((set, get) => ({
     set((state) => ({
       optimizationProfile: {
         ...state.optimizationProfile,
-        selectedGoals: [...new Set(selectedGoals)],
+        selectedGoals: [...new Set(selectedGoals)].filter(isOptimizationGoalId),
       },
     })),
   recordOptimizationRun: (run) =>
@@ -431,7 +433,9 @@ export const useAccountStore = create<AccountStore>((set, get) => ({
       },
       optimizationRuns: [...state.optimizationRuns, run].slice(-MAX_OPTIMIZATION_RUNS),
       learnedPreferences:
-        run.status === "applied" ? run.afterPreferences : state.learnedPreferences,
+        run.status === "applied" || run.status === "no-change"
+          ? run.afterPreferences
+          : state.learnedPreferences,
     })),
   markOptimizationRunBad: (id) =>
     set((state) => ({
@@ -443,6 +447,10 @@ export const useAccountStore = create<AccountStore>((set, get) => ({
     const state = get();
     const run = state.optimizationRuns.find((entry) => entry.id === id);
     if (!run || run.status !== "applied") return false;
+    // A whole-profile snapshot can only be restored while it is still the
+    // current version. This prevents rolling back an older run from silently
+    // erasing newer personalization or learning-loop changes.
+    if (JSON.stringify(state.learnedPreferences) !== JSON.stringify(run.afterPreferences)) return false;
     set({
       learnedPreferences: run.beforePreferences,
       optimizationRuns: state.optimizationRuns.map((entry) =>
@@ -689,8 +697,9 @@ export const useAccountStore = create<AccountStore>((set, get) => ({
           optimizationProfile: {
             ...current.optimizationProfile,
             ...state.optimizationProfile,
+            schemaVersion: 1,
             selectedGoals: Array.isArray(state.optimizationProfile.selectedGoals)
-              ? state.optimizationProfile.selectedGoals
+              ? state.optimizationProfile.selectedGoals.filter(isOptimizationGoalId)
               : current.optimizationProfile.selectedGoals,
           },
         }

@@ -94,10 +94,10 @@ test("L2: screen tabs, safe unavailable states, and typing protection react", as
   await expect(page.getByRole("button", { name: "AI Connections", exact: true })).toHaveAttribute("aria-current", "page");
 
   await page.getByRole("button", { name: "Personal Optimization", exact: true }).click();
-  await page.getByRole("checkbox", { name: /Off|On/ }).check();
-  await page.getByRole("checkbox", { name: "Reduce Overwhelm" }).check();
-  await page.getByRole("button", { name: "Preview analysis state" }).click();
-  await expect(page.getByRole("status")).toContainText("No conversation was processed");
+  await expect(page.getByRole("checkbox")).toHaveCount(10);
+  await page.getByRole("checkbox", { name: /Prevent and Reduce Overwhelm/ }).check();
+  await page.getByRole("button", { name: "Personalize My Divergence" }).click();
+  await expect(page.getByRole("status")).toContainText("no eligible conversations");
 
   await page.getByRole("button", { name: "All Tools", exact: true }).click();
   await page.getByRole("button", { name: "Large Jobs", exact: true }).click();

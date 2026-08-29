@@ -51,6 +51,7 @@ import { CONNECTED_EXECUTION_AVAILABLE } from "../../services/executionAvailabil
 import type { TechniqueId } from "../../stores/types";
 import { recommendModelAndTechniques } from "../../services/learningEngine";
 import { providerAvailable } from "../../services/providerStatus";
+import { buildPersonalizationGuidance } from "../../services/optimization/profileGuidance";
 
 const client = createProxyClient();
 const STATE_DIMENSIONS = ["emotion", "rsd", "interest", "cognitive"] as const;
@@ -168,6 +169,7 @@ export function CenterColumn() {
           .map(([id, preference]) => [id, preference.weight]),
       ) as Partial<Record<TechniqueId, number>>;
       const learnedModel = recommendModelAndTechniques(request.rawInput, learnedPreferences).model;
+      const personalization = buildPersonalizationGuidance(learnedPreferences.personalization);
 
       setWorkflowMessage("Sending…");
       setRun({
@@ -180,6 +182,8 @@ export function CenterColumn() {
             stateTechniques: feeds.techniqueCandidates,
             learnedTechniqueWeights,
             learnedModel,
+            translationPersonalization: personalization.translation,
+            responsePersonalization: personalization.response,
             stateTone: feeds.toneGuidance,
             pretranslated,
             pretranslationUsage,
@@ -236,6 +240,9 @@ export function CenterColumn() {
       stateApplied: recommendationApplied,
       stateTechniques: recommendationApplied ? recommendation?.techniqueCandidates : undefined,
       toneGuidance: recommendationApplied ? recommendation?.toneGuidance : null,
+      personalizationGuidance: buildPersonalizationGuidance(
+        useAccountStore.getState().learnedPreferences.personalization,
+      ).response,
     });
     const readyText = buildAiReadyRequest(packet);
     setPendingReview({ mode: "handoff", request, text: readyText, decisionNote });
@@ -266,6 +273,9 @@ export function CenterColumn() {
         },
       }),
       signal: controller.signal,
+      personalizationInstructions: buildPersonalizationGuidance(
+        useAccountStore.getState().learnedPreferences.personalization,
+      ).translation,
     });
     if (controller.signal.aborted) return;
 

@@ -6,7 +6,7 @@ import { useSessionStore } from "../../stores/sessionStore";
 import { useAccountStore } from "../../stores/accountStore";
 import { CenterColumn } from "../pipeline";
 import { InteractivePlanControls } from "../settings/InteractivePlanControls";
-import { InteractivePersonalOptimization } from "../settings/InteractivePersonalOptimization";
+import { PersonalOptimization } from "../optimization/PersonalOptimization";
 import { ProviderNeutralSettings } from "../settings/ProviderNeutralSettings";
 import { AppearanceSettings } from "../settings/AppearanceSettings";
 import { COMPOSABLE_TECHNIQUE_IDS, MAX_TECHNIQUE_STACK, getTechnique } from "../../services/techniques";
@@ -1555,7 +1555,7 @@ function SettingsScreen() {
 
         {section === "plan" && <InteractivePlanControls />}
 
-        {section === "personalization" && <InteractivePersonalOptimization />}
+        {section === "personalization" && <PersonalOptimization />}
 
         {section === "connections" && <><div className="settings-section"><h3>Connection status</h3><p className="settings-section__note">No external provider is connected. Provider setup controls prepare configuration only; they do not claim a successful connection or send data.</p></div><ProviderNeutralSettings /></>}
 

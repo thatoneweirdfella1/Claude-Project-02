@@ -1,9 +1,9 @@
 import { act, useState } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { ApprovedKeyboardShortcutsModal } from "../ApprovedKeyboardShortcutsModal";
 import { createInitialAccountState, useAccountStore } from "../../stores/accountStore";
-import { InteractivePersonalOptimization } from "./InteractivePersonalOptimization";
+import { PersonalOptimization } from "../optimization/PersonalOptimization";
 import { InteractivePlanControls } from "./InteractivePlanControls";
 
 let root: Root | null = null;
@@ -44,12 +44,15 @@ describe("Layer 2 safe interaction surfaces", () => {
     expect(host?.querySelector('[role="dialog"]')).toBeNull();
   });
 
-  it("previews optimization without processing conversations", () => {
-    mount(<InteractivePersonalOptimization />);
+  it("shows all frozen choices and makes no model call without eligible conversations", () => {
+    const runOptimizer = vi.fn();
+    mount(<PersonalOptimization runOptimizer={runOptimizer} />);
     const checks = [...(host?.querySelectorAll('input[type="checkbox"]') ?? [])] as HTMLInputElement[];
-    act(() => { checks[0].click(); checks[1].click(); });
-    act(() => button("Preview analysis state").click());
-    expect(host?.querySelector('[role="status"]')?.textContent).toContain("No conversation was processed");
+    expect(checks).toHaveLength(10);
+    act(() => { checks[0].click(); });
+    act(() => button("Personalize My Divergence").click());
+    expect(host?.querySelector('[role="status"]')?.textContent).toContain("no eligible conversations");
+    expect(runOptimizer).not.toHaveBeenCalled();
     expect(useAccountStore.getState().optimizationRuns).toHaveLength(0);
   });
 

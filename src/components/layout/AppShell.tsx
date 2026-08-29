@@ -34,6 +34,13 @@ export function AppShell() {
   const currentScreen = useSessionStore((s) => s.currentScreen);
   const destination = useSessionStore((s) => s.destination);
   const quickTools = useAccountStore((s) => s.visibility.quickTools);
+  const personalDensity = useAccountStore((s) => s.learnedPreferences.personalization?.ui.density);
+  const personalProgressiveDisclosure = useAccountStore(
+    (s) => s.learnedPreferences.personalization?.ui.progressiveDisclosure,
+  );
+  const personalChoiceCount = useAccountStore(
+    (s) => s.learnedPreferences.personalization?.ui.preferredChoiceCount,
+  );
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [rightRailPanel, setRightRailPanel] = useState<string | null>(null);
   const canvasScaleForViewport = () => {
@@ -64,7 +71,16 @@ export function AppShell() {
 
   return <>
     <div className="fixed-canvas-stage">
-    <div className="app-shell app-layer" style={{ transform: `scale(${canvasScale})` }} data-layout-authority="frozen-reference-1600x1024">
+    <div
+      className="app-shell app-layer"
+      style={{ transform: `scale(${canvasScale})` }}
+      data-layout-authority="frozen-reference-1600x1024"
+      data-personal-density={personalDensity}
+      data-personal-progressive-disclosure={personalProgressiveDisclosure === undefined
+        ? undefined
+        : String(personalProgressiveDisclosure)}
+      data-personal-choice-count={personalChoiceCount}
+    >
       <header className="topbar" aria-label="Top bar" data-testid="topbar"><TopBar /></header>
       <nav className="col-left" aria-label="Primary navigation" data-testid="col-left"><LeftNav /></nav>
       <main className="col-center" data-testid="col-center"><div className="frozen-center-stack"><OperatorWorkspaceBar /><AppErrorBoundary resetKey={currentScreen}><ScreenRouter /></AppErrorBoundary><LocalDryRunPanel /><DevAdminPanel /></div></main>
@@ -86,4 +102,3 @@ export function AppShell() {
     <CostConfirm />
   </>;
 }
-

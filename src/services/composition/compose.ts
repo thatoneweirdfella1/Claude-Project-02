@@ -71,6 +71,9 @@ export interface CompositionInput {
   /** Included user-supplied references, kept separate from instructions in the
       final prompt. Excluded context remains stored but is not delivered. */
   context?: ContextItem[];
+  /** Evidence-validated customer defaults. Kept inside the fixed base-template
+      slot so the seven-section composition contract remains unchanged. */
+  personalizationInstructions?: string[];
 }
 
 export interface CompositionSection {
@@ -125,8 +128,20 @@ export function composeFinalPrompt(input: CompositionInput): ComposedPrompt {
         ].join("\n")),
       ].join("\n\n");
 
+  const personalizationInstructions = (input.personalizationInstructions ?? [])
+    .map((instruction) => instruction.replace(/\s+/g, " ").trim().slice(0, 500))
+    .filter(Boolean)
+    .slice(0, 12);
+  const personalizedDefaults = personalizationInstructions.length === 0
+    ? ""
+    : [
+        "LEARNED CUSTOMER DEFAULTS",
+        ...personalizationInstructions.map((instruction) => `- ${instruction}`),
+      ].join("\n");
+  const baseTemplate = [BASE_TEMPLATE, personalizedDefaults, attachedContext].filter(Boolean).join("\n\n");
+
   const contentByName: Record<CompositionSectionName, string> = {
-    "base-template": attachedContext ? `${BASE_TEMPLATE}\n\n${attachedContext}` : BASE_TEMPLATE,
+    "base-template": baseTemplate,
     "role-prime": rolePrime,
     question: input.question.trim(),
     directness: input.stateTone

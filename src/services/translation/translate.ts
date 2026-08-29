@@ -34,6 +34,22 @@ export interface TranslateOptions {
   client: TranslationModelClient;
   signal?: AbortSignal;
   maxInputChars?: number;
+  /** Versioned customer defaults. They guide interpretation but never
+      override the text currently being translated. */
+  personalizationInstructions?: string[];
+}
+
+function translationSystemPrompt(instructions: string[] | undefined): string {
+  const bounded = (instructions ?? [])
+    .map((instruction) => instruction.replace(/\s+/g, " ").trim().slice(0, 500))
+    .filter(Boolean)
+    .slice(0, 12);
+  if (bounded.length === 0) return TRANSLATION_SYSTEM_PROMPT;
+  return [
+    TRANSLATION_SYSTEM_PROMPT,
+    "LEARNED CUSTOMER DEFAULTS",
+    ...bounded.map((instruction) => `- ${instruction}`),
+  ].join("\n\n");
 }
 
 function errorMessage(error: unknown): string {
@@ -81,7 +97,7 @@ export async function translate(
   try {
     reply = await options.client({
       model: TRANSLATION_MODEL,
-      system: TRANSLATION_SYSTEM_PROMPT,
+      system: translationSystemPrompt(options.personalizationInstructions),
       input: text.trim(),
       signal: options.signal,
     });

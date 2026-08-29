@@ -91,6 +91,23 @@ describe("provider-neutral frozen flow", () => {
     expect(ready).not.toContain("EXCLUDED_CONTEXT_SENTINEL_93517");
   });
 
+  it("includes learned defaults in a free handoff while preserving request authority", () => {
+    const packet = compileMeaningPacket({
+      rawInput: "Give me all the details for this request.",
+      directness: 2,
+      techniques: ["auto-detect"],
+      context: [],
+      personalizationGuidance: [
+        "These are learned defaults only. The current request always overrides them.",
+        "Start with a concise answer.",
+      ],
+    });
+    const ready = buildAiReadyRequest(packet);
+    expect(ready).toContain("LEARNED CUSTOMER DEFAULTS");
+    expect(ready).toContain("current request always overrides");
+    expect(ready).toContain("Give me all the details for this request.");
+  });
+
   it("stores handoff and imported response as distinct message kinds", () => {
     const store = useSessionStore.getState();
     store.addMessage({

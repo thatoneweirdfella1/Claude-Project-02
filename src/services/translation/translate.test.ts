@@ -42,6 +42,22 @@ describe("translate — happy path", () => {
     expect(req.input).toBe("hello, a question"); // trimmed
   });
 
+  it("adds learned translation defaults without weakening the current-request override", async () => {
+    const client = vi.fn(async (_req: ModelCompletionRequest) => validReply);
+    await translate("Explain the current request", {
+      client,
+      personalizationInstructions: [
+        "These are learned defaults only. The current request always overrides them.",
+        "Preserve the customer's stated objective.",
+      ],
+    });
+    const req = client.mock.calls[0][0];
+    expect(req.system).toContain(TRANSLATION_SYSTEM_PROMPT);
+    expect(req.system).toContain("LEARNED CUSTOMER DEFAULTS");
+    expect(req.system).toContain("current request always overrides");
+    expect(req.system).toContain("Preserve the customer's stated objective");
+  });
+
   it("recovers JSON wrapped in code fences or prose", async () => {
     const fenced = "```json\n" + validReply + "\n```";
     const prosed = `Sure! Here you go: ${validReply} Hope that helps.`;

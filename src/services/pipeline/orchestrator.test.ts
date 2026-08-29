@@ -170,6 +170,28 @@ describe("runPipeline — a confident question flows through all five stages", (
     expect(byKind(events, "composed").composed.prompt).toContain(editedRequest);
     expect(byKind(events, "done").done.text).toBe(ANSWER_TOKENS.join(""));
   });
+
+  it("carries learned defaults through translation and final composition", async () => {
+    const completeSpy = vi.fn(async () => translationJson());
+    const events = await collect(
+      runPipeline(request("Explain entanglement."), {
+        client: stubClient({ complete: completeSpy }),
+        plan: "free",
+        translationPersonalization: [
+          "The current request always overrides learned defaults.",
+          "Preserve the stated objective.",
+        ],
+        responsePersonalization: [
+          "The current request always overrides learned defaults.",
+          "Start with a concise answer.",
+        ],
+      }),
+    );
+    expect(completeSpy.mock.calls[0][0].system).toContain("Preserve the stated objective");
+    const prompt = byKind(events, "composed").composed.prompt;
+    expect(prompt).toContain("LEARNED CUSTOMER DEFAULTS");
+    expect(prompt).toContain("Start with a concise answer");
+  });
 });
 
 describe("runPipeline — the confidence gates", () => {

@@ -124,17 +124,61 @@ export interface ManualPaymentRequest {
   status: "pending" | "approved" | "rejected";
 }
 
-/** User-facing personalization choices. Conversation selection is
-    intentionally absent: the optimizer evaluates all eligible saved
-    conversations and lets the user choose only the outcome to improve. */
+/** Frozen customer-facing personalization choices. Conversation, dataset,
+    model, and output controls are intentionally absent: the customer chooses
+    only the area of their own Divergence experience that may change. */
 export type OptimizationGoalId =
-  | "reduce-overwhelm"
-  | "recover-frustration"
-  | "increase-clarity"
-  | "right-size-detail"
-  | "support-completion";
+  | "C01"
+  | "C02"
+  | "C03"
+  | "C04"
+  | "C05"
+  | "C06"
+  | "C07"
+  | "C08"
+  | "C09"
+  | "C10";
+
+export type PersonalizationEvidenceKind = "explicit" | "inferred";
+export type PersonalizationEvidenceStrength = "direct" | "repeated" | "mixed";
+export type PersonalizationDensity = "compact" | "balanced" | "spacious";
+
+export interface PersonalizationRule {
+  id: string;
+  categoryId: OptimizationGoalId;
+  datasetIds: string[];
+  instruction: string;
+  contexts: string[];
+  exclusions: string[];
+  evidenceIds: string[];
+  counterEvidenceIds: string[];
+  evidenceKind: PersonalizationEvidenceKind;
+  evidenceStrength: PersonalizationEvidenceStrength;
+  confidence: number;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface PersonalizationUiPreferences {
+  density?: PersonalizationDensity;
+  progressiveDisclosure?: boolean;
+  preferredChoiceCount?: 1 | 2 | 3;
+}
+
+/** Versioned, customer-specific output of the Extraction/Optimizer. */
+export interface CustomerPersonalizationProfile {
+  schemaVersion: 1;
+  version: number;
+  rules: Partial<Record<OptimizationGoalId, PersonalizationRule[]>>;
+  ui: PersonalizationUiPreferences;
+  /** Category -> session id -> content fingerprint. Enables safe incremental
+      runs without treating an old scan as evidence for a newly selected area. */
+  processedSessionHashes: Partial<Record<OptimizationGoalId, Record<string, string>>>;
+  updatedAt: number | null;
+}
 
 export interface OptimizationProfile {
+  schemaVersion: 1;
   enabled: boolean;
   selectedGoals: OptimizationGoalId[];
   minimumEvidence: number;
@@ -142,15 +186,25 @@ export interface OptimizationProfile {
 }
 
 export interface OptimizationEvidenceRef {
+  id?: string;
+  categoryId?: OptimizationGoalId;
+  datasetIds?: string[];
   sessionId: string;
   messageId: string;
+  messageIndex?: number;
+  role?: MessageRole;
   timestamp: number;
   excerpt: string;
   signal: string;
+  contextBefore?: string;
+  contextAfter?: string;
+  observedOutcome?: string;
+  explicit?: boolean;
 }
 
 export interface OptimizationChange {
   target: string;
+  categoryId?: OptimizationGoalId;
   before: string;
   after: string;
   reason: string;
@@ -158,7 +212,7 @@ export interface OptimizationChange {
   evidenceCount: number;
 }
 
-export type OptimizationRunStatus = "preview" | "applied" | "failed" | "bad" | "rolled-back";
+export type OptimizationRunStatus = "preview" | "applied" | "no-change" | "failed" | "bad" | "rolled-back";
 
 export interface OptimizationRun {
   id: string;
@@ -166,6 +220,7 @@ export interface OptimizationRun {
   goals: OptimizationGoalId[];
   status: OptimizationRunStatus;
   scannedSessions: number;
+  skippedUnchangedSessions?: number;
   evidence: OptimizationEvidenceRef[];
   changes: OptimizationChange[];
   beforePreferences: LearnedPreferences;
@@ -512,6 +567,9 @@ export interface VisibilitySettings {
 export interface LearnedPreferences {
   routing: Record<string, unknown>;
   technique: Record<string, TechniquePreference>;
+  /** Customer optimizer output. Optional so every pre-optimizer persisted
+      account remains readable and receives an empty profile lazily. */
+  personalization?: CustomerPersonalizationProfile;
 }
 
 /* One technique's learned weight (Step 10.2). `weight` is a small signed

@@ -156,4 +156,21 @@ describe("composeFinalPrompt — assembly rules", () => {
     expect(prompt).not.toContain("Old notes");
     expect(prompt).not.toContain("UNIQUE_EXCLUDED_FACT_9914");
   });
+
+  it("keeps learned response defaults inside the existing base-template slot", () => {
+    const composed = composeFinalPrompt({
+      question: "Give me the full walkthrough this time.",
+      personalizationInstructions: [
+        "These are learned defaults only; the current request always overrides them.",
+        "Start with a concise answer.",
+      ],
+    });
+    expect(composed.order).toBe(COMPOSITION_ORDER);
+    expect(composed.sections).toHaveLength(7);
+    expect(composed.sections[0].name).toBe("base-template");
+    expect(composed.sections[0].content).toContain("LEARNED CUSTOMER DEFAULTS");
+    expect(composed.sections[0].content).toContain("current request always overrides");
+    expect(composed.sections.find((section) => section.name === "question")?.content)
+      .toBe("Give me the full walkthrough this time.");
+  });
 });

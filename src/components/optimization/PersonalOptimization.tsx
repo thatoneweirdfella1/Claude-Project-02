@@ -1,22 +1,25 @@
-import { useMemo, useState } from "react";
-import { BrainCircuit, RotateCcw, ShieldCheck, Sparkles } from "lucide-react";
-import { runPersonalOptimizationWithAi } from "../../services/optimization";
+import { useState } from "react";
+import { BrainCircuit, RotateCcw, Sparkles } from "lucide-react";
+import { runPersonalOptimizationWithAi } from "../../services/optimization/personalOptimizationRunner";
+import { CUSTOMER_OPTIMIZER_CATEGORIES } from "../../services/optimization/customerOptimizerRegistry";
 import { saveNow } from "../../services/persistence";
 import { useAccountStore } from "../../stores/accountStore";
 import { useSessionStore } from "../../stores/sessionStore";
 import type { OptimizationGoalId, SessionRecord } from "../../stores/types";
 
-const GOALS: Array<{ id: OptimizationGoalId; label: string; description: string }> = [
-  { id: "reduce-overwhelm", label: "Reduce Overwhelm", description: "Use less cognitive load when overload signals appear." },
-  { id: "recover-frustration", label: "Recover From Frustration", description: "Respond better when the conversation goes off track." },
-  { id: "increase-clarity", label: "Improve Clarity", description: "Favor explanations that are easier to understand." },
-  { id: "right-size-detail", label: "Match My Detail Level", description: "Learn when responses feel too long, short, or dense." },
-  { id: "support-completion", label: "Support Follow-Through", description: "Shape responses around resuming and completing tasks." },
-];
+type OptimizerRunner = typeof runPersonalOptimizationWithAi;
 
-export function PersonalOptimization() {
+export interface PersonalOptimizationProps {
+  /** Test seam; production always uses the evidence validator above. */
+  runOptimizer?: OptimizerRunner;
+}
+
+export function PersonalOptimization({
+  runOptimizer = runPersonalOptimizationWithAi,
+}: PersonalOptimizationProps) {
   const profile = useAccountStore((state) => state.optimizationProfile);
   const sessions = useAccountStore((state) => state.sessions);
+  const ratings = useAccountStore((state) => state.ratings);
   const learnedPreferences = useAccountStore((state) => state.learnedPreferences);
   const runs = useAccountStore((state) => state.optimizationRuns);
   const appMode = useAccountStore((state) => state.appMode);
@@ -27,22 +30,8 @@ export function PersonalOptimization() {
   const rollback = useAccountStore((state) => state.rollbackOptimizationRun);
   const currentConversation = useSessionStore((state) => state.conversation);
   const [status, setStatus] = useState("");
-
-  const eligibleSessions = useMemo(() => {
-    if (currentConversation.length === 0) return sessions;
-    const current: SessionRecord = {
-      id: "current-session",
-      createdAt: currentConversation[0]?.timestamp ?? Date.now(),
-      archived: false,
-      model: useSessionStore.getState().model,
-      directness: useSessionStore.getState().directness,
-      techniques: useSessionStore.getState().techniques,
-      context: useSessionStore.getState().context,
-      variables: useSessionStore.getState().variables,
-      conversation: currentConversation,
-    };
-    return [...sessions, current];
-  }, [currentConversation, sessions]);
+  const [busy, setBusy] = useState(false);
+  const currentPreferencesSnapshot = appMode === "developer" ? JSON.stringify(learnedPreferences) : "";
 
   const toggleGoal = (goal: OptimizationGoalId) => {
     setGoals(
@@ -52,65 +41,119 @@ export function PersonalOptimization() {
     );
   };
 
-  const analyze = async (apply: boolean) => {
+  const personalize = async () => {
+    if (busy) return;
     if (profile.selectedGoals.length === 0) {
       setStatus("Choose at least one area to personalize.");
       return;
     }
-    const run = await runPersonalOptimizationWithAi({
-      sessions: eligibleSessions,
-      goals: profile.selectedGoals,
-      currentPreferences: learnedPreferences,
-      minimumEvidence: profile.minimumEvidence,
-      apply,
-    });
-    if (!run) {
-      setStatus("Optimization cancelled. No conversations were processed and no profile changes were made.");
+    if (sessions.length === 0 && currentConversation.length === 0) {
+      setStatus("There are no eligible conversations yet. Your profile was not changed.");
       return;
     }
-    recordRun(run);
-    await saveNow();
-    setStatus(`${run.summary} Scanned ${run.scannedSessions} conversation${run.scannedSessions === 1 ? "" : "s"} and found ${run.evidence.length} matching examples.`);
+
+    const sessionState = useSessionStore.getState();
+    const eligibleSessions: SessionRecord[] = currentConversation.length === 0
+      ? sessions
+      : [...sessions, {
+          id: "current-session",
+          createdAt: currentConversation[0]?.timestamp ?? Date.now(),
+          archived: false,
+          model: sessionState.model,
+          destination: sessionState.destination,
+          translatorEngine: sessionState.translatorEngine,
+          reviewBeforeSend: sessionState.reviewBeforeSend,
+          paidFallbackEnabled: sessionState.paidFallbackEnabled,
+          maxRequestCost: sessionState.maxRequestCost,
+          directness: sessionState.directness,
+          techniques: sessionState.techniques,
+          context: sessionState.context,
+          variables: sessionState.variables,
+          conversation: currentConversation,
+        }];
+
+    setBusy(true);
+    setStatus("Reviewing new and changed conversations…");
+    try {
+      const run = await runOptimizer({
+        sessions: eligibleSessions,
+        ratings,
+        goals: profile.selectedGoals,
+        currentPreferences: learnedPreferences,
+        minimumEvidence: profile.minimumEvidence,
+        apply: true,
+      });
+      if (!run) {
+        setStatus("Personalization was cancelled. No conversations were processed and your profile was not changed.");
+        return;
+      }
+      const accountBeforeRecord = useAccountStore.getState();
+      recordRun(run);
+      if (run.status === "applied" || run.status === "no-change") setEnabled(true);
+      try {
+        await saveNow();
+      } catch {
+        useAccountStore.setState({
+          learnedPreferences: accountBeforeRecord.learnedPreferences,
+          optimizationProfile: accountBeforeRecord.optimizationProfile,
+          optimizationRuns: accountBeforeRecord.optimizationRuns,
+        });
+        setStatus("Personalization could not be saved, so your profile remains unchanged.");
+        return;
+      }
+      const skipped = run.skippedUnchangedSessions
+        ? ` Skipped ${run.skippedUnchangedSessions} unchanged category-conversation scan${run.skippedUnchangedSessions === 1 ? "" : "s"}.`
+        : "";
+      setStatus(`${run.summary} Reviewed ${run.scannedSessions} new or changed conversation${run.scannedSessions === 1 ? "" : "s"}.${skipped}`);
+    } catch (error) {
+      setStatus(`Personalization stopped without changing your profile: ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
     <section className="settings-section optimization-panel" aria-labelledby="optimization-title">
       <div className="optimization-panel__heading">
         <div className="optimization-panel__title">
-          <BrainCircuit size={21} />
+          <BrainCircuit size={21} aria-hidden="true" />
           <div>
-            <h3 id="optimization-title">Personal Optimization</h3>
-            <p className="settings-section__note">Choose what should improve. Divergence reviews eligible conversations automatically.</p>
+            <h3 id="optimization-title">Personalize My Divergence</h3>
+            <p className="settings-section__note">
+              Choose the parts of your experience Divergence may learn from your conversations. Unchecked areas stay unchanged.
+            </p>
           </div>
         </div>
-        <label className="optimization-switch">
-          <input type="checkbox" checked={profile.enabled} onChange={(event) => setEnabled(event.target.checked)} />
-          <span>{profile.enabled ? "On" : "Off"}</span>
-        </label>
       </div>
 
-      <div className="optimization-goals">
-        {GOALS.map((goal) => (
-          <label key={goal.id} className={`optimization-goal ${profile.selectedGoals.includes(goal.id) ? "is-selected" : ""}`}>
-            <input type="checkbox" checked={profile.selectedGoals.includes(goal.id)} onChange={() => toggleGoal(goal.id)} />
-            <span><strong>{goal.label}</strong><small>{goal.description}</small></span>
+      <fieldset className="optimization-goals">
+        <legend className="sr-only">Areas Divergence may personalize</legend>
+        {CUSTOMER_OPTIMIZER_CATEGORIES.map((category) => (
+          <label
+            key={category.id}
+            className={`optimization-goal ${profile.selectedGoals.includes(category.id) ? "is-selected" : ""}`}
+          >
+            <input
+              type="checkbox"
+              checked={profile.selectedGoals.includes(category.id)}
+              onChange={() => toggleGoal(category.id)}
+            />
+            <span>
+              <strong>{category.label}</strong>
+              <small>{category.description}</small>
+            </span>
           </label>
         ))}
-      </div>
+      </fieldset>
 
       <div className="optimization-panel__actions">
-        <button type="button" disabled={!profile.enabled} onClick={() => void analyze(true)}>
-          <Sparkles size={16} /> Analyze &amp; Apply
+        <button type="button" disabled={busy} onClick={() => void personalize()}>
+          <Sparkles size={16} aria-hidden="true" /> {busy ? "Personalizing…" : "Personalize My Divergence"}
         </button>
-        {appMode === "developer" && (
-          <button type="button" className="secondary" onClick={() => void analyze(false)}>
-            <ShieldCheck size={16} /> Preview Only
-          </button>
-        )}
       </div>
-      {status && <p className="optimization-panel__status" role="status">{status}</p>}
+      {status ? <p className="optimization-panel__status" role="status">{status}</p> : null}
 
-      {appMode === "developer" && runs.length > 0 && (
+      {appMode === "developer" && runs.length > 0 ? (
         <details className="optimization-diagnostics">
           <summary>Developer diagnostics ({runs.length} runs)</summary>
           {[...runs].reverse().slice(0, 5).map((run) => (
@@ -121,13 +164,20 @@ export function PersonalOptimization() {
               </div>
               <p>{run.summary}</p>
               <div className="optimization-diagnostics__actions">
-                {run.status === "applied" && <button type="button" onClick={() => { rollback(run.id); void saveNow(); }}><RotateCcw size={13} /> Roll back</button>}
-                {run.status !== "bad" && <button type="button" onClick={() => { markBad(run.id); void saveNow(); }}>Mark bad</button>}
+                {run.status === "applied"
+                  && currentPreferencesSnapshot === JSON.stringify(run.afterPreferences) ? (
+                  <button type="button" onClick={() => { rollback(run.id); void saveNow(); }}>
+                    <RotateCcw size={13} aria-hidden="true" /> Roll back
+                  </button>
+                ) : null}
+                {run.status !== "bad" ? (
+                  <button type="button" onClick={() => { markBad(run.id); void saveNow(); }}>Mark bad</button>
+                ) : null}
               </div>
             </article>
           ))}
         </details>
-      )}
+      ) : null}
     </section>
   );
 }

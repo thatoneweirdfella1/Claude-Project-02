@@ -10,6 +10,8 @@ import {
 } from "./accountStore";
 import type {
   LearningAuditEntry,
+  OptimizationProfile,
+  OptimizationRun,
   PromptTemplate,
   Rating,
   SavedPrompt,
@@ -82,6 +84,7 @@ describe("createInitialAccountState", () => {
     expect(state.appMode).toBe("user");
     expect(state.creditLedger).toEqual([]);
     expect(state.manualPaymentRequests).toEqual([]);
+    expect(state.optimizationProfile.schemaVersion).toBe(1);
     expect(state.optimizationProfile.selectedGoals).toEqual([]);
     expect(state.optimizationRuns).toEqual([]);
     expect(state.archivedPairs).toEqual([]);
@@ -383,6 +386,84 @@ describe("sessions", () => {
     useAccountStore.getState().addSessionRecord({ ...SESSION_RECORD, id: "r2" });
     expect(useAccountStore.getState().sessions).toHaveLength(2);
     expect(useAccountStore.getState().sessions[0]).toBe(firstRef); // untouched by the second append
+  });
+});
+
+describe("customer optimization state", () => {
+  it("applies no-change runs so incremental scan checkpoints are durable", () => {
+    const before = { routing: {}, technique: {} };
+    const after = {
+      ...before,
+      personalization: {
+        schemaVersion: 1 as const,
+        version: 0,
+        rules: {},
+        ui: {},
+        processedSessionHashes: { C01: { s1: "hash-1" } },
+        updatedAt: null,
+      },
+    };
+    const run: OptimizationRun = {
+      id: "run-1",
+      timestamp: 100,
+      goals: ["C01"],
+      status: "no-change",
+      scannedSessions: 1,
+      evidence: [],
+      changes: [],
+      beforePreferences: before,
+      afterPreferences: after,
+      summary: "No validated changes.",
+    };
+    useAccountStore.getState().recordOptimizationRun(run);
+    expect(useAccountStore.getState().learnedPreferences).toEqual(after);
+    expect(useAccountStore.getState().optimizationProfile.lastRunAt).toBe(100);
+  });
+
+  it("filters legacy prototype goals during hydration", () => {
+    const selectedGoals = ["reduce-overwhelm", "C04"] as unknown as OptimizationProfile["selectedGoals"];
+    useAccountStore.getState().hydrate({
+      optimizationProfile: {
+        schemaVersion: 1,
+        enabled: true,
+        selectedGoals,
+        minimumEvidence: 3,
+        lastRunAt: null,
+      },
+    });
+    expect(useAccountStore.getState().optimizationProfile.selectedGoals).toEqual(["C04"]);
+  });
+
+  it("rolls back only the current applied snapshot and never erases newer learning", () => {
+    const before = { routing: {}, technique: {} };
+    const after = {
+      routing: {},
+      technique: { simplify: { weight: 1, lastAdjustedAt: 100, totalAdjustments: 1 } },
+    };
+    const run: OptimizationRun = {
+      id: "run-applied",
+      timestamp: 100,
+      goals: ["C04"],
+      status: "applied",
+      scannedSessions: 1,
+      evidence: [],
+      changes: [],
+      beforePreferences: before,
+      afterPreferences: after,
+      summary: "Applied.",
+    };
+    useAccountStore.getState().recordOptimizationRun(run);
+    expect(useAccountStore.getState().rollbackOptimizationRun(run.id)).toBe(true);
+    expect(useAccountStore.getState().learnedPreferences).toEqual(before);
+
+    resetStore();
+    useAccountStore.getState().recordOptimizationRun(run);
+    useAccountStore.getState().setLearnedPreferences({
+      ...after,
+      routing: { newer: true },
+    });
+    expect(useAccountStore.getState().rollbackOptimizationRun(run.id)).toBe(false);
+    expect(useAccountStore.getState().learnedPreferences.routing).toEqual({ newer: true });
   });
 });
 
