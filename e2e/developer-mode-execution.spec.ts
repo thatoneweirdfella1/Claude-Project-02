@@ -138,6 +138,9 @@ test("Developer Mode: Conversation persists on reload", async ({ page }) => {
   // Wait for page to stabilize after reload
   await page.waitForTimeout(1000);
 
+  // Restore last work if prompted after reload
+  await restoreLastWorkIfPrompted(page);
+
   // Verify conversation persisted
   await expect(page.locator(".message-bubble--user").first()).toContainText(QUESTION, { timeout: 10_000 });
   await expect(page.locator(".message-bubble--assistant").first()).toContainText("Persistent answer");
