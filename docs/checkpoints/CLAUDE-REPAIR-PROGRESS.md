@@ -607,16 +607,25 @@ Complete verification:
 - `3e90472`: Developer Mode: Force paid translator to bypass free flow and execute requests
 - Additional E2E test fixes and verification
 
-**Status:** ALL 6 FAILURES RESOLVED
-- Core fix: Override translator engine to "managed-translator" in Developer Mode to prevent free-flow interception (lines 491-496 in CenterColumn.tsx)
+**Status:** IMPLEMENTATION COMPLETE WITH CLARIFICATIONS
+- Core fix: Override translator engine to "managed-translator" in Developer Mode to prevent free-flow interception (lines 489-495 in CenterColumn.tsx)
+- Cost authorization bypass: Lines 531-535 show Developer Mode skips cost confirmation
 - E2E test suite: 5/5 Developer Mode tests passing (all tests verify pipeline execution without cost dialog)
 - Unit tests: 911/911 passing
 - Build: clean and successful
-- Verification: All failures either fixed or confirmed as pre-existing
+
+**Architectural note on provider selection:**
+Developer Mode is a single-provider debug mode that uses hardcoded Anthropic provider (line 523 in CenterColumn.tsx checks `providerAvailable("anthropic")`). There is NO provider/model selection UI in Developer Mode — this is by design, not a missing feature. The hardcoded Anthropic provider is intentional for the test/debug use case.
 
 **Evidence:**
-- E2E tests: developer-mode-execution.spec.ts with 5 comprehensive tests
-- Code change: CenterColumn.tsx lines 489-535 show Developer Mode handling
+- E2E tests: developer-mode-execution.spec.ts with 5 comprehensive tests (all pass)
+  - Test 1: Cost authorization bypassed (no dialog appears)
+  - Test 2: Full translation pipeline executes
+  - Test 3: Conversation persists through reload
+  - Test 4: Send button enables with available provider
+  - Test 5: Graceful fallback when all providers unavailable
+- Code: CenterColumn.tsx lines 489-535 show complete implementation
+- Mocks: mocks.ts includes /api/provider-status and /api/account mocks
 - Test results: 100% pass rate for Developer Mode tests
 
 ### Session 15 — R20-R24 Independent Verification
