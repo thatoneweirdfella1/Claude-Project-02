@@ -3,9 +3,9 @@
 **Document role:** Customer-product scope and dataset registry  
 **Product:** Divergent User Interface  
 **Engine:** Divergent User Interface Extraction/Optimizer  
-**Version:** Proposed 1.0  
-**Approval state:** DATASET AND CHECKBOX LIST AWAITING OPERATOR APPROVAL  
-**Frozen now:** Product identity, customer workflow, and separation from the personal extraction program
+**Version:** FROZEN 1.0  
+**Approval state:** APPROVED AND FROZEN 2026-08-29  
+**Frozen now:** Product identity, customer workflow, C01–C10 checkbox labels, 50-dataset mapping, and separation from the personal extraction program
 
 ## 1. Product purpose
 
@@ -31,7 +31,7 @@ An unchecked item means: do not analyze or alter that category during this run. 
 
 Progress and a final status message may be displayed, but they must not introduce additional customer decisions.
 
-## 3. Proposed customer checklist
+## 3. Frozen customer checklist
 
 These are plain-language customer choices. The technical datasets remain hidden.
 
@@ -48,7 +48,7 @@ These are plain-language customer choices. The technical datasets remain hidden.
 | C09 | **Personalize Encouragement and Emotional Support** | Learn which forms of acknowledgment, reassurance, encouragement, urgency, or accountability help or harm. |
 | C10 | **Adapt the Interface and Workflow to Me** | Learn supported preferences about information density, visible tools, defaults, navigation, notifications, and workflow. |
 
-Nothing in this proposed list becomes implementation authority until the operator approves it. Approval freezes the labels and dataset mapping as version 1.0.
+This checklist and its dataset mapping are implementation authority for version 1.0. Adding, removing, renaming, merging, or reassigning a checkbox or dataset requires a versioned specification change.
 
 ## 4. Checkbox-to-dataset mapping
 
@@ -235,14 +235,10 @@ This system is not the personal general-purpose extraction program. It must not 
 
 Those capabilities belong only to the separate personal general-purpose extraction program.
 
-## 11. Approval gate
+## 11. Freeze record
 
-No implementation may treat the proposed checkbox labels or dataset registry as frozen until the operator explicitly approves them.
-
-After approval:
-
-1. Change this document to **FROZEN 1.0**.
-2. Record the approval date and approved commit.
-3. Implement only the frozen checkbox-to-dataset mapping.
-4. Require a versioned specification change before adding, removing, renaming, merging, or reassigning any checkbox or dataset.
+- **Operator approval date:** 2026-08-29
+- **Approved implementation commit:** `cb2687c49aea9c92d9887aedd4dad449e37cbc34`
+- **Frozen mapping:** C01–C10 and G01-D01 through G10-D05 exactly as recorded above
+- **Change control:** Any addition, removal, rename, merge, or reassignment requires a versioned specification change and new operator approval.
 
