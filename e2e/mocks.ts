@@ -114,6 +114,17 @@ const SYNTHESIS_REPLY = {
     route for a URL first, so a test-specific route added after this call
     still wins. */
 export async function installModelMocks(page: Page, answer: MockAnswer): Promise<void> {
+  await page.route("**/api/account", async (route: Route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        configured: false,
+        user: null,
+      }),
+    });
+  });
+
   await page.route("**/api/verify-access", async (route: Route) => {
     await route.fulfill({
       status: 200,
