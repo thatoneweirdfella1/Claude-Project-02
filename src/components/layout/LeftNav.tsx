@@ -22,7 +22,7 @@ export function LeftNav() {
   const setScreenLocation = useSessionStore((s) => s.setScreenLocation);
   const [toolsOpen, setToolsOpen] = useState(false);
   const [toolQuery, setToolQuery] = useState("");
-  const [pinnedTool, setPinnedTool] = useState<NavigationEntry | null>(null);
+  const [pinnedTools, setPinnedTools] = useState<NavigationEntry[]>([]);
   const [statusOpen, setStatusOpen] = useState(false);
   const visibleTools = TOOL_NAVIGATION.filter((tool) => tool.label.toLowerCase().includes(toolQuery.toLowerCase()));
 
@@ -41,10 +41,10 @@ export function LeftNav() {
             <Icon size={23} strokeWidth={1.8} aria-hidden="true" /><span>{label}</span>
           </button>;
         })}
-        {pinnedTool && <div className="leftnav-pinned">
-          <button type="button" className={"leftnav-item " + (isSameLocation(currentScreen, currentSection, pinnedTool) ? "leftnav-item--active" : "")} onClick={() => navigate(pinnedTool.screen, pinnedTool.section)}><Pin size={20} /><span>{pinnedTool.label}</span></button>
-          <button type="button" aria-label={`Unpin ${pinnedTool.label}`} title={`Unpin ${pinnedTool.label}`} onClick={() => setPinnedTool(null)}><PinOff size={15} /></button>
-        </div>}
+        {pinnedTools.map((tool) => <div className="leftnav-pinned" key={tool.id}>
+          <button type="button" className={"leftnav-item " + (isSameLocation(currentScreen, currentSection, tool) ? "leftnav-item--active" : "")} onClick={() => navigate(tool.screen, tool.section)}><Pin size={20} /><span>{tool.label}</span></button>
+          <button type="button" aria-label={`Remove ${tool.label} from sidebar`} title={`Remove ${tool.label} from sidebar`} onClick={() => setPinnedTools((items) => items.filter((item) => item.id !== tool.id))}><PinOff size={15} /></button>
+        </div>)}
         <div className="leftnav-tools">
           <button type="button" className="leftnav-item" aria-haspopup="dialog" aria-expanded={toolsOpen} onClick={() => { setToolsOpen((value) => !value); setStatusOpen(false); }}>
             <Boxes size={23} strokeWidth={1.8} aria-hidden="true" /><span>All Tools</span>
@@ -59,10 +59,19 @@ export function LeftNav() {
                 onChange={(event) => setToolQuery(event.target.value)}
                 style={{ width: "100%", padding: "8px 9px", border: "1px solid var(--frozen-border)", borderRadius: 5, background: "var(--frozen-overlay-solid)", color: "var(--frozen-text)" }}
               />
-              {visibleTools.map((tool) => <div className="leftnav-tools__row" key={tool.id}>
-                <button type="button" onClick={() => navigate(tool.screen, tool.section)}><Wrench size={15} />{tool.label}</button>
-                <button type="button" aria-label={`Pin ${tool.label}`} title={`Pin ${tool.label}`} onClick={() => setPinnedTool(tool)}><Pin size={14} /></button>
-              </div>)}
+              {visibleTools.map((tool) => {
+                const isPinned = pinnedTools.some((item) => item.id === tool.id);
+                return <div className="leftnav-tools__row" key={tool.id}>
+                  <button type="button" onClick={() => navigate(tool.screen, tool.section)}><Wrench size={15} />{tool.label}</button>
+                  <button
+                    type="button"
+                    aria-pressed={isPinned}
+                    aria-label={isPinned ? `Remove ${tool.label} from sidebar` : `Add ${tool.label} to sidebar`}
+                    title={isPinned ? "Remove from sidebar" : "Add to sidebar"}
+                    onClick={() => setPinnedTools((items) => isPinned ? items.filter((item) => item.id !== tool.id) : [...items, tool])}
+                  >{isPinned ? <PinOff size={14} /> : <Pin size={14} />}</button>
+                </div>;
+              })}
               {visibleTools.length === 0 && <p>No matching tools.</p>}
             </div>
           )}
