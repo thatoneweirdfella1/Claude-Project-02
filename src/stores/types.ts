@@ -697,6 +697,8 @@ export interface MultiAiRunRecord {
       debate order — attribution preserved even for failed sides. */
   participants: MultiAiParticipantResult[];
   status: MultiAiRunStatus;
+  /** A no-charge persisted source bundle prepared before any provider call. */
+  workflowStage?: "local-preparation";
   consensus?: MultiAiConsensusRecord;
   synthesis?: MultiAiSynthesisRecord;
   totalEstimatedCost: number;

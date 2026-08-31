@@ -49,9 +49,16 @@ export function MultiAiRunHistory({ sourceMessageIds }: MultiAiRunHistoryProps) 
       {visible.map((run) => (
         <details key={run.id} className={`multi-ai-run-history__run multi-ai-run-history__run--${run.status}`} data-testid="multi-ai-run">
           <summary>
-            <span className="multi-ai-run-history__status" role="status">{STATUS_LABEL[run.status]}</span>
+            <span className="multi-ai-run-history__status" role="status">{run.workflowStage === "local-preparation" ? "Local preparation" : STATUS_LABEL[run.status]}</span>
             <span className="multi-ai-run-history__question">{run.question.slice(0, 80)}{run.question.length > 80 ? "…" : ""}</span>
           </summary>
+
+          {run.workflowStage === "local-preparation" && (
+            <div className="multi-ai-run-history__source-handoff">
+              <p>Persisted source handoff · no provider request sent</p>
+              <pre>{run.question}</pre>
+            </div>
+          )}
 
           <ul className="multi-ai-run-history__participants">
             {run.participants.map((p) => (
@@ -85,7 +92,9 @@ export function MultiAiRunHistory({ sourceMessageIds }: MultiAiRunHistoryProps) 
           )}
 
           <p className="multi-ai-run-history__total">
-            Total — estimated {formatCost(run.totalEstimatedCost)} · actual {formatCost(run.totalActualCost)}
+            {run.workflowStage === "local-preparation"
+              ? "No Divergence credits"
+              : <>Total — estimated {formatCost(run.totalEstimatedCost)} · actual {formatCost(run.totalActualCost)}</>}
           </p>
         </details>
       ))}

@@ -26,12 +26,15 @@ describe("R20: buildMessageSelection", () => {
   });
 
   it("selects a contiguous range and preserves conversation order regardless of click order", () => {
-    // Selected out of order (m3 then m1) — output should still be in
-    // conversation order, not selection order.
+    // The two selected ids are range boundaries. The assistant turn between
+    // them is part of the source conversation and must not disappear.
     const bundle = buildMessageSelection(CONVERSATION, ["m3", "m1"]);
-    expect(bundle?.sourceMessageIds).toEqual(["m1", "m3"]);
+    expect(bundle?.sourceMessageIds).toEqual(["m1", "m2", "m3"]);
     const idx1 = bundle!.contextBundle.indexOf("What is event sourcing?");
+    const idx2 = bundle!.contextBundle.indexOf("It's a pattern where state changes are stored as events.");
     const idx3 = bundle!.contextBundle.indexOf("Should we migrate to it?");
+    expect(idx1).toBeLessThan(idx2);
+    expect(idx2).toBeLessThan(idx3);
     expect(idx1).toBeLessThan(idx3);
   });
 
@@ -50,9 +53,9 @@ describe("R20: buildMessageSelection", () => {
     expect(bundle?.contextBundle).toContain("ChatGPT: Imported answer.");
   });
 
-  it("ignores ids not present in the conversation while keeping the valid ones", () => {
+  it("ignores unknown ids and uses the remaining valid ids as range boundaries", () => {
     const bundle = buildMessageSelection(CONVERSATION, ["m1", "not-real", "m4"]);
-    expect(bundle?.sourceMessageIds).toEqual(["m1", "m4"]);
+    expect(bundle?.sourceMessageIds).toEqual(["m1", "m2", "m3", "m4"]);
   });
 
   it("never fabricates content — the bundle is exactly the selected messages' real text", () => {

@@ -23,9 +23,16 @@ export function buildMessageSelection(
   selectedIds: string[],
 ): MessageSelectionBundle | null {
   if (selectedIds.length === 0) return null;
-  const idSet = new Set(selectedIds);
-  const selected = conversation.filter((m) => idSet.has(m.id));
-  if (selected.length === 0) return null;
+  const selectedIndexes = selectedIds
+    .map((id) => conversation.findIndex((message) => message.id === id))
+    .filter((index) => index >= 0);
+  if (selectedIndexes.length === 0) return null;
+  const first = Math.min(...selectedIndexes);
+  const last = Math.max(...selectedIndexes);
+  // The selected IDs are range boundaries. Preserve every real turn between
+  // them, including assistant/imported replies, so the reviewed bundle is
+  // the actual contiguous conversation rather than two disconnected prompts.
+  const selected = conversation.slice(first, last + 1);
 
   const contextBundle = selected
     .map((m) => `${m.role === "user" ? "You" : (m.sourceLabel || "Assistant")}: ${m.content.trim()}`)

@@ -4,6 +4,10 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { MessageSourceSelector } from "./MessageSourceSelector";
 import { createInitialSessionState, useSessionStore } from "../../stores/sessionStore";
 
+vi.mock("../../services/persistence", () => ({
+  saveNow: vi.fn().mockResolvedValue(undefined),
+}));
+
 /* R20: Select Unresolved Conversation — the user can select one message or
    a range, review the exact resulting context bundle, and clear back to no
    selection (the default "most recent question" behavior). */
@@ -42,6 +46,12 @@ function checkbox(text: string) {
   return input;
 }
 
+function button(selector: string) {
+  const element = host?.querySelector(selector);
+  if (!(element instanceof HTMLButtonElement)) throw new Error(`Missing button: ${selector}`);
+  return element;
+}
+
 describe("R20: MessageSourceSelector", () => {
   it("renders nothing when the conversation has no user messages", () => {
     const onSelectionChange = vi.fn();
@@ -49,15 +59,15 @@ describe("R20: MessageSourceSelector", () => {
     expect(host?.querySelector("[data-testid='multi-ai-source-selector']")).toBeNull();
   });
 
-  it("lists every user message as a selectable option", () => {
+  it("lists every turn so a source range cannot silently omit assistant context", () => {
     seedConversation();
     const onSelectionChange = vi.fn();
     mount(<MessageSourceSelector onSelectionChange={onSelectionChange} />);
 
-    const toggle = host?.querySelector("button.multi-ai-source-selector__toggle");
-    act(() => toggle?.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+    act(() => button("button.multi-ai-source-selector__toggle").click());
 
     expect(host?.textContent).toContain("What is event sourcing?");
+    expect(host?.textContent).toContain("A pattern storing state as events.");
     expect(host?.textContent).toContain("Should we migrate to it?");
   });
 
@@ -66,8 +76,7 @@ describe("R20: MessageSourceSelector", () => {
     const onSelectionChange = vi.fn();
     mount(<MessageSourceSelector onSelectionChange={onSelectionChange} />);
 
-    const toggle = host?.querySelector("button.multi-ai-source-selector__toggle");
-    act(() => toggle?.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+    act(() => button("button.multi-ai-source-selector__toggle").click());
 
     const box = checkbox("What is event sourcing?");
     act(() => box.click());
@@ -77,19 +86,19 @@ describe("R20: MessageSourceSelector", () => {
     );
   });
 
-  it("selecting a range of messages reports every selected id", () => {
+  it("selecting two boundaries reports every stable id in the contiguous range", () => {
     seedConversation();
     const onSelectionChange = vi.fn();
     mount(<MessageSourceSelector onSelectionChange={onSelectionChange} />);
 
-    const toggle = host?.querySelector("button.multi-ai-source-selector__toggle");
-    act(() => toggle?.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+    act(() => button("button.multi-ai-source-selector__toggle").click());
 
     act(() => checkbox("What is event sourcing?").click());
     act(() => checkbox("Should we migrate to it?").click());
 
     const lastCall = onSelectionChange.mock.calls.at(-1)?.[0];
-    expect(lastCall.sourceMessageIds).toEqual(["m1", "m3"]);
+    expect(lastCall.sourceMessageIds).toEqual(["m1", "m2", "m3"]);
+    expect(checkbox("A pattern storing state as events.").checked).toBe(true);
   });
 
   it("shows a reviewable preview of the exact context bundle for the current selection", () => {
@@ -97,8 +106,7 @@ describe("R20: MessageSourceSelector", () => {
     const onSelectionChange = vi.fn();
     mount(<MessageSourceSelector onSelectionChange={onSelectionChange} />);
 
-    const toggle = host?.querySelector("button.multi-ai-source-selector__toggle");
-    act(() => toggle?.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+    act(() => button("button.multi-ai-source-selector__toggle").click());
     act(() => checkbox("What is event sourcing?").click());
 
     const preview = host?.querySelector("[data-testid='multi-ai-context-bundle']");
@@ -111,14 +119,44 @@ describe("R20: MessageSourceSelector", () => {
     const onSelectionChange = vi.fn();
     mount(<MessageSourceSelector onSelectionChange={onSelectionChange} />);
 
-    const toggle = host?.querySelector("button.multi-ai-source-selector__toggle");
-    act(() => toggle?.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+    act(() => button("button.multi-ai-source-selector__toggle").click());
     act(() => checkbox("What is event sourcing?").click());
 
-    const clearButton = [...(host?.querySelectorAll("button.multi-ai-source-selector__clear") ?? [])][0];
-    act(() => clearButton?.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+    act(() => button("button.multi-ai-source-selector__clear").click());
 
     expect(onSelectionChange).toHaveBeenLastCalledWith(null);
     expect(host?.querySelector("[data-testid='multi-ai-context-bundle']")).toBeNull();
+  });
+
+  it("prepares a persisted, zero-cost handoff linked to the exact source ids", async () => {
+    seedConversation();
+    const onSelectionChange = vi.fn();
+    mount(<MessageSourceSelector onSelectionChange={onSelectionChange} />);
+
+    act(() => button("button.multi-ai-source-selector__toggle").click());
+    act(() => checkbox("What is event sourcing?").click());
+    act(() => checkbox("Should we migrate to it?").click());
+    const prepare = [...(host?.querySelectorAll("button") ?? [])]
+      .find((candidate) => candidate.textContent === "Prepare source handoff");
+    if (!(prepare instanceof HTMLButtonElement)) throw new Error("Missing Prepare source handoff button");
+    await act(async () => {
+      prepare.click();
+      await Promise.resolve();
+    });
+
+    const run = useSessionStore.getState().multiAiRuns[0];
+    expect(run).toMatchObject({
+      sourceMessageIds: ["m1", "m2", "m3"],
+      participants: [],
+      status: "complete",
+      workflowStage: "local-preparation",
+      totalEstimatedCost: 0,
+      totalActualCost: 0,
+    });
+    expect(run.question).toContain("You: What is event sourcing?");
+    expect(run.question).toContain("Assistant: A pattern storing state as events.");
+    expect(run.question).toContain("You: Should we migrate to it?");
+    expect(host?.querySelector("[role='status']")?.textContent).toContain("No provider request was sent");
+    expect(host?.querySelector("[role='status']")?.textContent).toContain("no credits were used");
   });
 });
