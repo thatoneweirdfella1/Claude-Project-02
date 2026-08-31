@@ -284,6 +284,25 @@
   cursor: pointer;
 }
 
+.multi-ai-source-selector__actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.multi-ai-source-selector__actions span {
+  color: var(--text-secondary);
+  font-size: var(--font-size-label-secondary);
+}
+
+.multi-ai-run-history__source-handoff pre {
+  max-height: 180px;
+  overflow: auto;
+  white-space: pre-wrap;
+}
+
 .multi-ai-source-selector__clear {
   align-self: flex-start;
   padding: 4px 10px;
