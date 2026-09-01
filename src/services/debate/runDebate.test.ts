@@ -32,8 +32,8 @@ describe("runDebate — the happy path", () => {
     expect(outcome.transcript).toEqual({
       question: QUESTION,
       participants: [
-        { label: "Claude", text: "Claude's argument." },
-        { label: "GPT-5.5", text: "The partner's argument." },
+        { label: "Claude", provider: "anthropic", model: "claude-sonnet-5", text: "Claude's argument." },
+        { label: "GPT-5.5", provider: "openai", model: "gpt-5.5", text: "The partner's argument." },
       ],
     });
   });

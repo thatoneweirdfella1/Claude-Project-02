@@ -96,6 +96,16 @@ export interface RunDebateOptions {
 const NEUTRAL_FAILURE =
   "This side couldn't be reached. Nothing is wrong with your question — try this side again.";
 
+function transcriptParticipant(side: DebateSide) {
+  const partner = side.partnerId ? getDebatePartner(side.partnerId) : null;
+  return {
+    label: side.label,
+    provider: side.usage?.provider ?? partner?.provider ?? "anthropic",
+    model: side.usage?.model ?? partner?.id ?? DEBATE_CLAUDE_MODEL,
+    text: side.text!,
+  };
+}
+
 function opposite(stance: DebateStance): DebateStance {
   return stance === "for" ? "against" : "for";
 }
@@ -185,7 +195,7 @@ export async function runDebate(
       sides,
       transcript: {
         question: trimmed,
-        participants: sides.map((s) => ({ label: s.label, text: s.text! })),
+        participants: sides.map(transcriptParticipant),
       },
     };
   }
