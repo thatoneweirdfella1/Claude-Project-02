@@ -36,7 +36,7 @@ import {
   settleDeferredAuthorization,
   type CreditAuthorizationResult,
 } from "../../services/creditAuthorization";
-import { addTokenUsage, calculateUsageCost, getEstimatedCostForCall } from "../../services/costTracking";
+import { addTokenUsage, calculateUsageCost, getEstimatedCostForCall, getModelPrice, MODEL_PRICE_VERSION } from "../../services/costTracking";
 import type { PaidRoutePolicy } from "../../services/paidRoutePolicy";
 import { reportProviderEvent, type ConnectedProviderId } from "../../services/providerStatus";
 import { isProviderConnected } from "../../services/routeReadiness";
@@ -79,6 +79,7 @@ function completeTracked(request: Parameters<typeof claudeClient.complete>[0]): 
 function explicitMultiAiPolicy(
   routeLabel: string,
   reasonLabel: string,
+  estimateLines?: string[],
 ): PaidRoutePolicy {
   const session = useSessionStore.getState();
   const account = useAccountStore.getState();
@@ -92,6 +93,7 @@ function explicitMultiAiPolicy(
       : "Your Divergence credits",
     reasonLabel,
     freeAlternativeLabel: "Keep the current answer without running another paid AI call",
+    estimateLines,
   };
 }
 
@@ -140,8 +142,11 @@ async function configuredForDebate(partnerIds: DebatePartnerId[]): Promise<boole
    estimated on its own roster model id, now individually priced in
    costTracking's MODEL_PRICES (R14/R27). */
 interface ParticipantEstimate {
-  label: "Claude" | DebatePartnerId;
+  label: string;
+  provider: ConnectedProviderId;
   model: string;
+  inputTokens: number;
+  maxOutputTokens: number;
   cost: number;
 }
 
@@ -152,15 +157,30 @@ function estimateDebateCost(question: string, partnerIds: DebatePartnerId[]): {
   const inputTokens = Math.ceil(question.length / 4) + 600;
   const maxOutputTokens = 1_200;
   const perParticipant: ParticipantEstimate[] = [
-    { label: "Claude", model: DEBATE_MODEL_ID, cost: getEstimatedCostForCall({ model: DEBATE_MODEL_ID, inputTokens, maxOutputTokens }) },
+    { label: "Claude", provider: "anthropic", model: DEBATE_MODEL_ID, inputTokens, maxOutputTokens, cost: getEstimatedCostForCall({ model: DEBATE_MODEL_ID, inputTokens, maxOutputTokens }) },
     ...partnerIds.map((id) => ({
       label: id,
+      provider: providerForPartner(id),
       model: id,
+      inputTokens,
+      maxOutputTokens,
       cost: getEstimatedCostForCall({ model: id, inputTokens, maxOutputTokens }),
     })),
   ];
   const total = perParticipant.reduce((sum, p) => sum + p.cost, 0);
   return { perParticipant, total };
+}
+
+function estimateLine(estimate: ParticipantEstimate): string {
+  const price = getModelPrice(estimate.model);
+  const rates = price
+    ? `$${price.inputPerMillion}/1M input + $${price.outputPerMillion}/1M output`
+    : "pricing unavailable";
+  return `${estimate.label}: ${estimate.provider} · ${estimate.model} — assumes ${estimate.inputTokens} input tokens and up to ${estimate.maxOutputTokens} output tokens at ${rates} (${MODEL_PRICE_VERSION}); estimated $${estimate.cost.toFixed(4)}`;
+}
+
+function singleEstimate(label: string, provider: ConnectedProviderId, model: string, inputTokens: number, maxOutputTokens: number): ParticipantEstimate {
+  return { label, provider, model, inputTokens, maxOutputTokens, cost: getEstimatedCostForCall({ model, inputTokens, maxOutputTokens }) };
 }
 
 /* R15: ParticipantUsage.estimatedCost is always null at the client seam
@@ -340,6 +360,7 @@ export function MultiAiActions() {
       explicitMultiAiPolicy(
         `Multi-AI debate · Claude Sonnet + ${selectedPartnerIds.length} connected partner${selectedPartnerIds.length === 1 ? "" : "s"}`,
         `Starting this debate sends one paid request per participant (${perParticipant.map((p) => `${p.label}: $${p.cost.toFixed(4)}`).join(", ")}).`,
+        perParticipant.map(estimateLine),
       ),
       { deferSettlement: true },
     );
@@ -455,17 +476,21 @@ export function MultiAiActions() {
       }
 
       const retryModel = targetProviderId ?? DEBATE_MODEL_ID;
-      const estimate = getEstimatedCostForCall({
-        model: retryModel,
-        inputTokens: Math.ceil(effectiveQuestion.length / 4) + 600,
-        maxOutputTokens: 1_200,
-      });
+      const retryEstimate = singleEstimate(
+        target.label,
+        targetProviderId ? providerForPartner(targetProviderId) : "anthropic",
+        retryModel,
+        Math.ceil(effectiveQuestion.length / 4) + 600,
+        1_200,
+      );
+      const estimate = retryEstimate.cost;
       const authorization = await authorizeEstimatedCost(
         estimate,
         `Retry ${target.label}`,
         explicitMultiAiPolicy(
           `Multi-AI debate retry · ${target.label} only`,
           `Retrying sends exactly one new request, to ${target.label} only ($${estimate.toFixed(4)}).`,
+          [estimateLine(retryEstimate)],
         ),
         { deferSettlement: true },
       );
@@ -578,13 +603,15 @@ export function MultiAiActions() {
     const inputTokens = Math.ceil(
       transcript.participants.reduce((sum, p) => sum + p.text.length, 0) / 4,
     ) + 700;
-    const estimate = getEstimatedCostForCall({ model: "claude-opus-4-8", inputTokens, maxOutputTokens: 1_300 });
+    const consensusEstimate = singleEstimate("Consensus", "anthropic", "claude-opus-4-8", inputTokens, 1_300);
+    const estimate = consensusEstimate.cost;
     const authorization = await authorizeEstimatedCost(
       estimate,
       "Multi-AI consensus",
       explicitMultiAiPolicy(
         "Multi-AI consensus · Anthropic · Claude Opus",
         "Consensus uses a new paid AI call to compare the completed debate.",
+        [estimateLine(consensusEstimate)],
       ),
       { deferSettlement: true },
     );
@@ -641,13 +668,15 @@ export function MultiAiActions() {
     const inputTokens = Math.ceil(
       transcript.participants.reduce((sum, p) => sum + p.text.length, 0) / 4,
     ) + 700;
-    const estimate = getEstimatedCostForCall({ model: "claude-opus-4-8", inputTokens, maxOutputTokens: 1_600 });
+    const synthesisEstimate = singleEstimate("Synthesis", "anthropic", "claude-opus-4-8", inputTokens, 1_600);
+    const estimate = synthesisEstimate.cost;
     const authorization = await authorizeEstimatedCost(
       estimate,
       "Multi-AI synthesis",
       explicitMultiAiPolicy(
         "Multi-AI synthesis · Anthropic · Claude Opus",
         "Synthesis uses a new paid AI call to combine the completed debate.",
+        [estimateLine(synthesisEstimate)],
       ),
       { deferSettlement: true },
     );

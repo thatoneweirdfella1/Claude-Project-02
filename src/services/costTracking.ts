@@ -7,6 +7,8 @@ export interface ModelPrice {
   outputPerMillion: number;
 }
 
+export const MODEL_PRICE_VERSION = "multi-provider-prices-2026-09-01";
+
 /** First-party Claude API list prices current for the model ids used here.
     Keep this table explicit and version-controlled so price changes are
     reviewable instead of silently arriving from a remote configuration.
@@ -56,6 +58,11 @@ function priceFor(model: string): ModelPrice | null {
 
 export function hasPricingFor(model: string): boolean {
   return priceFor(model) !== null;
+}
+
+export function getModelPrice(model: string): ModelPrice | null {
+  const price = priceFor(model);
+  return price ? { ...price } : null;
 }
 
 export function calculateUsageCost(

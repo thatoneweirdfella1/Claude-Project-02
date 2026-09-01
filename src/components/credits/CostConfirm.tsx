@@ -71,6 +71,10 @@ export function CostConfirm() {
           <p><strong>Hard maximum:</strong> ${Number.isFinite(request.policy.maximum) ? request.policy.maximum.toFixed(2) : "not set"}</p>
           <p><strong>Balance:</strong> {request.availableBalance === null ? "developer workspace" : `$${request.availableBalance.toFixed(4)}`}</p>
           <p><strong>Why:</strong> {request.policy.reasonLabel}</p>
+          {request.policy.estimateLines?.length ? <div data-testid="cost-estimate-breakdown">
+            <strong>Estimate assumptions ({request.policy.estimateLines.length} call{request.policy.estimateLines.length === 1 ? "" : "s"}):</strong>
+            <ul>{request.policy.estimateLines.map((line) => <li key={line}>{line}</li>)}</ul>
+          </div> : null}
           <p><strong>Free alternative:</strong> {request.policy.freeAlternativeLabel}</p>
           <p>{note}</p>
         </div>
