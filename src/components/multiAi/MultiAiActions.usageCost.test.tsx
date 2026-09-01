@@ -19,6 +19,9 @@ import { ConversationArea } from "../translation/ConversationArea";
 
 vi.mock("../../services/creditAuthorization", () => ({
   authorizeEstimatedCost: vi.fn(async () => ({ authorized: true })),
+  markDeferredAuthorizationUnknown: vi.fn(async () => true),
+  releaseDeferredAuthorization: vi.fn(async () => true),
+  settleDeferredAuthorization: vi.fn(async () => true),
 }));
 vi.mock("../../services/routeReadiness", () => ({
   isProviderConnected: vi.fn(async () => true),

@@ -31,6 +31,8 @@ export interface CreditAuthorizationResult {
   authorized: boolean;
   amount: number;
   referenceId: string;
+  reservationId?: string;
+  deferredSettlement?: boolean;
   reason?:
     | "cancelled"
     | "free-route-selected"
@@ -80,6 +82,7 @@ export async function authorizeEstimatedCost(
   amount: number,
   label: string,
   policy: PaidRoutePolicy,
+  options: { deferSettlement?: boolean } = {},
 ): Promise<CreditAuthorizationResult> {
   const referenceId = `authorization-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
   const blockedReason = evaluatePaidRoutePolicy(amount, policy);
@@ -150,6 +153,15 @@ export async function authorizeEstimatedCost(
 
   // Persist the hard-maximum hold before any caller can dispatch paid work.
   await persistMoneyAuthority();
+  if (options.deferSettlement) {
+    return {
+      authorized: true,
+      amount,
+      referenceId,
+      reservationId: reservation.reservation.id,
+      deferredSettlement: true,
+    };
+  }
   const deducted = useAccountStore.getState().deductCredits(amount, label, referenceId);
   if (!deducted) {
     authority.release(reservation.reservation.id, `release-${referenceId}`, "Account ledger mirror rejected the charge.");
@@ -162,4 +174,60 @@ export async function authorizeEstimatedCost(
   emitCreditDeducted(amount, referenceId);
   await saveNow();
   return { authorized: true, amount, referenceId };
+}
+
+/** Finalize a deferred authorization from measured provider usage. The
+    account mirror is charged only after the deterministic authority accepts
+    the settlement; any impossible mirror failure is refunded immediately. */
+export async function settleDeferredAuthorization(
+  authorization: CreditAuthorizationResult,
+  actualAmount: number,
+  note: string,
+): Promise<boolean> {
+  if (!authorization.authorized || !authorization.deferredSettlement || !authorization.reservationId) return false;
+  if (!Number.isFinite(actualAmount) || actualAmount < 0 || actualAmount > authorization.amount + Number.EPSILON) return false;
+  if (actualAmount === 0) return releaseDeferredAuthorization(authorization, note);
+
+  const authority = getMoneyAuthority();
+  const actualCents = Math.max(1, Math.ceil(actualAmount * 100));
+  const deducted = useAccountStore.getState().deductCredits(actualAmount, note, authorization.referenceId);
+  if (!deducted) return false;
+  const receipt = authority.settle(authorization.reservationId, actualCents, `settle-${authorization.referenceId}`);
+  if (!receipt || receipt.status !== "settled") {
+    useAccountStore.getState().addCredits(actualAmount, "Reversed unmirrored deferred settlement", "refund", `refund-${authorization.referenceId}`);
+    return false;
+  }
+  emitCreditDeducted(actualAmount, authorization.referenceId);
+  await Promise.all([persistMoneyAuthority(), saveNow()]);
+  return true;
+}
+
+export async function releaseDeferredAuthorization(
+  authorization: CreditAuthorizationResult,
+  note: string,
+): Promise<boolean> {
+  if (!authorization.authorized || !authorization.deferredSettlement || !authorization.reservationId) return false;
+  const receipt = getMoneyAuthority().release(
+    authorization.reservationId,
+    `release-${authorization.referenceId}`,
+    note,
+  );
+  if (!receipt) return false;
+  await persistMoneyAuthority();
+  return true;
+}
+
+export async function markDeferredAuthorizationUnknown(
+  authorization: CreditAuthorizationResult,
+  note: string,
+): Promise<boolean> {
+  if (!authorization.authorized || !authorization.deferredSettlement || !authorization.reservationId) return false;
+  const receipt = getMoneyAuthority().markUsageUnknown(
+    authorization.reservationId,
+    `unknown-${authorization.referenceId}`,
+    note,
+  );
+  if (!receipt) return false;
+  await persistMoneyAuthority();
+  return true;
 }
