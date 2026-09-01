@@ -12,6 +12,8 @@ export interface PaidRoutePolicy {
   payerLabel: string;
   reasonLabel: string;
   freeAlternativeLabel: string;
+  /** Optional exact per-call assumptions shown before authorization. */
+  estimateLines?: string[];
 }
 
 /** Pure, fail-closed policy check shared by every paid provider entry point. */

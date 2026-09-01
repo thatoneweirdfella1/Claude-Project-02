@@ -28,7 +28,10 @@ vi.mock("../../services/providerStatus", () => ({
 }));
 vi.mock("../../services/costTracking", () => ({
   addTokenUsage: vi.fn(),
+  calculateUsageCost: vi.fn(() => 0.005),
   getEstimatedCostForCall: vi.fn(() => 0.01),
+  getModelPrice: vi.fn(() => ({ inputPerMillion: 3, outputPerMillion: 12 })),
+  MODEL_PRICE_VERSION: "test-prices",
 }));
 vi.mock("../../services/proxyClient", () => ({
   createProxyClient: () => ({ complete: vi.fn(async () => "") }),
