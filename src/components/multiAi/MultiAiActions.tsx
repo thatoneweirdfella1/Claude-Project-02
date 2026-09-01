@@ -29,7 +29,6 @@ import { ConsensusView } from "./ConsensusView";
 import { SynthesisView } from "./SynthesisView";
 import { ProTierSelector } from "./ProTierSelector";
 import { MessageSourceSelector } from "./MessageSourceSelector";
-import { MultiAiRunHistory } from "./MultiAiRunHistory";
 import { authorizeEstimatedCost } from "../../services/creditAuthorization";
 import { addTokenUsage, getEstimatedCostForCall } from "../../services/costTracking";
 import type { PaidRoutePolicy } from "../../services/paidRoutePolicy";
@@ -37,6 +36,7 @@ import { reportProviderEvent, type ConnectedProviderId } from "../../services/pr
 import { isProviderConnected } from "../../services/routeReadiness";
 import { categorizeCaughtError } from "../../services/providerErrorCategorization";
 import type { MultiAiParticipantResult, MultiAiRunRecord } from "../../stores/types";
+import { saveNow } from "../../services/persistence";
 
 /* MULTI-AI ACTIONS (Step 8.3) — the composer-footer control from the
    screenshot, sitting beside TRANSPARENCY DETAILS in the `.composer__footer-row`
@@ -63,7 +63,10 @@ const DEBATE_MODEL_ID = "claude-sonnet-5"; // DEBATE_CLAUDE_MODEL — see servic
 function completeTracked(request: Parameters<typeof claudeClient.complete>[0]): Promise<string> {
   return claudeClient.complete({
     ...request,
-    onUsage: (usage) => addTokenUsage(usage.inputTokens, usage.outputTokens, request.model),
+    onUsage: (usage) => {
+      request.onUsage?.(usage);
+      addTokenUsage(usage.inputTokens, usage.outputTokens, request.model);
+    },
   });
 }
 
@@ -161,10 +164,12 @@ function estimateDebateCost(question: string, partnerIds: DebatePartnerId[]): {
    retrySide's own single estimate) and is threaded in here so it survives
    into the persisted record instead of being silently dropped. */
 function sideToParticipantResult(side: DebateSide, estimatedCost: number | null = null): MultiAiParticipantResult {
+  const provider = side.partnerId ? providerForPartner(side.partnerId) : "anthropic";
+  const model = side.partnerId ?? DEBATE_MODEL_ID;
   return {
     label: side.label,
-    provider: side.usage?.provider ?? null,
-    model: side.usage?.model ?? null,
+    provider: side.usage?.provider ?? provider,
+    model: side.usage?.model ?? model,
     status: side.status,
     text: side.text,
     message: side.message,
@@ -253,7 +258,7 @@ export function MultiAiActions() {
   const selectedPartnerIds = useAutoSelect ? autoSelectPartners(effectiveQuestion) : partnerIds;
 
   const persistRun = useCallback(
-    (patch: Partial<MultiAiRunRecord> & { id: string }) => {
+    async (patch: Partial<MultiAiRunRecord> & { id: string }) => {
       const existing = useSessionStore.getState().multiAiRuns.find((r) => r.id === patch.id);
       const base: MultiAiRunRecord = existing ?? {
         id: patch.id,
@@ -266,6 +271,11 @@ export function MultiAiActions() {
         totalActualCost: null,
       };
       upsertMultiAiRun({ ...base, ...patch });
+      try {
+        await saveNow({ reason: "autosave" });
+      } catch {
+        setActionError("The Multi-AI result is visible, but it could not be saved for reload. Try again before leaving this page.");
+      }
     },
     [sourceMessageIds, effectiveQuestion, upsertMultiAiRun],
   );
@@ -325,7 +335,7 @@ export function MultiAiActions() {
       if (controller.signal.aborted) {
         // R24: preserve nothing fabricated — a cancelled run is persisted
         // as cancelled, with no sides recorded as having landed.
-        persistRun({ id: runId, status: "cancelled", totalEstimatedCost: total, totalActualCost: null, participants: [] });
+        await persistRun({ id: runId, status: "cancelled", totalEstimatedCost: total, totalActualCost: null, participants: [] });
         return;
       }
       setOutcome(result);
@@ -335,7 +345,7 @@ export function MultiAiActions() {
         const participants = result.sides.map((side) =>
           sideToParticipantResult(side, estimateByKey.get(participantKey(side)) ?? null),
         );
-        persistRun({
+        await persistRun({
           id: runId,
           status: outcomeToRunStatus(result),
           participants,
@@ -347,9 +357,9 @@ export function MultiAiActions() {
       if (!controller.signal.aborted) {
         setActionError(safeFailureMessage("Debate failed", error));
         setOutcome({ status: "failed", sides: [] });
-        persistRun({ id: runId, status: "failed", participants: [], totalEstimatedCost: total, totalActualCost: null });
+        await persistRun({ id: runId, status: "failed", participants: [], totalEstimatedCost: total, totalActualCost: null });
       } else {
-        persistRun({ id: runId, status: "cancelled", totalEstimatedCost: total, totalActualCost: null, participants: [] });
+        await persistRun({ id: runId, status: "cancelled", totalEstimatedCost: total, totalActualCost: null, participants: [] });
       }
     } finally {
       setPhase("idle");
@@ -466,7 +476,7 @@ export function MultiAiActions() {
           const participants = newSides.map((s, i) =>
             sideToParticipantResult(s, i === sideIndex ? estimate : priorEstimateByLabel.get(s.label) ?? null),
           );
-          persistRun({
+          await persistRun({
             id: activeRunId,
             status: outcomeToRunStatus(nextOutcome),
             participants,
@@ -517,12 +527,12 @@ export function MultiAiActions() {
       });
       if (controller.signal.aborted) {
         setActionError("Consensus was cancelled. No charge beyond what already completed.");
-        if (activeRunId) persistRun({ id: activeRunId, status: "cancelled" });
+        if (activeRunId) await persistRun({ id: activeRunId, status: "cancelled" });
         return;
       }
       if (result.status === "ok") {
         setConsensus(result.result);
-        if (activeRunId) persistRun({ id: activeRunId, consensus: result.result });
+        if (activeRunId) await persistRun({ id: activeRunId, consensus: result.result });
       } else {
         setActionError("Consensus couldn't be produced from this debate. You can try again.");
       }
@@ -572,12 +582,12 @@ export function MultiAiActions() {
       });
       if (controller.signal.aborted) {
         setActionError("Synthesis was cancelled. No charge beyond what already completed.");
-        if (activeRunId) persistRun({ id: activeRunId, status: "cancelled" });
+        if (activeRunId) await persistRun({ id: activeRunId, status: "cancelled" });
         return;
       }
       if (result.status === "ok") {
         setSynthesis(result.result);
-        if (activeRunId) persistRun({ id: activeRunId, synthesis: result.result });
+        if (activeRunId) await persistRun({ id: activeRunId, synthesis: result.result });
       } else {
         setActionError("Synthesis couldn't be produced from this debate. You can try again.");
       }
@@ -700,7 +710,6 @@ export function MultiAiActions() {
               {consensus && <ConsensusView result={consensus} />}
               {synthesis && <SynthesisView result={synthesis} />}
 
-              <MultiAiRunHistory sourceMessageIds={sourceMessageIds} />
             </>
           )}
         </GlassCard>

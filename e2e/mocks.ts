@@ -183,6 +183,7 @@ export async function installModelMocks(page: Page, answer: MockAnswer): Promise
       contentType: "application/json",
       body: JSON.stringify({
         text: "From GPT-5.5: water's boiling point at sea level is 100°C (212°F) at 1 atm — though real-world results vary with impurities and exact pressure.",
+        usage: { inputTokens: 45, outputTokens: 30 },
       }),
     });
   });

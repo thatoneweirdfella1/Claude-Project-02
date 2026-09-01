@@ -7,6 +7,8 @@ import {
 } from "../../services/moneySafety";
 import { getMoneyAuthority, persistMoneyAuthority } from "../../services/moneyRuntime";
 import { useAccountStore } from "../../stores/accountStore";
+import { saveNow } from "../../services/persistence";
+import type { SubscriptionTier } from "../../stores/types";
 
 function dollars(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
@@ -63,7 +65,7 @@ export function InteractivePlanControls() {
     refresh("Sandbox checkout is pending. The balance is unchanged until the verified callback step.");
   }
 
-  function completeCheckout(): void {
+  async function completeCheckout(): Promise<void> {
     if (!pendingCheckout) return;
     const result = authority.applyVerifiedSandboxCallback(
       pendingCheckout.id,
@@ -71,9 +73,33 @@ export function InteractivePlanControls() {
       pendingCheckout.verificationToken,
     );
     setPendingCheckout(null);
-    refresh(result.ok
-      ? "Verified sandbox callback applied exactly once. No real payment was processed."
-      : "Sandbox callback failed closed; no entitlement or credit was granted.");
+    if (result.ok && result.checkout) {
+      const checkout = result.checkout;
+      const account = useAccountStore.getState();
+      const referenceId = `sandbox-checkout:${checkout.id}`;
+      const alreadyMirrored = account.creditLedger.some((entry) => entry.referenceId === referenceId);
+      if (!alreadyMirrored && checkout.creditAmountCents > 0) {
+        account.addCredits(
+          checkout.creditAmountCents / 100,
+          "Verified sandbox checkout",
+          checkout.kind === "subscription" ? "subscription" : "top-up",
+          referenceId,
+        );
+      }
+      const validTiers: SubscriptionTier[] = ["free", "plus", "pro", "insane", "pro-plus"];
+      if (checkout.kind === "subscription" && checkout.tier && validTiers.includes(checkout.tier as SubscriptionTier)) {
+        account.setPlan(checkout.tier as SubscriptionTier);
+      }
+    }
+    setSnapshot(authority.snapshot());
+    try {
+      await Promise.all([persistMoneyAuthority(), saveNow()]);
+      setStatus(result.ok
+        ? "Verified sandbox callback applied exactly once. No real payment was processed."
+        : "Sandbox callback failed closed; no entitlement or credit was granted.");
+    } catch {
+      setStatus("The sandbox callback was applied in memory, but its local save failed. No real payment was processed.");
+    }
   }
 
   async function runUsageDemo(): Promise<void> {
@@ -193,10 +219,9 @@ export function InteractivePlanControls() {
         </header>
         <footer className="workflow-dialog__actions">
           <button type="button" onClick={() => { setPendingCheckout(null); refresh("Sandbox checkout cancelled. No balance changed."); }}>Cancel</button>
-          <button type="button" autoFocus className="primary" onClick={completeCheckout}>Apply verified sandbox callback</button>
+          <button type="button" autoFocus className="primary" onClick={() => void completeCheckout()}>Apply verified sandbox callback</button>
         </footer>
       </div>
     </div>}
   </section>;
 }
-
