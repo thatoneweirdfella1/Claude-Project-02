@@ -29,8 +29,14 @@ import { ConsensusView } from "./ConsensusView";
 import { SynthesisView } from "./SynthesisView";
 import { ProTierSelector } from "./ProTierSelector";
 import { MessageSourceSelector } from "./MessageSourceSelector";
-import { authorizeEstimatedCost } from "../../services/creditAuthorization";
-import { addTokenUsage, getEstimatedCostForCall } from "../../services/costTracking";
+import {
+  authorizeEstimatedCost,
+  markDeferredAuthorizationUnknown,
+  releaseDeferredAuthorization,
+  settleDeferredAuthorization,
+  type CreditAuthorizationResult,
+} from "../../services/creditAuthorization";
+import { addTokenUsage, calculateUsageCost, getEstimatedCostForCall } from "../../services/costTracking";
 import type { PaidRoutePolicy } from "../../services/paidRoutePolicy";
 import { reportProviderEvent, type ConnectedProviderId } from "../../services/providerStatus";
 import { isProviderConnected } from "../../services/routeReadiness";
@@ -200,6 +206,44 @@ function totalActualCostOf(participants: MultiAiParticipantResult[]): number | n
   return roundCost((costs as number[]).reduce((sum, c) => sum + c, 0));
 }
 
+async function finalizeParticipantAuthorization(
+  authorization: CreditAuthorizationResult,
+  participants: MultiAiParticipantResult[],
+  cancelled: boolean,
+): Promise<void> {
+  const completed = participants.filter((participant) => participant.status === "ok");
+  if (completed.length === 0) {
+    if (cancelled) await releaseDeferredAuthorization(authorization, "Cancelled before any participant completed.");
+    else await markDeferredAuthorizationUnknown(authorization, "No measured usage was returned for the failed Multi-AI request.");
+    return;
+  }
+  const costs = completed.map((participant) => participant.actualCost);
+  if (costs.some((cost) => cost === null)) {
+    await markDeferredAuthorizationUnknown(authorization, "A completed participant did not return measurable usage; the hold remains pending.");
+    return;
+  }
+  await settleDeferredAuthorization(
+    authorization,
+    roundCost((costs as number[]).reduce((sum, cost) => sum + cost, 0)),
+    cancelled ? "Measured Multi-AI usage completed before cancellation" : "Measured Multi-AI usage",
+  );
+}
+
+async function finalizeStageAuthorization(
+  authorization: CreditAuthorizationResult,
+  actualCost: number | null,
+  stage: "consensus" | "synthesis",
+  cancelled: boolean,
+): Promise<void> {
+  if (cancelled) {
+    await releaseDeferredAuthorization(authorization, `${stage} cancelled before completion.`);
+  } else if (actualCost === null) {
+    await markDeferredAuthorizationUnknown(authorization, `${stage} completed without measurable usage; the hold remains pending.`);
+  } else {
+    await settleDeferredAuthorization(authorization, actualCost, `Measured Multi-AI ${stage} usage`);
+  }
+}
+
 function roundCost(value: number): number {
   return Math.round(value * 1_000_000) / 1_000_000;
 }
@@ -297,6 +341,7 @@ export function MultiAiActions() {
         `Multi-AI debate · Claude Sonnet + ${selectedPartnerIds.length} connected partner${selectedPartnerIds.length === 1 ? "" : "s"}`,
         `Starting this debate sends one paid request per participant (${perParticipant.map((p) => `${p.label}: $${p.cost.toFixed(4)}`).join(", ")}).`,
       ),
+      { deferSettlement: true },
     );
     if (!authorization.authorized) return;
 
@@ -333,9 +378,19 @@ export function MultiAiActions() {
       });
 
       if (controller.signal.aborted) {
-        // R24: preserve nothing fabricated — a cancelled run is persisted
-        // as cancelled, with no sides recorded as having landed.
-        await persistRun({ id: runId, status: "cancelled", totalEstimatedCost: total, totalActualCost: null, participants: [] });
+        const estimateByKey = new Map(perParticipant.map((participant) => [estimateKey(participant), participant.cost]));
+        const participants = result.status === "empty-question" ? [] : result.sides.map((side) =>
+          sideToParticipantResult(side, estimateByKey.get(participantKey(side)) ?? null),
+        );
+        setOutcome(result.status === "empty-question" ? null : result);
+        await finalizeParticipantAuthorization(authorization, participants, true);
+        await persistRun({
+          id: runId,
+          status: "cancelled",
+          totalEstimatedCost: total,
+          totalActualCost: totalActualCostOf(participants.filter((participant) => participant.status === "ok")),
+          participants,
+        });
         return;
       }
       setOutcome(result);
@@ -345,6 +400,7 @@ export function MultiAiActions() {
         const participants = result.sides.map((side) =>
           sideToParticipantResult(side, estimateByKey.get(participantKey(side)) ?? null),
         );
+        await finalizeParticipantAuthorization(authorization, participants, false);
         await persistRun({
           id: runId,
           status: outcomeToRunStatus(result),
@@ -357,8 +413,10 @@ export function MultiAiActions() {
       if (!controller.signal.aborted) {
         setActionError(safeFailureMessage("Debate failed", error));
         setOutcome({ status: "failed", sides: [] });
+        await markDeferredAuthorizationUnknown(authorization, "The debate ended without measurable usage; the hold remains pending.");
         await persistRun({ id: runId, status: "failed", participants: [], totalEstimatedCost: total, totalActualCost: null });
       } else {
+        await releaseDeferredAuthorization(authorization, "Debate cancelled before a participant result was returned.");
         await persistRun({ id: runId, status: "cancelled", totalEstimatedCost: total, totalActualCost: null, participants: [] });
       }
     } finally {
@@ -409,6 +467,7 @@ export function MultiAiActions() {
           `Multi-AI debate retry · ${target.label} only`,
           `Retrying sends exactly one new request, to ${target.label} only ($${estimate.toFixed(4)}).`,
         ),
+        { deferSettlement: true },
       );
       if (!authorization.authorized) return;
 
@@ -439,10 +498,13 @@ export function MultiAiActions() {
           signal: controller.signal,
         });
 
-        if (controllerRef.current !== controller) return;
-        if (controller.signal.aborted) return;
+        if (controllerRef.current !== controller || controller.signal.aborted) {
+          await releaseDeferredAuthorization(authorization, `Retry of ${target.label} was cancelled before completion.`);
+          return;
+        }
 
         reportFailedSides([retried]);
+        await finalizeParticipantAuthorization(authorization, [sideToParticipantResult(retried, estimate)], false);
 
         const newSides = [...outcome.sides];
         newSides[sideIndex] = retried;
@@ -492,6 +554,11 @@ export function MultiAiActions() {
           });
         }
       } catch (error) {
+        if (controller.signal.aborted) {
+          await releaseDeferredAuthorization(authorization, `Retry of ${target.label} was cancelled before completion.`);
+        } else {
+          await markDeferredAuthorizationUnknown(authorization, `Retry of ${target.label} ended without measurable usage; the hold remains pending.`);
+        }
         if (controllerRef.current === controller && !controller.signal.aborted) {
           setActionError(safeFailureMessage("Retry failed", error));
         }
@@ -519,6 +586,7 @@ export function MultiAiActions() {
         "Multi-AI consensus · Anthropic · Claude Opus",
         "Consensus uses a new paid AI call to compare the completed debate.",
       ),
+      { deferSettlement: true },
     );
     if (!authorization.authorized) return;
 
@@ -528,23 +596,30 @@ export function MultiAiActions() {
 
     setPhase("consensus");
     setActionError(null);
+    let actualCost: number | null = null;
     try {
       const result = await runConsensus(transcript, {
-        client: (req) => completeTracked(req),
+        client: (req) => completeTracked({
+          ...req,
+          onUsage: (usage) => { actualCost = calculateUsageCost(usage.inputTokens, usage.outputTokens, req.model); },
+        }),
         signal: controller.signal,
       });
       if (controller.signal.aborted) {
+        await finalizeStageAuthorization(authorization, actualCost, "consensus", true);
         setActionError("Consensus was cancelled. No charge beyond what already completed.");
         if (activeRunId) await persistRun({ id: activeRunId, status: "cancelled" });
         return;
       }
+      await finalizeStageAuthorization(authorization, actualCost, "consensus", false);
       if (result.status === "ok") {
         setConsensus(result.result);
-        if (activeRunId) await persistRun({ id: activeRunId, consensus: result.result });
+        if (activeRunId) await persistRun({ id: activeRunId, status: "complete", consensus: result.result });
       } else {
         setActionError("Consensus couldn't be produced from this debate. You can try again.");
       }
     } catch (error) {
+      await finalizeStageAuthorization(authorization, actualCost, "consensus", controller.signal.aborted);
       if (!controller.signal.aborted) {
         // R11: a transport failure here means Claude's own connection just
         // failed a real call — never keep authorizing further calls on a
@@ -574,6 +649,7 @@ export function MultiAiActions() {
         "Multi-AI synthesis · Anthropic · Claude Opus",
         "Synthesis uses a new paid AI call to combine the completed debate.",
       ),
+      { deferSettlement: true },
     );
     if (!authorization.authorized) return;
 
@@ -583,23 +659,30 @@ export function MultiAiActions() {
 
     setPhase("synthesis");
     setActionError(null);
+    let actualCost: number | null = null;
     try {
       const result = await runSynthesis(transcript, {
-        client: (req) => completeTracked(req),
+        client: (req) => completeTracked({
+          ...req,
+          onUsage: (usage) => { actualCost = calculateUsageCost(usage.inputTokens, usage.outputTokens, req.model); },
+        }),
         signal: controller.signal,
       });
       if (controller.signal.aborted) {
+        await finalizeStageAuthorization(authorization, actualCost, "synthesis", true);
         setActionError("Synthesis was cancelled. No charge beyond what already completed.");
         if (activeRunId) await persistRun({ id: activeRunId, status: "cancelled" });
         return;
       }
+      await finalizeStageAuthorization(authorization, actualCost, "synthesis", false);
       if (result.status === "ok") {
         setSynthesis(result.result);
-        if (activeRunId) await persistRun({ id: activeRunId, synthesis: result.result });
+        if (activeRunId) await persistRun({ id: activeRunId, status: "complete", synthesis: result.result });
       } else {
         setActionError("Synthesis couldn't be produced from this debate. You can try again.");
       }
     } catch (error) {
+      await finalizeStageAuthorization(authorization, actualCost, "synthesis", controller.signal.aborted);
       if (!controller.signal.aborted) {
         void reportProviderEvent("error");
         setActionError(safeFailureMessage("Synthesis failed", error));
