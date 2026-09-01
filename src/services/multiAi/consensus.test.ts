@@ -11,12 +11,16 @@ import type { DebateTranscript } from "./transcript";
 
 type ClientFn = (req: MultiAiCompletionRequest) => Promise<string>;
 
+function participant(label: string, text: string, provider = "anthropic", model = "claude-sonnet-5") {
+  return { label, provider, model, text };
+}
+
 function transcript(overrides: Partial<DebateTranscript> = {}): DebateTranscript {
   return {
     question: "Should we use microservices?",
     participants: [
-      { label: "Claude", text: "Only once you have a real scaling or team-boundary problem." },
-      { label: "GPT-5.5", text: "Start with microservices so you never have to migrate later." },
+      participant("Claude", "Only once you have a real scaling or team-boundary problem."),
+      participant("GPT-5.5", "Start with microservices so you never have to migrate later.", "openai", "gpt-5.5"),
     ],
     ...overrides,
   };
@@ -52,7 +56,7 @@ describe("runConsensus — the happy path", () => {
     expect(req.model).toBe("claude-opus-4-8");
     expect(req.system).toBe(CONSENSUS_SYSTEM_PROMPT);
     expect(req.input).toContain("QUESTION:");
-    expect(req.input).toContain("GPT-5.5'S ANSWER:");
+    expect(req.input).toContain("GPT-5.5 [openai · gpt-5.5]'S ANSWER:");
   });
 
   it("tolerates a reply wrapped in prose / code fences", async () => {
@@ -68,7 +72,7 @@ describe("runConsensus — an incomplete transcript", () => {
   it("returns 'incomplete-transcript' without calling the model", async () => {
     const client = vi.fn(async () => consensusJson());
     const outcome = await runConsensus(transcript({
-      participants: [{ label: "Claude", text: "Only once you have a real scaling problem." }, { label: "GPT-5.5", text: "" }],
+      participants: [participant("Claude", "Only once you have a real scaling problem."), participant("GPT-5.5", "", "openai", "gpt-5.5")],
     }), { client });
 
     expect(outcome.status).toBe("incomplete-transcript");
@@ -81,14 +85,14 @@ describe("runConsensus — R23: every participant in a 3-/4-way debate", () => {
     const client = vi.fn<ClientFn>(async () => consensusJson());
     await runConsensus(transcript({
       participants: [
-        { label: "Claude", text: "Claude's argument." },
-        { label: "GPT-5.5", text: "GPT's argument." },
-        { label: "Gemini 3.1 Pro", text: "Gemini's argument." },
+        participant("Claude", "Claude's argument."),
+        participant("GPT-5.5", "GPT's argument.", "openai", "gpt-5.5"),
+        participant("Gemini 3.1 Pro", "Gemini's argument.", "google", "gemini-3.1-pro"),
       ],
     }), { client });
 
     const req = client.mock.calls[0][0];
-    expect(req.input).toContain("GEMINI 3.1 PRO'S ANSWER:");
+    expect(req.input).toContain("GEMINI 3.1 PRO [google · gemini-3.1-pro]'S ANSWER:");
     expect(req.input).toContain("Gemini's argument.");
   });
 
@@ -96,17 +100,17 @@ describe("runConsensus — R23: every participant in a 3-/4-way debate", () => {
     const client = vi.fn<ClientFn>(async () => consensusJson());
     await runConsensus(transcript({
       participants: [
-        { label: "Claude", text: "Claude's argument." },
-        { label: "GPT-5.5", text: "GPT's argument." },
-        { label: "Gemini 3.1 Pro", text: "Gemini's argument." },
-        { label: "Grok 4.3", text: "Grok's argument." },
+        participant("Claude", "Claude's argument."),
+        participant("GPT-5.5", "GPT's argument.", "openai", "gpt-5.5"),
+        participant("Gemini 3.1 Pro", "Gemini's argument.", "google", "gemini-3.1-pro"),
+        participant("Grok 4.3", "Grok's argument.", "xai", "grok-4.3"),
       ],
     }), { client });
 
     const req = client.mock.calls[0][0];
-    expect(req.input).toContain("GPT-5.5'S ANSWER:");
-    expect(req.input).toContain("GEMINI 3.1 PRO'S ANSWER:");
-    expect(req.input).toContain("GROK 4.3'S ANSWER:");
+    expect(req.input).toContain("GPT-5.5 [openai · gpt-5.5]'S ANSWER:");
+    expect(req.input).toContain("GEMINI 3.1 PRO [google · gemini-3.1-pro]'S ANSWER:");
+    expect(req.input).toContain("GROK 4.3 [xai · grok-4.3]'S ANSWER:");
   });
 });
 

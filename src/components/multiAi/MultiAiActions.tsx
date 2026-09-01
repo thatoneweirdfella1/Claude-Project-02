@@ -455,7 +455,15 @@ export function MultiAiActions() {
             sides: newSides,
             transcript: {
               question: effectiveQuestion.trim(),
-              participants: newSides.map((s) => ({ label: s.label, text: s.text! })),
+              participants: newSides.map((side) => {
+                const persisted = sideToParticipantResult(side);
+                return {
+                  label: side.label,
+                  provider: persisted.provider!,
+                  model: persisted.model!,
+                  text: side.text!,
+                };
+              }),
             },
           };
         } else if (newSides.some((s) => s.status === "ok")) {

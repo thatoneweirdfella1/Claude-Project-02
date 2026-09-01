@@ -11,6 +11,10 @@
 export interface TranscriptParticipant {
   /** Display name — "Claude" or the roster label, e.g. "GPT-5.5". */
   label: string;
+  /** Exact execution route carried into adjudication, never inferred from
+      the display label by the consensus/synthesis model. */
+  provider: string;
+  model: string;
   text: string;
 }
 
@@ -30,7 +34,7 @@ export function buildTranscriptInput(transcript: DebateTranscript): string {
   return [
     `QUESTION:\n${transcript.question.trim()}`,
     ...transcript.participants.map(
-      (p) => `${p.label.trim().toUpperCase()}'S ANSWER:\n${p.text.trim()}`,
+      (p) => `${p.label.trim().toUpperCase()} [${p.provider.trim()} · ${p.model.trim()}]'S ANSWER:\n${p.text.trim()}`,
     ),
   ].join("\n\n");
 }
@@ -44,7 +48,10 @@ export function isCompleteTranscript(transcript: DebateTranscript): boolean {
     transcript.question.trim().length > 0 &&
     transcript.participants.length >= 2 &&
     transcript.participants.every(
-      (p) => p.label.trim().length > 0 && p.text.trim().length > 0,
+      (p) => p.label.trim().length > 0
+        && p.provider.trim().length > 0
+        && p.model.trim().length > 0
+        && p.text.trim().length > 0,
     )
   );
 }
