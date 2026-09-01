@@ -3,38 +3,20 @@ import { useAccountStore } from "../../stores/accountStore";
 import {
   refreshProviderStatus,
   reportProviderEvent,
+  verifyProviderRoute,
   type ConnectedProviderId,
   type ProviderAvailability,
+  type ProviderRouteVerification,
 } from "../../services/providerStatus";
+import { saveNow } from "../../services/persistence";
 
-/* R26: Provider Connection Lifecycle — the "AI Connections" section used to
-   be two lines of static text (current destination, a provider count) with
-   no way to see or act on any single provider's actual connection state.
-
-   This exposes exactly the lifecycle the work order approves:
-   - Verify/refresh: a real health check (services/providerStatus.ts, R11's
-     cached/TTL'd check) against /api/provider-status, re-run on demand.
-   - Revoked/invalid: shown as-is from that check — never smoothed over.
-   - Disconnect/reconnect: the one lifecycle action a client without
-     credential storage can genuinely perform. Disconnecting adds the
-     provider to accountStore.disconnectedProviders (R26), which
-     routeReadiness.isProviderConnected and every Multi-AI provider gate
-     honors — it is not a cosmetic toggle.
-
-   Deliberately absent: any "Connect" button that would create or collect
-   credentials. Real API keys are server-managed env vars per
-   services/debate/client.ts's own architecture comment — this panel can
-   verify and disconnect, never mint a connection from nothing. */
-
-const PROVIDER_LABELS: Record<ConnectedProviderId, string> = {
-  anthropic: "Anthropic (Claude)",
-  openai: "OpenAI",
-  google: "Google (Gemini)",
-  xai: "xAI (Grok)",
-  deepseek: "DeepSeek",
-};
-
-const PROVIDER_ORDER: ConnectedProviderId[] = ["anthropic", "openai", "google", "xai", "deepseek"];
+const PROVIDERS: Array<{ id: ConnectedProviderId; label: string; modelId: string; route: string; keyName: string }> = [
+  { id: "anthropic", label: "Anthropic (Claude)", modelId: "claude-sonnet-5", route: "/api/proxy", keyName: "ANTHROPIC_API_KEY" },
+  { id: "openai", label: "OpenAI", modelId: "gpt-5.5", route: "/api/proxy-openai", keyName: "OPENAI_API_KEY" },
+  { id: "google", label: "Google (Gemini)", modelId: "gemini-3.1-pro", route: "/api/proxy-google", keyName: "GOOGLE_API_KEY" },
+  { id: "xai", label: "xAI (Grok)", modelId: "grok-4.3", route: "/api/proxy-xai", keyName: "XAI_API_KEY" },
+  { id: "deepseek", label: "DeepSeek", modelId: "deepseek-v4-pro", route: "/api/proxy-deepseek", keyName: "DEEPSEEK_API_KEY" },
+];
 
 type CheckState = "checking" | "checked";
 
@@ -42,89 +24,99 @@ export function ProviderConnectionsPanel() {
   const disconnectedProviders = useAccountStore((s) => s.disconnectedProviders);
   const disconnectProvider = useAccountStore((s) => s.disconnectProvider);
   const reconnectProvider = useAccountStore((s) => s.reconnectProvider);
-
   const [availability, setAvailability] = useState<ProviderAvailability | null>(null);
+  const [verifications, setVerifications] = useState<Partial<Record<ConnectedProviderId, ProviderRouteVerification>>>({});
   const [checkState, setCheckState] = useState<CheckState>("checking");
+  const [checkingProvider, setCheckingProvider] = useState<ConnectedProviderId | null>(null);
+  const [setupProvider, setSetupProvider] = useState<ConnectedProviderId | null>(null);
+  const [operationStatus, setOperationStatus] = useState("");
 
-  async function verify() {
+  async function refresh() {
     setCheckState("checking");
     const result = await refreshProviderStatus();
     setAvailability(result);
+    setVerifications({});
     setCheckState("checked");
   }
 
-  useEffect(() => {
-    void verify();
-  }, []);
+  async function verify(provider: typeof PROVIDERS[number]) {
+    setCheckingProvider(provider.id);
+    const result = await verifyProviderRoute(provider.id, provider.modelId, provider.route);
+    setVerifications((current) => ({ ...current, [provider.id]: result }));
+    await reportProviderEvent(result.authenticated && result.healthy ? "verified" : "error");
+    setCheckingProvider(null);
+  }
 
-  return (
-    <div className="settings-section" data-testid="provider-connections-panel">
-      <h3>AI Connections</h3>
-      <p className="settings-section__note">
-        Manual copy/open handoff works without connecting a provider. Verifying checks real
-        configuration status only — it never sends a request to the AI model itself, and
-        disconnecting never deletes or exposes any credential.
-      </p>
-      <button
-        type="button"
-        className="settings-btn secondary"
-        onClick={() => void verify()}
-        disabled={checkState === "checking"}
-        data-testid="provider-connections-refresh"
-      >
-        {checkState === "checking" ? "Checking…" : "Refresh status"}
-      </button>
+  async function disconnect(provider: typeof PROVIDERS[number]) {
+    setCheckingProvider(provider.id);
+    disconnectProvider(provider.id);
+    try {
+      await saveNow({ snapshotActiveSession: false });
+      await reportProviderEvent("disconnected");
+      setOperationStatus(`${provider.label} disconnect saved.`);
+    } catch {
+      reconnectProvider(provider.id);
+      setOperationStatus(`${provider.label} disconnect was not saved; the route remains enabled.`);
+    } finally {
+      setCheckingProvider(null);
+    }
+  }
 
-      <ul className="provider-connections-list">
-        {PROVIDER_ORDER.map((id) => {
-          const disconnected = disconnectedProviders.includes(id);
-          const serverAvailable = availability?.[id] ?? false;
-          const state: "checking" | "disconnected" | "unavailable" | "connected" =
-            checkState === "checking" ? "checking"
-              : disconnected ? "disconnected"
-                : serverAvailable ? "connected"
-                  : "unavailable";
-          const label =
-            state === "checking" ? "Checking…"
-              : state === "disconnected" ? "Disconnected"
-                : state === "connected" ? "Connected — verified"
-                  : "Not connected";
+  async function reconnect(provider: typeof PROVIDERS[number]) {
+    setCheckingProvider(provider.id);
+    reconnectProvider(provider.id);
+    try {
+      await saveNow({ snapshotActiveSession: false });
+      await reportProviderEvent("connected");
+      setOperationStatus(`${provider.label} reconnect saved; verifying exact route.`);
+      await verify(provider);
+    } catch {
+      disconnectProvider(provider.id);
+      setOperationStatus(`${provider.label} reconnect was not saved; it remains disconnected.`);
+      setCheckingProvider(null);
+    }
+  }
 
-          return (
-            <li key={id} className={`provider-connections-list__row provider-connections-list__row--${state}`}>
-              <span className="provider-connections-list__name">{PROVIDER_LABELS[id]}</span>
-              <span className="provider-connections-list__status" data-testid={`provider-status-${id}`}>{label}</span>
-              {disconnected ? (
-                <button
-                  type="button"
-                  className="settings-btn secondary"
-                  onClick={() => {
-                    reconnectProvider(id);
-                    // R11: reconnecting is this app's closest equivalent to
-                    // a "connect" event — the cached status must not keep
-                    // reporting whatever it last read before reconnect.
-                    void reportProviderEvent("connected");
-                    void verify();
-                  }}
-                >
-                  Reconnect
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  className="settings-btn secondary"
-                  onClick={() => {
-                    disconnectProvider(id);
-                    void reportProviderEvent("disconnected");
-                  }}
-                >
-                  Disconnect
-                </button>
-              )}
-            </li>
-          );
-        })}
-      </ul>
-    </div>
-  );
+  useEffect(() => { void refresh(); }, []);
+
+  return <div className="settings-section" data-testid="provider-connections-panel">
+    <h3>AI Connections</h3>
+    <p className="settings-section__note">
+      Configuration, authentication, and live route health are separate states. Verification checks the exact model route; it never substitutes a provider or sends a billable prompt. Manual handoff always remains available.
+    </p>
+    <button type="button" className="settings-btn secondary" onClick={() => void refresh()} disabled={checkState === "checking"} data-testid="provider-connections-refresh">
+      {checkState === "checking" ? "Checking configuration…" : "Refresh configuration"}
+    </button>
+    <div role="status" aria-live="polite">{operationStatus}</div>
+    <ul className="provider-connections-list">
+      {PROVIDERS.map((provider) => {
+        const disconnected = disconnectedProviders.includes(provider.id);
+        const verification = verifications[provider.id];
+        const checking = checkState === "checking" || checkingProvider === provider.id;
+        const configured = availability?.[provider.id] === true;
+        const verified = Boolean(verification?.configured && verification.authenticated && verification.healthy && verification.verifiedAt);
+        const state = checking ? "checking" : disconnected ? "disconnected" : verified ? "verified"
+          : verification?.failureReason === "revoked" ? "revoked"
+            : verification?.failureReason === "invalid" ? "invalid"
+              : configured ? verification ? "failed" : "configured" : "not-configured";
+        const label = state === "checking" ? "Checking…" : state === "disconnected" ? "Disconnected locally"
+          : state === "verified" ? `Verified healthy · ${verification?.verifiedAt}`
+            : state === "revoked" ? "Revoked — verification failed"
+              : state === "invalid" ? "Invalid authentication"
+                : state === "failed" ? "Configured — authentication or health not verified"
+                  : state === "configured" ? "Configured — not yet verified" : "Not configured";
+        return <li key={provider.id} className={`provider-connections-list__row provider-connections-list__row--${state}`}>
+          <span className="provider-connections-list__name">{provider.label}<small>{provider.modelId} · {provider.route}</small></span>
+          <span className="provider-connections-list__status" data-testid={`provider-status-${provider.id}`}>{label}</span>
+          {disconnected ? <button type="button" className="settings-btn secondary" onClick={() => void reconnect(provider)}>Reconnect & verify</button> : configured ? <>
+            <button type="button" className="settings-btn secondary" onClick={() => void verify(provider)} disabled={checkingProvider === provider.id}>{verification ? "Verify again" : "Verify exact route"}</button>
+            <button type="button" className="settings-btn secondary" onClick={() => void disconnect(provider)}>Disconnect</button>
+          </> : <button type="button" className="settings-btn secondary" onClick={() => setSetupProvider(provider.id)}>Connect instructions</button>}
+          {setupProvider === provider.id && <p role="status" className="settings-section__note">
+            Configure {provider.keyName} in the server deployment, then use Refresh configuration and Verify exact route. This app does not request, create, display, or store provider credentials or OAuth applications.
+          </p>}
+        </li>;
+      })}
+    </ul>
+  </div>;
 }

@@ -33,6 +33,7 @@ export default function handler(request: Request): Response {
     authenticated: false,
     healthy: false,
     verifiedAt: null,
+    failureReason: knownProvider && configured[provider as keyof typeof configured] ? "unverified" : "unavailable",
   } : undefined;
   return new Response(JSON.stringify({ ...configured, routeStatus }), {
     status: 200,

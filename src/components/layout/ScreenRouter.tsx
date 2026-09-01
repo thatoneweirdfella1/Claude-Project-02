@@ -1557,7 +1557,7 @@ function SettingsScreen() {
 
         {section === "personalization" && <InteractivePersonalOptimization />}
 
-        {section === "connections" && <><div className="settings-section"><h3>Connection status</h3><p className="settings-section__note">No external provider is connected. Provider setup controls prepare configuration only; they do not claim a successful connection or send data.</p></div><ProviderNeutralSettings /></>}
+        {section === "connections" && <><div className="settings-section"><h3>Connection status</h3><p className="settings-section__note">Provider configuration and exact-route verification appear below. No status is inferred from setup alone.</p></div><ProviderNeutralSettings /></>}
 
         {section === "appearance" && <AppearanceSettings />}
 
