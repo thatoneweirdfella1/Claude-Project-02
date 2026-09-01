@@ -112,6 +112,18 @@ describe("R21: MultiAiRunHistory", () => {
     expect(host?.textContent).not.toContain("Question about m2");
   });
 
+  it("anchors a range once after its final source message", () => {
+    useSessionStore.getState().upsertMultiAiRun(run({ sourceMessageIds: ["m1", "m2", "m3"] }));
+
+    mount(<MultiAiRunHistory anchorMessageId="m2" />);
+    expect(host?.querySelector("[data-testid='multi-ai-run']")).toBeNull();
+
+    act(() => root?.unmount());
+    host?.remove();
+    mount(<MultiAiRunHistory anchorMessageId="m3" />);
+    expect(host?.querySelectorAll("[data-testid='multi-ai-run']")).toHaveLength(1);
+  });
+
   it("shows cancelled status honestly, without any completed-looking participant data", () => {
     useSessionStore.getState().upsertMultiAiRun(run({ status: "cancelled", participants: [] }));
     mount(<MultiAiRunHistory />);

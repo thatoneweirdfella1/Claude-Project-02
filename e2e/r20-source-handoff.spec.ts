@@ -67,14 +67,12 @@ test("R20: select a complete conversation range, review it, and persist a zero-c
 
   await actions.getByRole("button", { name: "Prepare source handoff", exact: true }).click();
   await expect(actions.getByRole("status").filter({ hasText: "No provider request was sent" })).toContainText("no credits were used");
-  await expect(actions.getByTestId("multi-ai-run").getByRole("status")).toHaveText("Local preparation");
+  await expect(page.getByTestId("conversation-area").getByTestId("multi-ai-run").getByRole("status")).toHaveText("Local preparation");
   expect(providerRequests).toBe(0);
 
   await page.reload();
   await restoreIfOffered(page);
-  await page.getByRole("button", { name: /MULTI-AI ACTIONS/i }).click();
-  const restoredActions = page.getByTestId("multi-ai-actions-body");
-  const restoredRun = restoredActions.getByTestId("multi-ai-run");
+  const restoredRun = page.getByTestId("conversation-area").getByTestId("multi-ai-run");
   await expect(restoredRun.getByRole("status")).toHaveText("Local preparation");
   await restoredRun.locator("summary").click();
   await expect(restoredRun).toContainText("Persisted source handoff · no provider request sent");

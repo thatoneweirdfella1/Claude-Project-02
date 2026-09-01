@@ -14,6 +14,9 @@ export interface MultiAiRunHistoryProps {
   /** Only render runs that came from this exact set of source messages —
       lets a run appear directly under the message(s) it branched from. */
   sourceMessageIds?: string[];
+  /** Render only runs whose final source message is this conversation
+      message. This anchors a range exactly once, after its last turn. */
+  anchorMessageId?: string;
 }
 
 /* R29: "Failed" and "Cancelled" are pulled straight from WORKFLOW_STAGE_LABEL
@@ -35,12 +38,14 @@ function formatCost(value: number | null): string {
   return `$${value.toFixed(4)}`;
 }
 
-export function MultiAiRunHistory({ sourceMessageIds }: MultiAiRunHistoryProps) {
+export function MultiAiRunHistory({ sourceMessageIds, anchorMessageId }: MultiAiRunHistoryProps) {
   const runs = useSessionStore((s) => s.multiAiRuns);
 
-  const visible = sourceMessageIds
-    ? runs.filter((r) => r.sourceMessageIds.some((id) => sourceMessageIds.includes(id)))
-    : runs;
+  const visible = anchorMessageId
+    ? runs.filter((run) => run.sourceMessageIds.at(-1) === anchorMessageId)
+    : sourceMessageIds
+      ? runs.filter((run) => run.sourceMessageIds.some((id) => sourceMessageIds.includes(id)))
+      : runs;
 
   if (visible.length === 0) return null;
 
@@ -64,7 +69,7 @@ export function MultiAiRunHistory({ sourceMessageIds }: MultiAiRunHistoryProps) 
             {run.participants.map((p) => (
               <li key={`${run.id}-${p.label}`} className={`multi-ai-run-history__participant multi-ai-run-history__participant--${p.status}`}>
                 <strong>{p.label}</strong>
-                {p.provider && p.model && <span className="multi-ai-run-history__attribution"> ({p.provider} · {p.model})</span>}
+                {(p.provider || p.model) && <span className="multi-ai-run-history__attribution"> ({[p.provider, p.model].filter(Boolean).join(" · ")})</span>}
                 {p.status === "ok"
                   ? <p>{p.text}</p>
                   : <p className="multi-ai-run-history__error">{p.message ?? "This side didn't land."}</p>}

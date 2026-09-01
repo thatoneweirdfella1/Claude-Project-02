@@ -1,9 +1,10 @@
-import { Children, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { Children, Fragment, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { MessageBubble } from "../streaming";
 import { DownloadModal } from "../export";
 import { getTelemetryEntries } from "../../services/telemetry";
 import { useSessionStore } from "../../stores/sessionStore";
 import { useAccountStore } from "../../stores/accountStore";
+import { MultiAiRunHistory } from "../multiAi/MultiAiRunHistory";
 
 export interface ConversationAreaProps { children?: ReactNode; }
 
@@ -47,22 +48,24 @@ export function ConversationArea({ children }: ConversationAreaProps) {
       <div className="conversation-area__heading"><h2>Conversation</h2></div>
       {isEmpty && <div className="conversation-empty"><h3>Start with what is in your head.</h3><p>Divergence.AI will turn it into an AI-ready request without spending credits.</p></div>}
       {conversation.map((message) => (
-        <MessageBubble
-          key={message.id}
-          message={message}
-          userInitial="D"
-          onRate={(stars) => saveRating(message.id, stars, message.ratingComment)}
-          onRatingComment={(comment) => message.ratingStars !== undefined && saveRating(message.id, message.ratingStars, comment)}
-          onDownload={() => setDownloadMessageId(message.id)}
-          onRefine={(instruction) => {
-            const nextBranch = (message.branchCount ?? 1) + 1;
-            updateMessage(message.id, { branchCount: nextBranch, branchIndex: nextBranch });
-            setDraftInput(`${instruction}: ${message.content}`);
-            queueMicrotask(() => document.querySelector<HTMLTextAreaElement>(".input-box__textarea")?.focus());
-          }}
-          onBranchChange={(branchIndex) => updateMessage(message.id, { branchIndex })}
-          onUserCopied={() => updateMessage(message.id, { userCopied: true })}
-        />
+        <Fragment key={message.id}>
+          <MessageBubble
+            message={message}
+            userInitial="D"
+            onRate={(stars) => saveRating(message.id, stars, message.ratingComment)}
+            onRatingComment={(comment) => message.ratingStars !== undefined && saveRating(message.id, message.ratingStars, comment)}
+            onDownload={() => setDownloadMessageId(message.id)}
+            onRefine={(instruction) => {
+              const nextBranch = (message.branchCount ?? 1) + 1;
+              updateMessage(message.id, { branchCount: nextBranch, branchIndex: nextBranch });
+              setDraftInput(`${instruction}: ${message.content}`);
+              queueMicrotask(() => document.querySelector<HTMLTextAreaElement>(".input-box__textarea")?.focus());
+            }}
+            onBranchChange={(branchIndex) => updateMessage(message.id, { branchIndex })}
+            onUserCopied={() => updateMessage(message.id, { userCopied: true })}
+          />
+          <MultiAiRunHistory anchorMessageId={message.id} />
+        </Fragment>
       ))}
       {children}
       {downloadMessage && <DownloadModal message={downloadMessage} telemetryEntry={downloadTelemetryEntry} onClose={() => setDownloadMessageId(null)} />}

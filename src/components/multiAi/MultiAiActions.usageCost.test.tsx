@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { MultiAiActions } from "./MultiAiActions";
 import { createInitialSessionState, useSessionStore } from "../../stores/sessionStore";
 import { createInitialAccountState, useAccountStore } from "../../stores/accountStore";
+import { ConversationArea } from "../translation/ConversationArea";
 
 /* R15 second-pass correction: MultiAiRunHistory renders "Estimated ... ·
    Actual ..." per participant and a run-level "Total — estimated ... ·
@@ -101,7 +102,7 @@ describe("R15: MultiAiActions persists and renders real per-participant and tota
       },
     });
 
-    const container = mount(<MultiAiActions />);
+    const container = mount(<ConversationArea><MultiAiActions /></ConversationArea>);
     act(() => container.querySelector<HTMLButtonElement>(".multi-ai-actions__toggle")?.click());
     await flush();
 
@@ -143,7 +144,7 @@ describe("R15: MultiAiActions persists and renders real per-participant and tota
       ],
     });
 
-    const container = mount(<MultiAiActions />);
+    const container = mount(<ConversationArea><MultiAiActions /></ConversationArea>);
     act(() => container.querySelector<HTMLButtonElement>(".multi-ai-actions__toggle")?.click());
     await flush();
 
@@ -154,6 +155,7 @@ describe("R15: MultiAiActions persists and renders real per-participant and tota
 
     const run = useSessionStore.getState().multiAiRuns[0];
     expect(run.totalActualCost).toBeNull();
+    expect(run.participants[1]).toMatchObject({ provider: "openai", model: "gpt-5.5" });
 
     const historyText = container.querySelector("[data-testid='multi-ai-run-history']")?.textContent ?? "";
     expect(historyText).toMatch(/Total — estimated \$0\.\d+ · actual cost unavailable/);

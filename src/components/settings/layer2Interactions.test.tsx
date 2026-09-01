@@ -32,16 +32,19 @@ afterEach(() => {
 });
 
 describe("Layer 2 safe interaction surfaces", () => {
-  it("keeps the deterministic plan checkout isolated from real account state", () => {
+  it("applies a verified sandbox checkout to both local ledgers without creating a payment request", async () => {
     mount(<InteractivePlanControls />);
     act(() => button("Start Plus sandbox checkout").click());
     expect(host?.querySelector('[role="dialog"]')?.textContent).toContain("No balance or entitlement changes");
     expect(host?.querySelector('[role="dialog"]')?.textContent).toContain("No real payment can occur");
     expect(useAccountStore.getState().manualPaymentRequests).toHaveLength(0);
-    expect(useAccountStore.getState().plan).toBe("free");
-    expect(useAccountStore.getState().creditBalance).toBe(0);
-    act(() => button("Cancel").click());
+    await act(async () => button("Apply verified sandbox callback").click());
     expect(host?.querySelector('[role="dialog"]')).toBeNull();
+    expect(useAccountStore.getState().plan).toBe("plus");
+    expect(useAccountStore.getState().creditBalance).toBe(15);
+    expect(useAccountStore.getState().creditLedger).toHaveLength(1);
+    expect(useAccountStore.getState().creditLedger[0].referenceId).toMatch(/^sandbox-checkout:/);
+    expect(useAccountStore.getState().manualPaymentRequests).toHaveLength(0);
   });
 
   it("previews optimization without processing conversations", () => {
