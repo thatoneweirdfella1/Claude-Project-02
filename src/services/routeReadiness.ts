@@ -13,7 +13,7 @@
 
 import type { DestinationSelection, DestinationProviderId } from "../stores/types";
 import { useAccountStore } from "../stores/accountStore";
-import { getProviderStatus, type ConnectedProviderId } from "./providerStatus";
+import { getProviderStatus, verifyProviderRoute, type ConnectedProviderId } from "./providerStatus";
 import { WORKFLOW_STAGE_LABEL } from "./workflowVocabulary";
 
 /* R29: every label below is built from WORKFLOW_STAGE_LABEL's "verified" and
@@ -90,8 +90,9 @@ export async function computeRouteReadiness(
     };
   }
 
-  const available = await getProviderStatus(destination.providerId);
-  if (!available) {
+  const route = destination.providerId === "anthropic" ? "/api/proxy" : `/api/proxy-${destination.providerId}`;
+  const verification = await verifyProviderRoute(destination.providerId, destination.modelId, route);
+  if (!verification.configured) {
     return {
       state: "unavailable",
       providerId: destination.providerId,
@@ -101,13 +102,33 @@ export async function computeRouteReadiness(
     };
   }
 
+  if (!verification.authenticated || !verification.healthy || !verification.verifiedAt) {
+    return {
+      state: "unavailable",
+      providerId: destination.providerId,
+      modelId: destination.modelId,
+      verified: false,
+      label: `${destination.providerId} · ${destination.modelId} is configured but not verified healthy on ${route} — use ${MANUAL_HANDOFF_TERM}`,
+    };
+  }
+
   return {
     state: "ready",
     providerId: destination.providerId,
     modelId: destination.modelId,
     verified: true,
-    label: `${destination.providerId} ${VERIFIED_TERM} and ready`,
+    label: `${destination.providerId} · ${destination.modelId} ${VERIFIED_TERM} and ready on ${route}`,
   };
+}
+
+export async function isExactRouteReady(
+  providerId: ConnectedProviderId,
+  modelId: string,
+  route: string,
+): Promise<boolean> {
+  if (useAccountStore.getState().disconnectedProviders.includes(providerId)) return false;
+  const result = await verifyProviderRoute(providerId, modelId, route);
+  return result.configured && result.authenticated && result.healthy && Boolean(result.verifiedAt);
 }
 
 /** R26: a provider is usable only when the server reports it configured AND

@@ -957,6 +957,14 @@ input:focus-visible {
   clip-path: none;
 }
 
+:root[data-layout="gold"] .frozen-composer:has(.destination-field__popover),
+:root[data-layout="gold"] .frozen-composer:has(.advanced-controls__overlay) {
+  /* The normal precision-layout clip trims the composer's left visual edge.
+     An upward-opening menu must escape that clip or it can render yet remain
+     outside the parent's pointer hit region. */
+  clip-path: none;
+}
+
 :root[data-layout="gold"] .quick-actions {
   margin-top: 24px !important;
   padding: 16px 20px 16px 38px !important;
@@ -1060,8 +1068,11 @@ input:focus-visible {
 .topbar-logo { flex-basis:240px; }
 .logo-mark { width:44px; height:44px; flex-basis:44px; }
 .frozen-center-stack { bottom:8px !important; left:0 !important; gap:6px; }
-.frozen-center-stack > .conversation-area { order:1; margin:0; min-height:0; }
-.frozen-center-stack > .frozen-composer { order:2; flex:0 0 auto; width:100%; padding:0 12px 8px; }
+.frozen-center-stack > .conversation-area { position:relative; z-index:1; order:1; margin:0; min-height:0; }
+/* Composer popovers intentionally open upward into the conversation's visual
+   area. Keep their parent stacking context above that sibling so the visible
+   destination and advanced controls receive genuine pointer input. */
+.frozen-center-stack > .frozen-composer { position:relative; z-index:5; order:2; flex:0 0 auto; width:100%; padding:0 12px 8px; }
 .frozen-center-stack > .quick-actions { order:3; }
 .frozen-composer__heading { min-height:38px; }
 .frozen-composer .input-box__textarea { height:122px !important; min-height:122px; max-height:122px; padding:10px 12px 32px; overflow-y:auto; }

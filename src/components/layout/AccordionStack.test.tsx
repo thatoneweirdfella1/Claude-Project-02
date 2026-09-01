@@ -41,13 +41,13 @@ function openAiStatusPanel() {
   const header = [...(host?.querySelectorAll("button.accordion-panel__header") ?? [])]
     .find((el) => el.textContent?.includes("AI Status"));
   if (!header) throw new Error("AI Status panel header not found");
-  act(() => header.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+  act(() => (header as HTMLButtonElement).click());
 }
 
 describe("R25: AI Status readiness (AccordionStack)", () => {
   it("shows 'Checking…' before the health check resolves — never a premature ready claim", async () => {
-    let resolveStatus!: (value: boolean) => void;
-    vi.spyOn(providerStatus, "getProviderStatus").mockReturnValue(
+    let resolveStatus!: (value: providerStatus.ProviderRouteVerification) => void;
+    vi.spyOn(providerStatus, "verifyProviderRoute").mockReturnValue(
       new Promise((resolve) => { resolveStatus = resolve; }),
     );
     useSessionStore.setState({ destination: { providerId: "anthropic", modelId: "claude-sonnet-5" } });
@@ -58,12 +58,12 @@ describe("R25: AI Status readiness (AccordionStack)", () => {
     const readiness = host?.querySelector("[data-testid='ai-status-readiness']");
     expect(readiness?.textContent).toBe("Checking…");
 
-    resolveStatus(true);
+    resolveStatus({ providerId: "anthropic", modelId: "claude-sonnet-5", route: "/api/proxy", configured: true, authenticated: true, healthy: true, verifiedAt: "now" });
     await flush();
   });
 
   it("shows a verified-ready label only once the health check confirms the provider", async () => {
-    vi.spyOn(providerStatus, "getProviderStatus").mockResolvedValue(true);
+    vi.spyOn(providerStatus, "verifyProviderRoute").mockResolvedValue({ providerId: "anthropic", modelId: "claude-sonnet-5", route: "/api/proxy", configured: true, authenticated: true, healthy: true, verifiedAt: "now" });
     useSessionStore.setState({ destination: { providerId: "anthropic", modelId: "claude-sonnet-5" } });
 
     mount(<AccordionStack />);
@@ -76,7 +76,7 @@ describe("R25: AI Status readiness (AccordionStack)", () => {
   });
 
   it("fails closed: an unavailable provider never shows a ready-looking label", async () => {
-    vi.spyOn(providerStatus, "getProviderStatus").mockResolvedValue(false);
+    vi.spyOn(providerStatus, "verifyProviderRoute").mockResolvedValue({ providerId: "openai", modelId: "gpt-5.5", route: "/api/proxy-openai", configured: false, authenticated: false, healthy: false, verifiedAt: null });
     useSessionStore.setState({ destination: { providerId: "openai", modelId: "gpt-5.5" } });
 
     mount(<AccordionStack />);
@@ -89,7 +89,7 @@ describe("R25: AI Status readiness (AccordionStack)", () => {
   });
 
   it("local/universal routes are always ready without claiming any external verification", async () => {
-    const spy = vi.spyOn(providerStatus, "getProviderStatus");
+    const spy = vi.spyOn(providerStatus, "verifyProviderRoute");
     useSessionStore.setState({ destination: { providerId: "universal", modelId: "universal" } });
 
     mount(<AccordionStack />);
@@ -102,16 +102,16 @@ describe("R25: AI Status readiness (AccordionStack)", () => {
   });
 
   it("re-checks readiness when the destination provider changes", async () => {
-    const spy = vi.spyOn(providerStatus, "getProviderStatus").mockResolvedValue(true);
+    const spy = vi.spyOn(providerStatus, "verifyProviderRoute").mockImplementation(async (providerId, modelId, route) => ({ providerId, modelId, route, configured: true, authenticated: true, healthy: true, verifiedAt: "now" }));
     useSessionStore.setState({ destination: { providerId: "anthropic", modelId: "claude-sonnet-5" } });
 
     mount(<AccordionStack />);
     openAiStatusPanel();
     await flush();
-    expect(spy).toHaveBeenCalledWith("anthropic");
+    expect(spy).toHaveBeenCalledWith("anthropic", "claude-sonnet-5", "/api/proxy");
 
     act(() => useSessionStore.setState({ destination: { providerId: "google", modelId: "gemini-3.1-pro" } }));
     await flush();
-    expect(spy).toHaveBeenCalledWith("google");
+    expect(spy).toHaveBeenCalledWith("google", "gemini-3.1-pro", "/api/proxy-google");
   });
 });
