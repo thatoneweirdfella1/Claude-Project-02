@@ -98,10 +98,10 @@ test.describe("R30: browser smoke matrix — every primary screen loads with no 
     await page.getByRole("dialog", { name: "All tools" }).getByRole("button", { name: "AI Connections", exact: true }).click({ timeout: 10_000 });
 
     await expect(page.getByTestId("provider-connections-panel")).toBeVisible({ timeout: 10_000 });
-    // All five providers report unavailable per the mock above — fail closed,
-    // never a false "Connected" claim.
+    // All five providers report no server configuration per the mock above —
+    // fail closed and distinguish that from verified connection health.
     for (const id of ["anthropic", "openai", "google", "xai", "deepseek"]) {
-      await expect(page.getByTestId(`provider-status-${id}`)).toContainText("Not connected");
+      await expect(page.getByTestId(`provider-status-${id}`)).toContainText("Not configured");
     }
 
     expect(consoleErrors).toEqual([]);

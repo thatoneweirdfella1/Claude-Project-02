@@ -4,167 +4,99 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { ProviderConnectionsPanel } from "./ProviderConnectionsPanel";
 import { createInitialAccountState, useAccountStore } from "../../stores/accountStore";
 import * as providerStatus from "../../services/providerStatus";
-
-/* R26: Provider Connection Lifecycle — verify, disconnect, reconnect must
-   all be real, discoverable controls with exact per-provider status, not
-   static text. */
+import * as persistence from "../../services/persistence";
 
 let root: Root | null = null;
 let host: HTMLDivElement | null = null;
 
-function mount(node: React.ReactNode) {
+function mount() {
   host = document.createElement("div");
   document.body.append(host);
   root = createRoot(host);
-  act(() => root?.render(node));
-  return host;
+  act(() => root?.render(<ProviderConnectionsPanel />));
 }
 
 async function flush() {
-  await act(async () => {
-    await Promise.resolve();
-    await Promise.resolve();
-  });
+  await act(async () => { await Promise.resolve(); await Promise.resolve(); });
+}
+
+function row(id: string): HTMLLIElement {
+  const status = host?.querySelector(`[data-testid='provider-status-${id}']`);
+  const result = status?.closest("li");
+  if (!(result instanceof HTMLLIElement)) throw new Error(`Missing ${id} row`);
+  return result;
+}
+
+function click(li: Element, label: string) {
+  const target = [...li.querySelectorAll("button")].find((item) => item.textContent === label);
+  if (!(target instanceof HTMLButtonElement)) throw new Error(`Missing ${label}`);
+  act(() => target.click());
 }
 
 afterEach(() => {
   act(() => root?.unmount());
-  host?.remove();
-  root = null;
-  host = null;
+  host?.remove(); root = null; host = null;
   useAccountStore.setState(createInitialAccountState());
   vi.restoreAllMocks();
 });
 
-function row(providerId: string) {
-  const status = host?.querySelector(`[data-testid='provider-status-${providerId}']`);
-  if (!status) throw new Error(`Missing status for ${providerId}`);
-  return status.closest("li");
-}
-
-function button(li: Element | null, label: string) {
-  const match = [...(li?.querySelectorAll("button") ?? [])].find((b) => b.textContent === label);
-  if (!(match instanceof HTMLButtonElement)) throw new Error(`Missing "${label}" button`);
-  return match;
-}
-
-describe("R26: ProviderConnectionsPanel", () => {
-  it("checks real status for every provider on mount", async () => {
-    const spy = vi.spyOn(providerStatus, "refreshProviderStatus").mockResolvedValue({
-      anthropic: true, openai: false, google: true, xai: false, deepseek: false,
-    });
-
-    mount(<ProviderConnectionsPanel />);
-    await flush();
-
-    expect(spy).toHaveBeenCalledTimes(1);
-    expect(row("anthropic")?.textContent).toContain("Connected — verified");
-    expect(row("openai")?.textContent).toContain("Not connected");
+describe("R26 provider connection lifecycle", () => {
+  it("distinguishes configured from verified and carries the exact model route", async () => {
+    vi.spyOn(providerStatus, "refreshProviderStatus").mockResolvedValue({ anthropic: false, openai: true, google: false, xai: false, deepseek: false });
+    vi.spyOn(providerStatus, "verifyProviderRoute").mockResolvedValue({ providerId: "openai", modelId: "gpt-5.5", route: "/api/proxy-openai", configured: true, authenticated: true, healthy: true, verifiedAt: "now" });
+    vi.spyOn(providerStatus, "reportProviderEvent").mockResolvedValue();
+    mount(); await flush();
+    expect(row("openai").textContent).toContain("Configured — not yet verified");
+    expect(row("openai").textContent).toContain("gpt-5.5 · /api/proxy-openai");
+    click(row("openai"), "Verify exact route"); await flush();
+    expect(providerStatus.verifyProviderRoute).toHaveBeenCalledWith("openai", "gpt-5.5", "/api/proxy-openai");
+    expect(row("openai").textContent).toContain("Verified healthy · now");
   });
 
-  it("Refresh status re-runs the real health check", async () => {
-    const spy = vi.spyOn(providerStatus, "refreshProviderStatus").mockResolvedValue({
-      anthropic: true, openai: true, google: true, xai: true, deepseek: true,
-    });
-
-    mount(<ProviderConnectionsPanel />);
-    await flush();
-    expect(spy).toHaveBeenCalledTimes(1);
-
-    const refreshButton = host?.querySelector("[data-testid='provider-connections-refresh']");
-    act(() => refreshButton?.dispatchEvent(new MouseEvent("click", { bubbles: true })));
-    await flush();
-
-    expect(spy).toHaveBeenCalledTimes(2);
+  it("renders invalid and revoked verification failures exactly", async () => {
+    vi.spyOn(providerStatus, "refreshProviderStatus").mockResolvedValue({ anthropic: false, openai: true, google: false, xai: false, deepseek: false });
+    const verify = vi.spyOn(providerStatus, "verifyProviderRoute")
+      .mockResolvedValueOnce({ providerId: "openai", modelId: "gpt-5.5", route: "/api/proxy-openai", configured: true, authenticated: false, healthy: false, verifiedAt: null, failureReason: "invalid" })
+      .mockResolvedValueOnce({ providerId: "openai", modelId: "gpt-5.5", route: "/api/proxy-openai", configured: true, authenticated: false, healthy: false, verifiedAt: null, failureReason: "revoked" });
+    vi.spyOn(providerStatus, "reportProviderEvent").mockResolvedValue();
+    mount(); await flush(); click(row("openai"), "Verify exact route"); await flush();
+    expect(row("openai").textContent).toContain("Invalid authentication");
+    click(row("openai"), "Verify again"); await flush();
+    expect(row("openai").textContent).toContain("Revoked — verification failed");
+    expect(verify).toHaveBeenCalledTimes(2);
   });
 
-  it("Disconnect on a connected provider adds it to accountStore.disconnectedProviders", async () => {
-    vi.spyOn(providerStatus, "refreshProviderStatus").mockResolvedValue({
-      anthropic: true, openai: true, google: true, xai: true, deepseek: true,
-    });
-    mount(<ProviderConnectionsPanel />);
-    await flush();
+  it("offers credential-safe connect instructions only when not configured", async () => {
+    vi.spyOn(providerStatus, "refreshProviderStatus").mockResolvedValue({ anthropic: false, openai: false, google: false, xai: false, deepseek: false });
+    mount(); await flush(); click(row("anthropic"), "Connect instructions");
+    expect(row("anthropic").textContent).toContain("Configure ANTHROPIC_API_KEY in the server deployment");
+    expect(row("anthropic").textContent).toContain("does not request, create, display, or store provider credentials");
+  });
 
-    const openaiRow = row("openai");
-    act(() => button(openaiRow, "Disconnect").dispatchEvent(new MouseEvent("click", { bubbles: true })));
-
+  it("disconnects, then reconnects and verifies rather than merely flipping a label", async () => {
+    vi.spyOn(providerStatus, "refreshProviderStatus").mockResolvedValue({ anthropic: false, openai: true, google: false, xai: false, deepseek: false });
+    vi.spyOn(providerStatus, "verifyProviderRoute").mockResolvedValue({ providerId: "openai", modelId: "gpt-5.5", route: "/api/proxy-openai", configured: true, authenticated: true, healthy: true, verifiedAt: "now" });
+    const report = vi.spyOn(providerStatus, "reportProviderEvent").mockResolvedValue();
+    vi.spyOn(persistence, "saveNow").mockResolvedValue();
+    mount(); await flush(); click(row("openai"), "Disconnect"); await flush();
     expect(useAccountStore.getState().disconnectedProviders).toContain("openai");
-  });
-
-  it("a disconnected provider shows 'Disconnected' even though the server reports it available", async () => {
-    vi.spyOn(providerStatus, "refreshProviderStatus").mockResolvedValue({
-      anthropic: true, openai: true, google: true, xai: true, deepseek: true,
-    });
-    act(() => useAccountStore.getState().disconnectProvider("openai"));
-
-    mount(<ProviderConnectionsPanel />);
-    await flush();
-
-    expect(row("openai")?.textContent).toContain("Disconnected");
-  });
-
-  it("Reconnect removes the provider from disconnectedProviders", async () => {
-    vi.spyOn(providerStatus, "refreshProviderStatus").mockResolvedValue({
-      anthropic: true, openai: true, google: true, xai: true, deepseek: true,
-    });
-    act(() => useAccountStore.getState().disconnectProvider("openai"));
-
-    mount(<ProviderConnectionsPanel />);
-    await flush();
-
-    const openaiRow = row("openai");
-    act(() => button(openaiRow, "Reconnect").dispatchEvent(new MouseEvent("click", { bubbles: true })));
-
+    expect(row("openai").textContent).toContain("Disconnected locally");
+    click(row("openai"), "Reconnect & verify"); await flush();
     expect(useAccountStore.getState().disconnectedProviders).not.toContain("openai");
+    expect(providerStatus.verifyProviderRoute).toHaveBeenCalled();
+    expect(report).toHaveBeenCalledWith("connected");
+    expect(row("openai").textContent).toContain("Verified healthy");
   });
 
-  /* R11 second-pass correction: the first pass built providerStatus.ts's
-     cache-invalidation function (reportProviderEvent) and unit-tested it
-     in isolation, but never actually wired it to fire from any real user
-     action — "after connect, verify, disconnect, failed execution, and
-     manual refresh" (the requirement's own wording) was only true for
-     manual refresh. Disconnect/reconnect here now call it too (see
-     ProviderConnectionsPanel.tsx), verified below with a real click. */
-  it("R11: Disconnect invalidates the cached provider status, not just the disconnectedProviders list", async () => {
-    vi.spyOn(providerStatus, "refreshProviderStatus").mockResolvedValue({
-      anthropic: true, openai: true, google: true, xai: true, deepseek: true,
-    });
-    const reportSpy = vi.spyOn(providerStatus, "reportProviderEvent").mockResolvedValue(undefined);
-
-    mount(<ProviderConnectionsPanel />);
-    await flush();
-
-    const openaiRow = row("openai");
-    button(openaiRow, "Disconnect").click();
-
-    expect(reportSpy).toHaveBeenCalledWith("disconnected");
-  });
-
-  it("R11: Reconnect invalidates the cached provider status and re-verifies immediately", async () => {
-    vi.spyOn(providerStatus, "refreshProviderStatus").mockResolvedValue({
-      anthropic: true, openai: true, google: true, xai: true, deepseek: true,
-    });
-    const reportSpy = vi.spyOn(providerStatus, "reportProviderEvent").mockResolvedValue(undefined);
-    act(() => useAccountStore.getState().disconnectProvider("openai"));
-
-    mount(<ProviderConnectionsPanel />);
-    await flush();
-    const refreshCallsBeforeReconnect = vi.mocked(providerStatus.refreshProviderStatus).mock.calls.length;
-
-    const openaiRow = row("openai");
-    button(openaiRow, "Reconnect").click();
-    await flush();
-
-    expect(reportSpy).toHaveBeenCalledWith("connected");
-    // Reconnect doesn't just flip a flag — it re-runs the real health check
-    // immediately, the same "verify" action the Refresh button performs.
-    expect(vi.mocked(providerStatus.refreshProviderStatus).mock.calls.length).toBeGreaterThan(refreshCallsBeforeReconnect);
-  });
-
-  it("shows 'Checking…' while the health check is in flight", () => {
-    vi.spyOn(providerStatus, "refreshProviderStatus").mockReturnValue(new Promise(() => {}));
-    mount(<ProviderConnectionsPanel />);
-
-    expect(row("anthropic")?.textContent).toContain("Checking…");
+  it("refreshes configuration and clears prior verification evidence", async () => {
+    const refresh = vi.spyOn(providerStatus, "refreshProviderStatus").mockResolvedValue({ anthropic: false, openai: true, google: false, xai: false, deepseek: false });
+    vi.spyOn(providerStatus, "verifyProviderRoute").mockResolvedValue({ providerId: "openai", modelId: "gpt-5.5", route: "/api/proxy-openai", configured: true, authenticated: true, healthy: true, verifiedAt: "now" });
+    vi.spyOn(providerStatus, "reportProviderEvent").mockResolvedValue();
+    mount(); await flush(); click(row("openai"), "Verify exact route"); await flush();
+    const refreshButton = host?.querySelector("[data-testid='provider-connections-refresh']");
+    if (!(refreshButton instanceof HTMLButtonElement)) throw new Error("Missing refresh");
+    act(() => refreshButton.click()); await flush();
+    expect(refresh).toHaveBeenCalledTimes(2);
+    expect(row("openai").textContent).toContain("Configured — not yet verified");
   });
 });

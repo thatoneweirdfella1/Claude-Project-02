@@ -11,6 +11,7 @@ export interface ProviderRouteVerification {
   authenticated: boolean;
   healthy: boolean;
   verifiedAt: string | null;
+  failureReason?: "revoked" | "invalid" | "unavailable" | "unverified" | null;
 }
 
 interface CachedStatus {
@@ -132,6 +133,7 @@ export async function verifyProviderRoute(
     authenticated: false,
     healthy: false,
     verifiedAt: null,
+    failureReason: "unavailable",
   };
   try {
     const query = new URLSearchParams({ provider: providerId, model: modelId, route });
@@ -154,6 +156,9 @@ export async function verifyProviderRoute(
       authenticated: status.authenticated === true,
       healthy: status.healthy === true,
       verifiedAt: typeof status.verifiedAt === "string" ? status.verifiedAt : null,
+      failureReason: status.failureReason === "revoked" || status.failureReason === "invalid" ||
+        status.failureReason === "unavailable" || status.failureReason === "unverified"
+        ? status.failureReason : null,
     };
   } catch {
     return failed;
