@@ -15,6 +15,7 @@ import { LocalDryRunPanel } from "../settings/LocalDryRunPanel";
 import { useAccountStore } from "../../stores/accountStore";
 import { useSessionStore } from "../../stores/sessionStore";
 import { destinationLabel } from "../../services/providerNeutral";
+import { computeRouteReadiness, type RouteReadiness } from "../../services/routeReadiness";
 import { VisibilityMenu } from "../visibility/VisibilityMenu";
 import { AppErrorBoundary } from "./AppErrorBoundary";
 
@@ -30,9 +31,23 @@ function FrozenReferenceConnectors() {
   </svg>;
 }
 
+function RouteReadinessSummary() {
+  const destination = useSessionStore((s) => s.destination);
+  const [readiness, setReadiness] = useState<RouteReadiness | null>(null);
+  useEffect(() => {
+    let active = true;
+    setReadiness(null);
+    void computeRouteReadiness(destination).then((next) => { if (active) setReadiness(next); });
+    return () => { active = false; };
+  }, [destination.providerId, destination.modelId]);
+  return <div className="right-rail-helpful surface-smoked-glass" data-testid="route-readiness-summary">
+    <strong>{readiness ? readiness.label : `Checking ${destinationLabel(destination)}…`}</strong>
+    <span>{readiness?.verified ? "Exact provider, model, route, authentication, and health verified." : "Local preparation and manual handoff remain available without a provider call."}</span>
+  </div>;
+}
+
 export function AppShell() {
   const currentScreen = useSessionStore((s) => s.currentScreen);
-  const destination = useSessionStore((s) => s.destination);
   const quickTools = useAccountStore((s) => s.visibility.quickTools);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [rightRailPanel, setRightRailPanel] = useState<string | null>(null);
@@ -74,7 +89,7 @@ export function AppShell() {
           <p>{currentScreen === "translate" ? "Write naturally, then use Send. Ctrl/Cmd + Enter uses the same Send action. Add Context keeps source material attached to the request." : `You are in ${currentScreen.replaceAll("-", " ")}. Use the visible tabs and controls; unavailable external actions say so before doing anything.`}</p>
           <small>Ctrl/Cmd + K opens Search. Press ? outside a text field to reopen this reference.</small>
         </section>}
-        <div className="right-rail-helpful surface-smoked-glass"><strong>Ready for {destinationLabel(destination)}</strong><span>Local preparation uses no Divergence credits.</span></div>
+        <RouteReadinessSummary />
         <VisibilityMenu />
         {quickTools && <QuickToolsGrid />}
         <AccordionStack />
@@ -86,4 +101,3 @@ export function AppShell() {
     <CostConfirm />
   </>;
 }
-

@@ -3,6 +3,16 @@ import { appAccessHeaders } from "./appAccessClient";
 export type ConnectedProviderId = "anthropic" | "openai" | "google" | "xai" | "deepseek";
 export type ProviderAvailability = Record<ConnectedProviderId, boolean>;
 
+export interface ProviderRouteVerification {
+  providerId: ConnectedProviderId;
+  modelId: string;
+  route: string;
+  configured: boolean;
+  authenticated: boolean;
+  healthy: boolean;
+  verifiedAt: string | null;
+}
+
 interface CachedStatus {
   availability: ProviderAvailability;
   timestamp: number;
@@ -102,6 +112,52 @@ export async function reportProviderEvent(_event: "connected" | "verified" | "di
 
 export async function providerAvailable(provider: ConnectedProviderId): Promise<boolean> {
   return getProviderStatus(provider);
+}
+
+/** Verify the exact executable route. A configured key is not proof that its
+    authentication works or that the requested model is healthy. The server
+    must echo the exact provider/model/route and explicitly confirm every
+    check; missing, mismatched, or malformed evidence fails closed. */
+export async function verifyProviderRoute(
+  providerId: ConnectedProviderId,
+  modelId: string,
+  route: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<ProviderRouteVerification> {
+  const failed: ProviderRouteVerification = {
+    providerId,
+    modelId,
+    route,
+    configured: false,
+    authenticated: false,
+    healthy: false,
+    verifiedAt: null,
+  };
+  try {
+    const query = new URLSearchParams({ provider: providerId, model: modelId, route });
+    const response = await fetchImpl(`/api/provider-status?${query.toString()}`, {
+      method: "GET",
+      headers: appAccessHeaders(),
+      cache: "no-store",
+    });
+    if (!response.ok) return failed;
+    const body = await response.json() as { routeStatus?: Partial<ProviderRouteVerification> };
+    const status = body.routeStatus;
+    if (
+      !status || status.providerId !== providerId || status.modelId !== modelId || status.route !== route
+    ) return failed;
+    return {
+      providerId,
+      modelId,
+      route,
+      configured: status.configured === true,
+      authenticated: status.authenticated === true,
+      healthy: status.healthy === true,
+      verifiedAt: typeof status.verifiedAt === "string" ? status.verifiedAt : null,
+    };
+  } catch {
+    return failed;
+  }
 }
 
 export function _resetProviderAvailabilityForTests(): void {

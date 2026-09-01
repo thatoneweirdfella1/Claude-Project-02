@@ -6,6 +6,7 @@ import {
   refreshProviderStatus,
   reportProviderEvent,
   _resetProviderAvailabilityForTests,
+  verifyProviderRoute,
 } from "./providerStatus";
 
 describe("provider availability preflight", () => {
@@ -33,6 +34,28 @@ describe("provider availability preflight", () => {
   it("fails every provider closed on network or authorization failure", async () => {
     const failed = await getProviderAvailability(async () => new Response("no", { status: 401 }) as unknown as Promise<Response>);
     expect(Object.values(failed).every((value) => value === false)).toBe(true);
+  });
+});
+
+describe("R25 exact route verification", () => {
+  it("accepts only matching provider/model/route with explicit auth and health evidence", async () => {
+    const fetchImpl = vi.fn(async () => new Response(JSON.stringify({ routeStatus: {
+      providerId: "anthropic", modelId: "claude-sonnet-5", route: "/api/proxy",
+      configured: true, authenticated: true, healthy: true, verifiedAt: "2026-09-01T00:00:00Z",
+    } }), { status: 200 })) as unknown as typeof fetch;
+    const status = await verifyProviderRoute("anthropic", "claude-sonnet-5", "/api/proxy", fetchImpl);
+    expect(status.authenticated).toBe(true);
+    expect(status.healthy).toBe(true);
+    expect(fetchImpl).toHaveBeenCalledWith(expect.stringContaining("model=claude-sonnet-5"), expect.objectContaining({ method: "GET", cache: "no-store" }));
+  });
+
+  it("fails closed when the server returns evidence for a different model", async () => {
+    const fetchImpl = vi.fn(async () => new Response(JSON.stringify({ routeStatus: {
+      providerId: "anthropic", modelId: "claude-haiku-4-5", route: "/api/proxy",
+      configured: true, authenticated: true, healthy: true, verifiedAt: "now",
+    } }), { status: 200 })) as unknown as typeof fetch;
+    const status = await verifyProviderRoute("anthropic", "claude-sonnet-5", "/api/proxy", fetchImpl);
+    expect(status).toMatchObject({ configured: false, authenticated: false, healthy: false, verifiedAt: null });
   });
 });
 

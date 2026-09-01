@@ -11,13 +11,30 @@ export default function handler(request: Request): Response {
       headers: { "content-type": "application/json" },
     });
   }
-  return new Response(JSON.stringify({
+  const url = new URL(request.url);
+  const provider = url.searchParams.get("provider");
+  const model = url.searchParams.get("model");
+  const route = url.searchParams.get("route");
+  const configured = {
     anthropic: Boolean(process.env.ANTHROPIC_API_KEY),
     openai: Boolean(process.env.OPENAI_API_KEY),
     google: Boolean(process.env.GOOGLE_API_KEY),
     xai: Boolean(process.env.XAI_API_KEY),
     deepseek: Boolean(process.env.DEEPSEEK_API_KEY),
-  }), {
+  };
+  const knownProvider = provider !== null && Object.hasOwn(configured, provider);
+  const routeStatus = provider && model && route ? {
+    providerId: provider,
+    modelId: model,
+    route,
+    configured: knownProvider && configured[provider as keyof typeof configured],
+    // This safe status endpoint does not make a paid/live provider request.
+    // Key presence therefore cannot honestly prove authentication or health.
+    authenticated: false,
+    healthy: false,
+    verifiedAt: null,
+  } : undefined;
+  return new Response(JSON.stringify({ ...configured, routeStatus }), {
     status: 200,
     headers: {
       "content-type": "application/json",
