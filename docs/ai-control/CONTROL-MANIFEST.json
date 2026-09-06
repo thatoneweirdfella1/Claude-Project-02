@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.0",
+  "project": "Divergence.AI Reliability Layer",
+  "authority_status": "Proposed execution control pending user approval and repository installation",
+  "repository": {
+    "full_name": "thatoneweirdfella1/Claude-Project-02",
+    "policy": "existing_repository_only",
+    "new_repository_authorized": false
+  },
+  "branch": {
+    "safety_branch": "claude/remaining-second-pass-v1",
+    "safety_branch_write_authorized": false,
+    "approved_branch": "divergence/reliability-v1",
+    "working_branch_created": true,
+    "baseline_commit": "10894f704a39b6c56a7fadfafb54275b82526c33",
+    "baseline_deployment_id": "dpl_D1ngxz1mmJrfSB7LHsEnHfbuA5ej",
+    "baseline_branch_alias": "claude-project-02-git-claud-f1d4e8-thatoneweirdfella1s-projects.vercel.app",
+    "branch_mutation_authorized": true,
+    "create_branch_authorized": false,
+    "switch_to_approved_branch_authorized": true,
+    "merge_or_rebase_authorized": false,
+    "delete_branch_authorized": false,
+    "commit_or_push_authorized": true
+  },
+  "interface": {
+    "baseline": "existing_divergence_layout",
+    "replacement_or_redesign_authorized": false,
+    "visual_baseline_directory": "docs/ai-control/visual-baseline"
+  },
+  "phase": "design",
+  "integrity_manifest": "docs/ai-control/SHA256SUMS",
+  "deployment_baseline": "docs/ai-control/VERCEL-BASELINE.md",
+  "active_task": {
+    "id": "F0",
+    "title": "Foundation Contract and Interface Skeleton",
+    "source": "DIVERGENCE-F0-STANDALONE-HANDOFF.md",
+    "status": "Open",
+    "next_task_reveal_allowed": false
+  },
+  "scope": {
+    "one_active_task_only": true,
+    "out_of_scope_destination": "docs/ai-control/PARKING-LOT.md",
+    "new_systems_authorized": false,
+    "implementation_authorized": false
+  },
+  "permitted_gate_statuses": [
+    "Self-check passed",
+    "Independently verified",
+    "Failed",
+    "Open"
+  ],
+  "continuity_gates": {
+    "RCG-01": "Open",
+    "RCG-02": "Self-check passed",
+    "RCG-03": "Open",
+    "RCG-04": "Open"
+  }
+}

@@ -1,11 +1,15 @@
-# DIVERGENCE.AI — CLAUDE REPAIR BRANCH
+# DIVERGENCE.AI — Mandatory AI Entry Rule
 
-This file applies only to `claude/whole-site-repair-v1`.
+Before analyzing, planning, editing, running commands, or proposing changes, read and follow `docs/ai-control/00-READ-FIRST.md`.
 
-Read `CLAUDE.md` first. It is the controlling execution law for this branch.
+Non-negotiable defaults:
 
-Claude may inspect, implement, test, run locally, delegate fresh implementation and verification agents, commit, and checkpoint the work-order repairs only on this branch.
+- Use only the existing Divergence.AI repository and its existing interface/layout.
+- Treat `claude/remaining-second-pass-v1` as the untouched safety/layout branch. Never write to it.
+- Work only on `divergence/reliability-v1`. Do not create another branch.
+- Do not mutate the repository while `branch_mutation_authorized` is false or the checked-out branch differs from `approved_branch`.
+- Perform only the one task named in `docs/ai-control/CURRENT-TASK.md`.
+- Put every useful but out-of-scope discovery in `docs/ai-control/PARKING-LOT.md`; do not implement it.
+- Record what you did, why, evidence, failures, and the exact next action in the required continuity files.
 
-Do not modify another branch, merge, deploy, use credentials, call paid providers, spend money, or alter real user data.
-
-If any older file names a different active branch or denies the work expressly authorized by `CLAUDE.md`, this branch-specific file and `CLAUDE.md` control. Product behavior still follows settled user authority; Claude may not invent a redesign.
+This file is only an entrypoint. Canonical authority is in `docs/ai-control/`; do not duplicate or reinterpret it here.
