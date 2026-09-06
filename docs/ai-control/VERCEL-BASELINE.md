@@ -30,6 +30,7 @@ Verified from the live Vercel deployment metadata on 2026-09-06 UTC:
 - `claude/remaining-second-pass-v1` is the untouched safety/layout branch.
 - Commit `10894f704a39b6c56a7fadfafb54275b82526c33` identifies the exact deployed snapshot returned for the user's site at lookup time.
 - `divergence/reliability-v1` was created from that exact commit for all new reliability work; GitHub comparison reported zero commits ahead, zero behind, and status `identical` at creation.
+- Continuity controls were then installed only on the working branch in commit `58c89578c825a2c445df7408db059d7fb3f1586f`; the post-installation comparison listed exactly 19 control/handoff paths and no application-code path. The safety branch remained identical to the deployed baseline.
 - The shortened `claud-f1d4e8` URL segment was a branch alias, not the complete branch name.
 - Future layout work must begin by comparing the checked-out branch and mounted interface with this baseline; it must not invent a replacement interface.
 

@@ -101,6 +101,20 @@ Each new entry must contain:
 - **Resulting status/gate change:** RCG-02 Self-check passed for branch initialization. Independent verification remains Open.
 - **Exact next action:** Install the continuity packet on the working branch only, verify the resulting commit, and leave the safety branch unchanged.
 
+### CL-0007 — 2026-09-06 21:24:58 UTC — Continuity controls installed and verified
+
+- **Actor:** GPT/Codex session
+- **Task/phase:** Repository continuity controls / pre-F0 preparation
+- **Repository/branch/starting commit:** `thatoneweirdfella1/Claude-Project-02`; `divergence/reliability-v1`; `10894f704a39b6c56a7fadfafb54275b82526c33`
+- **Authority/source:** User authorized one working branch copied from the site-backed layout branch, required the source to remain untouched, and instructed completion of the in-progress setup before branch cleanup.
+- **Action and affected files:** Installed the 19-file continuity packet in commit `58c89578c825a2c445df7408db059d7fb3f1586f`. Replaced the branch-specific root `AGENTS.md` and `CLAUDE.md`, added the GitHub entrypoint, standalone F0 assignment, canonical control records, integrity manifest, and three visual baselines. No application file was changed.
+- **Reason and rejected alternatives:** Make any later Claude, GPT, Codex, or GitHub worker enter through the same task/scope/branch controls. Rejected touching the safety branch, creating another branch or repository, and mixing reliability implementation into this control-only commit.
+- **Command/test/check and actual result:** Before the write, GitHub comparison reported the working branch identical to the baseline. Local `sha256sum -c` passed for every listed packet file; the JSON policy assertions passed; both F0 copies matched. After the write, GitHub reported the working branch ahead by one commit with exactly the 19 expected control/handoff files and no application-code path; the safety branch remained identical to the baseline. `AGENTS.md`, `CONTROL-MANIFEST.json`, and `HANDOFF.md` were read back from the working branch. This entry is the complete installer read receipt for all mandatory control files listed in `00-READ-FIRST.md`, with their hashes in `SHA256SUMS`.
+- **Evidence/artifact/hash:** Install commit `58c89578c825a2c445df7408db059d7fb3f1586f`; E-009; final packet hashes in `SHA256SUMS`.
+- **Failure/correction/uncertainty:** No application, browser, deployment, mechanical-enforcement, or independent continuity test occurred. GitHub branch protection is not claimed. RCG-03 and RCG-04 remain Open until the bounded F0 work and an actual cross-AI resumption check supply their evidence.
+- **Resulting status/gate change:** RCG-01 Self-check passed; RCG-02 remains Self-check passed; RCG-03 and RCG-04 remain Open; F0 remains Open and unexecuted.
+- **Exact next action:** Execute only `DIVERGENCE-F0-STANDALONE-HANDOFF.md` on `divergence/reliability-v1`, maintain these records, and stop for independent audit before any S02/S03/S18/S20 or F1 work.
+
 ## New-entry template
 
 ### CL-XXXX — YYYY-MM-DD HH:MM UTC — Short event title

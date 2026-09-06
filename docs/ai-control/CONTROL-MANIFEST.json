@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "project": "Divergence.AI Reliability Layer",
-  "authority_status": "Proposed execution control pending user approval and repository installation",
+  "authority_status": "Proposed execution control installed on the approved working branch; independent verification remains open",
   "repository": {
     "full_name": "thatoneweirdfella1/Claude-Project-02",
     "policy": "existing_repository_only",
@@ -13,6 +13,7 @@
     "approved_branch": "divergence/reliability-v1",
     "working_branch_created": true,
     "baseline_commit": "10894f704a39b6c56a7fadfafb54275b82526c33",
+    "control_install_commit": "58c89578c825a2c445df7408db059d7fb3f1586f",
     "baseline_deployment_id": "dpl_D1ngxz1mmJrfSB7LHsEnHfbuA5ej",
     "baseline_branch_alias": "claude-project-02-git-claud-f1d4e8-thatoneweirdfella1s-projects.vercel.app",
     "branch_mutation_authorized": true,
@@ -50,7 +51,7 @@
     "Open"
   ],
   "continuity_gates": {
-    "RCG-01": "Open",
+    "RCG-01": "Self-check passed",
     "RCG-02": "Self-check passed",
     "RCG-03": "Open",
     "RCG-04": "Open"

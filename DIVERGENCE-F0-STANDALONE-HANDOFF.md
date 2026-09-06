@@ -106,7 +106,7 @@ These controls apply to the execution of this assignment. They are not implement
 
 | Gate | Acceptance condition | Current state before repository installation |
 |---|---|---|
-| **RCG-01** | Required entry and control files exist, resolve to one canonical authority, and the new AI records a complete read receipt. | Open |
+| **RCG-01** | Required entry and control files exist, resolve to one canonical authority, and the new AI records a complete read receipt. | Self-check passed for control installation at `58c89578c825a2c445df7408db059d7fb3f1586f`; independent verification remains Open |
 | **RCG-02** | Safety and working branches are identified; the working branch begins at the exact safety commit; the safety branch is untouched; checked-out state is rechecked before every write. | Self-check passed for branch creation — both branches were identical at `10894f704a39b6c56a7fadfafb54275b82526c33` |
 | **RCG-03** | Current-task boundaries and existing Divergence layout are preserved; all extra ideas are parked rather than implemented. | Open |
 | **RCG-04** | Ledger, decisions, evidence, task index, and handoff allow another AI to resume without guessing or consulting the full blueprint. | Open |

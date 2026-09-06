@@ -4,11 +4,12 @@
 
 - The reliability meta-blueprint has been finalized as a proposed planning artifact, not an approved or independently verified architecture.
 - The standalone F0 task exists and now includes mandatory repository, branch, layout, scope, logging, and handoff controls.
-- The cross-AI packet is being installed on the new working branch.
+- The cross-AI packet is installed on the new working branch in commit `58c89578c825a2c445df7408db059d7fb3f1586f`.
 - F0 has not been executed.
 - No application code, interface, test, or deployment was changed during this preparation. The only repository change so far was creation of the isolated working branch at the unchanged baseline commit.
 - The user's preferred Vercel site has been traced to safety/layout branch `claude/remaining-second-pass-v1` and deployed commit `10894f704a39b6c56a7fadfafb54275b82526c33`.
 - Working branch `divergence/reliability-v1` was created from that exact commit and verified identical at creation. The safety branch was not modified.
+- The working branch is now one commit ahead solely because 19 control/handoff files were added or replaced; GitHub comparison found no application-code changes. The safety branch remains exactly at the baseline commit.
 
 ## Fixed decisions
 
