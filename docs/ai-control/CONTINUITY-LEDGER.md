@@ -130,3 +130,18 @@ Each new entry must contain:
 - **Failure/correction/uncertainty:**
 - **Resulting status/gate change:**
 - **Exact next action:**
+
+
+### CL-0008 — 2026-09-06 23:10:25 UTC — G0 course controller built and adversarially tested
+
+- **Actor:** User and GPT/Codex session
+- **Task/phase:** G0 AI Course-Control Gate / execution control
+- **Repository/branch/starting commit:** `thatoneweirdfella1/Claude-Project-02`; `divergence/reliability-v1`; `5e0a3c9c7892334cf5b74629e4b953d638de474f`
+- **Authority/source:** The user explicitly ordered the course-control system built on the already-created new branch and directed that F0 not begin first.
+- **Action and affected files:** Promoted G0 as the only active task; added a fail-closed machine policy, Node validator, adversarial tests, GitHub workflow, CODEOWNERS, exact ruleset requirements, and plain-language gate status; updated entry, task, decision, evidence, parking, integrity, and handoff controls. No application or visual-baseline file was changed.
+- **Reason and rejected alternatives:** Enforce one task, one branch, explicit allowed files, required evidence/history, and honest statuses without requiring the user to micromanage AI drift. Rejected executing F0, relying only on prose, creating another branch, and claiming GitHub administration controls that the connected tool cannot set.
+- **Command/test/check and actual result:** Validator/test syntax passed; policy JSON assertions passed; workflow YAML parsed. The first adversarial run passed 16/17 tests and exposed a test-fixture defect: checksum generation attempted to read an intentionally deleted file before the validator could reject it. The harness was corrected without weakening the validator. The second run passed all 17/17 tests, including one accepted checkpoint and every required rejection class.
+- **Evidence/artifact/hash:** E-010; exact final hashes will be recorded in `SHA256SUMS` before the repository checkpoint.
+- **Failure/correction/uncertainty:** The committed GitHub workflow has not run yet. GitHub rulesets require repository-owner administration and remain Open. A separate cold-start AI trial has not occurred. These limitations keep F0 blocked.
+- **Resulting status/gate change:** G0 validator self-check passed locally. GitHub workflow, non-bypass ruleset, cold-start trial, and user transition approval remain unresolved.
+- **Exact next action:** Finalize hashes, commit only G0/control files to `divergence/reliability-v1`, inspect the workflow result and exact diff, confirm the safety branch remains unchanged, and stop without executing F0.

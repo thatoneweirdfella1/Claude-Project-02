@@ -1,0 +1,44 @@
+name: AI Course Control
+
+on:
+  pull_request:
+  push:
+    branches:
+      - divergence/reliability-v1
+
+permissions:
+  contents: read
+
+jobs:
+  enforce-course:
+    name: Enforce one task, branch, scope, evidence, and history
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out complete history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Select the exact comparison and branch
+        id: context
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "base=${{ github.event.pull_request.base.sha }}" >> "$GITHUB_OUTPUT"
+            echo "branch=${{ github.head_ref }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "base=${{ github.event.before }}" >> "$GITHUB_OUTPUT"
+            echo "branch=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Test the gate itself
+        run: node --test scripts/ai-course-control.test.mjs
+
+      - name: Enforce the active task
+        run: >-
+          node scripts/ai-course-control.mjs
+          --policy docs/ai-control/COURSE-CONTROL.json
+          --base "${{ steps.context.outputs.base }}"
+          --head "${{ github.sha }}"
+          --branch "${{ steps.context.outputs.branch }}"
+          --repository "${{ github.repository }}"

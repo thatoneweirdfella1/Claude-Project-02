@@ -11,5 +11,6 @@ Non-negotiable defaults:
 - Perform only the one task named in `docs/ai-control/CURRENT-TASK.md`.
 - Put every useful but out-of-scope discovery in `docs/ai-control/PARKING-LOT.md`; do not implement it.
 - Record what you did, why, evidence, failures, and the exact next action in the required continuity files.
+- Before accepting any repository checkpoint, run `node scripts/ai-course-control.mjs` with the exact base, head, branch, repository, and policy arguments. A failed or unavailable gate means stop; never bypass it.
 
 This file is only an entrypoint. Canonical authority is in `docs/ai-control/`; do not duplicate or reinterpret it here.

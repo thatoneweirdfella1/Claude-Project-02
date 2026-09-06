@@ -28,21 +28,31 @@
     "replacement_or_redesign_authorized": false,
     "visual_baseline_directory": "docs/ai-control/visual-baseline"
   },
-  "phase": "design",
+  "phase": "execution-control",
+  "course_control": {
+    "policy": "docs/ai-control/COURSE-CONTROL.json",
+    "validator": "scripts/ai-course-control.mjs",
+    "workflow": ".github/workflows/ai-course-control.yml",
+    "mode": "enforce",
+    "validator_test_status": "Self-check passed",
+    "github_ruleset_status": "Open",
+    "cold_start_trial_status": "Open"
+  },
   "integrity_manifest": "docs/ai-control/SHA256SUMS",
   "deployment_baseline": "docs/ai-control/VERCEL-BASELINE.md",
   "active_task": {
-    "id": "F0",
-    "title": "Foundation Contract and Interface Skeleton",
-    "source": "DIVERGENCE-F0-STANDALONE-HANDOFF.md",
-    "status": "Open",
+    "id": "G0",
+    "title": "AI Course-Control Gate",
+    "source": "docs/ai-control/CURRENT-TASK.md",
+    "status": "In progress",
     "next_task_reveal_allowed": false
   },
   "scope": {
     "one_active_task_only": true,
     "out_of_scope_destination": "docs/ai-control/PARKING-LOT.md",
     "new_systems_authorized": false,
-    "implementation_authorized": false
+    "product_implementation_authorized": false,
+    "execution_control_implementation_authorized": true
   },
   "permitted_gate_statuses": [
     "Self-check passed",

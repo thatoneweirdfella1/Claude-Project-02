@@ -1,9 +1,8 @@
-# Guidance and review routing only. A single owner cannot make review independent by itself.
-* @thatoneweirdfella1
+# The repository owner must approve changes to the course controller and its authority records.
 /AGENTS.md @thatoneweirdfella1
 /CLAUDE.md @thatoneweirdfella1
-/START-HERE-DIVERGENCE.md @thatoneweirdfella1
-/docs/authority/ @thatoneweirdfella1
-/docs/layer-system/ @thatoneweirdfella1
-/scripts/governance/ @thatoneweirdfella1
-/.github/workflows/divergence-governance.yml @thatoneweirdfella1
+/.github/copilot-instructions.md @thatoneweirdfella1
+/.github/workflows/ai-course-control.yml @thatoneweirdfella1
+/scripts/ai-course-control.mjs @thatoneweirdfella1
+/scripts/ai-course-control.test.mjs @thatoneweirdfella1
+/docs/ai-control/ @thatoneweirdfella1
