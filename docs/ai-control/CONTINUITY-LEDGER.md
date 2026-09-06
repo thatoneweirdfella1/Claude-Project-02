@@ -145,3 +145,17 @@ Each new entry must contain:
 - **Failure/correction/uncertainty:** The committed GitHub workflow has not run yet. GitHub rulesets require repository-owner administration and remain Open. A separate cold-start AI trial has not occurred. These limitations keep F0 blocked.
 - **Resulting status/gate change:** G0 validator self-check passed locally. GitHub workflow, non-bypass ruleset, cold-start trial, and user transition approval remain unresolved.
 - **Exact next action:** Finalize hashes, commit only G0/control files to `divergence/reliability-v1`, inspect the workflow result and exact diff, confirm the safety branch remains unchanged, and stop without executing F0.
+
+### CL-0009 — 2026-09-06 23:45:12 UTC — G0 installed; repository workflow passed
+
+- **Actor:** GPT/Codex session
+- **Task/phase:** G0 AI Course-Control Gate / execution control
+- **Repository/branch/starting commit:** `thatoneweirdfella1/Claude-Project-02`; `divergence/reliability-v1`; `5e0a3c9c7892334cf5b74629e4b953d638de474f`
+- **Authority/source:** G0 current task and the user's instruction to begin on the new branch.
+- **Action and affected files:** Installed the 20-file G0 checkpoint in commit `d417f10cd3ee543fb0facde7bd620b0a029ebd72`; inspected the exact diff, branch head, workflow, policy readback, safety branch, and existing repository rulesets.
+- **Reason and rejected alternatives:** Verify the controller in the real repository before treating the local tests as sufficient. No application file, visual baseline, new branch, merge, rebase, deployment, or safety-branch ref was changed.
+- **Command/test/check and actual result:** GitHub Actions run `34066339481` completed successfully. Its checkout, context selection, gate tests, and active-task enforcement steps all passed. GitHub reported exactly the 20 expected G0/control paths. The working branch head equaled the G0 commit; the safety branch remained identical to `10894f704a39b6c56a7fadfafb54275b82526c33`. Ruleset inspection found only active ruleset `20917696`, targeting `refs/heads/build`.
+- **Evidence/artifact/hash:** E-010 and E-011; GitHub workflow `https://github.com/thatoneweirdfella1/Claude-Project-02/actions/runs/34066339481`.
+- **Failure/correction/uncertainty:** The connected GitHub tool lacks administrative ruleset writes. A secure browser sign-in attempt was stopped after GitHub stated that this account does not support password sign-in. No GitHub setting was changed. A separate AI cold-start trial is also still unperformed.
+- **Resulting status/gate change:** Validator implementation and workflow execution are Self-check passed. Non-bypass GitHub enforcement, cold-start continuity, independent verification, and user transition approval remain Open. F0 remains locked.
+- **Exact next action:** The repository owner enables the rulesets specified in `GITHUB-RULESET-REQUIRED.md`; then a separate AI performs the repository-only cold-start trial. Do not execute F0.

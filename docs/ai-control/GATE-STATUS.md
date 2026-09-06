@@ -16,6 +16,7 @@ Keep an AI on the single approved task without requiring the user to continually
 | Append-only work history | Self-check passed | Rewriting or truncating the continuity ledger fails. |
 | Evidence integrity | Self-check passed | Every listed SHA-256 hash must match. |
 | Self-declared independent verification | Self-check passed | New independent-pass states require a separate review artifact. |
+| GitHub workflow execution | Self-check passed | Run `34066339481` completed successfully for commit `d417f10cd3ee543fb0facde7bd620b0a029ebd72`. |
 | GitHub non-bypass enforcement | Open | The repository owner must enable the rulesets in `GITHUB-RULESET-REQUIRED.md`. |
 | Cold-start AI continuity trial | Open | A separate AI must attempt resumption using repository files only. |
 

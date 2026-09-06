@@ -2,6 +2,8 @@
 
 The repository validator is installed, but GitHub must be configured once so an AI cannot bypass a failed check by pushing directly.
 
+The repository currently has one active ruleset, ID `20917696`, named `build`. It targets only `refs/heads/build`; it does not protect the working branch, safety branch, or branch creation required here.
+
 ## Working branch ruleset
 
 Target only `divergence/reliability-v1` and enable:

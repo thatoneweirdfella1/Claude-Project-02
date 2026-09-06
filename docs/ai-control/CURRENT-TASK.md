@@ -5,7 +5,7 @@
 - **ID:** G0
 - **Title:** AI Course-Control Gate
 - **Phase:** Execution control
-- **Status:** In progress
+- **Status:** Open; implementation self-check passed, GitHub non-bypass rules and cold-start trial unresolved
 - **Untouched safety/layout branch:** `claude/remaining-second-pass-v1`
 - **Only working branch:** `divergence/reliability-v1`
 - **Repository mutation:** Authorized only on the working branch and only for G0/control records
@@ -69,4 +69,4 @@ F0 remains blocked until:
 
 ## Exact next action
 
-Finish the validator and adversarial test harness, run every required rejection case, repair any defect, then commit only the accepted G0 files to `divergence/reliability-v1`.
+Enable the GitHub rulesets in `GITHUB-RULESET-REQUIRED.md`, then have a separate AI perform the cold-start repository-only continuity trial. Do not execute F0.

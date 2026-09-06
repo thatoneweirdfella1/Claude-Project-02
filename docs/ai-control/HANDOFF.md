@@ -6,8 +6,9 @@
 - The standalone F0 task exists and now includes mandatory repository, branch, layout, scope, logging, and handoff controls.
 - The cross-AI packet is installed on the new working branch in commit `58c89578c825a2c445df7408db059d7fb3f1586f`.
 - F0 has not been executed and is blocked while G0 is active.
-- G0 is building the fail-closed course controller, repository check, and exact GitHub ruleset requirements.
-- The G0 validator and adversarial harness now pass 17/17 local tests. Repository installation and workflow evidence are the current checkpoint.
+- G0's fail-closed course controller is installed at commit `d417f10cd3ee543fb0facde7bd620b0a029ebd72`.
+- The validator and adversarial harness pass 17/17 local tests, and GitHub Actions run `34066339481` passed every course-control step.
+- The existing GitHub ruleset protects only branch `build`; non-bypass rules for the working/safety branches and new-branch restriction remain Open.
 - No application code, interface, test, or deployment was changed during this preparation. The only repository change so far was creation of the isolated working branch at the unchanged baseline commit.
 - The user's preferred Vercel site has been traced to safety/layout branch `claude/remaining-second-pass-v1` and deployed commit `10894f704a39b6c56a7fadfafb54275b82526c33`.
 - Working branch `divergence/reliability-v1` was created from that exact commit and verified identical at creation. The safety branch was not modified.
@@ -32,7 +33,7 @@
 
 ## Exact next action
 
-Complete and test G0 on `divergence/reliability-v1`, retain failure evidence, verify the safety branch is unchanged, and stop. Do not execute F0 or create another branch.
+Enable the exact GitHub rulesets in `GITHUB-RULESET-REQUIRED.md`, perform a separate cold-start AI continuity trial, record the evidence, and stop. Do not execute F0 or create another branch.
 
 ## Required next handoff update
 
