@@ -173,3 +173,17 @@ Each new entry must contain:
 - **Failure/correction/uncertainty:** Repository rulesets are not yet enabled. Staging existence alone does not make the flow non-bypassable.
 - **Resulting status/gate change:** Reusable staging topology is Self-check passed. GitHub non-bypass enforcement remains Open.
 - **Exact next action:** Commit the staging-flow controller revision, fast-forward the reusable staging ref to it, verify both workflow runs and the unchanged safety branch, then enable the four rulesets. Do not execute F0.
+
+### CL-0011 — 2026-09-07 UTC — Live gate found and retained a scope-allowlist defect
+
+- **Actor:** GPT/Codex session
+- **Task/phase:** G0 AI Course-Control Gate / staging-flow verification
+- **Repository/branch/starting commit:** Integration and staging at `2180cd3c9dea0581c1dc8990390a2da6af1523a1`
+- **Authority/source:** G0 requires failure evidence to remain visible and permits correction only within its bounded control files.
+- **Action and affected files:** Inspected failed GitHub Actions run `34070172845`; added `DIVERGENCE-F0-STANDALONE-HANDOFF.md` to G0's allowed paths; updated evidence, handoff, ledger, and hashes.
+- **Reason and rejected alternatives:** The branch-flow correction necessarily updates the F0 handoff's repository instructions, but G0's allowlist had omitted that file. Rejected removing the handoff correction, bypassing the gate, or concealing the failure.
+- **Command/test/check and actual result:** The first integration run passed gate self-tests but failed active-task enforcement. The local corrected suite passes 18/18; follow-up GitHub evidence is pending.
+- **Evidence/artifact/hash:** E-013; run `34070172845`.
+- **Failure/correction/uncertainty:** A passing local test is not a substitute for the pending GitHub run.
+- **Resulting status/gate change:** The failed checkpoint remains recorded. Staging-flow verification remains Open until the corrected run passes.
+- **Exact next action:** Commit the narrow correction, fast-forward both existing refs, inspect both course-control runs, and confirm the safety branch remains unchanged. Do not execute F0.

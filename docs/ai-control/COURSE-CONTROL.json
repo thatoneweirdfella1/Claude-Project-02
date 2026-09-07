@@ -67,6 +67,7 @@
         ".github/workflows/ai-course-control.yml",
         "AGENTS.md",
         "CLAUDE.md",
+        "DIVERGENCE-F0-STANDALONE-HANDOFF.md",
         "docs/ai-control/00-READ-FIRST.md",
         "docs/ai-control/CONTINUITY-LEDGER.md",
         "docs/ai-control/CONTROL-MANIFEST.json",

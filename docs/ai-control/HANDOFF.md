@@ -7,7 +7,7 @@
 - The cross-AI packet was installed on integration branch `divergence/reliability-v1`; exactly one reusable task branch, `divergence/reliability-staging`, now exists from integration commit `7681344918a912f0ac35a2fb15c2b41b85638a3f`.
 - F0 has not been executed and is blocked while G0 is active.
 - G0's fail-closed course controller is installed at commit `d417f10cd3ee543fb0facde7bd620b0a029ebd72`.
-- The validator and original adversarial harness passed 17/17 local tests, and GitHub Actions runs `34066339481` and `34067841730` passed every course-control step. The staging-flow revision is pending its final repository run.
+- The validator and revised adversarial harness pass 18/18 local tests. Earlier GitHub runs `34066339481` and `34067841730` passed. First staging-flow integration run `34070172845` failed because G0's allowlist omitted its necessary standalone-handoff update; that narrow defect is corrected and retained as E-013 pending a passing follow-up run.
 - The existing GitHub ruleset protects only branch `build`; the four required DIVERGENCE rulesets remain Open.
 - No application code, interface, test, or deployment was changed during this preparation. The only repository change so far was creation of the isolated working branch at the unchanged baseline commit.
 - The user's preferred Vercel site has been traced to safety/layout branch `claude/remaining-second-pass-v1` and deployed commit `10894f704a39b6c56a7fadfafb54275b82526c33`.
