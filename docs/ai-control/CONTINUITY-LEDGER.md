@@ -224,3 +224,14 @@ Each new entry must contain:
 - **Evidence/artifact/hash:** E-016 and E-017.
 - **Failure/correction/uncertainty:** RCG-04 remains Open until a fresh exact-remote audit passes.
 - **Exact next action:** Rerun the exact-remote repository-only cold-start trial and stop before F0.
+
+### CL-0015 — 2026-09-07 UTC — Final exact-remote cold-start passed; G0 closed
+
+- **Actor:** Separate cold-start AI reviewer and GPT/Codex finalizer
+- **Task/phase:** G0 AI Course-Control Gate / closure
+- **Repository/branch/starting commit:** `thatoneweirdfella1/Claude-Project-02`; `divergence/reliability-staging`; `e1b9f8960825aa9c18b1bc14182862d701f461ab`
+- **Action and result:** A fresh reviewer used only exact-remote GitHub files, no conversational context, and no meta-blueprint. It followed the mandatory order and reconstructed the repository, task, authority, branches, scope, evidence, blockers, next action, and stop condition without guessing. RCG-04 passed.
+- **Evidence/artifact/hash:** E-018; `docs/ai-control/independent-reviews/RCG-04.json`.
+- **Failure/correction/uncertainty:** All prior failed probes and audits remain retained. The connector could not expose raw bytes for three PNGs; all 21 text hashes matched and the PNG paths/blob identities were present.
+- **Resulting status/gate change:** G0 is Self-check passed; GitHub enforcement and RCG-04 are Independently verified. F0 remains locked pending explicit user approval.
+- **Exact next action:** Stop. Await explicit user instruction to activate F0. Do not create a branch, merge, deploy, or execute F0.

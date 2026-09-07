@@ -20,6 +20,7 @@
 | E-015 | Separate repository-only cold-start attempt 1 | Cross-AI continuity | Failed, retained; three defects corrected | Reviewer reconstructed G0 but found contradictory enforcement/history claims and two omitted mandatory-read files | Fresh trial required. |
 | E-016 | Separate cold-start retry against a stale local object database | Cross-AI availability behavior | Failed safely and retained | Exact remote commit existed but was unavailable locally; reviewer refused to guess | Methodological failure; replaced by exact remote-ref audit. |
 | E-017 | Separate exact-remote-ref cold-start audit at `b2662bd5d1c249d4caedb5111aa0195fa267a8e8` | Cross-AI continuity | Failed, retained; four remaining record conflicts corrected | Reviewer reconstructed the task but found stale manifest, policy, evidence, and decision-status statements | Fresh exact-remote-ref trial required. |
+| E-018 | `docs/ai-control/independent-reviews/RCG-04.json` | Repository-only context-free continuation | Independently verified | Exact audited commit `e1b9f8960825aa9c18b1bc14182862d701f461ab` | Three PNG hashes could not be recomputed because the connector did not expose binary bytes; all required text was available and all 21 text hashes matched. |
 
 ## Evidence rules
 

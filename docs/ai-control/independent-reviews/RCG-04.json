@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0",
+  "gate": "RCG-04",
+  "status": "Independently verified",
+  "reviewer_role": "independent cold-start AI reviewer",
+  "exact_commit": "e1b9f8960825aa9c18b1bc14182862d701f461ab",
+  "method": "GitHub-only read-only audit with no conversational context and no meta-blueprint",
+  "result": "A new AI reconstructed repository identity, active task, authority order, branch roles, allowed and prohibited work, evidence and retained failures, blockers, exact next action, and stop condition without guessing.",
+  "hash_check": "All 21 connector-readable text entries matched. Three PNG paths and Git blob identities were present, but connector limitations prevented independent binary-byte SHA-256 recomputation.",
+  "material_contradictions": [],
+  "mutations_performed": false
+}

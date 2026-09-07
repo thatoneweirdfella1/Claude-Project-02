@@ -5,7 +5,7 @@
 - **ID:** G0
 - **Title:** AI Course-Control Gate
 - **Phase:** Execution control
-- **Status:** Open; implementation and GitHub enforcement verified, corrected cold-start trial pending
+- **Status:** Self-check passed; G0 exit evidence complete; F0 locked pending explicit user approval
 - **Untouched safety/layout branch:** `claude/remaining-second-pass-v1`
 - **Only task-writing branch:** `divergence/reliability-staging`
 - **Protected integration branch:** `divergence/reliability-v1`
@@ -70,4 +70,4 @@ F0 remains blocked until:
 
 ## Exact next action
 
-Rerun the separate repository-only cold-start continuity trial against the corrected records, retain its evidence, and stop. Do not execute F0.
+Stop. Await the user's explicit instruction before activating F0. Do not execute F0, create a branch, merge, or deploy.
