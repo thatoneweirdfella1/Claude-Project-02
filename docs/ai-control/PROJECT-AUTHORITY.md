@@ -4,6 +4,7 @@
 
 - Continue the existing Divergence.AI project.
 - Use the existing repository: `thatoneweirdfella1/Claude-Project-02`.
+- Use `02-MASTER-SYSTEM-AND-REQUIREMENT-BLUEPRINT.md` as the canonical master planning/control blueprint. Its exact supplied content and internal proposal/audit limitations are preserved; canonical installation does not by itself activate F0 or prove implementation.
 - Preserve `claude/remaining-second-pass-v1` as the untouched safety/layout branch. The exact site snapshot the user identified was deployed from commit `10894f704a39b6c56a7fadfafb54275b82526c33`.
 - Make all new reliability task commits on reusable staging branch `divergence/reliability-staging`. Merge only gate-accepted work into protected integration branch `divergence/reliability-v1`.
 - Preserve and build from the existing Divergence interface/layout.
@@ -18,7 +19,7 @@ When instructions conflict, use this order:
 2. An explicit user-approved decision recorded in `DECISION-LOG.md`.
 3. The active standalone task packet and its accepted prerequisites.
 4. `CURRENT-TASK.md` execution boundaries.
-5. The proposed reliability meta-blueprint for background only where the task packet explicitly requires it.
+5. The canonical `02-MASTER-SYSTEM-AND-REQUIREMENT-BLUEPRINT.md` for background and complete system/requirement definitions where the active task packet explicitly requires it.
 6. Prior AI suggestions, conventions, or inferred preferences.
 
 A lower authority may identify a conflict but may not silently override a higher authority. Record unresolved conflicts as `Open` and stop only the affected work.

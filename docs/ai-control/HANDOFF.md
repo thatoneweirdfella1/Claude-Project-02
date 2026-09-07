@@ -1,42 +1,61 @@
 # Exact Handoff State
 
-## Current state
+## Outcome
 
-- The reliability meta-blueprint has been finalized as a proposed planning artifact, not an approved or independently verified architecture.
-- The standalone F0 task exists and now includes mandatory repository, branch, layout, scope, logging, and handoff controls.
-- The cross-AI packet was installed on integration branch `divergence/reliability-v1`; exactly one reusable task branch, `divergence/reliability-staging`, now exists from integration commit `7681344918a912f0ac35a2fb15c2b41b85638a3f`.
-- F0 has not been executed and is blocked while G0 is active.
-- G0's fail-closed course controller is installed at commit `d417f10cd3ee543fb0facde7bd620b0a029ebd72`.
-- The validator and revised adversarial harness pass 18/18 local tests. First staging-flow runs failed because G0's allowlist omitted its necessary standalone-handoff update; that failure is retained as E-013. The corrected integration run `34070234656` and staging run `34070235162` both passed.
-- All four required DIVERGENCE rulesets are active and were independently read back with exact targets, rules, empty bypass lists, and no current-user bypass.
-- Mechanical enforcement is implemented and tested: the validator has an 18-case adversarial harness, passed workflows on both reusable refs, and rejected live invalid checkpoint `4d6755ac14753d8dfa0bd0174b4f162f13c1d2cc` in run `34143620380`.
-- Later cold-start retries were retained: one failed safely on a stale local object database, and the exact-remote retry found four additional stale status statements. Those manifest, policy, evidence, and decision-history conflicts are corrected; a fresh exact-remote trial remains required.
-- The final fresh exact-remote cold-start trial passed at `e1b9f8960825aa9c18b1bc14182862d701f461ab`. RCG-04 is Independently verified; a new AI can resume from repository files without the blueprint or prior conversation.
-- No application code, interface, visual baseline, or deployment was changed. G0 added only its authorized control files, reusable branches, records, tests, and workflows.
-- The user's preferred Vercel site has been traced to safety/layout branch `claude/remaining-second-pass-v1` and deployed commit `10894f704a39b6c56a7fadfafb54275b82526c33`.
-- Integration branch `divergence/reliability-v1` was created from that exact commit and verified identical at creation. The safety branch was not modified.
-- All new task writes must use the single reusable staging branch; accepted work reaches integration only after the course-control check passes.
+- B0, Canonical Master Blueprint Installation, is complete by self-check on `divergence/reliability-staging`.
+- `02-MASTER-SYSTEM-AND-REQUIREMENT-BLUEPRINT.md` is the repository's canonical master planning/control blueprint.
+- The installed file is byte-for-byte identical to the supplied 1,278-line attachment. Both SHA-256 values are `d9783aa4fff475810170f2217ea2cdca1b30baefe78d21d837980943c509ea47`; `cmp -s` passed.
+- The blueprint was not redesigned, shortened, or edited. Its internal status and limitations remain exactly as supplied.
+- G0 remains complete by self-check, with GitHub enforcement and RCG-04 independently verified.
+- F0 was not activated or executed. No application or reliability system was implemented.
 
-## Fixed decisions
+## Current authority and status
 
-- Use the existing Divergence repository, not a new repository.
-- Preserve the existing Divergence interface/layout and the supplied three-part baseline.
-- Do not create another branch. Reuse the existing staging branch.
-- Maintain one active task and park extra ideas.
-- Keep durable action/rationale, decision, evidence, and handoff records.
+- Repository: `thatoneweirdfella1/Claude-Project-02`.
+- Only task-writing branch: `divergence/reliability-staging`.
+- Protected integration branch: `divergence/reliability-v1`.
+- Untouched safety/layout branch: `claude/remaining-second-pass-v1`.
+- Active recorded task: B0, complete by self-check; stop condition reached.
+- Canonical blueprint: `02-MASTER-SYSTEM-AND-REQUIREMENT-BLUEPRINT.md`.
+- Active task record: `docs/ai-control/CURRENT-TASK.md`.
+- Machine policy: `docs/ai-control/COURSE-CONTROL.json`.
 
-## Current blockers
+## B0 changed paths
 
-- **GitHub mutation:** Task writes are allowed only on `divergence/reliability-staging`; accepted work may be merged into `divergence/reliability-v1` only after the required check passes.
-- **Non-bypass enforcement:** Independently verified from exact GitHub API readback and the retained live rejection run.
-- **Cold-start continuity:** Independently verified; earlier failures remain retained as evidence.
-- **F0 independent verification:** Blocked until F0 is first completed with retained evidence.
-- **S02/S03/S18/S20/F1:** Blocked by F0 and its independent audit.
+- `02-MASTER-SYSTEM-AND-REQUIREMENT-BLUEPRINT.md`
+- `docs/ai-control/CONTINUITY-LEDGER.md`
+- `docs/ai-control/CONTROL-MANIFEST.json`
+- `docs/ai-control/COURSE-CONTROL.json`
+- `docs/ai-control/CURRENT-TASK.md`
+- `docs/ai-control/DECISION-LOG.md`
+- `docs/ai-control/EVIDENCE-INDEX.md`
+- `docs/ai-control/GATE-STATUS.md`
+- `docs/ai-control/HANDOFF.md`
+- `docs/ai-control/PROJECT-AUTHORITY.md`
+- `docs/ai-control/SHA256SUMS`
+- `docs/ai-control/TASK-INDEX.md`
 
-## Exact next action
+## Evidence and checks
 
-Stop. Await the user's explicit instruction to begin F0. Do not create another branch, merge, deploy, or execute F0 before that instruction.
+- Exact attachment/destination byte comparison: passed.
+- Blueprint source/destination SHA-256 comparison: passed.
+- Mandatory preflight read order and starting integrity manifest: passed and recorded in CL-0016.
+- Integrity manifest, JSON/policy alignment, control-record-only `git diff --check`, and exact changed-path review: passed.
+- Whole-task `git diff --check` reports the supplied blueprint's original Markdown hard-line-break spaces. They were intentionally retained because the installed file must remain byte-for-byte identical; source/destination equality and the canonical hash still pass.
+- Course-controller adversarial suite: 18/18 passed.
+- Exact course-control gate: accepted base `cda36d299f3579e2eec6b01ad59c99a59b478cf3` to checkpoint `3dafd8257db58ccbbeb01e337d3ff19615a56e2a` on the required repository and branch.
+- Unit suite: 911/911 passed across 102 test files. Desktop suite: 1/1 passed. Lint and production build exited 0; existing warnings were retained.
+- Browser E2E: Open/not run. No browser was installed and Playwright's Chromium download repeatedly timed out. This B0 task changed no application code.
+- Remote CI: not run because the local commit was not pushed; remote publication was unavailable without separate explicit authorization.
+- Full commands, results, and limitations are retained in CL-0018 and E-020.
+- This is a self-check, not independent verification.
 
-## Required next handoff update
+## Prohibited continuation
 
-The F0 designer must replace this current-state section with the resulting artifact list, hashes, decisions, failures, gate states, exact blocked scope, and one exact next action while preserving the prior state in `CONTINUITY-LEDGER.md`.
+Do not create a branch, merge, rebase, force-update, deploy, touch the safety branch, redesign the interface, implement an application system, or treat canonical installation as independent audit evidence.
+
+## Exact next unfinished task
+
+**F0 — Foundation Contract and Interface Skeleton**, using `DIVERGENCE-F0-STANDALONE-HANDOFF.md`.
+
+F0 remains locked and may not begin until the user gives a separate explicit instruction to activate it. Stop now; identifying F0 is not permission to execute it.

@@ -9,7 +9,7 @@
     "claude/remaining-second-pass-v1"
   ],
   "branch_creation_allowed": false,
-  "active_task": "G0",
+  "active_task": "B0",
   "permitted_gate_statuses": [
     "Self-check passed",
     "Independently verified",
@@ -17,6 +17,7 @@
     "Open"
   ],
   "required_files": [
+    "02-MASTER-SYSTEM-AND-REQUIREMENT-BLUEPRINT.md",
     "AGENTS.md",
     "CLAUDE.md",
     ".github/copilot-instructions.md",
@@ -59,6 +60,23 @@
     "docs/ai-control/visual-baseline/DivergenceAI-3of3-Response-Right-Rail-Settings.png"
   ],
   "task_profiles": {
+    "B0": {
+      "phase": "execution-control-documentation",
+      "allowed_paths": [
+        "02-MASTER-SYSTEM-AND-REQUIREMENT-BLUEPRINT.md",
+        "docs/ai-control/CONTINUITY-LEDGER.md",
+        "docs/ai-control/CONTROL-MANIFEST.json",
+        "docs/ai-control/COURSE-CONTROL.json",
+        "docs/ai-control/CURRENT-TASK.md",
+        "docs/ai-control/DECISION-LOG.md",
+        "docs/ai-control/EVIDENCE-INDEX.md",
+        "docs/ai-control/GATE-STATUS.md",
+        "docs/ai-control/HANDOFF.md",
+        "docs/ai-control/PROJECT-AUTHORITY.md",
+        "docs/ai-control/SHA256SUMS",
+        "docs/ai-control/TASK-INDEX.md"
+      ]
+    },
     "G0": {
       "phase": "execution-control",
       "allowed_paths": [

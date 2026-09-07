@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "project": "Divergence.AI Reliability Layer",
-  "authority_status": "G0 execution control complete by self-check; GitHub enforcement and cold-start continuity independently verified; F0 remains locked pending user approval",
+  "authority_status": "G0 execution control complete by self-check; GitHub enforcement and cold-start continuity independently verified; canonical master blueprint installed unchanged by B0 self-check; F0 remains locked pending separate user approval",
   "repository": {
     "full_name": "thatoneweirdfella1/Claude-Project-02",
     "policy": "existing_repository_only",
@@ -31,7 +31,7 @@
     "replacement_or_redesign_authorized": false,
     "visual_baseline_directory": "docs/ai-control/visual-baseline"
   },
-  "phase": "execution-control",
+  "phase": "execution-control-documentation",
   "course_control": {
     "policy": "docs/ai-control/COURSE-CONTROL.json",
     "validator": "scripts/ai-course-control.mjs",
@@ -45,20 +45,28 @@
     "cold_start_trial_status": "Independently verified"
   },
   "integrity_manifest": "docs/ai-control/SHA256SUMS",
+  "canonical_master_blueprint": {
+    "path": "02-MASTER-SYSTEM-AND-REQUIREMENT-BLUEPRINT.md",
+    "sha256": "d9783aa4fff475810170f2217ea2cdca1b30baefe78d21d837980943c509ea47",
+    "installation_status": "Self-check passed",
+    "content_status": "Exact supplied bytes; internal proposal/audit limitations preserved",
+    "not_authority_for": "F0 activation, implementation, redesign, merge, or deployment"
+  },
   "deployment_baseline": "docs/ai-control/VERCEL-BASELINE.md",
   "active_task": {
-    "id": "G0",
-    "title": "AI Course-Control Gate",
+    "id": "B0",
+    "title": "Canonical Master Blueprint Installation",
     "source": "docs/ai-control/CURRENT-TASK.md",
-    "status": "Self-check passed; G0 exit evidence complete; F0 locked pending explicit user approval",
-    "next_task_reveal_allowed": false
+    "status": "Self-check passed; blueprint installed unchanged; stop condition reached; F0 remains locked",
+    "next_task_reveal_allowed": true
   },
   "scope": {
     "one_active_task_only": true,
     "out_of_scope_destination": "docs/ai-control/PARKING-LOT.md",
     "new_systems_authorized": false,
     "product_implementation_authorized": false,
-    "execution_control_implementation_authorized": true
+    "execution_control_implementation_authorized": false,
+    "control_documentation_update_authorized": true
   },
   "permitted_gate_statuses": [
     "Self-check passed",

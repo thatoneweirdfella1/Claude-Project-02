@@ -8,10 +8,10 @@ Keep an AI on the single approved task without requiring the user to continually
 
 | Control | State | Meaning |
 |---|---|---|
-| One active task | Self-check passed | Machine-readable policy names G0 only; F0 is locked. |
+| One active task | Self-check passed | Machine-readable policy names completed B0 only; F0 is locked. |
 | Branch-flow restriction | Self-check passed | Validator accepts only reusable staging `divergence/reliability-staging` and protected integration `divergence/reliability-v1`; every other branch is rejected. |
 | Safety branch preservation | Self-check passed | Safety branch is named protected and remains unchanged. |
-| Allowed-file boundary | Self-check passed | Changes outside G0's explicit list fail. |
+| Allowed-file boundary | Self-check passed | Changes outside the active task profile's explicit list fail; B0 allows only the canonical blueprint and required control/continuity records. |
 | Required continuity records | Self-check passed | Ledger, evidence, handoff, and hashes must change with every accepted checkpoint. |
 | Append-only work history | Self-check passed | Rewriting or truncating the continuity ledger fails. |
 | Evidence integrity | Self-check passed | Every listed SHA-256 hash must match. |
@@ -21,4 +21,4 @@ Keep an AI on the single approved task without requiring the user to continually
 | GitHub non-bypass enforcement | Independently verified | API readback confirms all four required rulesets are Active with exact targets, rules, empty bypass lists, and no current-user bypass. Invalid checkpoint `4d6755ac14753d8dfa0bd0174b4f162f13c1d2cc` was rejected by run `34143620380`. |
 | Cold-start AI continuity trial | Independently verified | A fresh AI used only exact-remote GitHub files at `e1b9f8960825aa9c18b1bc14182862d701f461ab`, followed the mandatory order, and reconstructed the complete state without the blueprint or conversational context. |
 
-G0 is complete by self-check with external enforcement and RCG-04 independently verified. F0 remains locked until the user explicitly approves the transition.
+G0 is complete by self-check with external enforcement and RCG-04 independently verified. B0 installed the exact supplied canonical master blueprint and is complete by self-check; this did not activate F0. F0 remains locked until the user gives a separate explicit instruction to activate it.

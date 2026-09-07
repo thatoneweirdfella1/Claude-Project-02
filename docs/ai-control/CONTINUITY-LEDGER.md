@@ -235,3 +235,60 @@ Each new entry must contain:
 - **Failure/correction/uncertainty:** All prior failed probes and audits remain retained. The connector could not expose raw bytes for three PNGs; all 21 text hashes matched and the PNG paths/blob identities were present.
 - **Resulting status/gate change:** G0 is Self-check passed; GitHub enforcement and RCG-04 are Independently verified. F0 remains locked pending explicit user approval.
 - **Exact next action:** Stop. Await explicit user instruction to activate F0. Do not create a branch, merge, deploy, or execute F0.
+
+### CL-0016 — 2026-09-07 23:08:29 UTC — Canonical-blueprint installation preflight
+
+- **Actor:** OpenAI Codex / GPT-5 session
+- **Task/phase:** B0 Canonical Master Blueprint Installation / execution control documentation
+- **Repository/branch/starting commit:** `thatoneweirdfella1/Claude-Project-02`; `divergence/reliability-staging`; `cda36d299f3579e2eec6b01ad59c99a59b478cf3`; clean working tree
+- **Authority/source:** User explicitly ordered installation of attached `02-MASTER-SYSTEM-AND-REQUIREMENT-BLUEPRINT.md` as the canonical master blueprint on the existing staging branch, required continuity/decision/evidence/task/handoff updates and repository checks, and prohibited F0 or application implementation. This latest instruction controls under `PROJECT-AUTHORITY.md`.
+- **Control-file read receipt:** Read the complete mandatory sequence from `docs/ai-control/00-READ-FIRST.md`. Starting hashes: `00-READ-FIRST.md` `be130a616e5b743262f330d4f3eef66e2abf0b97369f036886ff1f8780edbf87`; `CONTROL-MANIFEST.json` `73ccca81a1313ee8721bf288bb3f1b9caf4b2d59c79361b5f773449be329b11f`; `SHA256SUMS` `167ec5657b8f616f6391ac3c039e472aef2c3fd6565a7e849f2dc9dc4fdff53a`; `COURSE-CONTROL.json` `e3d386b0a0943a7375ceee5da16c34ebb3d9c38dd6ff7f51a4c851f755e7656d`; `GATE-STATUS.md` `f65ed0c4dfa46f6713761d992b843e9ab9811db644d146510cd633ca3c0b71d8`; `VERCEL-BASELINE.md` `f9106c6185cef00447b2cd13110c8538ab0044d932b06d3dc6e70dfec44ea9dd`; `PROJECT-AUTHORITY.md` `3048f09cc2b1794f4795d4722d5eea2ea5a4b3b4b4144941e9e94a2843f8504d`; `CURRENT-TASK.md` `23f5a3187d1add5cb3e4bd5886a13684beeb4e7ab89cfa0b95cc686bd12306bc`; `TASK-INDEX.md` `09c34be814e85db5b81a6e5ab6fb680d0456d07a5bdda76af30d18baa6d5b804`; `GITHUB-RULESET-REQUIRED.md` `996d76a5306fd6b9d822bcd97e21b3da106ce19ff8c0f0292c7170d4552f4307`; `HANDOFF.md` `82289189f573c32f990a6b3a74808fc37b24651be5ba88ce0630e7e4c84f1b2f`; `DECISION-LOG.md` `52c013ae33c95e54fa2ed38a3c53a22a16740e486c703c8b3d1ad1b4e10448ae`; `CONTINUITY-LEDGER.md` `53d187aedb46beda800ec9aef005e0642b8ff00214975eb505f741edbb55eff4`; `EVIDENCE-INDEX.md` `a038c3f4aeee6717a29c1012309cb829975c8fcdd54632422a73d82bca0302db`; `PARKING-LOT.md` `3a5501ff0b9817c7b9f1a1b108bd77aab167e263ac4d1ca9da84acc62b43c87e`. `sha256sum -c docs/ai-control/SHA256SUMS` passed every listed target.
+- **Task-source read receipt:** Read all 1,278 lines of the attached blueprint; source SHA-256 `d9783aa4fff475810170f2217ea2cdca1b30baefe78d21d837980943c509ea47`.
+- **Allowed outputs:** Root canonical blueprint; control manifest/policy; project authority; current-task/task-index records; append-only continuity; decision log; evidence index; handoff; integrity manifest. Only changes necessary to install and make the bounded task mechanically valid are allowed.
+- **Prohibited actions:** No F0 execution or activation, application-system implementation, app/interface/layout change, blueprint redesign/shortening, new branch/repository, branch switch, merge/rebase/force-update, deployment, or safety-branch write.
+- **Unresolved blockers:** None. The prior policy named completed G0 only; the user's higher-authority bounded instruction permits a contained B0 task/profile and its exact documentation paths while F0 stays locked.
+- **Intended first action and reason:** Install the attached blueprint at repository root under its exact filename without content changes, then verify source/destination byte and SHA-256 equality before updating the remaining records.
+- **Resulting gate/status change:** Preflight recorded; B0 work authorized but not yet complete. G0 statuses remain unchanged and F0 remains locked/not started.
+- **Exact next action:** Copy the supplied blueprint byte-for-byte to `02-MASTER-SYSTEM-AND-REQUIREMENT-BLUEPRINT.md` and verify exact equality.
+
+### CL-0017 — 2026-09-07 UTC — Canonical blueprint installed and B0 records reconciled
+
+- **Actor:** OpenAI Codex / GPT-5 session
+- **Task/phase:** B0 Canonical Master Blueprint Installation / execution-control documentation
+- **Repository/branch/starting commit:** `thatoneweirdfella1/Claude-Project-02`; `divergence/reliability-staging`; `cda36d299f3579e2eec6b01ad59c99a59b478cf3`
+- **Authority/source:** User's exact B0 instruction and attached blueprint SHA-256 `d9783aa4fff475810170f2217ea2cdca1b30baefe78d21d837980943c509ea47`.
+- **Action and affected files:** Installed `02-MASTER-SYSTEM-AND-REQUIREMENT-BLUEPRINT.md` at repository root; activated and completed the bounded B0 documentation task in the manifest/policy/current-task/task-index records; named the blueprint as canonical planning/control authority in `PROJECT-AUTHORITY.md`; added D-012 and E-019; corrected E-006's stale pre-E-018 RCG-04 state; replaced the handoff with the exact B0 outcome, path list, prohibitions, and next unfinished task. The integrity manifest remains to be refreshed after final record edits.
+- **Reason and rejected alternatives:** Preserve the user's supplied document exactly while making its authority and the next task discoverable without chat context. Rejected editing the blueprint, treating its installation as an independent audit, starting F0, implementing an app system, or making any branch/layout/deployment change.
+- **Command/test/check and actual result:** `cmp -s` between the supplied attachment and repository destination returned success. `sha256sum` returned `d9783aa4fff475810170f2217ea2cdca1b30baefe78d21d837980943c509ea47` for both files. The installed file contains 1,278 lines.
+- **Evidence/artifact/hash:** Canonical root blueprint and E-019.
+- **Failure/correction/uncertainty:** The B0 checkpoint has not yet been committed or passed through the exact-base/exact-head course-control gate. Canonical installation does not independently verify the blueprint's substance.
+- **Resulting status/gate change:** B0 content/record update self-check passed so far; G0 status unchanged; F0 remains locked and not started.
+- **Exact next action:** Refresh `SHA256SUMS`, validate JSON and task-policy alignment, inspect the exact diff, run all applicable repository checks, then commit and run the exact course-control gate.
+
+### CL-0018 — 2026-09-07 23:24:27 UTC — B0 checkpoint verified and stop condition reached
+
+- **Actor:** OpenAI Codex / GPT-5 session
+- **Task/phase:** B0 Canonical Master Blueprint Installation / verification and handoff
+- **Repository/branch/starting commit:** `thatoneweirdfella1/Claude-Project-02`; `divergence/reliability-staging`; task base `cda36d299f3579e2eec6b01ad59c99a59b478cf3`; verified content checkpoint `3dafd8257db58ccbbeb01e337d3ff19615a56e2a`
+- **Authority/source:** B0 current task, repository course-control policy, and the user's requirement to check work and stop before F0 or application implementation.
+- **Action and affected files:** Reviewed and committed the exact 12-path B0 change set, then ran the required applicable local repository checks. Updated the evidence index and handoff with actual results and limitations. No application, interface, layout, visual baseline, F0 artifact, or branch topology was changed.
+- **Reason and rejected alternatives:** Prove exact installation, bounded scope, control integrity, and repository health before stopping. Rejected concealing unavailable checks, treating a documentation install as product verification, starting F0, or bypassing remote-publication controls.
+- **Command/test/check and actual result:** `cmp -s` and source/destination SHA-256 equality passed; `sha256sum -c` passed; JSON parsing and policy/manifest task alignment passed; `git diff --check` passed; `node --test scripts/ai-course-control.test.mjs` passed 18/18; `npm test` passed 911/911 across 102 files; `npm run test:desktop` passed 1/1; `npm run lint` exited 0 with 17 retained warnings; `npm run build` exited 0 with the retained chunk-size warning. The exact course-control command accepted base `cda36d299f3579e2eec6b01ad59c99a59b478cf3`, head `3dafd8257db58ccbbeb01e337d3ff19615a56e2a`, branch `divergence/reliability-staging`, repository `thatoneweirdfella1/Claude-Project-02`, and listed only the 12 authorized B0 paths.
+- **Evidence/artifact/hash:** E-019 and E-020; canonical blueprint SHA-256 `d9783aa4fff475810170f2217ea2cdca1b30baefe78d21d837980943c509ea47`.
+- **Failure/correction/uncertainty:** Browser E2E remained Open/not run: the environment had no installed browser and `npx playwright install chromium` failed after repeated 30-second download timeouts. The commit was not pushed, so GitHub CI did not run; remote publication was unavailable without separate explicit authorization. These are stated limitations, not successful checks. No application code changed in B0.
+- **Resulting status/gate change:** B0 is complete by self-check and its stop condition is reached. No independent verification is claimed. G0 remains unchanged; F0 remains locked and not started.
+- **Exact next action:** Stop. The next unfinished task is F0 from `DIVERGENCE-F0-STANDALONE-HANDOFF.md`, but it may begin only after the user separately and explicitly activates F0. Do not create a branch, merge, deploy, or implement an application system.
+
+### CL-0019 — 2026-09-07 UTC — Whole-diff whitespace result corrected without altering source
+
+- **Actor:** OpenAI Codex / GPT-5 session
+- **Task/phase:** B0 Canonical Master Blueprint Installation / final verification correction
+- **Repository/branch/starting commit:** `thatoneweirdfella1/Claude-Project-02`; `divergence/reliability-staging`; `1f456b35000984449cae4c7ff1af6a448b61b47b`
+- **Authority/source:** User required exact blueprint installation without redesigning or shortening it and required honest check reporting.
+- **Action and affected files:** Corrected E-020, the handoff, and B0 acceptance wording after the complete committed-range whitespace check exposed source-preserved Markdown hard-line-break spaces in the blueprint. Appended this correction rather than rewriting CL-0018.
+- **Reason and rejected alternatives:** The original attachment contains the reported trailing spaces and uses them as Markdown hard breaks. Removing them would alter the supplied canonical bytes and invalidate the required SHA-256. Rejected changing the blueprint or falsely claiming the complete-range whitespace check passed.
+- **Command/test/check and actual result:** Whole-task `git diff --check cda36d299f3579e2eec6b01ad59c99a59b478cf3..HEAD` reported only trailing spaces from `02-MASTER-SYSTEM-AND-REQUIREMENT-BLUEPRINT.md`. The same check excluding that exact source-preserved file passed. `cmp -s` against the attachment still passed. Remote readback showed safety branch `claude/remaining-second-pass-v1` unchanged at `10894f704a39b6c56a7fadfafb54275b82526c33`; remote staging remained at the starting commit because no push occurred; the only local branch remained `divergence/reliability-staging`.
+- **Evidence/artifact/hash:** E-019 and corrected E-020.
+- **Failure/correction/uncertainty:** This is an intentional exact-source formatting exception, not a clean whole-diff whitespace result. Browser E2E and remote CI remain unavailable as stated in CL-0018.
+- **Resulting status/gate change:** B0 remains complete by self-check with the limitation accurately stated. F0 remains locked and not started.
+- **Exact next action:** Refresh hashes, commit this records-only correction, rerun the exact course-control gate, and stop before F0.
