@@ -116,7 +116,7 @@
   "external_enforcement": {
     "github_ruleset_required": true,
     "configuration": "docs/ai-control/GITHUB-RULESET-REQUIRED.md",
-    "status": "Open",
+    "status": "Independently verified",
     "required_flow": "reuse divergence/reliability-staging, pass AI Course Control, then merge by pull request into divergence/reliability-v1"
   }
 }

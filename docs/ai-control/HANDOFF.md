@@ -10,6 +10,7 @@
 - The validator and revised adversarial harness pass 18/18 local tests. First staging-flow runs failed because G0's allowlist omitted its necessary standalone-handoff update; that failure is retained as E-013. The corrected integration run `34070234656` and staging run `34070235162` both passed.
 - All four required DIVERGENCE rulesets are active and were independently read back with exact targets, rules, empty bypass lists, and no current-user bypass.
 - Mechanical enforcement is implemented and tested: the validator has an 18-case adversarial harness, passed workflows on both reusable refs, and rejected live invalid checkpoint `4d6755ac14753d8dfa0bd0174b4f162f13c1d2cc` in run `34143620380`.
+- Later cold-start retries were retained: one failed safely on a stale local object database, and the exact-remote retry found four additional stale status statements. Those manifest, policy, evidence, and decision-history conflicts are corrected; a fresh exact-remote trial remains required.
 - No application code, interface, visual baseline, or deployment was changed. G0 added only its authorized control files, reusable branches, records, tests, and workflows.
 - The user's preferred Vercel site has been traced to safety/layout branch `claude/remaining-second-pass-v1` and deployed commit `10894f704a39b6c56a7fadfafb54275b82526c33`.
 - Integration branch `divergence/reliability-v1` was created from that exact commit and verified identical at creation. The safety branch was not modified.

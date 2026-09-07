@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "project": "Divergence.AI Reliability Layer",
-  "authority_status": "Proposed execution control installed on the approved working branch; independent verification remains open",
+  "authority_status": "Proposed execution control installed; GitHub enforcement independently verified; cold-start continuity repair in progress",
   "repository": {
     "full_name": "thatoneweirdfella1/Claude-Project-02",
     "policy": "existing_repository_only",
@@ -41,8 +41,8 @@
     "workflow_status": "Self-check passed",
     "implementation_commit": "d417f10cd3ee543fb0facde7bd620b0a029ebd72",
     "workflow_run_id": 34066339481,
-    "github_ruleset_status": "Open",
-    "cold_start_trial_status": "Open"
+    "github_ruleset_status": "Independently verified",
+    "cold_start_trial_status": "Open; failed trials retained and remaining contradictions corrected"
   },
   "integrity_manifest": "docs/ai-control/SHA256SUMS",
   "deployment_baseline": "docs/ai-control/VERCEL-BASELINE.md",
@@ -50,7 +50,7 @@
     "id": "G0",
     "title": "AI Course-Control Gate",
     "source": "docs/ai-control/CURRENT-TASK.md",
-    "status": "Open; implementation self-check passed, external enforcement and cold-start trial unresolved",
+    "status": "Open; implementation and external enforcement verified, corrected cold-start trial pending",
     "next_task_reveal_allowed": false
   },
   "scope": {

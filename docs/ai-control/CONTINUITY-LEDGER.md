@@ -214,3 +214,13 @@ Each new entry must contain:
 - **Failure/correction/uncertainty:** Cold-start attempt 1 failed; a fresh trial remains required.
 - **Resulting status/gate change:** GitHub non-bypass enforcement is Independently verified; cold-start continuity remains Open.
 - **Exact next action:** Run a fresh separate repository-only cold-start trial, record it, and stop before F0.
+
+### CL-0014 — 2026-09-07 UTC — Exact-remote cold-start exposed four remaining stale records
+
+- **Actor:** Two separate cold-start AI reviewers and GPT/Codex finalizer
+- **Task/phase:** G0 AI Course-Control Gate / continuity repair
+- **Repository/branch/starting commit:** `thatoneweirdfella1/Claude-Project-02`; `divergence/reliability-staging`; `b2662bd5d1c249d4caedb5111aa0195fa267a8e8`
+- **Action and result:** A first retry failed safely because its local object database lacked the pinned remote commit. A replacement exact-remote GitHub audit reconstructed G0 without the blueprint but found four stale mandatory-record conflicts: CONTROL-MANIFEST ruleset/task state, COURSE-CONTROL external status, E-006's obsolete no-trial statement, and D-008's historical active label. All four are corrected while preserving history.
+- **Evidence/artifact/hash:** E-016 and E-017.
+- **Failure/correction/uncertainty:** RCG-04 remains Open until a fresh exact-remote audit passes.
+- **Exact next action:** Rerun the exact-remote repository-only cold-start trial and stop before F0.

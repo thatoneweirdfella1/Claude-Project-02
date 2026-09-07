@@ -15,3 +15,5 @@
 | D-011 | Create exactly one permanent reusable staging branch, `divergence/reliability-staging`; protect `divergence/reliability-v1` as integration and never create per-task branches. | User explicitly authorized with “do it”; active; supersedes the single-writable-branch portions of D-003 and D-009 | GitHub must test a commit before allowing it into the protected integration branch; one reused staging branch provides that path without branch proliferation. | Only a later explicit user instruction may authorize another branch or replace this flow. |
 
 Unresolved items remain in `CURRENT-TASK.md`, the F0 assignment, or `PARKING-LOT.md`; do not convert an unresolved item into a decision.
+
+**Status correction:** D-008's statement that F0 was the active task is historical and was explicitly superseded by D-010. G0 remains the only active task until its exit is recorded; F0 remains locked pending explicit user transition approval.
