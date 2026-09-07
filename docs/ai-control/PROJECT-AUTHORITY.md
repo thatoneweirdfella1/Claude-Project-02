@@ -5,7 +5,7 @@
 - Continue the existing Divergence.AI project.
 - Use the existing repository: `thatoneweirdfella1/Claude-Project-02`.
 - Preserve `claude/remaining-second-pass-v1` as the untouched safety/layout branch. The exact site snapshot the user identified was deployed from commit `10894f704a39b6c56a7fadfafb54275b82526c33`.
-- Perform all new reliability work on `divergence/reliability-v1`, created from that exact commit.
+- Make all new reliability task commits on reusable staging branch `divergence/reliability-staging`. Merge only gate-accepted work into protected integration branch `divergence/reliability-v1`.
 - Preserve and build from the existing Divergence interface/layout.
 - The three files under `docs/ai-control/visual-baseline/` are the supplied visual baseline for continuity. They do not authorize pixel-level invention where they are silent.
 - Do not create a replacement application, parallel shell, alternative navigation system, new visual language, separate repository, or unrequested architecture.
@@ -27,9 +27,10 @@ A lower authority may identify a conflict but may not silently override a higher
 
 - Repository policy: existing repository only.
 - Safety/layout branch: `claude/remaining-second-pass-v1` at baseline commit `10894f704a39b6c56a7fadfafb54275b82526c33`. It is read-only and must not be modified.
-- Single working branch: `divergence/reliability-v1`. It was created from and verified identical to the baseline commit.
+- Protected integration branch: `divergence/reliability-v1`. It was created from and verified identical to the baseline commit before control work began.
+- Single reusable task branch: `divergence/reliability-staging`, created from integration commit `7681344918a912f0ac35a2fb15c2b41b85638a3f` by explicit user authorization. Reuse it; do not create per-task branches.
 - Do not create another branch or repository.
-- The active task may write only to the working branch and only when `branch_mutation_authorized` is true.
+- The active task may write only to the reusable staging branch and only when `branch_mutation_authorized` is true. Integration occurs only after the course-control check passes.
 - Merging, rebasing, force-updating, deleting, or deploying requires separate explicit user authorization.
 - If the user later authorizes one of those operations, record the exact operation, branch, task scope, date, and wording in `DECISION-LOG.md` before acting.
 

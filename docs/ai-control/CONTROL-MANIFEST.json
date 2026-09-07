@@ -10,8 +10,11 @@
   "branch": {
     "safety_branch": "claude/remaining-second-pass-v1",
     "safety_branch_write_authorized": false,
-    "approved_branch": "divergence/reliability-v1",
+    "approved_branch": "divergence/reliability-staging",
+    "integration_branch": "divergence/reliability-v1",
     "working_branch_created": true,
+    "staging_branch_created": true,
+    "staging_branch_baseline_commit": "7681344918a912f0ac35a2fb15c2b41b85638a3f",
     "baseline_commit": "10894f704a39b6c56a7fadfafb54275b82526c33",
     "control_install_commit": "58c89578c825a2c445df7408db059d7fb3f1586f",
     "baseline_deployment_id": "dpl_D1ngxz1mmJrfSB7LHsEnHfbuA5ej",

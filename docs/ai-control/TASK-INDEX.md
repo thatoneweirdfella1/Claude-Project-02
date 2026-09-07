@@ -2,7 +2,7 @@
 
 | Order | Task | Assignment | Status | Entry gate | Exit gate | May begin? |
 |---:|---|---|---|---|---|---|
-| 1 | G0 AI Course-Control Gate | `docs/ai-control/CURRENT-TASK.md` | In progress | User authorization; working branch only | Validator/tests pass, cold-start trial completed, GitHub enforcement enabled or explicitly waived, user approves transition | Yes, working branch only |
+| 1 | G0 AI Course-Control Gate | `docs/ai-control/CURRENT-TASK.md` | In progress | User authorization; reusable staging branch only | Validator/tests pass, cold-start trial completed, GitHub enforcement enabled or explicitly waived, user approves transition | Yes, staging only |
 | 2 | F0 Foundation Contract and Interface Skeleton | `DIVERGENCE-F0-STANDALONE-HANDOFF.md` | Blocked; not started | G0 exit gate satisfied and user unlocks F0 | FCIS-G01–G06 and RCG-01–RCG-04 accurately reported; independent audit still separate | No |
 | 3 | Independent F0 audit | Not yet created | Blocked | Completed F0 evidence | Applicable gates Independently verified or defects returned | No |
 | 4 | S02 design package | F0 must produce brief | Blocked | Accepted/verified F0 | Standalone S02 package | No |

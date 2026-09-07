@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - divergence/reliability-v1
+      - divergence/reliability-staging
 
 permissions:
   contents: read

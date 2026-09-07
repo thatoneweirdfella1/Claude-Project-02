@@ -66,12 +66,14 @@ export function validatePolicy(policy) {
   if (policy?.failure_mode !== "closed") errors.push("Policy failure_mode must be closed");
   if (!policy?.repository) errors.push("Policy repository is missing");
   if (!policy?.working_branch) errors.push("Policy working_branch is missing");
+  if (!policy?.integration_branch) errors.push("Policy integration_branch is missing");
   if (policy?.branch_creation_allowed !== false) errors.push("Branch creation must remain denied");
   if (!policy?.active_task || !policy?.task_profiles?.[policy.active_task]) errors.push("Active task profile is missing");
   if (!Array.isArray(policy?.required_files)) errors.push("required_files must be an array");
   if (!Array.isArray(policy?.required_changed_records)) errors.push("required_changed_records must be an array");
   if (!Array.isArray(policy?.append_only_files)) errors.push("append_only_files must be an array");
   if (!Array.isArray(policy?.immutable_files)) errors.push("immutable_files must be an array");
+  if (!Array.isArray(policy?.immutable_branches)) errors.push("immutable_branches must be an array");
   if (!Array.isArray(policy?.permitted_gate_statuses) || policy.permitted_gate_statuses.length !== 4) {
     errors.push("Exactly four permitted gate statuses are required");
   }
@@ -166,8 +168,9 @@ export function runGate({ policyPath, base, head, branch, repository }) {
   const errors = [];
 
   if (repository !== policy.repository) errors.push(`Wrong repository: ${repository}`);
-  if (branch !== policy.working_branch) errors.push(`Wrong branch: ${branch}`);
-  if (policy.protected_branches.includes(branch)) errors.push(`Protected branch cannot be modified: ${branch}`);
+  const allowedBranches = new Set([policy.working_branch, policy.integration_branch]);
+  if (!allowedBranches.has(branch)) errors.push(`Wrong branch: ${branch}`);
+  if (policy.immutable_branches.includes(branch)) errors.push(`Immutable branch cannot be modified: ${branch}`);
 
   for (const required of policy.required_files) {
     if (!existsSync(required)) errors.push(`Required control file missing: ${required}`);

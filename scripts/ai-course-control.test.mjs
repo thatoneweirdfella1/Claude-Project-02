@@ -21,7 +21,7 @@ import {
 } from "./ai-course-control.mjs";
 
 const REPOSITORY = "owner/repo";
-const WORKING_BRANCH = "divergence/reliability-v1";
+const WORKING_BRANCH = "divergence/reliability-staging";
 
 const validPolicy = {
   schema_version: "1.0",
@@ -29,7 +29,8 @@ const validPolicy = {
   failure_mode: "closed",
   repository: REPOSITORY,
   working_branch: WORKING_BRANCH,
-  protected_branches: ["safety"],
+  integration_branch: "divergence/reliability-v1",
+  immutable_branches: ["safety"],
   branch_creation_allowed: false,
   active_task: "G0",
   permitted_gate_statuses: ["Self-check passed", "Independently verified", "Failed", "Open"],
@@ -175,8 +176,12 @@ test("wrong or newly invented branch is rejected", () => {
   expectRejected(setupFixture(), "Wrong branch", { branch: "ai/new-branch" });
 });
 
-test("protected branch is rejected", () => {
-  expectRejected(setupFixture(), "Protected branch cannot be modified", { branch: "safety" });
+test("immutable safety branch is rejected", () => {
+  expectRejected(setupFixture(), "Immutable branch cannot be modified", { branch: "safety" });
+});
+
+test("protected integration branch is a valid post-merge checkpoint", () => {
+  assert.equal(executeFixture(setupFixture(), { branch: "divergence/reliability-v1" }).accepted, true);
 });
 
 test("out-of-scope application file is rejected", () => {

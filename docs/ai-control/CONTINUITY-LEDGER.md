@@ -159,3 +159,17 @@ Each new entry must contain:
 - **Failure/correction/uncertainty:** The connected GitHub tool lacks administrative ruleset writes. A secure browser sign-in attempt was stopped after GitHub stated that this account does not support password sign-in. No GitHub setting was changed. A separate AI cold-start trial is also still unperformed.
 - **Resulting status/gate change:** Validator implementation and workflow execution are Self-check passed. Non-bypass GitHub enforcement, cold-start continuity, independent verification, and user transition approval remain Open. F0 remains locked.
 - **Exact next action:** The repository owner enables the rulesets specified in `GITHUB-RULESET-REQUIRED.md`; then a separate AI performs the repository-only cold-start trial. Do not execute F0.
+
+### CL-0010 — 2026-09-07 UTC — One reusable staging branch authorized and created
+
+- **Actor:** User and GPT/Codex session
+- **Task/phase:** G0 AI Course-Control Gate / enforceable branch flow
+- **Repository/branch/starting commit:** `thatoneweirdfella1/Claude-Project-02`; integration `divergence/reliability-v1`; `7681344918a912f0ac35a2fb15c2b41b85638a3f`
+- **Authority/source:** The user explicitly said “do it” after being shown the proposal for exactly one permanent reusable staging branch, while repeatedly forbidding uncontrolled branch creation and requiring the known-good layout source to remain untouched.
+- **Action and affected files:** Created only `divergence/reliability-staging` at the exact integration head. Revised the controller and continuity records so task commits use staging, accepted work merges into integration, the safety/layout branch remains immutable, and no additional branch may be created.
+- **Reason and rejected alternatives:** GitHub must evaluate a candidate commit before admitting it to protected integration. Reusing one staging branch provides that path without creating per-task branches. Rejected another repository, per-task branches, direct task writes to integration, and any change to the safety/layout branch.
+- **Command/test/check and actual result:** GitHub created the staging ref at `7681344918a912f0ac35a2fb15c2b41b85638a3f`. Final controller tests and repository workflow verification are recorded separately after completion.
+- **Evidence/artifact/hash:** D-011; E-012; `COURSE-CONTROL.json`; `GITHUB-RULESET-REQUIRED.md`.
+- **Failure/correction/uncertainty:** Repository rulesets are not yet enabled. Staging existence alone does not make the flow non-bypassable.
+- **Resulting status/gate change:** Reusable staging topology is Self-check passed. GitHub non-bypass enforcement remains Open.
+- **Exact next action:** Commit the staging-flow controller revision, fast-forward the reusable staging ref to it, verify both workflow runs and the unchanged safety branch, then enable the four rulesets. Do not execute F0.

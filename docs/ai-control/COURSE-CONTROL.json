@@ -3,8 +3,9 @@
   "mode": "enforce",
   "failure_mode": "closed",
   "repository": "thatoneweirdfella1/Claude-Project-02",
-  "working_branch": "divergence/reliability-v1",
-  "protected_branches": [
+  "working_branch": "divergence/reliability-staging",
+  "integration_branch": "divergence/reliability-v1",
+  "immutable_branches": [
     "claude/remaining-second-pass-v1"
   ],
   "branch_creation_allowed": false,
@@ -113,6 +114,7 @@
   "external_enforcement": {
     "github_ruleset_required": true,
     "configuration": "docs/ai-control/GITHUB-RULESET-REQUIRED.md",
-    "status": "Open"
+    "status": "Open",
+    "required_flow": "reuse divergence/reliability-staging, pass AI Course Control, then merge by pull request into divergence/reliability-v1"
   }
 }

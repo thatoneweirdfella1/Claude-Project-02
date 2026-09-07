@@ -73,7 +73,7 @@ These controls apply to the execution of this assignment. They are not implement
 
 1. Use the existing Divergence.AI repository. Do not create a separate repository.
 2. Preserve and build from the existing Divergence interface and supplied three-part visual baseline. F0 has no authority to redesign, replace, fork, or implement the interface.
-3. Preserve `claude/remaining-second-pass-v1` at commit `10894f704a39b6c56a7fadfafb54275b82526c33` as the untouched safety/layout branch. Perform new reliability work only on `divergence/reliability-v1`, created from that exact commit and verified identical at creation. Do not create any additional branch, and do not modify, merge into, rebase, delete, or force-update the safety branch.
+3. Preserve `claude/remaining-second-pass-v1` at commit `10894f704a39b6c56a7fadfafb54275b82526c33` as the untouched safety/layout branch. Make task commits only on reusable staging branch `divergence/reliability-staging`; merge gate-accepted work into protected integration branch `divergence/reliability-v1`. Do not create any additional branch, and do not modify, merge into, rebase, delete, or force-update the safety branch.
 4. Before acting in a repository, read the root entry file for the active AI and then the canonical control files in the exact order stated by `docs/ai-control/00-READ-FIRST.md`.
 5. Maintain one active task. Work not required by that task must be recorded in `PARKING-LOT.md`; recording it does not authorize it.
 6. Maintain an append-only continuity ledger. Every meaningful action must identify what was done, why it was done, the source or decision authorizing it, affected files, actual command/test result when applicable, failure or correction, and the exact next action.
@@ -248,7 +248,7 @@ Produce one compact F0 package containing:
 11. F1 reconciliation entry conditions, comparison method, decision authority, dissent handling, exit conditions, and Open/Failed outcomes.
 12. FCIS-G01–G06 gate table with the evidence used and every remaining gap.
 
-Operational companion deliverable, separate from the F0 product-design package: update the required repository-control records and report RCG-01–RCG-04 accurately. Repository work is allowed only on `divergence/reliability-v1`, only within the active task, and never on the safety branch.
+Operational companion deliverable, separate from the F0 product-design package: update the required repository-control records and report RCG-01–RCG-04 accurately. Task commits are allowed only on `divergence/reliability-staging`, only within the active task, and never on the safety branch. Accepted work reaches `divergence/reliability-v1` only through the gated integration flow.
 
 ## 11. FCIS acceptance gates
 

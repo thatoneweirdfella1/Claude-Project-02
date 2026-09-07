@@ -7,7 +7,8 @@
 - **Phase:** Execution control
 - **Status:** Open; implementation self-check passed, GitHub non-bypass rules and cold-start trial unresolved
 - **Untouched safety/layout branch:** `claude/remaining-second-pass-v1`
-- **Only working branch:** `divergence/reliability-v1`
+- **Only task-writing branch:** `divergence/reliability-staging`
+- **Protected integration branch:** `divergence/reliability-v1`
 - **Repository mutation:** Authorized only on the working branch and only for G0/control records
 
 ## Exact purpose
@@ -45,7 +46,7 @@ The retained test evidence must show rejection of:
 
 - Add or modify only the paths allowed by the G0 profile in `COURSE-CONTROL.json`.
 - Run local unit, integration, and deliberately failing rejection tests.
-- Install and verify the GitHub workflow on `divergence/reliability-v1`.
+- Install and verify the GitHub workflow on both the reusable staging and protected integration branches.
 - Update the required durable records.
 
 ## Prohibited work

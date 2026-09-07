@@ -36,7 +36,7 @@ Verified from the live Vercel deployment metadata on 2026-09-06 UTC:
 
 ## Authority and limitations
 
-- This record authorizes using the safety branch and commit as the read-only baseline and `divergence/reliability-v1` as the only working branch.
+- This record authorizes using the safety branch and commit as the read-only baseline, `divergence/reliability-v1` as protected integration, and the explicitly authorized reusable `divergence/reliability-staging` branch for task commits.
 - It does not authorize touching the safety branch, creating another branch, merging, rebasing, force-updating, deleting, or deploying.
 - No repository checkout or browser workflow test occurred during this lookup.
 - A branch alias can later point to a newer commit. Use the exact commit above when reproducing this specific snapshot, and record any later intentional baseline change.
