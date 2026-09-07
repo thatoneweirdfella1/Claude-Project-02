@@ -8,6 +8,7 @@
 - The blueprint was not redesigned, shortened, or edited. Its internal status and limitations remain exactly as supplied.
 - G0 remains complete by self-check, with GitHub enforcement and RCG-04 independently verified.
 - F0 was not activated or executed. No application or reliability system was implemented.
+- The verified B0 content tree was published to the existing remote staging branch in commit `3c651a6c0791b3ee31c9d28b98030d5eb69896b2`; no new branch, PR, merge, or deployment was created by this task.
 
 ## Current authority and status
 
@@ -31,6 +32,7 @@
 - `docs/ai-control/EVIDENCE-INDEX.md`
 - `docs/ai-control/GATE-STATUS.md`
 - `docs/ai-control/HANDOFF.md`
+- `docs/ai-control/PARKING-LOT.md`
 - `docs/ai-control/PROJECT-AUTHORITY.md`
 - `docs/ai-control/SHA256SUMS`
 - `docs/ai-control/TASK-INDEX.md`
@@ -45,9 +47,11 @@
 - Course-controller adversarial suite: 18/18 passed.
 - Exact course-control gate: accepted base `cda36d299f3579e2eec6b01ad59c99a59b478cf3` to checkpoint `3dafd8257db58ccbbeb01e337d3ff19615a56e2a` on the required repository and branch.
 - Unit suite: 911/911 passed across 102 test files. Desktop suite: 1/1 passed. Lint and production build exited 0; existing warnings were retained.
-- Browser E2E: Open/not run. No browser was installed and Playwright's Chromium download repeatedly timed out. This B0 task changed no application code.
-- Remote CI: not run because the local commit was not pushed; remote publication was unavailable without separate explicit authorization.
-- Full commands, results, and limitations are retained in CL-0018 and E-020.
+- Local browser E2E: Open/not run because no browser was installed and Playwright's Chromium download repeatedly timed out.
+- Remote AI Course Control run `34170361276`: success.
+- Remote CI run `34170361298`: Typecheck/lint/unit job passed; Playwright E2E failed with 28 passed, 15 failed, and 2 skipped. This B0 task changed no application code. The failure is retained as E-021 and parked as P-002; fixing it was prohibited by B0 scope.
+- Terminal HTTPS push lacked credentials. After the user explicitly authorized publishing, the connected GitHub API advanced only the existing staging branch.
+- Full commands, results, and limitations are retained in CL-0018–CL-0020 and E-020–E-021.
 - This is a self-check, not independent verification.
 
 ## Prohibited continuation

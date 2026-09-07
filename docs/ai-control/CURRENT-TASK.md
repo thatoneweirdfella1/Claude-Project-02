@@ -5,7 +5,7 @@
 - **ID:** B0
 - **Title:** Canonical Master Blueprint Installation
 - **Phase:** Execution-control documentation
-- **Status:** Self-check passed; installation complete; stop condition reached
+- **Status:** Self-check passed for B0 scope; canonical installation and course control complete; application E2E failure retained as Open/out of scope; stop condition reached
 - **Task source:** User instruction plus attached `02-MASTER-SYSTEM-AND-REQUIREMENT-BLUEPRINT.md`
 - **Task-source SHA-256:** `d9783aa4fff475810170f2217ea2cdca1b30baefe78d21d837980943c509ea47`
 - **Untouched safety/layout branch:** `claude/remaining-second-pass-v1`

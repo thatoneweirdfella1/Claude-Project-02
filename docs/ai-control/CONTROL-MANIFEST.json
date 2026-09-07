@@ -57,7 +57,7 @@
     "id": "B0",
     "title": "Canonical Master Blueprint Installation",
     "source": "docs/ai-control/CURRENT-TASK.md",
-    "status": "Self-check passed; blueprint installed unchanged; stop condition reached; F0 remains locked",
+    "status": "Self-check passed for B0 scope; remote course control and unit job passed; pre-existing application E2E failures retained as Open/out of scope; stop condition reached; F0 remains locked",
     "next_task_reveal_allowed": true
   },
   "scope": {
