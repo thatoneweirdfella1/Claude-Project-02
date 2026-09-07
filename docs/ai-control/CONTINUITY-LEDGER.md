@@ -187,3 +187,17 @@ Each new entry must contain:
 - **Failure/correction/uncertainty:** A passing local test is not a substitute for the pending GitHub run.
 - **Resulting status/gate change:** The failed checkpoint remains recorded. Staging-flow verification remains Open until the corrected run passes.
 - **Exact next action:** Commit the narrow correction, fast-forward both existing refs, inspect both course-control runs, and confirm the safety branch remains unchanged. Do not execute F0.
+
+### CL-0012 — 2026-09-07 UTC — Reusable staging flow passed on both refs
+
+- **Actor:** GPT/Codex session
+- **Task/phase:** G0 AI Course-Control Gate / staging-flow verification
+- **Repository/branch/starting commit:** Integration and staging at `c807a100f70381f7c86ca1790ee6edd325640e1b`
+- **Authority/source:** G0 verification requirements and the user's authorization of exactly one reusable staging branch.
+- **Action and affected files:** Verified exact ref equality, inspected the corrected course-control runs on staging and integration, retained the earlier failure, and confirmed the safety/layout baseline through its unchanged merge-base commit.
+- **Reason and rejected alternatives:** Both sides of the reusable flow must accept the same fail-closed policy before GitHub rules make it mandatory. Rejected treating the earlier failed run or local-only tests as sufficient.
+- **Command/test/check and actual result:** Local adversarial suite passed 18/18. Integration run `34070234656` completed `success`; staging run `34070235162` completed `success`. Both refs resolved to `c807a100f70381f7c86ca1790ee6edd325640e1b`. Comparison retained safety/layout commit `10894f704a39b6c56a7fadfafb54275b82526c33` as the merge base and showed only the previously recorded control/handoff additions above it.
+- **Evidence/artifact/hash:** E-010; E-012; the two GitHub Actions run IDs above.
+- **Failure/correction/uncertainty:** GitHub rulesets remain unconfigured, so direct bypass is still possible. Cold-start independent verification remains unperformed.
+- **Resulting status/gate change:** Controller and reusable branch flow are Self-check passed. Non-bypass enforcement remains Open.
+- **Exact next action:** Enable the four exact GitHub rulesets in `GITHUB-RULESET-REQUIRED.md`, then perform the independent cold-start continuity trial. Do not execute F0.
