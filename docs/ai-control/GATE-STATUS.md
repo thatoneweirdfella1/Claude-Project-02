@@ -22,3 +22,5 @@ Keep an AI on the single approved task without requiring the user to continually
 | Cold-start AI continuity trial | Open | A separate AI must attempt resumption using repository files only. |
 
 F0 remains blocked while either Open item remains unresolved or the user has not explicitly approved the transition.
+
+<!-- G0-LIVE-REJECTION-PROBE: intentionally invalid checkpoint; required continuity records and integrity hash are deliberately omitted so AI Course Control must reject it. -->
