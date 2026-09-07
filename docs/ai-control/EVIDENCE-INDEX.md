@@ -16,6 +16,9 @@
 | E-012 | GitHub branch creation, exact-ref readback, and branch comparison | Single reusable staging path without per-task branch proliferation | Self-check passed | Created at `7681344918a912f0ac35a2fb15c2b41b85638a3f`; staging and integration synchronized at `c807a100f70381f7c86ca1790ee6edd325640e1b` | GitHub rulesets remain Open until configured and observed. |
 | E-013 | GitHub Actions run `34070172845` | Whether the first staging-flow checkpoint satisfied its own scope policy | Failed, retained and corrected | Integration run failed at `Enforce the active task` because G0's allowed paths omitted the required standalone handoff update | This is failure evidence, not successful verification; the corrected follow-up run must pass. |
 
+| E-014 | Exact GitHub ruleset API readback and live rejection run `34143620380` | Active non-bypass repository enforcement | Independently verified | Rulesets `22454197`, `22456858`, `22457228`, `22457361`; rejected commit `4d6755ac14753d8dfa0bd0174b4f162f13c1d2cc` | Verifies repository course control, not product behavior. |
+| E-015 | Separate repository-only cold-start attempt 1 | Cross-AI continuity | Failed, retained; three defects corrected | Reviewer reconstructed G0 but found contradictory enforcement/history claims and two omitted mandatory-read files | Fresh trial required. |
+
 ## Evidence rules
 
 - Record observed results separately from plans or requirements.

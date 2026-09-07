@@ -18,9 +18,7 @@ Keep an AI on the single approved task without requiring the user to continually
 | Self-declared independent verification | Self-check passed | New independent-pass states require a separate review artifact. |
 | GitHub workflow execution | Self-check passed | Run `34066339481` completed successfully for commit `d417f10cd3ee543fb0facde7bd620b0a029ebd72`. |
 | Reusable staging branch | Self-check passed | `divergence/reliability-staging` was explicitly authorized and created from integration commit `7681344918a912f0ac35a2fb15c2b41b85638a3f`; no per-task branches are allowed. |
-| GitHub non-bypass enforcement | Open | The repository owner must enable the rulesets in `GITHUB-RULESET-REQUIRED.md`. |
-| Cold-start AI continuity trial | Open | A separate AI must attempt resumption using repository files only. |
+| GitHub non-bypass enforcement | Independently verified | API readback confirms all four required rulesets are Active with exact targets, rules, empty bypass lists, and no current-user bypass. Invalid checkpoint `4d6755ac14753d8dfa0bd0174b4f162f13c1d2cc` was rejected by run `34143620380`. |
+| Cold-start AI continuity trial | Open | Attempt 1 reconstructed G0 but found three stale continuity defects. They are corrected here; a fresh trial is required. |
 
 F0 remains blocked while either Open item remains unresolved or the user has not explicitly approved the transition.
-
-<!-- G0-LIVE-REJECTION-PROBE: intentionally invalid checkpoint; required continuity records and integrity hash are deliberately omitted so AI Course Control must reject it. -->

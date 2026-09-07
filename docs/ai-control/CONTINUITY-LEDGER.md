@@ -201,3 +201,16 @@ Each new entry must contain:
 - **Failure/correction/uncertainty:** GitHub rulesets remain unconfigured, so direct bypass is still possible. Cold-start independent verification remains unperformed.
 - **Resulting status/gate change:** Controller and reusable branch flow are Self-check passed. Non-bypass enforcement remains Open.
 - **Exact next action:** Enable the four exact GitHub rulesets in `GITHUB-RULESET-REQUIRED.md`, then perform the independent cold-start continuity trial. Do not execute F0.
+
+### CL-0013 — 2026-09-07 UTC — Rulesets verified, live rejection retained, first cold-start defects corrected
+
+- **Actor:** GPT/Codex finalizer and separate cold-start AI reviewer
+- **Task/phase:** G0 AI Course-Control Gate / finalization
+- **Repository/branch/starting commit:** `thatoneweirdfella1/Claude-Project-02`; `divergence/reliability-staging`; `0c6444945cd814bb67ee5f437785d106458383c1`
+- **Authority/source:** User instructed completion of G0 only; no F0, new branch, application, layout, merge, or deployment work.
+- **Action and affected files:** Verified all four rulesets through exact API readback. Created deliberately invalid checkpoint `4d6755ac14753d8dfa0bd0174b4f162f13c1d2cc`; course-control run `34143620380` rejected it for four missing required record updates and the invalid GATE-STATUS checksum. Ran a separate cold-start trial and corrected only its three continuity defects.
+- **Reason and rejected alternatives:** Required real enforcement and repository-only continuity evidence. Rejected screenshot-only proof, concealing failures, broad redesign, and starting F0.
+- **Evidence/artifact/hash:** E-014 and E-015.
+- **Failure/correction/uncertainty:** Cold-start attempt 1 failed; a fresh trial remains required.
+- **Resulting status/gate change:** GitHub non-bypass enforcement is Independently verified; cold-start continuity remains Open.
+- **Exact next action:** Run a fresh separate repository-only cold-start trial, record it, and stop before F0.

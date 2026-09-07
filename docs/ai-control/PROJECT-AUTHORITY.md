@@ -61,6 +61,6 @@ A lower authority may identify a conflict but may not silently override a higher
 
 The manifest, integrity hashes, current task, task index, continuity ledger, decision log, evidence index, handoff, and parking lot are mandatory. If they disagree, do not guess: preserve all versions, identify the conflict, and leave the affected state `Open`.
 
-## Enforcement limitation
+## Enforcement state
 
-These files provide cross-AI procedural control and conventional automatic entrypoints. Mechanical enforcement by a repository validator or CI rule has not been implemented or tested and must not be claimed.
+Mechanical enforcement is installed through `scripts/ai-course-control.mjs`, its 18-case adversarial harness, the GitHub Actions check, and the active repository rulesets recorded in `EVIDENCE-INDEX.md`. This does not prove product implementation or mounted-interface behavior.

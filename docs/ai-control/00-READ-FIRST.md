@@ -16,11 +16,13 @@ Read these files completely, in this order, before doing work:
 6. `docs/ai-control/PROJECT-AUTHORITY.md`
 7. `docs/ai-control/CURRENT-TASK.md`
 8. The complete task source named by `CURRENT-TASK.md`, when one is specified
-9. `docs/ai-control/HANDOFF.md`
-10. `docs/ai-control/DECISION-LOG.md`
-11. `docs/ai-control/CONTINUITY-LEDGER.md`
-12. `docs/ai-control/EVIDENCE-INDEX.md`
-13. `docs/ai-control/PARKING-LOT.md`
+9. `docs/ai-control/TASK-INDEX.md`
+10. `docs/ai-control/GITHUB-RULESET-REQUIRED.md`
+11. `docs/ai-control/HANDOFF.md`
+12. `docs/ai-control/DECISION-LOG.md`
+13. `docs/ai-control/CONTINUITY-LEDGER.md`
+14. `docs/ai-control/EVIDENCE-INDEX.md`
+15. `docs/ai-control/PARKING-LOT.md`
 
 Do not substitute the 176-page meta-blueprint for the active standalone task packet. Read the blueprint only when the active task explicitly identifies an unresolved definition that is not included in its standalone packet.
 
