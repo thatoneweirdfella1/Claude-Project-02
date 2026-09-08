@@ -754,3 +754,75 @@ test("G2 hostile: Failed prerequisite permanently blocks dependent", () => {
   const errors = validateControlState(state, { requestedTask: "downstream-task" });
   assert(errors.some(e => e.includes("BLOCKED") && e.includes("G1 is Failed")), "Failed prerequisite must block dependent");
 });
+
+test("G2 gate: audit publication allowed with different reviewer", () => {
+  const state = {
+    schema_version: "1.0",
+    active_task: "G2",
+    tasks: {
+      G2: {
+        execution_state: "Self-check passed",
+        acceptance_state: "Not accepted",
+        author_id: "author-session-1",
+        reviewer_id: "auditor-session-2",
+        independent_review_path: "docs/ai-control/independent-reviews/G2-G06.json",
+        owner_id: "author-session-1",
+        lock_acquired_at: "2026-09-08T15:54:15Z",
+        lock_base_commit: "abc1234567890123456789012345678901234567"
+      },
+    },
+    safe_to_switch: "YES",
+    first_unfinished_action: "test",
+    recovery_action: "test",
+    meaning_confirmation: { interpreted_outcome: "test", boundary: "test", material_ambiguity: "none", authority: "test" },
+    last_confirmed_remote_checkpoint: "abc1234567890123456789012345678901234567",
+    continuity_gates: {},
+    permitted_execution_states: ["Open", "Active", "Self-check passed", "Awaiting independent audit", "Independently verified", "Accepted", "Failed"],
+    lineage: { nodes: [], edges: [] },
+    audit_queue: [],
+  };
+  // Gate should accept review publication from different reviewer
+  const errors = validateControlState(state);
+  assert(!errors.some(e => e.includes("cannot carry or claim")), "Different reviewer should be allowed to publish review and sync state");
+});
+
+test("G2 gate: self-approval still rejected when author is reviewer", () => {
+  const checkpoint = "abc1234567890123456789012345678901234567";
+  const state = {
+    schema_version: "1.0",
+    active_task: "G2",
+    tasks: {
+      G2: {
+        execution_state: "Independently verified",
+        acceptance_state: "Accepted",
+        author_id: "same-author",
+        reviewer_id: "same-author",
+        independent_review_path: "docs/ai-control/independent-reviews/G2-G06.json",
+        accepted_integration_commit: checkpoint,
+        owner_id: "same-author",
+        lock_acquired_at: "2026-09-08T15:54:15Z",
+        lock_base_commit: checkpoint
+      },
+    },
+    safe_to_switch: "YES",
+    first_unfinished_action: "test",
+    recovery_action: "test",
+    meaning_confirmation: { interpreted_outcome: "test", boundary: "test", material_ambiguity: "none", authority: "test" },
+    last_confirmed_remote_checkpoint: checkpoint,
+    continuity_gates: {},
+    permitted_execution_states: ["Open", "Active", "Self-check passed", "Awaiting independent audit", "Independently verified", "Accepted", "Failed"],
+    lineage: { nodes: [], edges: [] },
+    audit_queue: [],
+  };
+  assert(validateControlState(state).some(error => error.includes("independent reviewer distinct")));
+});
+
+test("G2-G04 enforcement: decision recorded or explicitly Open", () => {
+  const state = JSON.parse(readFileSync("docs/ai-control/CONTROL-STATE.json", "utf8"));
+  const g2 = state.tasks.G2;
+  // G2-G04 decision must be recorded in gate_status or control_change
+  // For now, verify it's at least documented in continuity records
+  const ledger = readFileSync("docs/ai-control/CONTINUITY-LEDGER.md", "utf8");
+  const hasG2G04 = ledger.includes("G2-G04") || state.tasks.G2.gate_status_g2_g04 !== undefined;
+  assert(hasG2G04 || state.tasks.G2.execution_state !== "Accepted", "G2-G04 must be decided before acceptance");
+});

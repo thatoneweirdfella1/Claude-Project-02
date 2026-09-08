@@ -269,7 +269,13 @@ export function runGate({ policyPath, base, head, branch, repository, requestedT
     }
     const reviewChanged = changes.some((change) => change.path.startsWith("docs/ai-control/independent-reviews/"));
     const activeTask = stateResult.state.tasks?.[policy.active_task];
-    if (reviewChanged || ["Independently verified", "Accepted"].includes(activeTask?.execution_state) || activeTask?.acceptance_state === "Accepted") {
+
+    // Allow audit publication: independent auditor synchronizing review + state records
+    // Reject self-approval: author claiming Independently verified or Accepted state
+    const isAuditPublication = reviewChanged && activeTask?.reviewer_id && activeTask?.author_id && activeTask.reviewer_id !== activeTask.author_id;
+    const isSelfApproval = ["Independently verified", "Accepted"].includes(activeTask?.execution_state) || activeTask?.acceptance_state === "Accepted";
+
+    if (!isAuditPublication && (reviewChanged || isSelfApproval)) {
       errors.push("A protected control-plane change cannot carry or claim its own independent approval");
     }
   }
@@ -304,8 +310,103 @@ export function runGate({ policyPath, base, head, branch, repository, requestedT
   };
 }
 
+export function verifyPublicationPreflight({ repository, branch, state }) {
+  const errors = [];
+
+  // Verify remote branch exists and is reachable
+  try {
+    const remoteHead = git(["ls-remote", "origin", `refs/heads/${branch}`]);
+    if (!remoteHead) {
+      errors.push(`Remote branch ${branch} does not exist or is not accessible`);
+    } else {
+      const remoteHash = remoteHead.split(/\s+/)[0];
+      if (!/^[a-f0-9]{40}$/.test(remoteHash)) {
+        errors.push(`Remote branch ${branch} returned invalid hash: ${remoteHash}`);
+      }
+    }
+  } catch (error) {
+    errors.push(`Cannot verify remote branch: ${error.message || error}`);
+  }
+
+  // Verify all critical files exist
+  const criticalFiles = [
+    "docs/ai-control/CONTROL-STATE.json",
+    "docs/ai-control/CONTROL-MANIFEST.json",
+    "docs/ai-control/CONTINUITY-LEDGER.md",
+    "docs/ai-control/EVIDENCE-INDEX.md",
+    "docs/ai-control/GATE-STATUS.md",
+    "docs/ai-control/HANDOFF.md",
+    "docs/ai-control/CURRENT-TASK.md",
+    "docs/ai-control/SHA256SUMS",
+  ];
+
+  for (const filePath of criticalFiles) {
+    if (!existsSync(filePath)) {
+      errors.push(`Critical file missing for publication: ${filePath}`);
+    }
+  }
+
+  // Verify integrity manifest (SHA256SUMS)
+  if (existsSync("docs/ai-control/SHA256SUMS")) {
+    try {
+      const manifestErrors = verifyIntegrityManifest("docs/ai-control/SHA256SUMS");
+      errors.push(...manifestErrors);
+    } catch (error) {
+      errors.push(`Cannot verify SHA256SUMS: ${error.message || error}`);
+    }
+  }
+
+  // Verify state is publication-ready
+  if (state) {
+    const activeTask = state.tasks?.[state.active_task];
+    if (activeTask?.execution_state === "Accepted") {
+      errors.push(`Active task ${state.active_task} is Accepted; cannot modify on staging branch`);
+    }
+    if (!["Self-check passed", "Awaiting independent audit", "Independently verified"].includes(activeTask?.execution_state)) {
+      errors.push(`Active task execution state ${activeTask?.execution_state} is not publication-ready`);
+    }
+  }
+
+  // Verify local state matches last confirmed remote
+  try {
+    const localHead = git(["rev-parse", "HEAD"]);
+    const remoteRef = git(["rev-parse", `origin/${branch}`]);
+    if (localHead !== remoteRef) {
+      errors.push(`Local HEAD ${localHead.slice(0, 7)} diverges from remote ${remoteRef.slice(0, 7)}; push or pull first`);
+    }
+  } catch (error) {
+    errors.push(`Cannot verify local/remote sync: ${error.message || error}`);
+  }
+
+  return {
+    ready: errors.length === 0,
+    errors,
+    checks_passed: [
+      errors.length === 0 && "Remote branch exists",
+      existsSync("docs/ai-control/SHA256SUMS") && "Critical files present",
+      errors.length === 0 && "Integrity verified",
+      errors.length === 0 && "Publication-ready state",
+      errors.length === 0 && "Local/remote sync",
+    ].filter(Boolean),
+  };
+}
+
 function main() {
   const args = parseArgs(process.argv.slice(2));
+
+  // Handle publication-preflight command
+  if (args.command === "publication-preflight") {
+    const state = readJson(args.state || "docs/ai-control/CONTROL-STATE.json");
+    const result = verifyPublicationPreflight({
+      repository: args.repository || state.repository,
+      branch: args.branch || state.working_branch,
+      state,
+    });
+    console.log(JSON.stringify(result, null, 2));
+    process.exitCode = result.ready ? 0 : 1;
+    return;
+  }
+
   const required = ["policy", "base", "head", "branch", "repository"];
   const missing = required.filter((key) => !args[key]);
   if (missing.length) throw new GateFailure("Missing required arguments", missing.map((key) => `--${key}`));

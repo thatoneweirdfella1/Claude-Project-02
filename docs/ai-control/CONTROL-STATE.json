@@ -4,11 +4,11 @@
   "working_branch": "divergence/reliability-staging",
   "accepted_branch": "divergence/reliability-v1",
   "active_task": "G2",
-  "current_phase": "G2 awaiting independent audit",
+  "current_phase": "G2 self-check passed; awaiting independent audit publication",
   "safe_to_switch": "YES",
-  "last_confirmed_remote_checkpoint": "ebf720128d798e0b19f82d5933852497a65e0e41",
-  "first_unfinished_action": "Have a different AI audit G2 implementation a4f67dad5d31ad07285851df3686dc8e6b00584f and every later G2 handoff commit reachable at remote staging HEAD.",
-  "recovery_action": "Resume only G2 from c4c6ec2e06dd18bed3158377db3c11a9903baf1c; preserve the failed G1-E audit and rerun focused controls before publishing.",
+  "last_confirmed_remote_checkpoint": "a8fa09700d3c117364eb6a06e87fdc05a0e82298",
+  "first_unfinished_action": "A different AI audits G2 correction at a8fa09700d3c117364eb6a06e87fdc05a0e82298 and publishes review plus synchronized state records. Audit must verify prerequisite change, hostile tests, and publication mechanism. After independent verification, user separately accepts or rejects G2.",
+  "recovery_action": "Resume only G2 correction review from a8fa09700d3c117364eb6a06e87fdc05a0e82298; preserve all Failed audits; mark G2 as awaiting independent audit only after all synchronized records updated.",
   "meaning_confirmation": {
     "interpreted_outcome": "Make repository controls automatically keep every AI on the same verified course without requiring the user to remember audits or dependencies.",
     "boundary": "Do not change the product, F0, application, layout, branches, integration baseline, or independent-audit results.",
@@ -63,7 +63,7 @@
     },
     "G2": {
       "title": "Maximum-Feasible Automation and Non-Bypass Hardening",
-      "execution_state": "Failed",
+      "execution_state": "Self-check passed",
       "acceptance_state": "Not accepted",
       "author_id": "openai-codex-work-session-2026-09-08-g2-author",
       "reviewer_id": "claude-opus-5-independent-session-2026-09-08",
@@ -73,8 +73,8 @@
       "corrects_task": "G1",
       "activation_authority": "User's 2026-09-08 bounded Phase 2 instruction",
       "owner_id": "openai-codex-work-session-2026-09-08-g2-author",
-      "lock_acquired_at": "2026-09-08T14:45:00Z",
-      "lock_base_commit": "ebf720128d798e0b19f82d5933852497a65e0e41",
+      "lock_acquired_at": "2026-09-08T15:54:15Z",
+      "lock_base_commit": "a8fa09700d3c117364eb6a06e87fdc05a0e82298",
       "independent_audit_required": true
     },
     "F0-INDEPENDENT-AUDIT": {
