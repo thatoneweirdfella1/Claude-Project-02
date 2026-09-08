@@ -49,7 +49,7 @@ F0 is not F1, independently verified, user/product approved, implemented, releas
 
 | Gate | State | Current evidence and limitation |
 |---|---|---|
-| G1-G01 Authority package | Open | G1-A records the assignment; gap audit and completion are G1-B. |
+| G1-G01 Authority package | Self-check passed | G1-B retained existing authority/layer sources, recorded the gap audit, and added bounded canonical map, constitution, traceability, assignment, meaning, lifecycle, and status-view contracts. Independent audit Open. |
 | G1-G02 Resumable checkpoints | Open | Required behavior is frozen in the G1 assignment; implementation and interruption test are G1-C/D. |
 | G1-G03 Audit/dependency blocking | Open | Required behavior is frozen; executable transition and plain-language blocker tests remain. |
 | G1-G04 Contamination containment | Open | Required lineage, descendant blocking, and recovery behavior is frozen; implementation/tests remain. |

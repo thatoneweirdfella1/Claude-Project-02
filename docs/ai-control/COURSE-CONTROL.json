@@ -41,7 +41,15 @@
     ".github/workflows/ai-course-control.yml",
     ".github/CODEOWNERS",
     "DIVERGENCE-F0-STANDALONE-HANDOFF.md",
-    "DIVERGENCE-G1-CONTROL-UPGRADE-HANDOFF.md"
+    "DIVERGENCE-G1-CONTROL-UPGRADE-HANDOFF.md",
+    "docs/reliability/control/AUTHORITY-PACKAGE-GAP-AUDIT.md",
+    "docs/reliability/control/CONTROL-CONSTITUTION.md",
+    "docs/reliability/control/CONTROL-SYSTEM-MAP.md",
+    "docs/reliability/control/G1-TRACEABILITY.json",
+    "docs/reliability/control/MEANING-CONFIRMATION-PROTOCOL.md",
+    "docs/reliability/control/STANDALONE-ASSIGNMENT-CONTRACT.md",
+    "docs/reliability/control/STATUS-VIEW-CONTRACT.md",
+    "docs/reliability/control/TASK-LIFECYCLE.md"
   ],
   "required_changed_records": [
     "docs/ai-control/CONTINUITY-LEDGER.md",

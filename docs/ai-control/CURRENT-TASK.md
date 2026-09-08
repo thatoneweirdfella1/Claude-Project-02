@@ -5,7 +5,7 @@
 - **ID:** G1
 - **Title:** Continuity, Acceptance, and Contamination Controls
 - **Phase:** Execution control
-- **Status:** Active; G1-A published and recoverable; G1-B is the first unfinished phase
+- **Status:** Active; G1-B self-checked locally; publication pending; G1-C is the first unfinished substantive phase
 - **Task source:** `DIVERGENCE-G1-CONTROL-UPGRADE-HANDOFF.md`
 - **Task-source SHA-256:** `e940049e4dffd0d87a9b303526df82c7a8f61c0a496f6afc1f6f34b9b8f75db8`
 - **Canonical master blueprint:** `02-MASTER-SYSTEM-AND-REQUIREMENT-BLUEPRINT.md`, SHA-256 `d9783aa4fff475810170f2217ea2cdca1b30baefe78d21d837980943c509ea47`
@@ -57,6 +57,7 @@ Finish and mechanically test the authority, continuous-checkpoint, audit-blockin
 - 2026-09-08: User explicitly authorized the pre-work control upgrade with frequent checkpoints and cross-account resumption.
 - 2026-09-08: G1-A began from exact remote staging commit `f6e8a344b414a5e909028fbdf547ae879ade4b58`; a clean detached worktree preserved three unrelated local-only historical G0 commits in the existing checkout.
 - 2026-09-08: G1-A passed the existing 18-case controller harness, policy/task alignment, integrity, whitespace, and exact base-to-head course gate; published by non-force fast-forward as remote commit `be9c32aa2f3be93635296091fd20f0c06251c3a2`.
+- 2026-09-08: The records-only safe-switch correction was published at `67d8fabaf297b0909c4551467fe56c763391474f`. G1-B then audited existing authority/layer material and added only the seven missing canonical control record types plus G1 traceability; G1-G01 is author Self-check passed pending publication and independent audit.
 
 ## Blockers and unresolved decisions
 
@@ -70,4 +71,4 @@ Stop after G1-A through G1-D are self-checked, published in recoverable checkpoi
 
 ## Exact next action
 
-Resume G1-B authority-package gap completion from remote checkpoint `be9c32aa2f3be93635296091fd20f0c06251c3a2`. Do not begin the independent F0 audit or any system work.
+Publish the bounded G1-B checkpoint from remote base `67d8fabaf297b0909c4551467fe56c763391474f`; then begin G1-C executable enforcement. Do not begin the independent F0 audit or any system work.

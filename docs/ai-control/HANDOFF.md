@@ -2,27 +2,27 @@
 
 ## Simple status
 
-**SAFE TO SWITCH: YES**
+**SAFE TO SWITCH: NO**
 
-G1-A is saved on GitHub. Another AI can safely continue G1-B without this conversation. Do not start the F0 audit or any product-system task.
+G1-A and its corrected handoff are saved on GitHub. G1-B is coherent and locally self-checked but is not yet published. If interrupted now, resume from the last confirmed remote checkpoint and repeat/publish G1-B. Do not start G1-C, the F0 audit, or any product-system task from the unpublished files.
 
 ## Current task
 
 - **Task:** G1 — Continuity, Acceptance, and Contamination Controls
-- **Completed phase:** G1-A — activation and exact standalone assignment
-- **First unfinished phase:** G1-B — authority-package gap completion
-- **Status:** Active and remotely recoverable
+- **Completed phase:** G1-A remotely; G1-B locally pending publication
+- **First unfinished phase:** G1-B publication, then G1-C
+- **Status:** Active; local head not yet a confirmed remote checkpoint
 - **Task source:** `DIVERGENCE-G1-CONTROL-UPGRADE-HANDOFF.md`
 - **Source hash:** `e940049e4dffd0d87a9b303526df82c7a8f61c0a496f6afc1f6f34b9b8f75db8`
 - **Starting remote commit:** `f6e8a344b414a5e909028fbdf547ae879ade4b58`
-- **Latest confirmed remote checkpoint:** `be9c32aa2f3be93635296091fd20f0c06251c3a2`
+- **Latest confirmed remote checkpoint:** `67d8fabaf297b0909c4551467fe56c763391474f`
 - **Only writable branch:** existing `divergence/reliability-staging`
 - **Accepted integration branch:** `divergence/reliability-v1`
 - **Untouched safety/layout baseline:** `claude/remaining-second-pass-v1` at `10894f704a39b6c56a7fadfafb54275b82526c33`
 
 ## What remains in G1
 
-1. G1-B: audit and fill only real authority-package gaps.
+1. Publish and read back the bounded G1-B authority-package checkpoint.
 2. G1-C: implement checkpoint, task-transition, dependency, audit, acceptance, lineage, and contamination enforcement.
 3. G1-D: run every hostile enforcement and recovery test and retain failures/corrections.
 4. Stop with G1-E independent audit as the only permitted next task.
@@ -40,8 +40,8 @@ Do not perform the independent F0 audit, S02/S03/S18/S20, F1, product implementa
 
 ## Exact replacement-AI instruction
 
-> Open `thatoneweirdfella1/Claude-Project-02` on existing branch `divergence/reliability-staging`. Read the mandatory control files and `DIVERGENCE-G1-CONTROL-UPGRADE-HANDOFF.md`. Resume the first unfinished G1 checkpoint recorded in `CURRENT-TASK.md` and this handoff. Do not restart G1, begin F0 audit or system work, create a branch, merge, deploy, or change the existing Divergence layout.
+> Open `thatoneweirdfella1/Claude-Project-02` on existing branch `divergence/reliability-staging` at `67d8fabaf297b0909c4551467fe56c763391474f`. Read the mandatory control files and `DIVERGENCE-G1-CONTROL-UPGRADE-HANDOFF.md`. G1-B exists only in an unpublished interrupted workspace, so recreate its bounded authority-package gap completion, validate it, and publish it before G1-C. Do not skip ahead, create a branch, merge, deploy, or change the app/layout.
 
 ## Exact next action
 
-Resume G1-B from confirmed remote checkpoint `be9c32aa2f3be93635296091fd20f0c06251c3a2` and fill only verified authority-package gaps.
+Validate, commit, publish, and read back G1-B. Until then the safe-switch answer remains `NO`.

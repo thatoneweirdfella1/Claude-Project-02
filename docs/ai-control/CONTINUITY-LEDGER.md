@@ -391,3 +391,17 @@ Each new entry must contain:
 - **Failure/correction/uncertainty:** Terminal authentication remains unavailable. G1-B/C/D and independent G1-E are not complete. No independent verification is claimed.
 - **Resulting status/gate change:** G1-A is Self-check passed and remotely recoverable. `SAFE TO SWITCH: YES`. G1-B is the first unfinished phase; all later project work remains blocked.
 - **Exact next action:** Resume G1-B authority-package gap completion from the confirmed remote checkpoint.
+
+### CL-0027 — 2026-09-08 UTC — G1-B authority-package gap completion
+
+- **Actor:** OpenAI Codex / GPT-5 session
+- **Task/phase:** G1 / G1-B authority-package gap completion
+- **Repository/branch/starting commit:** `thatoneweirdfella1/Claude-Project-02`; existing `divergence/reliability-staging`; confirmed remote base `67d8fabaf297b0909c4551467fe56c763391474f`
+- **Authority/source:** G1 standalone assignment, D-014, current project authority, and retained authority/layer governance sources.
+- **Action and affected files:** Audited the existing authority, traceability, handoff, recovery, evidence, audit, and lineage material. Added only the missing bounded G1 canonical map, constitution, outcome traceability, portable assignment contract, meaning-confirmation protocol, task lifecycle, and paired status-view contract, plus the explicit gap audit. Registered them in required files and integrity/control records.
+- **Reason and rejected alternatives:** Supply a complete, context-free control foundation for G1-C without rebuilding valid historical work. Rejected replacing product authority, renormalizing IDs, reviving historical per-layer branch creation, modifying F0, or claiming prose alone enforces behavior.
+- **Command/test/check and actual result:** JSON parsing and schema/traceability checks, integrity, whitespace, retained 18-case course-controller tests, and exact course gate are required before publication. At this ledger write those final checks and remote publication remain pending.
+- **Evidence/artifact/hash:** E-026 and refreshed `SHA256SUMS`.
+- **Failure/correction/uncertainty:** These records define controls; they do not implement G1-C, execute G1-D, or independently verify G1-E. The simple view correctly remains `SAFE TO SWITCH: NO` until GitHub readback.
+- **Resulting status/gate change:** G1-G01 is Self-check passed locally with independent audit Open. G1-G02–G1-G05 remain Open. G1-G06 remains Open for a separate AI.
+- **Exact next action:** Validate and publish this bounded G1-B checkpoint to the existing staging branch with non-force fast-forward, read it back, and then begin G1-C.
