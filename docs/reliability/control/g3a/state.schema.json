@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://divergence.ai/control/g3a/state.schema.json",
+  "title": "DIVERGENCE controller state",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "repository_id", "active_task", "tasks", "audit_queue", "decision_queue"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "repository_id": { "type": "integer", "minimum": 1 },
+    "active_task": { "type": "string", "minLength": 1 },
+    "tasks": { "type": "object", "minProperties": 1, "additionalProperties": { "$ref": "#/$defs/task" } },
+    "audit_queue": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+    "decision_queue": { "type": "array", "items": { "$ref": "#/$defs/decision" } }
+  },
+  "$defs": {
+    "task": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "attempt", "dependencies", "base_sha", "candidate_sha"],
+      "properties": {
+        "state": { "enum": ["Open", "Leased", "In progress", "Self-check passed", "Awaiting independent audit", "Failed", "Correction in progress", "Independently verified", "Accepted", "Blocked — user decision required"] },
+        "attempt": { "type": "integer", "minimum": 1 },
+        "dependencies": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+        "base_sha": { "$ref": "#/$defs/sha" },
+        "candidate_sha": { "anyOf": [{ "$ref": "#/$defs/sha" }, { "type": "null" }] },
+        "unresolved_product_decision": { "type": "boolean", "default": false }
+      }
+    },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "task", "question", "material_effect"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "task": { "type": "string", "minLength": 1 },
+        "question": { "type": "string", "minLength": 1 },
+        "material_effect": { "type": "string", "minLength": 1 }
+      }
+    },
+    "sha": { "type": "string", "pattern": "^[a-f0-9]{40}$" }
+  }
+}

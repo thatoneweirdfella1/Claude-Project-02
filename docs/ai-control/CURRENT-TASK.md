@@ -37,6 +37,10 @@ The earlier routine-user-acceptance requirement is superseded by D-016. G2 canno
 
 Routine user approval, a second GitHub account, and manual audit/correction routing are not permitted dependencies. The replacement must automatically validate, assign an authenticated independent AI auditor, retain failures, create and reassign corrections, re-audit, accept verified work, and unlock satisfied dependents. User interruption is reserved for a material unresolved product decision.
 
+## G3-A implementation checkpoint
+
+Six versioned controller-input schemas, a deterministic transition table, and a candidate-side reference transition engine are authored under `docs/reliability/control/g3a/` and `scripts/ai-control-trusted-transition*.mjs`. They prove the state semantics locally but are not the external trust boundary. The next bounded slice is the protected controller adapter, durable queue/lease store, exact-SHA check, auditor launcher, and recovery reconciler.
+
 ## Safe to Switch
 
 **SAFE TO SWITCH: NO** (awaiting independent audit and explicit user acceptance)

@@ -637,3 +637,15 @@ Each new entry must contain:
 - **Failure/correction/uncertainty:** This checkpoint defines authority and the bounded implementation contract only. External controller, queue, authenticated audit, automatic acceptance, hooks, and host enforcement are not yet implemented or independently verified.
 - **Resulting status/gate change:** Routine user acceptance is superseded; autonomous replacement is Open and blocking.
 - **Exact next action:** Refresh integrity hashes, run repository controls, commit and push this bounded documentation checkpoint, confirm the remote hash, then implement the G3-A controller package.
+
+### CL-0045 — 2026-09-08 UTC — G3-A schemas and transition-engine checkpoint
+
+- **Actor:** OpenAI Codex correction author.
+- **Task/phase:** G2 autonomy correction / G3-A first executable slice.
+- **Repository/branch/starting commit:** Existing staging at confirmed remote `9fa730d0cd5cbcce16a6cbe17e3cf487fd5af676`; detached clean worktree; no branch created.
+- **Action and affected files:** Added six JSON schemas, transition table, package README, `scripts/ai-control-trusted-transition.mjs`, and eight focused tests; synchronized state, task, handoff, gate, evidence, and integrity records.
+- **Reason and rejected alternatives:** Encoded the automatic lifecycle before selecting hosting. Rejected treating candidate-side code as authoritative or reintroducing routine human acceptance.
+- **Command/test/check and actual result:** All JSON parsed; focused transition tests 8/8 passed. Full course tests, integrity, exact gate, commit, push, and remote readback are the remaining checkpoint actions.
+- **Failure/correction/uncertainty:** No external controller, GitHub App/check source, durable queue, provider launcher, credential isolation, hooks, or production validation exists yet.
+- **Resulting status/gate change:** G3-A schema/transition slice Self-check passed locally; external-authority gates remain Open.
+- **Exact next action:** Complete full validation and publish this checkpoint, then implement external controller adapter, queue/lease store, auditor launcher, and reconciler.

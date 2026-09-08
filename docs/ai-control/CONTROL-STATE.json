@@ -4,10 +4,10 @@
   "working_branch": "divergence/reliability-staging",
   "accepted_branch": "divergence/reliability-v1",
   "active_task": "G2",
-  "current_phase": "G2 autonomy correction: trusted controller bootstrap Open",
+  "current_phase": "G2 autonomy correction: G3-A schemas and reference transition engine self-check",
   "safe_to_switch": "NO",
-  "last_confirmed_remote_checkpoint": "fbeccd0ab6cdc92d72b21654889485289870e3cf",
-  "first_unfinished_action": "Implement the candidate-independent trusted controller package defined by D-016 and DIVERGENCE-G3-A-TRUSTED-AUTONOMY-BOOTSTRAP.md. Routine user approval, second-account review, and manual audit/correction routing are prohibited dependencies.",
+  "last_confirmed_remote_checkpoint": "9fa730d0cd5cbcce16a6cbe17e3cf487fd5af676",
+  "first_unfinished_action": "Continue G3-A from the schema/transition-engine checkpoint: implement the protected external controller adapter, durable queue/lease store, exact-SHA GitHub check, authenticated auditor launcher, and recovery reconciler. Candidate-side reference code is not authoritative.",
   "recovery_action": "Resume G2 autonomy correction from the last confirmed remote checkpoint; preserve all Failed audits and implement automatic validation, independent-AI audit assignment, correction/retry, re-audit, acceptance, and dependency advancement before unlocking F0-AUDIT.",
   "meaning_confirmation": {
     "interpreted_outcome": "Make repository controls automatically keep every AI on the same verified course without requiring the user to remember audits or dependencies.",
@@ -75,7 +75,7 @@
       "activation_authority": "User's 2026-09-08 bounded Phase 2 instruction",
       "owner_id": "openai-codex-work-session-2026-09-08-g2-author",
       "lock_acquired_at": "2026-09-08T15:54:15Z",
-      "lock_base_commit": "fbeccd0ab6cdc92d72b21654889485289870e3cf",
+      "lock_base_commit": "9fa730d0cd5cbcce16a6cbe17e3cf487fd5af676",
       "independent_audit_required": true,
       "routine_user_acceptance_required": false,
       "automatic_acceptance_requires": [

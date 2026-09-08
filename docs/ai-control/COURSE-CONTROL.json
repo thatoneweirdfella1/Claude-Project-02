@@ -193,6 +193,8 @@
         "docs/reliability/control/**",
         "scripts/ai-control-state.mjs",
         "scripts/ai-control-status.mjs",
+        "scripts/ai-control-trusted-transition.mjs",
+        "scripts/ai-control-trusted-transition.test.mjs",
         "scripts/ai-course-control.mjs",
         "scripts/ai-course-control.test.mjs"
       ]
