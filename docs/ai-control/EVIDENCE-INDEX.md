@@ -37,6 +37,7 @@
 
 | E-031 | `docs/ai-control/independent-reviews/G1-G06.json` and `docs/reliability/control/independent-reviews/G1-E-2026-09-08.md` | Independent G1-E audit against exact checkpoint `983baaa2315db32e2cc772edc2bcad053e4e3d69` | **Failed**, retained | Report SHA-256 `bf5c261c011e6f6567cc1e938d6e79cf639809859c6b2f44bcfae9aaee2a9b36` | Controller 41/41, unit 911/911, desktop 1/1, lint/build passed; load required failure because checkpoint direction was stale and candidate-controlled enforcement can approve same-change weakening. Live ruleset readback Open. |
 | E-032 | `G2-ENFORCEMENT-GAP-AUDIT.md`, CONTROL-STATE, course controller/state modules, and focused tests | G2 gap classification, stale-base/lock/audit-queue/correction/protected-plane enforcement | Self-check passed and published; independent audit Open | Remote `a4f67dad5d31ad07285851df3686dc8e6b00584f`; focused 46/46; unit 911/911; desktop 1/1; lint/build exit 0 | Lint retains 17 warnings and build retains chunk warning. Same-change checks expose ordinary tampering but cannot resist a malicious coordinated rewrite. Host ruleset/reviewer binding remains Open. |
+| E-033 | GitHub commit workflow-run readback for `ebf720128d798e0b19f82d5933852497a65e0e41` | Whether G2 remote publication triggered required workflows | Open / no run observed | Two readbacks, second after delay, returned an empty workflow-run list | No workflow result may be inferred. Missing-trigger behavior must be audited/configured at the host and cannot unlock G2. |
 
 ## Evidence rules
 

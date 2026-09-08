@@ -32,4 +32,4 @@ No product or application code/test changes, F0 or F0 audit, S02/S03/S18/S20, F1
 
 ## Exact next action
 
-Have a different AI independently audit all G2-authored changes through `a4f67dad5d31ad07285851df3686dc8e6b00584f`. Do not begin F0-AUDIT or dependent work.
+Have a different AI independently audit G2 implementation `a4f67dad5d31ad07285851df3686dc8e6b00584f` and every later G2 handoff commit reachable at remote staging HEAD. Recheck missing workflow runs and live rulesets. Do not begin F0-AUDIT or dependent work.

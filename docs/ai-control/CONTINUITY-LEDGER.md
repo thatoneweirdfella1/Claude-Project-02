@@ -529,3 +529,14 @@ Each new entry must contain:
 - **Failure/correction/uncertainty:** G2-G04 host readback and G2-G06 independent audit remain Open. All G2 work is author self-check only.
 - **Resulting status/gate change:** G2 is Awaiting independent audit; SAFE TO SWITCH: YES. G1 remains Failed/unaccepted and all dependents blocked.
 - **Exact next action:** A different AI audits all G2-authored changes through `a4f67dad5d31ad07285851df3686dc8e6b00584f`.
+
+### CL-0037 — 2026-09-08 UTC — Remote workflow trigger remains Open
+
+- **Actor:** OpenAI Codex Work-session G2 author
+- **Task/phase:** G2 / final remote verification
+- **Repository/branch/starting commit:** Confirmed remote staging `ebf720128d798e0b19f82d5933852497a65e0e41`
+- **Action and actual result:** Fetched exact remote branch and verified its state, integrity, 46/46 focused tests, status output, and unchanged protected/safety refs. Queried GitHub workflow runs twice for the exact handoff commit, including after a delay; both returned an empty list.
+- **Evidence/artifact/hash:** E-033.
+- **Failure/correction/uncertainty:** Live workflow triggering and current ruleset readback remain Open. Local test/gate success is not substituted for a missing hosted run.
+- **Resulting status/gate change:** G2-G04 remains Open; G2-G06 remains Open. All dependents stay blocked.
+- **Exact next action:** A different AI audits implementation `a4f67dad5d31ad07285851df3686dc8e6b00584f` plus every later G2 handoff commit at remote staging HEAD and rechecks host enforcement.

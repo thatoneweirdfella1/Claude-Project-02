@@ -15,7 +15,7 @@ G1-E was independently executed and **Failed**. G2 authored hardening is active.
 - **Task source:** `DIVERGENCE-G1-CONTROL-UPGRADE-HANDOFF.md`
 - **Source hash:** `e940049e4dffd0d87a9b303526df82c7a8f61c0a496f6afc1f6f34b9b8f75db8`
 - **Starting remote commit:** `f6e8a344b414a5e909028fbdf547ae879ade4b58`
-- **Latest confirmed remote checkpoint:** `a4f67dad5d31ad07285851df3686dc8e6b00584f`
+- **Latest confirmed remote checkpoint:** `ebf720128d798e0b19f82d5933852497a65e0e41`
 - **Exact checkpoint G1-E must audit:** `983baaa2315db32e2cc772edc2bcad053e4e3d69`
 - **Only writable branch:** existing `divergence/reliability-staging`
 - **Accepted integration branch:** `divergence/reliability-v1`
@@ -44,4 +44,4 @@ Do not perform the independent F0 audit, S02/S03/S18/S20, F1, product implementa
 
 ## Exact next action
 
-Have a different AI independently audit the complete G2-authored range through `a4f67dad5d31ad07285851df3686dc8e6b00584f`.
+Have a different AI audit G2 implementation `a4f67dad5d31ad07285851df3686dc8e6b00584f` and every later G2 handoff commit reachable at remote staging HEAD; recheck the absent workflow runs and live rulesets.
