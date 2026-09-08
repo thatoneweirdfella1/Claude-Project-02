@@ -4,8 +4,8 @@
   "working_branch": "divergence/reliability-staging",
   "accepted_branch": "divergence/reliability-v1",
   "active_task": "G2",
-  "current_phase": "G2 self-check passed; awaiting independent audit publication",
-  "safe_to_switch": "YES",
+  "current_phase": "G2 correction awaiting independent audit",
+  "safe_to_switch": "NO",
   "last_confirmed_remote_checkpoint": "fe37f59ed0a3cf0a4f23ef684a2998cda982ad88",
   "first_unfinished_action": "A different AI audits G2 correction at fe37f59ed0a3cf0a4f23ef684a2998cda982ad88 and publishes review plus synchronized state records. Audit must verify prerequisite change, hostile tests, publication mechanism, and G2-G04 reviewer authentication vulnerability. After independent verification, user separately accepts or rejects G2.",
   "recovery_action": "Resume only G2 correction review from fe37f59ed0a3cf0a4f23ef684a2998cda982ad88; preserve all Failed audits; mark G2 as awaiting independent audit only after all synchronized records updated.",
@@ -63,7 +63,7 @@
     },
     "G2": {
       "title": "Maximum-Feasible Automation and Non-Bypass Hardening",
-      "execution_state": "Self-check passed",
+      "execution_state": "Potentially contaminated",
       "acceptance_state": "Not accepted",
       "author_id": "openai-codex-work-session-2026-09-08-g2-author",
       "reviewer_id": "claude-opus-5-independent-session-2026-09-08",
@@ -74,7 +74,7 @@
       "activation_authority": "User's 2026-09-08 bounded Phase 2 instruction",
       "owner_id": "openai-codex-work-session-2026-09-08-g2-author",
       "lock_acquired_at": "2026-09-08T15:54:15Z",
-      "lock_base_commit": "b0d97c6eba9db5f3e59dd81e5f47c0649fbfb5e7",
+      "lock_base_commit": "fe37f59ed0a3cf0a4f23ef684a2998cda982ad88",
       "independent_audit_required": true
     },
     "F0-INDEPENDENT-AUDIT": {
@@ -221,7 +221,7 @@
       },
       {
         "id": "G2",
-        "state": "Self-check passed",
+        "state": "Potentially contaminated",
         "commit": "fe37f59ed0a3cf0a4f23ef684a2998cda982ad88"
       }
     ],
@@ -229,7 +229,7 @@
       {
         "from": "G1",
         "to": "G2",
-        "type": "correction dependency"
+        "type": "validation dependency"
       }
     ]
   }
