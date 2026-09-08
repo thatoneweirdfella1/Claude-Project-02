@@ -65,6 +65,7 @@ G1-E is complete with a retained **Failed** verdict. G1 is not accepted. G2 hard
 | G3-A slice | State | Evidence and limitation |
 |---|---|---|
 | Schemas and transition engine | Self-check passed | Six JSON schemas, transition table, and eight focused tests cover authenticated actors, distinct audit, automatic acceptance, product-decision blocking, correction, dependency unlock, and lease recovery. Candidate-side only; external authority remains Open. |
+| Controller core | Self-check passed | Five controller tests plus eight transition tests pass. Automatic audit, correction, acceptance, and dependency unlock are executable through adapters. Only the in-memory test adapter exists; durable and host/provider enforcement remain Open. |
 
 | Gate | State | Meaning |
 |---|---|---|

@@ -41,6 +41,8 @@ Routine user approval, a second GitHub account, and manual audit/correction rout
 
 Six versioned controller-input schemas, a deterministic transition table, and a candidate-side reference transition engine are authored under `docs/reliability/control/g3a/` and `scripts/ai-control-trusted-transition*.mjs`. They prove the state semantics locally but are not the external trust boundary. The next bounded slice is the protected controller adapter, durable queue/lease store, exact-SHA check, auditor launcher, and recovery reconciler.
 
+The controller core and in-memory test adapter now exercise autonomous task acquisition, dependency blocking, audit assignment, signed-attestation rejection, automatic correction, automatic acceptance, and dependent unlocking. Thirteen focused lifecycle/controller tests pass locally. Durable external persistence and real host/provider adapters remain Open.
+
 ## Safe to Switch
 
 **SAFE TO SWITCH: NO** (awaiting independent audit and explicit user acceptance)

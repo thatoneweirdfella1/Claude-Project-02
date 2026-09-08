@@ -2,7 +2,7 @@
 
 **SAFE TO SWITCH: NO** (trusted autonomous acceptance replacement is not implemented)
 
-**Last confirmed remote checkpoint:** 9fa730d0cd5cbcce16a6cbe17e3cf487fd5af676
+**Last confirmed remote checkpoint:** 648390b338994ba2e4ce411a877bc1a10e22cf56
 
 **Full checkpoint lineage:** 
 - fe37f59: G2 correction critical fixes
@@ -16,6 +16,8 @@
 **Latest controlling correction:** D-016 prohibits routine human approval, a second GitHub account, and manual audit/task routing. Do not ask the user to approve routine checkpoints. Implement and verify the candidate-independent automatic path defined in `docs/reliability/control/DIVERGENCE-G3-A-TRUSTED-AUTONOMY-BOOTSTRAP.md`.
 
 **Completed in the current slice:** six G3-A schemas, transition table, reference transition engine, and eight focused tests. This candidate-side code is an implementation reference only and cannot authenticate or accept itself. **Exact next action:** implement the external controller adapter and durable worker/auditor queue against these contracts.
+
+**Controller-core addition:** `ai-control-controller-core.mjs` plus an in-memory adapter and tests now prove automatic audit assignment, correction launch, acceptance, dependency unlock, and rejection of unsigned audits. Exact next action is durable persistence plus real GitHub/provider adapters and periodic recovery.
 
 ## Status for Next Worker
 

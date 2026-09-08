@@ -649,3 +649,15 @@ Each new entry must contain:
 - **Failure/correction/uncertainty:** No external controller, GitHub App/check source, durable queue, provider launcher, credential isolation, hooks, or production validation exists yet.
 - **Resulting status/gate change:** G3-A schema/transition slice Self-check passed locally; external-authority gates remain Open.
 - **Exact next action:** Complete full validation and publish this checkpoint, then implement external controller adapter, queue/lease store, auditor launcher, and reconciler.
+
+### CL-0046 — 2026-09-08 UTC — G3-A autonomous controller core
+
+- **Actor:** OpenAI Codex correction author.
+- **Task/phase:** G2 autonomy correction / G3-A controller core.
+- **Repository/branch/starting commit:** Existing staging at confirmed remote `648390b338994ba2e4ce411a877bc1a10e22cf56`; clean detached worktree; no branch created.
+- **Action and affected files:** Added adapter-driven controller core, in-memory store, and controller tests; updated allowed paths and continuity records.
+- **Reason and rejected alternatives:** Made audit/correction/acceptance/advancement executable instead of leaving them as prose. Rejected embedding GitHub credentials, provider credentials, or pretending the in-memory adapter is durable/external.
+- **Command/test/check and actual result:** Controller plus transition tests 13/13 passed. Full control harness, integrity, exact gate, publication, and remote readback remain checkpoint actions.
+- **Failure/correction/uncertainty:** Candidate-side core cannot serve as its own trust boundary. Durable store, GitHub App/host adapter, provider worker launcher, periodic reconciliation, hooks, and end-to-end hostile proof remain Open.
+- **Resulting status/gate change:** Controller-core semantics Self-check passed locally; external authority still Open.
+- **Exact next action:** Publish after full validation, then implement durable external store and real host/provider adapter boundaries.
