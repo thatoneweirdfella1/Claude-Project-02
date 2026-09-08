@@ -56,7 +56,9 @@
     "docs/reliability/control/MEANING-CONFIRMATION-PROTOCOL.md",
     "docs/reliability/control/STANDALONE-ASSIGNMENT-CONTRACT.md",
     "docs/reliability/control/STATUS-VIEW-CONTRACT.md",
-    "docs/reliability/control/TASK-LIFECYCLE.md"
+    "docs/reliability/control/TASK-LIFECYCLE.md",
+    "docs/reliability/control/DIVERGENCE-G1-E-STANDALONE-INDEPENDENT-AUDIT.md",
+    "docs/reliability/control/MASTER-CHECKLIST.md"
   ],
   "required_changed_records": [
     "docs/ai-control/CONTROL-STATE.json",

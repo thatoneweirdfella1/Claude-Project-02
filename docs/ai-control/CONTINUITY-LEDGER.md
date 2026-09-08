@@ -461,3 +461,17 @@ Each new entry must contain:
 - **Failure/correction/uncertainty:** G1-E remains Open and must be performed by a different AI. The 17 lint warnings and build chunk warning are retained pre-existing limitations, not G1 defects. Browser product E2E is outside this control-only task and unchanged.
 - **Resulting status/gate change:** G1-G05 becomes Self-check passed. G1-G06 remains Open. G1 execution state becomes Awaiting independent audit after publication.
 - **Exact next action:** Validate, gate, and publish this G1-D completion checkpoint; confirm remote; then create a standalone audit packet bound to that exact commit and stop.
+
+### CL-0032 — 2026-09-08 UTC — G1-D published and G1-E packet prepared
+
+- **Actor:** OpenAI Codex / GPT-5 author session and connected GitHub application
+- **Task/phase:** G1 / transition from completed G1-D author work to G1-E independent audit handoff
+- **Repository/branch/starting commit:** Existing staging; G1-D base `98942d3585cab2a78a0f303c3d549bae3f75897e`; confirmed completed G1-D checkpoint `983baaa2315db32e2cc772edc2bcad053e4e3d69`
+- **Authority/source:** G1 stop condition and the user's request for an adaptive independent-auditor takeover.
+- **Action and affected files:** Published the complete G1-D evidence/status checkpoint. Created a standalone G1-E assignment containing the exact audit target, all G1 outcomes and semantics, hostile cases, evidence schema, pass/fail rules, correction separation, allowed paths, and stop condition. Added the fully labeled master checklist to the repository control package.
+- **Reason and rejected alternatives:** Let a context-free reviewer audit the exact authored result without conversation context while giving the user the same identifier map. Rejected an unbound “latest branch” audit, self-audit, ambiguous abbreviated checklist, or product/F0 work.
+- **Command/test/check and actual result:** GitHub non-force ref update for G1-D succeeded and exact remote commit was fetched. Audit packet names the exact 40-character G1-D checkpoint and 31 hostile categories. Master checklist contains G0, B0, F0, G1-A–G1-E, F0-AUDIT, S02/S03/S18/S20, and F1 identifiers with current position G1-D/G1-E transition.
+- **Evidence/artifact/hash:** E-029–E-030; exact hashes in refreshed `SHA256SUMS`.
+- **Failure/correction/uncertainty:** G1-E has not occurred. G1 is not independently verified or accepted. The packet/checklist commit is not yet confirmed remote at this entry.
+- **Resulting status/gate change:** G1-D/G1-G05 remain Self-check passed. G1-E/G1-G06 remain Open.
+- **Exact next action:** Validate, gate, publish, and read back the packet/checklist checkpoint, then set `SAFE TO SWITCH: YES` and stop for a different AI.

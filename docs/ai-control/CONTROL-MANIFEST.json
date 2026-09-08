@@ -57,7 +57,7 @@
     "id": "G1",
     "title": "Continuity, Acceptance, and Contamination Controls",
     "source": "docs/ai-control/CURRENT-TASK.md",
-    "status": "G1-A through G1-D Self-check passed locally; G1-D publication pending; G1-E independent verification Open",
+    "status": "G1-A through G1-D Self-check passed and published at 983baaa2315db32e2cc772edc2bcad053e4e3d69; checkpoint-bound G1-E packet publication pending; independent verification Open",
     "next_task_reveal_allowed": true
   },
   "scope": {
