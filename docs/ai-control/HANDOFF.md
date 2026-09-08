@@ -2,7 +2,9 @@
 
 **SAFE TO SWITCH: NO**
 
-**Last confirmed remote checkpoint:** 34ca208137d90e0a4ec1f821d4c88896303e57ce (state corrections on fe37f59 base)
+**Last confirmed remote checkpoint:** 34ca208137d90e0a4ec1f821d4c88896303e57ce
+
+**Full checkpoint lineage:** fe37f59 (repairs) → 34ca208 (state sync) → f3b8ecc (continuity records)
 
 **Current active task:** G2 (Potentially contaminated; awaiting independent audit)
 
