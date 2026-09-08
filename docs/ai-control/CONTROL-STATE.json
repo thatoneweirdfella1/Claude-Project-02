@@ -6,9 +6,9 @@
   "active_task": "G2",
   "current_phase": "G2 self-check passed; awaiting independent audit publication",
   "safe_to_switch": "YES",
-  "last_confirmed_remote_checkpoint": "a8fa09700d3c117364eb6a06e87fdc05a0e82298",
-  "first_unfinished_action": "A different AI audits G2 correction at a8fa09700d3c117364eb6a06e87fdc05a0e82298 and publishes review plus synchronized state records. Audit must verify prerequisite change, hostile tests, and publication mechanism. After independent verification, user separately accepts or rejects G2.",
-  "recovery_action": "Resume only G2 correction review from a8fa09700d3c117364eb6a06e87fdc05a0e82298; preserve all Failed audits; mark G2 as awaiting independent audit only after all synchronized records updated.",
+  "last_confirmed_remote_checkpoint": "fe37f59ed0a3cf0a4f23ef684a2998cda982ad88",
+  "first_unfinished_action": "A different AI audits G2 correction at fe37f59ed0a3cf0a4f23ef684a2998cda982ad88 and publishes review plus synchronized state records. Audit must verify prerequisite change, hostile tests, publication mechanism, and G2-G04 reviewer authentication vulnerability. After independent verification, user separately accepts or rejects G2.",
+  "recovery_action": "Resume only G2 correction review from fe37f59ed0a3cf0a4f23ef684a2998cda982ad88; preserve all Failed audits; mark G2 as awaiting independent audit only after all synchronized records updated.",
   "meaning_confirmation": {
     "interpreted_outcome": "Make repository controls automatically keep every AI on the same verified course without requiring the user to remember audits or dependencies.",
     "boundary": "Do not change the product, F0, application, layout, branches, integration baseline, or independent-audit results.",
@@ -74,7 +74,7 @@
       "activation_authority": "User's 2026-09-08 bounded Phase 2 instruction",
       "owner_id": "openai-codex-work-session-2026-09-08-g2-author",
       "lock_acquired_at": "2026-09-08T15:54:15Z",
-      "lock_base_commit": "a8fa09700d3c117364eb6a06e87fdc05a0e82298",
+      "lock_base_commit": "b0d97c6eba9db5f3e59dd81e5f47c0649fbfb5e7",
       "independent_audit_required": true
     },
     "F0-INDEPENDENT-AUDIT": {
@@ -192,11 +192,10 @@
   "audit_queue": [
     {
       "task": "G2",
-      "required_audit": "Independent audit of every G2-authored control, policy, workflow, test, schema, evidence, and authority change",
+      "required_audit": "Verify prerequisite change complete, publication mechanism fixed, all records synchronized, reviewer authentication vulnerability resolved",
       "status": "Open",
-      "author_id": "openai-codex-work-session-2026-09-08-g2-author",
-      "reviewer_id": null,
-      "audited_commit": null
+      "assigned_to": "independent-auditor",
+      "opened_at": "2026-09-08T16:00:00Z"
     }
   ],
   "control_change": {
@@ -216,26 +215,21 @@
   "lineage": {
     "nodes": [
       {
-        "id": "integration-baseline",
-        "state": "Accepted",
-        "commit": "7681344918a912f0ac35a2fb15c2b41b85638a3f"
-      },
-      {
-        "id": "G1-candidate",
+        "id": "G1",
         "state": "Failed",
         "commit": "983baaa2315db32e2cc772edc2bcad053e4e3d69"
       },
       {
-        "id": "G2-correction",
-        "state": "Awaiting independent audit",
-        "commit": "a4f67dad5d31ad07285851df3686dc8e6b00584f"
+        "id": "G2",
+        "state": "Self-check passed",
+        "commit": "fe37f59ed0a3cf0a4f23ef684a2998cda982ad88"
       }
     ],
     "edges": [
       {
-        "from": "integration-baseline",
-        "to": "G1-candidate",
-        "type": "design prerequisite"
+        "from": "G1",
+        "to": "G2",
+        "type": "correction dependency"
       }
     ]
   }

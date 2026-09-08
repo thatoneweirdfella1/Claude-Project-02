@@ -63,8 +63,8 @@ G1-E is complete with a retained **Failed** verdict. G1 is not accepted. G2 hard
 | Gate | State | Meaning |
 |---|---|---|
 | G2-G01 | Self-check passed | Confirmed-base freshness, ownership lock, audit queue, and exact action are mechanically checked by focused tests. |
-| G2-G02 | Failed | Dependency correction incomplete: F0-AUDIT prerequisite not updated from G1 to G2. |
-| G2-G03 | Self-check passed | Protected control-plane changes require owner, gate, audit requirement, residual risk, and cannot carry their own review/acceptance claim. |
-| G2-G04 | Open | Current live ruleset, required-check, CODEOWNERS reviewer binding, bypass, and admin behavior require host readback/configuration. |
+| G2-G02 | Awaiting independent audit | Prerequisite changed from G1:Accepted to G2:Accepted in checkpoint fe37f59. Gate deadlock fix allows review + state sync. Publication preflight implemented. Awaiting independent verification at fe37f59. |
+| G2-G03 | Self-check passed | Protected control-plane changes require owner, gate, audit requirement, residual risk, and cannot carry their own review/acceptance claim. Audit publication now requires host-authenticated reviewer (not candidate-controlled strings). |
+| G2-G04 | Open — BLOCKING | Current live ruleset, required-check, CODEOWNERS reviewer binding, bypass, and admin behavior require host readback/configuration. This gate remains Open until GitHub Actions integration or cryptographic proof of reviewer identity is established. |
 | G2-G05 | Self-check passed | Provider notifications remain optional and non-authoritative; unguaranteed semantic/admin risks are explicit. |
-| G2-G06 | Failed | Independent audit completed; critical defect found in prerequisite logic. |
+| G2-G06 | Awaiting independent audit | Previous audit at a4f67dad found defects (prerequisite not changed). Corrections published at fe37f59. Independent verification of fe37f59 must confirm: prerequisite change complete, gate deadlock resolved, all records synchronized, reviewer authentication vulnerability addressed, hostile tests added. |

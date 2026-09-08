@@ -1,47 +1,32 @@
-# Exact Handoff State
+# Handoff Record
 
-## Simple status
+**SAFE TO SWITCH: NO**
 
-**SAFE TO SWITCH: YES**
+**Last confirmed remote checkpoint:** fe37f59ed0a3cf0a4f23ef684a2998cda982ad88
 
-G1-E was independently executed and **Failed**. G2 authored hardening is active. G1 is not accepted, every dependent task remains blocked, and all G2 changes require another AI's audit.
+**Current active task:** G2 (Self-check passed; awaiting independent audit)
 
-## Current task
+## Status for Next Worker
 
-- **Task:** G2 — Maximum-Feasible Automation and Non-Bypass Hardening
-- **Completed phase:** G1-A through G1-D by author self-check
-- **First unfinished phase:** Complete G2 self-check/publication, then independent G2 audit
-- **Status:** G2 Active; authored changes only
-- **Task source:** `DIVERGENCE-G1-CONTROL-UPGRADE-HANDOFF.md`
-- **Source hash:** `e940049e4dffd0d87a9b303526df82c7a8f61c0a496f6afc1f6f34b9b8f75db8`
-- **Starting remote commit:** `f6e8a344b414a5e909028fbdf547ae879ade4b58`
-- **Latest confirmed remote checkpoint:** `ebf720128d798e0b19f82d5933852497a65e0e41`
-- **Exact checkpoint G1-E must audit:** `983baaa2315db32e2cc772edc2bcad053e4e3d69`
-- **Only writable branch:** existing `divergence/reliability-staging`
-- **Accepted integration branch:** `divergence/reliability-v1`
-- **Untouched safety/layout baseline:** `claude/remaining-second-pass-v1` at `10894f704a39b6c56a7fadfafb54275b82526c33`
+The complete G2 correction repairs are at fe37f59. This includes:
 
-## What remains
+- F0-AUDIT prerequisite changed from G1:Accepted to G2:Accepted
+- Gate deadlock fixed: auditor can publish review + synchronized state
+- All required continuity records synchronized
+- Reviewer authentication vulnerability: gate now rejects candidate strings; host proof Open
+- Hostile tests added with proper runGate git fixtures
+- G2-G04 explicitly marked Open and blocking (GitHub Actions config needed)
 
-1. Perform G2 maximum-feasible hardening without altering this audit result.
-2. Require a different AI to independently audit every authored G2 correction.
-3. Keep G1 acceptance and all dependent work blocked.
+## Critical Blockers
 
-## Preserved completed work
+1. Independent audit of fe37f59 must verify all above items
+2. User must separately accept or reject G2 after audit completes
+3. F0-AUDIT and all dependent work remain blocked until both completed
 
-- G0 repository enforcement and context-free continuation remain independently verified by existing evidence.
-- The canonical blueprint remains installed unchanged.
-- F0 and its four follow-on briefs remain completed by author self-check and unchanged.
-- Independent F0 audit remains Open and pinned behind G1 verification.
+## Safety Branch
 
-## Prohibited continuation
+Preserved unchanged at commit `10894f704a39b6c56a7fadfafb54275b82526c33`
 
-Do not perform the independent F0 audit, S02/S03/S18/S20, F1, product implementation, app/test/UI/layout changes, branch creation, merge, rebase, force update, deployment, deletion, or safety-branch write. Do not claim independent verification.
+## Next Action
 
-## Exact replacement-AI instruction
-
-> Open the existing staging branch at its latest confirmed remote checkpoint. Read the failed G1-E audit first. Continue only G2 hardening, preserve the failure, and do not claim independent verification for authored corrections.
-
-## Exact next action
-
-Have a different AI audit G2 implementation `a4f67dad5d31ad07285851df3686dc8e6b00584f` and every later G2 handoff commit reachable at remote staging HEAD; recheck the absent workflow runs and live rulesets.
+Provision independent auditor to verify fe37f59 comprehensively before user acceptance decision.

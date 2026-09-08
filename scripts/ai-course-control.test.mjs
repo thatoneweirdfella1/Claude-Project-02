@@ -75,6 +75,7 @@ const validPolicy = {
       ],
     },
     F0: { locked: true, allowed_paths: ["task.md", "ledger.md", "evidence.md", "handoff.md", "docs/ai-control/**"] },
+    G2: { allowed_paths: ["task.md", "ledger.md", "decisions.md", "evidence.md", "handoff.md", "baseline.png", "docs/ai-control/**", "review.json"] },
   },
 };
 
@@ -825,4 +826,70 @@ test("G2-G04 enforcement: decision recorded or explicitly Open", () => {
   const ledger = readFileSync("docs/ai-control/CONTINUITY-LEDGER.md", "utf8");
   const hasG2G04 = ledger.includes("G2-G04") || state.tasks.G2.gate_status_g2_g04 !== undefined;
   assert(hasG2G04 || state.tasks.G2.execution_state !== "Accepted", "G2-G04 must be decided before acceptance");
+});
+
+test("gate rejects review publication without host-authenticated reviewer", () => {
+  const fixture = setupFixture({
+    mutate(root) {
+      const policy = JSON.parse(readFileSync(join(root, "docs/ai-control/COURSE-CONTROL.json")));
+      const state = JSON.parse(readFileSync(join(root, "docs/ai-control/CONTROL-STATE.json")));
+      policy.protected_control_paths = ["docs/ai-control/CONTROL-STATE.json"];
+      policy.active_task = "G2";
+      state.active_task = "G2";
+      state.tasks.G2 = {
+        title: "Test Task",
+        execution_state: "Self-check passed",
+        acceptance_state: "Not accepted",
+        author_id: "author1",
+        reviewer_id: "auditor2",
+        independent_review_path: "docs/ai-control/independent-reviews/G2-test.json",
+        owner_id: "author1",
+        lock_acquired_at: "2026-09-08T16:00:00Z",
+        lock_base_commit: "a".repeat(40),
+      };
+      writeJson(join(root, "docs/ai-control/CONTROL-STATE.json"), state);
+      writeJson(join(root, "docs/ai-control/COURSE-CONTROL.json"), policy);
+      mkdirSync(join(root, "docs/ai-control/independent-reviews"), { recursive: true });
+      writeFileSync(
+        join(root, "docs/ai-control/independent-reviews/G2-test.json"),
+        JSON.stringify({ task_id: "G2", reviewer_id: "auditor2", verdict: "Independently verified" })
+      );
+    },
+  });
+  expectRejected(fixture, "host-authenticated independent reviewer");
+});
+
+test("gate correctly rejects self-approval attempt", () => {
+  const fixture = setupFixture({
+    mutate(root) {
+      const policy = JSON.parse(readFileSync(join(root, "docs/ai-control/COURSE-CONTROL.json")));
+      const state = JSON.parse(readFileSync(join(root, "docs/ai-control/CONTROL-STATE.json")));
+      policy.protected_control_paths = ["docs/ai-control/CONTROL-STATE.json"];
+      policy.active_task = "G2";
+      state.active_task = "G2";
+      state.tasks.G2 = {
+        title: "Test",
+        execution_state: "Accepted",
+        acceptance_state: "Accepted",
+        author_id: "same-actor",
+        reviewer_id: "same-actor",
+        independent_review_path: "docs/ai-control/independent-reviews/test.json",
+        accepted_integration_commit: "a".repeat(40),
+        owner_id: "same-actor",
+        lock_acquired_at: "2026-09-08T16:00:00Z",
+        lock_base_commit: "a".repeat(40),
+      };
+      writeJson(join(root, "docs/ai-control/CONTROL-STATE.json"), state);
+      writeJson(join(root, "docs/ai-control/COURSE-CONTROL.json"), policy);
+      mkdirSync(join(root, "docs/ai-control/independent-reviews"), { recursive: true });
+      writeFileSync(join(root, "docs/ai-control/independent-reviews/test.json"), "{}");
+    },
+  });
+  expectRejected(fixture, "independent reviewer distinct");
+});
+
+test("G2-G04 must remain Open until GitHub Actions provides reviewer authentication", () => {
+  const state = JSON.parse(readFileSync("docs/ai-control/CONTROL-STATE.json", "utf8"));
+  const gateStatus = readFileSync("docs/ai-control/GATE-STATUS.md", "utf8");
+  assert(gateStatus.includes("G2-G04") && gateStatus.includes("Open") && gateStatus.includes("BLOCKING"), "G2-G04 must be explicitly Open and blocking");
 });

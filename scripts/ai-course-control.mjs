@@ -270,13 +270,21 @@ export function runGate({ policyPath, base, head, branch, repository, requestedT
     const reviewChanged = changes.some((change) => change.path.startsWith("docs/ai-control/independent-reviews/"));
     const activeTask = stateResult.state.tasks?.[policy.active_task];
 
-    // Allow audit publication: independent auditor synchronizing review + state records
-    // Reject self-approval: author claiming Independently verified or Accepted state
-    const isAuditPublication = reviewChanged && activeTask?.reviewer_id && activeTask?.author_id && activeTask.reviewer_id !== activeTask.author_id;
-    const isSelfApproval = ["Independently verified", "Accepted"].includes(activeTask?.execution_state) || activeTask?.acceptance_state === "Accepted";
+    // CRITICAL: author_id and reviewer_id in candidate-controlled CONTROL-STATE cannot be trusted.
+    // They are just strings. An author can write two different strings and impersonate independence.
+    // This is a common-mode vulnerability: the thing being tested controls its own test inputs.
+    // Solution: Keep reviewer authentication Open/blocking until host provides cryptographic proof
+    // (e.g., GitHub Actions context, commit signature, etc.)
+    if (reviewChanged) {
+      const hasHostProof = false; // No host-based authentication available in this environment
+      if (!hasHostProof) {
+        errors.push("Review publication requires host-authenticated independent reviewer (GitHub Actions context or cryptographic signature). Declarative author_id/reviewer_id strings in candidate state cannot verify independence. Keep this requirement Open and blocking until host integration is complete.");
+      }
+    }
 
-    if (!isAuditPublication && (reviewChanged || isSelfApproval)) {
-      errors.push("A protected control-plane change cannot carry or claim its own independent approval");
+    const isSelfApproval = ["Independently verified", "Accepted"].includes(activeTask?.execution_state) || activeTask?.acceptance_state === "Accepted";
+    if (isSelfApproval) {
+      errors.push("A protected control-plane change cannot claim its own independent approval");
     }
   }
   for (const requiredRecord of policy.required_changed_records) {
