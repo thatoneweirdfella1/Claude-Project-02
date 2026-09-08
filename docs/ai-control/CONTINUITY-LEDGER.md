@@ -419,3 +419,17 @@ Each new entry must contain:
 - **Failure/correction/uncertainty:** The first upgraded run failed 14 fixtures because the validator hardcoded production record paths; policy-configured paths corrected it. A later run failed two fixtures because review evidence was out of scope and missing task files threw instead of failing cleanly; both were corrected and retained in this history. G1-D full verification and G1-E independent audit remain Open.
 - **Resulting status/gate change:** G1-G02, G1-G03, and G1-G04 are author Self-check passed locally. G1-G05 remains Open pending full G1-D and publication. G1-G06 remains Open.
 - **Exact next action:** Refresh integrity and control records, run exact G1-C checks and course gate, publish non-force to existing staging, read back, then perform G1-D.
+
+### CL-0029 — 2026-09-08 UTC — G1-D partial recovery checkpoint before pause
+
+- **Actor:** OpenAI Codex / GPT-5 session
+- **Task/phase:** G1 / G1-D partial adversarial and recovery verification
+- **Repository/branch/starting commit:** Existing staging; confirmed remote G1-C checkpoint `049e2b0f7673e0b757131e4877baef77f6fe585c`
+- **Authority/source:** User instructed the AI to save work and await instructions; G1 checkpoint contract requires the smallest coherent remote checkpoint.
+- **Action and affected files:** Added a required recovery action to machine state, made an unsafe interrupted task block all work except its named recovery, and added the focused hostile case. Updated continuity records for a safe pause.
+- **Reason and rejected alternatives:** Preserve tested progress without falsely declaring G1-D complete. Rejected continuing broad checks after the pause instruction or claiming results from a cancelled tool call.
+- **Command/test/check and actual result:** Focused controller harness passed 41/41 and `git diff --check` passed. A prior combined attempt to run course, unit, desktop, lint, and build was cancelled by a network-approval boundary before results, so those full checks remain Open.
+- **Evidence/artifact/hash:** E-028 and refreshed integrity manifest.
+- **Failure/correction/uncertainty:** G1-D is incomplete. G1-G05 and G1-G06 remain Open. No independent audit occurred.
+- **Resulting status/gate change:** No gate promoted. This is a resumable partial checkpoint only.
+- **Exact next action:** Validate, publish, and read back this partial checkpoint, then stop and await instructions. On resumption, finish G1-D full checks.

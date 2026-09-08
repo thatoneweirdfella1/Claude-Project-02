@@ -6,8 +6,9 @@
   "active_task": "G1",
   "current_phase": "G1-D",
   "safe_to_switch": "NO",
-  "last_confirmed_remote_checkpoint": "27c187f7db05c4fbd7fc38ad3f25b3c5896c5465",
+  "last_confirmed_remote_checkpoint": "049e2b0f7673e0b757131e4877baef77f6fe585c",
   "first_unfinished_action": "Publish G1-C, then run the complete G1-D adversarial and recovery verification.",
+  "recovery_action": "Restore or isolate the interrupted G1 patch from the last confirmed remote checkpoint, rerun its focused checks, and publish a coherent checkpoint before continuing.",
   "meaning_confirmation": {
     "interpreted_outcome": "Make repository controls automatically keep every AI on the same verified course without requiring the user to remember audits or dependencies.",
     "boundary": "Do not change the product, F0, application, layout, branches, integration baseline, or independent-audit results.",

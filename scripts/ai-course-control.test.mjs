@@ -111,6 +111,7 @@ function makeState() {
     safe_to_switch: "NO",
     last_confirmed_remote_checkpoint: "a".repeat(40),
     first_unfinished_action: "Finish G0-C.",
+    recovery_action: "Recover G0 from the confirmed checkpoint.",
     meaning_confirmation: { interpreted_outcome: "Enforce course.", boundary: "No app work.", material_ambiguity: "none", authority: "test" },
     tasks: {
       G0: { title: "Gate", execution_state: "Active", acceptance_state: "Not accepted", author_id: "author", reviewer_id: null, independent_review_path: null, accepted_integration_commit: null, prerequisites: [] },
@@ -411,6 +412,13 @@ test("resumable interruption retains the same current task", () => {
   state.tasks.G0.execution_state = "Interrupted — resumable";
   state.safe_to_switch = "YES";
   assert.deepEqual(validateControlState(state), []);
+});
+
+test("unsafe interruption permits recovery only", () => {
+  const state = makeState();
+  state.tasks.G0.execution_state = "Interrupted — unsafe";
+  const errors = validateControlState(state, { requestedTask: "G0" });
+  assert(errors.some((error) => error === "BLOCKED: G0 cannot start because its interrupted checkpoint is unsafe. NEXT: Recover G0 from the confirmed checkpoint."));
 });
 
 test("plain blocker output is stable and copyable", () => {

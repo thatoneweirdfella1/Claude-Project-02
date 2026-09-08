@@ -37,6 +37,7 @@ export function validateControlState(state, { requestedTask, fileExists = exists
   if (!isSha(state?.last_confirmed_remote_checkpoint)) errors.push("Last confirmed remote checkpoint must be a full SHA");
   if (!["YES", "NO"].includes(state?.safe_to_switch)) errors.push("safe_to_switch must be YES or NO");
   if (!state?.first_unfinished_action) errors.push("First unfinished action is missing");
+  if (!state?.recovery_action) errors.push("Recovery action is missing");
   for (const field of ["interpreted_outcome", "boundary", "material_ambiguity", "authority"]) {
     if (!state?.meaning_confirmation?.[field]) errors.push(`Meaning confirmation missing ${field}`);
   }
@@ -77,7 +78,9 @@ export function validateControlState(state, { requestedTask, fileExists = exists
   const targetId = requestedTask || state?.active_task;
   const target = state?.tasks?.[targetId];
   if (!target) errors.push(blockNotice(targetId, "the task is not registered", `finish ${state?.active_task || "the current task"}`));
-  else if (targetId !== state.active_task) {
+  else if (targetId === state.active_task && target.execution_state === "Interrupted — unsafe") {
+    errors.push(blockNotice(targetId, "its interrupted checkpoint is unsafe", state.recovery_action));
+  } else if (targetId !== state.active_task) {
     const unmet = (target.prerequisites || []).find((dependency) => {
       const actual = state.tasks[dependency.task]?.execution_state;
       return !SATISFIES[dependency.required_state]?.has(actual);
