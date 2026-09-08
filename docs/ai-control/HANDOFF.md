@@ -2,9 +2,9 @@
 
 **SAFE TO SWITCH: NO**
 
-**Last confirmed remote checkpoint:** fe37f59ed0a3cf0a4f23ef684a2998cda982ad88
+**Last confirmed remote checkpoint:** 34ca208137d90e0a4ec1f821d4c88896303e57ce (state corrections on fe37f59 base)
 
-**Current active task:** G2 (Self-check passed; awaiting independent audit)
+**Current active task:** G2 (Potentially contaminated; awaiting independent audit)
 
 ## Status for Next Worker
 

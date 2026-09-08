@@ -1,16 +1,25 @@
 # Current Task Status
 
 **Task ID:** G2
-**Phase:** Self-check passed; awaiting independent audit
+**Phase:** Potentially contaminated; awaiting independent audit
 **Status:** Active
 
 ## Checkpoint
 
-**Complete repair checkpoint:** fe37f59ed0a3cf0a4f23ef684a2998cda982ad88
+**Complete repair checkpoint:** 34ca208137d90e0a4ec1f821d4c88896303e57ce (state corrections on fe37f59 base)
+
+## State Corrections (CL-0042)
+
+The checkpoint has been updated with state machine synchronization:
+- G2 execution_state marked as "Potentially contaminated" (correction of Failed G1)
+- Lineage node state synchronized with task execution state
+- Lineage edge type corrected to "validation dependency"
+- Lock base commit set to match lineage checkpoint (fe37f59)
+- Safe-to-switch state synchronized with CONTROL-STATE (NO)
 
 ## What is Next
 
-A different AI must perform independent audit of the complete correction at fe37f59, verifying:
+A different AI must perform independent audit of the complete corrected checkpoint at 34ca208 (built on fe37f59 base), verifying:
 
 1. F0-AUDIT prerequisite changed from G1:Accepted to G2:Accepted
 2. Gate deadlock fix allows independent auditor to publish review + synchronized state

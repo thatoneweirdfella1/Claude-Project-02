@@ -3,14 +3,14 @@
 197b1c851d1a1533cfd4fad5c732d5945be484aec424694043b56633ee11543c  ./docs/reliability/control/G2-ENFORCEMENT-GAP-AUDIT.md
 1ccb2fd2b269556954bcfa63fcba363d98321e5369d06b86f7c7d807181db2eb  ./docs/ai-control/PARKING-LOT.md
 291d97bf0bf908a817507fdd1428b19e18a48c70e18a5f087d45160ab3576e0b  ./CLAUDE.md
-32968da14aad85769a294c7ff1b7c27761858c08e189b8ac154b892629b9d226  ./docs/ai-control/EVIDENCE-INDEX.md
+8dbbe6d44ea50a0ad5b0ea953dbf024e4d77a7fdbf400836fb23c1b7e3243f28  ./docs/ai-control/EVIDENCE-INDEX.md
 339afdd189d5f6599840d00df88f2be386ce0884947ad7d4da1ed16418a01b32  ./scripts/ai-control-state.mjs
 3414316dca5ee3189d87ea2f3f97f2c652bcdb9f272789f3812de17c60aaf3cc  ./docs/reliability/control/DIVERGENCE-G1-E-STANDALONE-INDEPENDENT-AUDIT.md
 3f622011763ac8c56cf1e36ccebbdba94cb97ab63095ce6663779ff4e07374d4  ./docs/reliability/control/AUTHORITY-PACKAGE-GAP-AUDIT.md
 436457d176425ffd2c5eea1cb11478be707c993403f7926415eef2ac842829e7  ./docs/reliability/control/MEANING-CONFIRMATION-PROTOCOL.md
 451677d80b63dbd1aecd3b80fb99a7c49ae9e4a30b62d43ecda448ead22afad4  ./docs/ai-control/PROJECT-AUTHORITY.md
 4a41920da7bda57e96e83e3c83238f50d749f378de367c67a7705f43a6dd615d  ./scripts/ai-course-control.mjs
-4c45dce7aaff39bc266fe8583e68527513927c2fa3e6c63201e4ad537b289909  ./docs/ai-control/CURRENT-TASK.md
+ce592f1ae7de2ac16bd480ab3530d2ce7364c8c9f3ef92201dc70dcf16e3ce83  ./docs/ai-control/CURRENT-TASK.md
 5817361c8a5376e299e36d340c331ce2a7848d96c29513839ba8889d8ffbe887  ./DIVERGENCE-F0-STANDALONE-HANDOFF.md
 5a442a9012da3cbd52a081c71e375795aad99d0b9aefd22a5b46cb2cdb1d5906  ./docs/ai-control/00-READ-FIRST.md
 5c184395a247aa0d3ce7ba358ba26280237c2b1231c9a5f4fe934ce30ec59586  ./docs/reliability/f0/follow-on/S18-SECURITY-PRIVACY-CONSENT-BRIEF.md
@@ -25,7 +25,7 @@
 9763aa6ecd4120579d0755fdbb48c2d0fcdbacc80655ec5dc64705798f12377b  ./docs/reliability/f0/FOUNDATION-CONTRACT-AND-INTERFACE-SKELETON.md
 97e94054d8cdcdfc48cb138f4e034f4b39ccb9d00f3c8b62f2e3baaca2c6ce60  ./docs/ai-control/independent-reviews/RCG-04.json
 996d76a5306fd6b9d822bcd97e21b3da106ce19ff8c0f0292c7170d4552f4307  ./docs/ai-control/GITHUB-RULESET-REQUIRED.md
-5ae21bf87d8020f24c47c501ebc9f5610399b846f52c1ad5f54de215fda30068  ./docs/ai-control/CONTINUITY-LEDGER.md
+b270b3a50d9df19deb92a34ec5c1e80dd87b4db661ecfd2bd716c2cfceb48c51  ./docs/ai-control/CONTINUITY-LEDGER.md
 a5f22d5afc7cf7c73b3f224d3803dd712f75814a42e61278ddf50cc23e47fa5d  ./docs/reliability/control/STATUS-VIEW-CONTRACT.md
 a658f24ed384821b493bb6da17ed473582363f04a36ea09a8d8e3335c5008c42  ./docs/ai-control/CONTROL-MANIFEST.json
 a74423809cbdf5bafb72abf122a8551f930634387edaf87a59a5719bc66be0c6  ./docs/ai-control/visual-baseline/DivergenceAI-3of3-Response-Right-Rail-Settings.png
@@ -46,5 +46,5 @@ dc6cb3c1af9108bb042a0c6e44028060355bc1d7f9684d507650a90cfa49ef88  ./scripts/ai-c
 e223f4d8acc91dc5b211bdd0867c9295c88ef6068e87923196974c36555ad504  ./docs/reliability/control/G1-TRACEABILITY.json
 e940049e4dffd0d87a9b303526df82c7a8f61c0a496f6afc1f6f34b9b8f75db8  ./DIVERGENCE-G1-CONTROL-UPGRADE-HANDOFF.md
 e9e3628c65606ce5e32808feb765113e943539fc874cef17af340e5bfa29942a  ./docs/ai-control/independent-reviews/G2-G06.json
-f4524fe85fc6dee18ff26ff32209fc14579c12d86e7b41d256ae52bb0ba22d07  ./docs/ai-control/HANDOFF.md
+9fcd4fb10a5d2f03ed4327f3695ebc412f0109d8de8221070c7d5d4860e89ca6  ./docs/ai-control/HANDOFF.md
 f9106c6185cef00447b2cd13110c8538ab0044d932b06d3dc6e70dfec44ea9dd  ./docs/ai-control/VERCEL-BASELINE.md

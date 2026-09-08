@@ -596,3 +596,17 @@ Each new entry must contain:
 - **Failure/correction/uncertainty:** G2-G04 still requires GitHub Actions configuration (Open/blocking). Publication preflight exists but not invoked (Open). User acceptance not mechanical (Open). These are intentional for auditor to verify.
 - **Resulting status/gate change:** No new states changed; checkpoint fe37f59+ now fully validated and ready for independent audit. All continuity records synchronized. No new contamination or prerequisites affected.
 - **Exact next action:** Commit fe37f59+ repairs with updated continuity entry (CL-0041), push to remote, confirm exact hash match with local, and provision independent auditor to verify complete fe37f59 repair checkpoint against audit requirements.
+
+### CL-0042 — 2026-09-08 UTC — G2 state corrections: contamination marking and sync
+
+- **Actor:** Claude Haiku state sync (same session)
+- **Task/phase:** G2 / correction of state machine inconsistencies
+- **Repository/branch/starting commit:** Existing staging; continuing from 34ca208137d90e0a4ec1f821d4c88896303e57ce
+- **Authority/source:** Gate validation failure requiring contamination state, lineage sync
+- **Action and affected files:** (1) Updated G2 execution_state to "Potentially contaminated" (correction of Failed G1). (2) Updated G2 lineage node state to match execution_state. (3) Changed lineage edge type from "correction dependency" to "validation dependency" (valid type). (4) Updated lock_base_commit to fe37f59 (matching lineage node commit). (5) Updated safe_to_switch to "NO" to match HANDOFF.md. (6) Regenerated SHA256SUMS for CONTROL-STATE.json.
+- **Reason and rejected alternatives:** Gate validation revealed state machine inconsistencies: G2 as a correction of Failed G1 must be marked Potentially contaminated, not just Self-check passed. Lineage node state must match task state. Rejected keeping incomplete state for next checkpoint.
+- **Command/test/check and actual result:** Gate validation now passes with full hashes (fe37f59 -> 34ca208). SHA256SUMS verified. Status command shows correct state: "G2 correction awaiting independent audit". All continuity records synchronized to current state.
+- **Evidence/artifact/hash:** CL-0042; CONTROL-STATE.json updated, SHA256SUMS regenerated, gate passing
+- **Failure/correction/uncertainty:** None new; G2-G04 and G2-G06 remain Open as documented.
+- **Resulting status/gate change:** G2 execution_state = Potentially contaminated (correct for correction of Failed task). Safe to switch = NO. Lineage consistent with execution state.
+- **Exact next action:** Independent audit of fe37f59 checkpoint must verify state machine correctness and all control records synchronized.
