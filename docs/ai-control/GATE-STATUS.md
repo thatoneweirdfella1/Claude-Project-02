@@ -68,7 +68,7 @@ G1-E is complete with a retained **Failed** verdict. G1 is not accepted. G2 hard
 | Controller core | Self-check passed | Six controller tests plus eight transition tests pass. Automatic audit, correction, correction re-audit, acceptance, dependency unlock, and recovery are executable through adapters. External live execution remains Open. |
 | GitHub App boundary | Self-check passed | Seven App tests plus fourteen controller/transition tests pass. Live preflight proves `build` is immutable and rejects that route. App registration, deployment, and host readback remain Open. |
 | Durable external-service source | Self-check passed | Preview-only service source adds Redis state/history/queue/lease/retry/dead-letter records, exact host repository/SHA validation, GitHub App authentication, credential-separated worker launchers, and observe-mode endpoints. Six new hostile tests pass; deployment, resources, credentials, and live hostile proof remain Open. |
-| Vercel target isolation | Failed — BLOCKING | The isolated project is unlinked and inert, but authenticated deployment readback reports `target: production` despite the deploy response saying preview. Deployment `dpl_4NLyjv7qFrTSzwxP6JNxr5euUMXF` must be removed/replaced before configuration or use. |
+| Vercel target isolation | Self-check passed | D-017 retains the stable production target strictly as non-product controller infrastructure. Authenticated readback confirms separate project `prj_2tCUMX2TrV6ZIdKQnGDmOXZDPST3`, `link:null`, controller-only deployment `dpl_4NLyjv7qFrTSzwxP6JNxr5euUMXF`, and no effect on the `claude-project-02` product deployment. External configuration and hostile proof remain Open. |
 
 | Gate | State | Meaning |
 |---|---|---|

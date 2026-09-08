@@ -1,8 +1,8 @@
 # Handoff Record
 
-**SAFE TO SWITCH: YES**
+**SAFE TO SWITCH: NO**
 
-**Last confirmed remote checkpoint:** `21cff7c22de78e9ca63f6025b09b303a2f8c2f89`
+**Last confirmed remote checkpoint:** `6b6cdd5946b80bf2bd4b53a1a37817e75b8bcb75`
 
 **Active task:** G2 autonomy correction / G3-A trusted controller.
 
@@ -12,12 +12,10 @@ The repository checkout began clean at the exact remote commit above. Integrity 
 
 The confirmed remote checkpoint contains a deployable, preview-only controller under `control-plane/g3a-controller/`. Repository test entrypoints import the same transition, GitHub-event, and controller-core bytes packaged for deployment. Durable Redis state/queue/lease/retry/dead-letter behavior, exact host identity/SHA validation, GitHub App authentication, separated worker launchers, correction re-audit, and recovery endpoints are implemented. Focused tests pass 27/27; course controls pass 61/61; the exact course gate accepted the 37-path change. Remote tree `38850ee1aebc6cce450e8116055e0881f2896c17` exactly matches the tested local tree.
 
-An isolated unlinked Vercel project was created from the controller package, but it is not compliant and must not be used: the deploy response said preview while authenticated readback reports `target: production` for deployment `dpl_4NLyjv7qFrTSzwxP6JNxr5euUMXF` in project `prj_2tCUMX2TrV6ZIdKQnGDmOXZDPST3`. The project has `link:null`, no configured secrets or Redis, and `/api/health` returns HTTP 503 with `authoritative_enforcement_active:false`. No GitHub App, installation, private key, worker credential, live Check Run, ruleset change, enforcement activation, merge, or product deployment change occurred.
+D-017 retains the isolated unlinked Vercel project as stable non-product controller infrastructure. Authenticated readback reports `target: production` for deployment `dpl_4NLyjv7qFrTSzwxP6JNxr5euUMXF` in project `prj_2tCUMX2TrV6ZIdKQnGDmOXZDPST3`; here that label identifies the permanent environment inside the separate controller project, not the DIVERGENCE.AI product deployment. The project remains `link:null`, controller-only, and inactive pending Redis, App credentials, separated workers, and hostile proof.
 
 ## Exact next action
 
-Remove the incorrectly production-targeted inert Vercel project/deployment and create a verifiably preview-only replacement from exact tree `38850ee1aebc6cce450e8116055e0881f2896c17`. Do not configure the current deployment, provision credentials, register the App, activate enforcement, or modify rulesets until target isolation is proven.
-
-The one unresolved user decision is retained: removal/replacement is recommended; alternatively the user may explicitly authorize treating this isolated unlinked project's Vercel production target as non-product infrastructure. No answer was received before this handoff.
+Provision the durable Redis store for the retained isolated controller project, then create/install the least-privilege repository-only GitHub App and configure separated workers. Keep enforcement inactive and do not modify rulesets until G3A-01 through G3A-10 hostile proof passes.
 
 Routine user acceptance is not required. Only a genuinely unavoidable one-time account/security action or unresolved material product decision may be presented to the user.

@@ -4,16 +4,16 @@
   "working_branch": "divergence/reliability-staging",
   "accepted_branch": "divergence/reliability-v1",
   "active_task": "G2",
-  "current_phase": "G2 autonomy correction: G3-A Vercel target-isolation recovery",
-  "safe_to_switch": "YES",
-  "last_confirmed_remote_checkpoint": "21cff7c22de78e9ca63f6025b09b303a2f8c2f89",
-  "first_unfinished_action": "Obtain the unresolved one-time Vercel target decision recorded in CL-0050: remove and replace inert deployment dpl_4NLyjv7qFrTSzwxP6JNxr5euUMXF with a verifiably preview-only deployment, or explicitly authorize treating its isolated production target as non-product infrastructure. Do not configure or use it before that decision.",
-  "recovery_action": "Resume from remote checkpoint 21cff7c22de78e9ca63f6025b09b303a2f8c2f89 and CL-0050/CL-0051. Preserve the inert target-mismatch evidence. Do not configure deployment dpl_4NLyjv7qFrTSzwxP6JNxr5euUMXF, activate enforcement, or modify rulesets.",
+  "current_phase": "G2 autonomy correction: G3-A external controller provisioning",
+  "safe_to_switch": "NO",
+  "last_confirmed_remote_checkpoint": "6b6cdd5946b80bf2bd4b53a1a37817e75b8bcb75",
+  "first_unfinished_action": "Provision the durable Redis store for isolated controller project prj_2tCUMX2TrV6ZIdKQnGDmOXZDPST3, then create the least-privilege repository-only GitHub App. Keep enforcement inactive until hostile proof passes.",
+  "recovery_action": "Resume from remote checkpoint 6b6cdd5946b80bf2bd4b53a1a37817e75b8bcb75 and D-017. Preserve E-044 as the original mismatch evidence; retain the project as stable non-product controller infrastructure. Do not modify product deployment, rulesets, integration, safety, or build.",
   "meaning_confirmation": {
     "interpreted_outcome": "Make repository controls automatically keep every AI on the same verified course without requiring the user to remember audits or dependencies.",
     "boundary": "Do not change the product, F0, application, layout, branches, integration baseline, or independent-audit results.",
-    "material_ambiguity": "Whether the isolated unlinked controller project's Vercel production target may count as non-product infrastructure; user choice requested after contradictory preview/create and production/readback evidence",
-    "authority": "User's 2026-09-08 autonomy correction; D-016 supersedes routine-user-acceptance portions of D-015"
+    "material_ambiguity": "none for Vercel target: D-017 retains the isolated stable target as non-product controller infrastructure; credential and App creation still require one-time security confirmation at creation",
+    "authority": "User's 2026-09-08 autonomy correction and continuation; D-016 and D-017"
   },
   "permitted_execution_states": [
     "Open",
@@ -75,7 +75,7 @@
       "activation_authority": "User's 2026-09-08 bounded Phase 2 instruction",
       "owner_id": "openai-codex-work-session-2026-09-08-g2-author",
       "lock_acquired_at": "2026-09-08T20:00:00Z",
-      "lock_base_commit": "21cff7c22de78e9ca63f6025b09b303a2f8c2f89",
+      "lock_base_commit": "6b6cdd5946b80bf2bd4b53a1a37817e75b8bcb75",
       "independent_audit_required": true,
       "routine_user_acceptance_required": false,
       "automatic_acceptance_requires": [
