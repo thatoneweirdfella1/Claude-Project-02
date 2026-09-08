@@ -74,7 +74,7 @@
       "activation_authority": "User's 2026-09-08 bounded Phase 2 instruction",
       "owner_id": "openai-codex-work-session-2026-09-08-g2-author",
       "lock_acquired_at": "2026-09-08T15:54:15Z",
-      "lock_base_commit": "fe37f59ed0a3cf0a4f23ef684a2998cda982ad88",
+      "lock_base_commit": "34ca208137d90e0a4ec1f821d4c88896303e57ce",
       "independent_audit_required": true
     },
     "F0-INDEPENDENT-AUDIT": {
