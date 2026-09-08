@@ -377,3 +377,17 @@ Each new entry must contain:
 - **Failure/correction/uncertainty:** G1-A is activation only. G1-G01–G1-G06 remain Open. The author cannot perform G1-G06. External automatic AI review remains optional and cannot replace repository blocking.
 - **Resulting status/gate change:** F0 remains frozen at self-check. G1 becomes the only active task. Every later task remains blocked.
 - **Exact next action:** Validate and publish G1-A to the existing staging branch, then a replacement or current AI resumes G1-B authority-package gap completion.
+
+### CL-0026 — 2026-09-08 UTC — G1-A remotely recoverable checkpoint
+
+- **Actor:** OpenAI Codex / connected GitHub application
+- **Task/phase:** G1 / G1-A activation publication
+- **Repository/branch/starting commit:** `thatoneweirdfella1/Claude-Project-02`; existing `divergence/reliability-staging`; remote base `f6e8a344b414a5e909028fbdf547ae879ade4b58`
+- **Authority/source:** D-014, the G1 standalone assignment, and the user's instruction to checkpoint work for cross-account continuation.
+- **Action and affected files:** Validated the 12-path G1-A activation checkpoint. Terminal HTTPS push failed for missing credentials. The connected GitHub application created the identical tree and commit and advanced only the existing staging ref with `force:false` to `be9c32aa2f3be93635296091fd20f0c06251c3a2`.
+- **Reason and rejected alternatives:** Make the task recoverable before starting substantive control work. Rejected waiting until final completion, creating a branch, force-updating, or leaving a misleading local-only safe-switch claim.
+- **Command/test/check and actual result:** JSON parsed; policy and manifest aligned on G1; integrity passed; diff whitespace passed; controller tests passed 18/18; exact course-control gate accepted local equivalent base-to-head change; GitHub ref update returned success and `git fetch` read back the exact remote commit.
+- **Evidence/artifact/hash:** E-025; remote checkpoint `be9c32aa2f3be93635296091fd20f0c06251c3a2`.
+- **Failure/correction/uncertainty:** Terminal authentication remains unavailable. G1-B/C/D and independent G1-E are not complete. No independent verification is claimed.
+- **Resulting status/gate change:** G1-A is Self-check passed and remotely recoverable. `SAFE TO SWITCH: YES`. G1-B is the first unfinished phase; all later project work remains blocked.
+- **Exact next action:** Resume G1-B authority-package gap completion from the confirmed remote checkpoint.

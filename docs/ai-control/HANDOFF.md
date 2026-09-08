@@ -2,29 +2,30 @@
 
 ## Simple status
 
-**SAFE TO SWITCH: NO — G1-A is not yet confirmed on GitHub.**
+**SAFE TO SWITCH: YES**
 
-Current work is activating the control upgrade that will make interrupted tasks resumable and block unaudited or contaminated downstream work. Do not start the F0 audit or any product-system task.
+G1-A is saved on GitHub. Another AI can safely continue G1-B without this conversation. Do not start the F0 audit or any product-system task.
 
 ## Current task
 
 - **Task:** G1 — Continuity, Acceptance, and Contamination Controls
-- **Current phase:** G1-A — activation and exact standalone assignment
-- **Status:** Active; local checkpoint being validated
+- **Completed phase:** G1-A — activation and exact standalone assignment
+- **First unfinished phase:** G1-B — authority-package gap completion
+- **Status:** Active and remotely recoverable
 - **Task source:** `DIVERGENCE-G1-CONTROL-UPGRADE-HANDOFF.md`
 - **Source hash:** `e940049e4dffd0d87a9b303526df82c7a8f61c0a496f6afc1f6f34b9b8f75db8`
 - **Starting remote commit:** `f6e8a344b414a5e909028fbdf547ae879ade4b58`
+- **Latest confirmed remote checkpoint:** `be9c32aa2f3be93635296091fd20f0c06251c3a2`
 - **Only writable branch:** existing `divergence/reliability-staging`
 - **Accepted integration branch:** `divergence/reliability-v1`
 - **Untouched safety/layout baseline:** `claude/remaining-second-pass-v1` at `10894f704a39b6c56a7fadfafb54275b82526c33`
 
 ## What remains in G1
 
-1. Publish G1-A so takeover is remotely recoverable.
-2. G1-B: audit and fill only real authority-package gaps.
-3. G1-C: implement checkpoint, task-transition, dependency, audit, acceptance, lineage, and contamination enforcement.
-4. G1-D: run every hostile enforcement and recovery test and retain failures/corrections.
-5. Stop with G1-E independent audit as the only permitted next task.
+1. G1-B: audit and fill only real authority-package gaps.
+2. G1-C: implement checkpoint, task-transition, dependency, audit, acceptance, lineage, and contamination enforcement.
+3. G1-D: run every hostile enforcement and recovery test and retain failures/corrections.
+4. Stop with G1-E independent audit as the only permitted next task.
 
 ## Preserved completed work
 
@@ -43,4 +44,4 @@ Do not perform the independent F0 audit, S02/S03/S18/S20, F1, product implementa
 
 ## Exact next action
 
-Validate, commit, gate, push, and read back G1-A. After remote confirmation, change the simple status to `SAFE TO SWITCH: YES` and make G1-B the first unfinished phase.
+Resume G1-B from confirmed remote checkpoint `be9c32aa2f3be93635296091fd20f0c06251c3a2` and fill only verified authority-package gaps.

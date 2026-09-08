@@ -5,7 +5,7 @@
 - **ID:** G1
 - **Title:** Continuity, Acceptance, and Contamination Controls
 - **Phase:** Execution control
-- **Status:** Active; G1-A activation checkpoint in progress
+- **Status:** Active; G1-A published and recoverable; G1-B is the first unfinished phase
 - **Task source:** `DIVERGENCE-G1-CONTROL-UPGRADE-HANDOFF.md`
 - **Task-source SHA-256:** `e940049e4dffd0d87a9b303526df82c7a8f61c0a496f6afc1f6f34b9b8f75db8`
 - **Canonical master blueprint:** `02-MASTER-SYSTEM-AND-REQUIREMENT-BLUEPRINT.md`, SHA-256 `d9783aa4fff475810170f2217ea2cdca1b30baefe78d21d837980943c509ea47`
@@ -56,6 +56,7 @@ Finish and mechanically test the authority, continuous-checkpoint, audit-blockin
 - 2026-09-08: F0 completed by self-check and was published; independent F0 audit remained Open.
 - 2026-09-08: User explicitly authorized the pre-work control upgrade with frequent checkpoints and cross-account resumption.
 - 2026-09-08: G1-A began from exact remote staging commit `f6e8a344b414a5e909028fbdf547ae879ade4b58`; a clean detached worktree preserved three unrelated local-only historical G0 commits in the existing checkout.
+- 2026-09-08: G1-A passed the existing 18-case controller harness, policy/task alignment, integrity, whitespace, and exact base-to-head course gate; published by non-force fast-forward as remote commit `be9c32aa2f3be93635296091fd20f0c06251c3a2`.
 
 ## Blockers and unresolved decisions
 
@@ -69,4 +70,4 @@ Stop after G1-A through G1-D are self-checked, published in recoverable checkpoi
 
 ## Exact next action
 
-Complete and publish G1-A activation, then resume G1-B authority-package gap completion. Do not begin the independent F0 audit or any system work.
+Resume G1-B authority-package gap completion from remote checkpoint `be9c32aa2f3be93635296091fd20f0c06251c3a2`. Do not begin the independent F0 audit or any system work.
