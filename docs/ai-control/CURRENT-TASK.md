@@ -5,7 +5,7 @@
 - **ID:** G1
 - **Title:** Continuity, Acceptance, and Contamination Controls
 - **Phase:** Execution control
-- **Status:** Active; G1-B is published; G1-C is locally self-checked pending publication; G1-D is the first unfinished substantive phase
+- **Status:** Active and safely resumable; G1-A through G1-C are published; partial G1-D is published; full G1-D verification remains
 - **Task source:** `DIVERGENCE-G1-CONTROL-UPGRADE-HANDOFF.md`
 - **Task-source SHA-256:** `e940049e4dffd0d87a9b303526df82c7a8f61c0a496f6afc1f6f34b9b8f75db8`
 - **Canonical master blueprint:** `02-MASTER-SYSTEM-AND-REQUIREMENT-BLUEPRINT.md`, SHA-256 `d9783aa4fff475810170f2217ea2cdca1b30baefe78d21d837980943c509ea47`
@@ -73,4 +73,4 @@ Stop after G1-A through G1-D are self-checked, published in recoverable checkpoi
 
 ## Exact next action
 
-Publish the current G1-D recovery-test checkpoint from remote base `049e2b0f7673e0b757131e4877baef77f6fe585c`, then resume G1-D full repository verification. Do not begin G1-E, the independent F0 audit, or any system work.
+Resume G1-D full repository verification from confirmed remote checkpoint `295a98afe05512f6aa17abfbeb06f03cf1033ceb`. Do not begin G1-E, the independent F0 audit, or any system work.

@@ -433,3 +433,17 @@ Each new entry must contain:
 - **Failure/correction/uncertainty:** G1-D is incomplete. G1-G05 and G1-G06 remain Open. No independent audit occurred.
 - **Resulting status/gate change:** No gate promoted. This is a resumable partial checkpoint only.
 - **Exact next action:** Validate, publish, and read back this partial checkpoint, then stop and await instructions. On resumption, finish G1-D full checks.
+
+### CL-0030 — 2026-09-08 UTC — Partial G1-D checkpoint confirmed remote
+
+- **Actor:** OpenAI Codex / connected GitHub application
+- **Task/phase:** G1 / safe stopping checkpoint
+- **Repository/branch/starting commit:** Existing staging; base `049e2b0f7673e0b757131e4877baef77f6fe585c`
+- **Authority/source:** User instruction to save work and await instructions.
+- **Action and affected files:** Published the gated eight-path partial G1-D checkpoint by non-force fast-forward and confirmed remote commit `295a98afe05512f6aa17abfbeb06f03cf1033ceb`; updated the machine and human handoff to safely resumable.
+- **Reason and rejected alternatives:** Preserve exact continuation without pretending G1-D is complete. No branch, merge, deployment, or later task was started.
+- **Command/test/check and actual result:** Focused harness 41/41; integrity and diff check passed; exact course gate accepted the bounded checkpoint; GitHub ref update succeeded.
+- **Evidence/artifact/hash:** E-028; confirmed remote checkpoint `295a98afe05512f6aa17abfbeb06f03cf1033ceb`.
+- **Failure/correction/uncertainty:** Full repository verification and G1-E remain Open. No independent verification is claimed.
+- **Resulting status/gate change:** `SAFE TO SWITCH: YES`; no gate promoted.
+- **Exact next action:** Resume G1-D and run the remaining full repository verification.
