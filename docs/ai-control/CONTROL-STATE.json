@@ -4,10 +4,10 @@
   "working_branch": "divergence/reliability-staging",
   "accepted_branch": "divergence/reliability-v1",
   "active_task": "G2",
-  "current_phase": "G2 gap audit and mechanical hardening",
-  "safe_to_switch": "NO",
-  "last_confirmed_remote_checkpoint": "c4c6ec2e06dd18bed3158377db3c11a9903baf1c",
-  "first_unfinished_action": "Complete and self-check G2 mechanical hardening, then stop for a different independent auditor.",
+  "current_phase": "G2 awaiting independent audit",
+  "safe_to_switch": "YES",
+  "last_confirmed_remote_checkpoint": "a4f67dad5d31ad07285851df3686dc8e6b00584f",
+  "first_unfinished_action": "Have a different AI independently audit all G2-authored changes through a4f67dad5d31ad07285851df3686dc8e6b00584f.",
   "recovery_action": "Resume only G2 from c4c6ec2e06dd18bed3158377db3c11a9903baf1c; preserve the failed G1-E audit and rerun focused controls before publishing.",
   "meaning_confirmation": {
     "interpreted_outcome": "Make repository controls automatically keep every AI on the same verified course without requiring the user to remember audits or dependencies.",
@@ -33,7 +33,7 @@
     },
     "G2": {
       "title": "Maximum-Feasible Automation and Non-Bypass Hardening",
-      "execution_state": "Active",
+      "execution_state": "Awaiting independent audit",
       "acceptance_state": "Not accepted",
       "author_id": "openai-codex-work-session-2026-09-08-g2-author",
       "reviewer_id": null,
@@ -44,7 +44,7 @@
       "activation_authority": "User's 2026-09-08 bounded Phase 2 instruction",
       "owner_id": "openai-codex-work-session-2026-09-08-g2-author",
       "lock_acquired_at": "2026-09-08T14:45:00Z",
-      "lock_base_commit": "c4c6ec2e06dd18bed3158377db3c11a9903baf1c",
+      "lock_base_commit": "a4f67dad5d31ad07285851df3686dc8e6b00584f",
       "independent_audit_required": true
     },
     "F0-INDEPENDENT-AUDIT": {
@@ -141,7 +141,7 @@
     "nodes": [
       {"id":"integration-baseline", "state":"Accepted", "commit":"7681344918a912f0ac35a2fb15c2b41b85638a3f"},
       {"id":"G1-candidate", "state":"Failed", "commit":"983baaa2315db32e2cc772edc2bcad053e4e3d69"},
-      {"id":"G2-correction", "state":"Active", "commit":null}
+      {"id":"G2-correction", "state":"Awaiting independent audit", "commit":"a4f67dad5d31ad07285851df3686dc8e6b00584f"}
     ],
     "edges": [{"from":"integration-baseline", "to":"G1-candidate", "type":"design prerequisite"}]
   }

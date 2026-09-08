@@ -2,7 +2,7 @@
 
 ## Simple status
 
-**SAFE TO SWITCH: NO**
+**SAFE TO SWITCH: YES**
 
 G1-E was independently executed and **Failed**. G2 authored hardening is active. G1 is not accepted, every dependent task remains blocked, and all G2 changes require another AI's audit.
 
@@ -15,7 +15,7 @@ G1-E was independently executed and **Failed**. G2 authored hardening is active.
 - **Task source:** `DIVERGENCE-G1-CONTROL-UPGRADE-HANDOFF.md`
 - **Source hash:** `e940049e4dffd0d87a9b303526df82c7a8f61c0a496f6afc1f6f34b9b8f75db8`
 - **Starting remote commit:** `f6e8a344b414a5e909028fbdf547ae879ade4b58`
-- **Latest confirmed remote checkpoint:** `c4c6ec2e06dd18bed3158377db3c11a9903baf1c`
+- **Latest confirmed remote checkpoint:** `a4f67dad5d31ad07285851df3686dc8e6b00584f`
 - **Exact checkpoint G1-E must audit:** `983baaa2315db32e2cc772edc2bcad053e4e3d69`
 - **Only writable branch:** existing `divergence/reliability-staging`
 - **Accepted integration branch:** `divergence/reliability-v1`
@@ -44,4 +44,4 @@ Do not perform the independent F0 audit, S02/S03/S18/S20, F1, product implementa
 
 ## Exact next action
 
-Validate integrity and the exact base-to-head G2 course gate, publish by non-force fast-forward to existing staging, confirm remote readback, and stop for a different independent G2 auditor.
+Have a different AI independently audit the complete G2-authored range through `a4f67dad5d31ad07285851df3686dc8e6b00584f`.

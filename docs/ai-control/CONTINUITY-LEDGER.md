@@ -517,3 +517,15 @@ Each new entry must contain:
 - **Failure/correction/uncertainty:** G2-G04 and G2-G06 remain Open. Same-change detection is not a trust anchor against a malicious coordinated rewrite. Reviewer identity remains declarative absent host binding.
 - **Resulting status/gate change:** G2-G01/G02/G03/G05 are author Self-check passed; G2-G04/G06 Open. G1 remains Failed/unaccepted and dependents blocked.
 - **Exact next action:** Run integrity, focused, unit, desktop, lint, build, exact course gate, publish by non-force fast-forward, read back remote, and stop for a different G2 auditor.
+
+### CL-0036 — 2026-09-08 UTC — G2 authored checkpoint confirmed remote
+
+- **Actor:** OpenAI Codex Work-session G2 author and connected GitHub application
+- **Task/phase:** G2 / author stop and audit handoff
+- **Repository/branch/starting commit:** Existing staging; base `c4c6ec2e06dd18bed3158377db3c11a9903baf1c`
+- **Action and affected files:** Published the gated G2 control checkpoint by non-force fast-forward and confirmed remote commit `a4f67dad5d31ad07285851df3686dc8e6b00584f`; prepared records-only transfer.
+- **Command/test/check and actual result:** Exact G2 gate accepted 16 authorized paths; GitHub ref update returned success. Focused 46/46, unit 911/911, desktop 1/1, lint exit 0 with 17 warnings, and build exit 0 with chunk warning.
+- **Evidence/artifact/hash:** E-032; remote checkpoint above; refreshed SHA256SUMS.
+- **Failure/correction/uncertainty:** G2-G04 host readback and G2-G06 independent audit remain Open. All G2 work is author self-check only.
+- **Resulting status/gate change:** G2 is Awaiting independent audit; SAFE TO SWITCH: YES. G1 remains Failed/unaccepted and all dependents blocked.
+- **Exact next action:** A different AI audits all G2-authored changes through `a4f67dad5d31ad07285851df3686dc8e6b00584f`.

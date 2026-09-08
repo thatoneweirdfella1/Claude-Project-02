@@ -5,7 +5,7 @@
 - **ID:** G2
 - **Title:** Maximum-Feasible Automation and Non-Bypass Hardening
 - **Phase:** Execution-control correction
-- **Status:** Active; authored work; independent audit required
+- **Status:** Self-check passed and published; awaiting a different AI's independent audit
 - **Authority:** User's two-phase instruction dated 2026-09-08; D-015
 - **Only writable-continuation base:** c4c6ec2e06dd18bed3158377db3c11a9903baf1c
 
@@ -23,13 +23,13 @@ No product or application code/test changes, F0 or F0 audit, S02/S03/S18/S20, F1
 
 ## Gates
 
-- G2-G01 freshness, ownership, audit queue, and next action: Self-check pending.
-- G2-G02 correction/dependency/contamination/recovery: Self-check pending.
-- G2-G03 protected control-plane change separation: Self-check pending.
+- G2-G01 freshness, ownership, audit queue, and next action: Self-check passed.
+- G2-G02 correction/dependency/contamination/recovery: Self-check passed.
+- G2-G03 protected control-plane change separation: Self-check passed.
 - G2-G04 live GitHub ruleset/check/reviewer binding: Open pending host readback.
-- G2-G05 residual-risk and semantic/notification disclosure: Self-check pending.
+- G2-G05 residual-risk and semantic/notification disclosure: Self-check passed.
 - G2-G06 independent audit by another AI: Open.
 
 ## Exact next action
 
-Finish the focused hostile tests and durable records for G2, run all required repository checks, publish a small gated checkpoint to the existing staging branch, and stop for a different independent auditor.
+Have a different AI independently audit all G2-authored changes through `a4f67dad5d31ad07285851df3686dc8e6b00584f`. Do not begin F0-AUDIT or dependent work.
