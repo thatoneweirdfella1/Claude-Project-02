@@ -57,7 +57,7 @@
     "id": "G2",
     "title": "Maximum-Feasible Automation and Non-Bypass Hardening",
     "source": "docs/ai-control/CURRENT-TASK.md",
-    "status": "G2 author Self-check passed and published; independent G2 audit Open; G1 remains Failed/unaccepted",
+    "status": "G3-A durable controller source Self-check passed locally; preview deployment, live App installation, hostile proof, and independent audit Open; G1 remains Failed/unaccepted",
     "next_task_reveal_allowed": true
   },
   "scope": {

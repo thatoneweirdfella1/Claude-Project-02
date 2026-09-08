@@ -1,68 +1,21 @@
 # Handoff Record
 
-**SAFE TO SWITCH: NO** (trusted autonomous acceptance replacement is not implemented)
+**SAFE TO SWITCH: NO**
 
-**Last confirmed remote checkpoint:** f26684204a9764408a46d8629815a1e2837fc8a3
+**Last confirmed remote checkpoint:** `716a16367d7207a7ce87fb3482336ce39bc529f3`
 
-**Full checkpoint lineage:** 
-- fe37f59: G2 correction critical fixes
-- 34ca208: G2 state corrections
-- f3b8ecc: G2 continuity and records
-- 1ec11e1: G2 checkpoint sync
-- c4650d4: G2 final validation (execution_state corrected to Self-check passed)
+**Active task:** G2 autonomy correction / G3-A trusted controller.
 
-**Current active task:** G2 autonomy correction (G3-A bootstrap contract authored; implementation and independent audit Open)
+## Current truth
 
-**Latest controlling correction:** D-016 prohibits routine human approval, a second GitHub account, and manual audit/task routing. Do not ask the user to approve routine checkpoints. Implement and verify the candidate-independent automatic path defined in `docs/reliability/control/DIVERGENCE-G3-A-TRUSTED-AUTONOMY-BOOTSTRAP.md`.
+The repository checkout began clean at the exact remote commit above. Integrity passed; existing G3-A tests passed 20/20; course-control tests passed 61/61. The previous recorded lock pointed to `f266842…` with no current heartbeat and was stale relative to the supplied starting commit; no active competing worker was found.
 
-**Completed in the current slice:** six G3-A schemas, transition table, reference transition engine, and eight focused tests. This candidate-side code is an implementation reference only and cannot authenticate or accept itself. **Exact next action:** implement the external controller adapter and durable worker/auditor queue against these contracts.
+The working tree now contains a deployable, preview-only controller under `control-plane/g3a-controller/`. Repository test entrypoints import the same transition, GitHub-event, and controller-core bytes packaged for deployment. Durable Redis state/queue/lease/retry/dead-letter behavior, exact host identity/SHA validation, GitHub App authentication, separated worker launchers, correction re-audit, and recovery endpoints are implemented. Focused tests pass 27/27.
 
-**Controller-core addition:** `ai-control-controller-core.mjs` plus an in-memory adapter and tests now prove automatic audit assignment, correction launch, acceptance, dependency unlock, and rejection of unsigned audits. Exact next action is durable persistence plus real GitHub/provider adapters and periodic recovery.
+No Vercel project, deployment, Redis resource, GitHub App, installation, private key, worker credential, live Check Run, ruleset change, enforcement activation, merge, or production change is claimed yet.
 
-**Host decision:** Do not modify `build`; its active ruleset prohibits updates with no bypass. External GitHub App is selected. Webhook/check logic and host preflight are complete by author self-check. Exact next action is one-time App registration/deployment plus durable store and credential-separated worker adapters.
+## Exact next action
 
-## Status for Next Worker
+Finish this atomic checkpoint: update hashes and evidence, run focused/integrity/61-control/exact-course checks, commit and push only to `divergence/reliability-staging`, confirm exact remote SHA, then provision the isolated Vercel preview service in `observe` mode. If interrupted before publication, discard no files; resume from this working tree and do not advance to provisioning.
 
-The complete G2 correction at c4650d4 includes:
-
-- F0-AUDIT prerequisite changed from G1:Accepted to G2:Accepted
-- Gate deadlock fixed: auditor can publish review + synchronized state
-- All required continuity records synchronized (CL-0043 documents final correction state)
-- **Correction/contamination distinction:** G2 is Self-check passed (correction of failed G1, not permanently contaminated)
-- Reviewer authentication vulnerability: gate now rejects candidate strings; host proof Open
-- Hostile tests added with proper runGate git fixtures
-- G2-G04 explicitly marked Open and blocking (GitHub Actions host proof required)
-- Publication-preflight passes (G2 is now publication-ready as Self-check passed)
-
-## Critical Blockers
-
-1. **Independent audit of c4650d4** must verify:
-   - Prerequisite change (F0-AUDIT: G1→G2)
-   - Correction/contamination distinction (hostile tests)
-   - Publication mechanism passes
-   - Reviewer authentication (host proof required)
-   
-2. **User acceptance (must be separate from audit)**
-   - Audit verification ≠ acceptance
-   - Only explicit user decision transitions G2 to Accepted
-   - Mechanical enforcement prevents automatic acceptance
-
-3. **G2-G04: GitHub Actions reviewer authentication**
-   - Status: Open, blocking
-   - Required: Host-authenticated reviewer identity (not candidate string)
-   
-4. **F0-AUDIT and all dependent work remain blocked** until both audit completion AND user acceptance
-
-## Safety Branch
-
-Preserved unchanged at commit `10894f704a39b6c56a7fadfafb54275b82526c33`
-
-## Next Action
-
-1. **Verify publication-preflight passes at c4650d4** (should now pass: G2 is Self-check passed)
-2. **Provision independent auditor** to verify c4650d4, confirming:
-   - Correction state (G2 is Self-check passed, not Potentially contaminated)
-   - Correction/contamination distinction enforcement
-   - All hostile tests passing
-   - Publication mechanism operational
-3. **After audit completion**, user makes separate acceptance decision (not automatic)
+Routine user acceptance is not required. Only a genuinely unavoidable one-time account/security action or unresolved material product decision may be presented to the user.

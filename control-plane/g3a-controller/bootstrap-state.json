@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "repository_id": 1272469738,
+  "decision_queue": [],
+  "audit_queue": [],
+  "tasks": {
+    "G2": {
+      "state": "Open",
+      "attempt": 1,
+      "dependencies": [],
+      "candidate_sha": null,
+      "base_sha": null,
+      "author_principal": null,
+      "allowed_paths": [
+        ".github/CODEOWNERS",
+        ".github/workflows/ai-course-control.yml",
+        "AGENTS.md",
+        "CLAUDE.md",
+        "control-plane/g3a-controller/**",
+        "docs/ai-control/**",
+        "docs/reliability/control/**",
+        "scripts/ai-control-*.mjs",
+        "scripts/ai-course-control.mjs",
+        "scripts/ai-course-control.test.mjs"
+      ]
+    }
+  }
+}

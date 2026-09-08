@@ -51,6 +51,10 @@
     "docs/ai-control/HANDOFF.md",
     "docs/ai-control/PARKING-LOT.md",
     "docs/ai-control/SHA256SUMS",
+    "control-plane/g3a-controller/THREAT-MODEL.md",
+    "control-plane/g3a-controller/PERMISSIONS.json",
+    "control-plane/g3a-controller/package.json",
+    "control-plane/g3a-controller/vercel.json",
     "scripts/ai-course-control.mjs",
     "scripts/ai-course-control.test.mjs",
     "scripts/ai-control-state.mjs",
@@ -189,6 +193,7 @@
         ".github/workflows/ai-course-control.yml",
         "AGENTS.md",
         "CLAUDE.md",
+        "control-plane/g3a-controller/**",
         "docs/ai-control/**",
         "docs/reliability/control/**",
         "scripts/ai-control-state.mjs",
@@ -207,7 +212,8 @@
   },
   "transition_control": {
     "self_activation_forbidden": true,
-    "user_approval_required": true,
+    "routine_user_approval_required": false,
+    "unresolved_material_product_decision_blocks_affected_acceptance": true,
     "independent_verification_cannot_be_self_declared": true
   },
   "external_enforcement": {

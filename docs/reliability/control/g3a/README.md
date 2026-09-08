@@ -14,3 +14,4 @@ Files:
 - `status-check.schema.json` — exact-SHA aggregate controller verdict.
 - `transition-table.json` — permitted automatic transitions.
 
+The deployable controller is under `control-plane/g3a-controller/`. Repository test entrypoints import its transition, controller-core, and GitHub-event modules so local evidence exercises the exact bytes packaged for the external preview service. Its default mode is `observe`; it cannot emit acceptance until hostile verification is complete and the separate activation step changes host configuration.

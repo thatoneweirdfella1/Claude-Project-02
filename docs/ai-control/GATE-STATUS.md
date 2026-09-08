@@ -65,8 +65,9 @@ G1-E is complete with a retained **Failed** verdict. G1 is not accepted. G2 hard
 | G3-A slice | State | Evidence and limitation |
 |---|---|---|
 | Schemas and transition engine | Self-check passed | Six JSON schemas, transition table, and eight focused tests cover authenticated actors, distinct audit, automatic acceptance, product-decision blocking, correction, dependency unlock, and lease recovery. Candidate-side only; external authority remains Open. |
-| Controller core | Self-check passed | Five controller tests plus eight transition tests pass. Automatic audit, correction, acceptance, and dependency unlock are executable through adapters. Only the in-memory test adapter exists; durable and host/provider enforcement remain Open. |
-| GitHub App boundary | Self-check passed | Seven App tests plus thirteen controller/transition tests pass. Live preflight proves `build` is immutable and rejects that route. App registration, deployment, durable store, provider separation, and host readback remain Open. |
+| Controller core | Self-check passed | Six controller tests plus eight transition tests pass. Automatic audit, correction, correction re-audit, acceptance, dependency unlock, and recovery are executable through adapters. External live execution remains Open. |
+| GitHub App boundary | Self-check passed | Seven App tests plus fourteen controller/transition tests pass. Live preflight proves `build` is immutable and rejects that route. App registration, deployment, and host readback remain Open. |
+| Durable external-service source | Self-check passed | Preview-only service source adds Redis state/history/queue/lease/retry/dead-letter records, exact host repository/SHA validation, GitHub App authentication, credential-separated worker launchers, and observe-mode endpoints. Six new hostile tests pass; deployment, resources, credentials, and live hostile proof remain Open. |
 
 | Gate | State | Meaning |
 |---|---|---|

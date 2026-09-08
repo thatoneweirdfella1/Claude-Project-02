@@ -1,0 +1,23 @@
+{
+  "github_app": {
+    "repository_selection": "selected",
+    "selected_repository_id": 1272469738,
+    "permissions": {
+      "metadata": "read",
+      "contents": "read",
+      "pull_requests": "read",
+      "checks": "write"
+    },
+    "events": ["push", "pull_request", "installation", "installation_repositories"]
+  },
+  "vercel": {
+    "environment": "preview-only",
+    "git_link": false,
+    "production_alias": false
+  },
+  "workers": {
+    "author_and_correction_credential": "AUTHOR_WORKER_TOKEN",
+    "auditor_credential": "AUDITOR_WORKER_TOKEN",
+    "must_be_distinct": true
+  }
+}

@@ -673,3 +673,18 @@ Each new entry must contain:
 - **Failure/correction/uncertainty:** App is not registered or deployed; no durable external store, provider credentials, live Check Run, or ruleset expected-source change exists.
 - **Resulting status/gate change:** External-App code boundary Self-check passed locally; live authority remains Open.
 - **Exact next action:** Publish checkpoint; then register/deploy App, configure durable persistence and provider-separated workers, and hostile-test before any ruleset change.
+
+### CL-0048 — 2026-09-08 UTC — Durable external controller source implemented
+
+- **Actor:** OpenAI Codex G3-A continuation author.
+- **Task/phase:** G2 autonomy correction / G3-A durable external controller implementation.
+- **Repository/branch/starting commit:** `thatoneweirdfella1/Claude-Project-02`; existing `divergence/reliability-staging`; exact remote `716a16367d7207a7ce87fb3482336ce39bc529f3`; clean fresh checkout.
+- **Authority/source:** User's exact continuation instruction, D-016, and `DIVERGENCE-G3-A-TRUSTED-AUTONOMY-BOOTSTRAP.md`.
+- **Preflight:** Remote ref equaled the required starting SHA; integrity manifest passed; status command authorized G2; existing G3-A tests passed 20/20; course tests passed 61/61. The recorded lock named older base `f266842…` and had no current heartbeat, so it was stale rather than evidence of a competing live worker.
+- **Action and affected files:** Added isolated preview-service source under `control-plane/g3a-controller/`; moved the transition, controller-core, and GitHub-event implementation into the deployable package and made repository scripts re-export those exact bytes; added Redis REST durable state/history/queue/lease/heartbeat/retry/dead-letter/delivery/correction/attestation behavior; added GitHub App installation-token, trusted exact-SHA validator, worker separation, health/webhook/bootstrap/worker/reconcile endpoints, threat model, and permission manifest; corrected current records that still contradicted D-016.
+- **Reason and rejected alternatives:** Redis supports frequently written atomic coordination; Edge Config and function memory do not. A manually deployed preview service with no product Git linkage keeps candidate changes from automatically replacing the judge. Rejected modifying `build`, production, existing rulesets, the application, or treating candidate tests as authoritative.
+- **Command/test/check and actual result:** Syntax and JSON checks passed. Focused shared/deployable G3-A suite passed 27/27, including atomic lease collision, owner-bound heartbeat, delivery/job idempotency, retry/dead-letter requeue, principal/credential separation, host repository/SHA binding, candidate inability to widen deployed path policy, and automatic correction re-audit. Full checkpoint verification remains before commit.
+- **Evidence/artifact/hash:** E-043 and refreshed `SHA256SUMS` after final record edits.
+- **Failure/correction/uncertainty:** The App, Vercel project, Redis resource, secrets, workers, and live Check Run do not yet exist. The service defaults to `observe` and enforcement remains inactive. No independent verification is claimed.
+- **Resulting status/gate change:** Durable external-service source becomes author Self-check passed locally; G3A live-host and hostile-proof gates remain Open.
+- **Exact next action:** Refresh integrity, run focused and 61-control tests plus exact course gate, commit/push only staging and confirm remote; then create the isolated Vercel preview project in observe mode and provision its one-repository GitHub App boundary.

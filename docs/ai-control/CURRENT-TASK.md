@@ -1,75 +1,44 @@
 # Current Task Status
 
-**Task ID:** G2
-**Phase:** Self-check passed; awaiting independent audit
-**Status:** Active
-**Checkpoint lineage:** fe37f59 (repairs) → 34ca208 (state sync) → f3b8ecc (records) → 1ec11e1 (sync) → c4650d4 (final validation)
+**Task ID:** G2 autonomy correction / G3-A trusted controller
+**Status:** Active; durable controller source Self-check passed locally; external provisioning and hostile proof Open
+**Starting remote checkpoint:** `716a16367d7207a7ce87fb3482336ce39bc529f3`
 
-## Checkpoint
+## Authority and outcome
 
-**Complete repair checkpoint:** c4650d473800217e9c8e2e22a5b12d0fd61f5b5c (final validation with corrected execution state)
+D-016 and the user's 2026-09-08 continuation instruction require a candidate-independent controller that automatically validates, assigns a distinct authenticated auditor, retains failures, launches correction and re-audit, accepts verified work, unlocks satisfied dependencies, and recovers interrupted work. Routine user approval, a second GitHub account, and manual audit routing are forbidden dependencies. Only an unresolved material product decision may interrupt the user.
 
-## State Corrections (CL-0043)
+The complete task source is `docs/reliability/control/DIVERGENCE-G3-A-TRUSTED-AUTONOMY-BOOTSTRAP.md`. F0, S02, S03, S18, S20, F1, product/application/UI work, production deployment, branch creation, integration/safety/build mutation, and ruleset changes before hostile proof remain prohibited.
 
-The checkpoint has been corrected with proper correction vs. contamination distinction:
-- **G2 execution_state: "Self-check passed"** (G2 is a CORRECTION of G1, not a dependent)
-- **Lineage edge type: "correction"** (distinct from "validation dependency")
-- **Contamination rule:** Tasks that DEPEND on G1 inherit contamination; tasks that CORRECT G1 proceed independently
-- Lock base commit: c4650d4 (current validated checkpoint)
-- Safe-to-switch: NO (awaiting user acceptance, which is not automatic)
-- Hostile tests added to verify correction/contamination distinction
+## Completed before this checkpoint
 
-## What is Next
+- Six schemas, transition table, and reference transition engine.
+- Adapter-driven controller core and in-memory tests.
+- Host preflight selecting an external GitHub App instead of modifying `build`.
+- Signed-webhook normalization, duplicate-delivery boundary, and Check Run builder.
 
-A different AI must perform independent audit of the complete corrected checkpoint at 34ca208 (built on fe37f59 base), verifying:
+## Current atomic checkpoint
 
-1. F0-AUDIT prerequisite changed from G1:Accepted to G2:Accepted
-2. Gate deadlock fix allows independent auditor to publish review + synchronized state
-3. All required continuity records synchronized (CONTINUITY-LEDGER, EVIDENCE-INDEX, GATE-STATUS, audit queue, lineage)
-4. Reviewer authentication vulnerability: gate now rejects candidate-controlled author_id/reviewer_id strings and marks as Open/blocking until host provides proof
-5. Hostile tests added with proper runGate fixtures (not validateControlState)
-6. SHA256SUMS regenerated and verified
-7. G2-G04 explicitly marked as Open and blocking (GitHub Actions integration required)
+The deployable source under `control-plane/g3a-controller/` now contains:
 
-The earlier routine-user-acceptance requirement is superseded by D-016. G2 cannot close until the trusted autonomous acceptance replacement in `docs/reliability/control/DIVERGENCE-G3-A-TRUSTED-AUTONOMY-BOOTSTRAP.md` is implemented and independently verified. F0 and all dependent work remain blocked.
+- the same transition/controller core imported by repository tests;
+- Redis REST durable state, history, queue, lease, heartbeat, retry, dead-letter, correction, attestation, and delivery records;
+- host-derived GitHub repository/ref/comparison validation bound to repository ID `1272469738` and exact base/candidate SHAs;
+- GitHub App installation-token and Check Run adapter;
+- credential-separated author/correction and auditor launchers;
+- preview-only Vercel configuration and `observe` mode that cannot emit acceptance;
+- health, signed webhook, worker callback, bootstrap, and recovery endpoints;
+- controller threat model and least-privilege permission manifest.
 
-## Autonomy correction
+Focused G3-A tests pass 27/27 at the working checkpoint. This remains author self-check evidence. It is not evidence of deployment, App registration/installation, Redis provisioning, live worker credentials, live Check Runs, independence, or activation.
 
-Routine user approval, a second GitHub account, and manual audit/correction routing are not permitted dependencies. The replacement must automatically validate, assign an authenticated independent AI auditor, retain failures, create and reassign corrections, re-audit, accept verified work, and unlock satisfied dependents. User interruption is reserved for a material unresolved product decision.
+## Exact next action
 
-## G3-A implementation checkpoint
+1. Complete continuity/integrity updates, run 61/61 course tests and the exact course gate, commit, push only to staging, and confirm the remote hash.
+2. Create a new non-production Vercel project with no product Git linkage; provision Redis and secrets; deploy this exact controller release in `observe` mode.
+3. Register a GitHub App with only metadata:read, contents:read, pull_requests:read, and checks:write; install it only on repository `1272469738`.
+4. Configure distinct authenticated author and auditor principals, then run G3A-01 through G3A-10 hostile tests against disposable inputs. Do not activate enforcement or change the integration ruleset before they pass.
 
-Six versioned controller-input schemas, a deterministic transition table, and a candidate-side reference transition engine are authored under `docs/reliability/control/g3a/` and `scripts/ai-control-trusted-transition*.mjs`. They prove the state semantics locally but are not the external trust boundary. The next bounded slice is the protected controller adapter, durable queue/lease store, exact-SHA check, auditor launcher, and recovery reconciler.
+## Safe to switch
 
-The controller core and in-memory test adapter now exercise autonomous task acquisition, dependency blocking, audit assignment, signed-attestation rejection, automatic correction, automatic acceptance, and dependent unlocking. Thirteen focused lifecycle/controller tests pass locally. Durable external persistence and real host/provider adapters remain Open.
-
-Live host preflight rejected the `build`-branch judge because the active `build` ruleset restricts all updates with no bypass. `HOST-PREFLIGHT.md` preserves the exact evidence. The selected path is an external GitHub App/controller. Its signed-webhook, host-identity normalization, duplicate-delivery protection, and aggregate-check logic are implemented and locally tested; registration, deployment, durable persistence, and real worker-provider credentials remain Open.
-
-## Safe to Switch
-
-**SAFE TO SWITCH: NO** (awaiting independent audit and explicit user acceptance)
-
-## Critical Blockers (Must Resolve Before Audit Proceeds)
-
-1. **G2-G04: GitHub Actions reviewer authentication**
-   - Status: Open, blocking
-   - Requirement: GitHub Actions must provide host-authenticated reviewer identity (not candidate string)
-   - Action: Keep Open until GitHub integrates cryptographic proof or other host verification
-
-2. **G2-G06: Independent audit (awaiting different AI)**
-   - Status: Open
-   - Checkpoint: c4650d4 (complete with correction/contamination distinction)
-   - Required verification: prerequisite change, correction tests, publication mechanism, authentication fix
-
-3. **User acceptance (must be separate from audit)**
-   - Status: Open, unenforced
-   - Requirement: Only explicit user acceptance transitions G2 to Accepted (not automatic after audit)
-   - Action: Implement mechanical enforcement preventing automatic acceptance
-
-4. **Publication-preflight** 
-   - Status: Passes (now that execution_state is Self-check passed)
-   - Verification: Check that it passes for this checkpoint before audit
-
-5. **Hostile tests**
-   - Status: Must verify correction/contamination distinction
-   - Tests needed: Confirm correction can be independently verified, contamination only affects dependents
+**SAFE TO SWITCH: NO** — the current controller-code checkpoint is not yet remotely published.
