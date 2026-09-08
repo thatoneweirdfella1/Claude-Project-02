@@ -9,7 +9,7 @@
     "claude/remaining-second-pass-v1"
   ],
   "branch_creation_allowed": false,
-  "active_task": "B0",
+  "active_task": "F0",
   "permitted_gate_statuses": [
     "Self-check passed",
     "Independently verified",
@@ -108,7 +108,7 @@
     },
     "F0": {
       "phase": "design",
-      "locked": true,
+      "locked": false,
       "unlock_requires": [
         "G0 self-check passed",
         "independent cold-start continuity trial",
@@ -118,9 +118,12 @@
       "allowed_paths": [
         "docs/reliability/f0/**",
         "docs/ai-control/CONTINUITY-LEDGER.md",
+        "docs/ai-control/CONTROL-MANIFEST.json",
+        "docs/ai-control/COURSE-CONTROL.json",
         "docs/ai-control/CURRENT-TASK.md",
         "docs/ai-control/DECISION-LOG.md",
         "docs/ai-control/EVIDENCE-INDEX.md",
+        "docs/ai-control/GATE-STATUS.md",
         "docs/ai-control/HANDOFF.md",
         "docs/ai-control/independent-reviews/RCG-04.json",
         "docs/ai-control/PARKING-LOT.md",

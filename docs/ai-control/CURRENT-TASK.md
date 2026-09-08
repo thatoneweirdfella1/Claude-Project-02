@@ -1,65 +1,82 @@
-# Current Task — B0 Only
+# Current Task — F0 Only
 
 ## Task identity
 
-- **ID:** B0
-- **Title:** Canonical Master Blueprint Installation
-- **Phase:** Execution-control documentation
-- **Status:** Self-check passed for B0 scope; canonical installation and course control complete; application E2E failure retained as Open/out of scope; stop condition reached
-- **Task source:** User instruction plus attached `02-MASTER-SYSTEM-AND-REQUIREMENT-BLUEPRINT.md`
-- **Task-source SHA-256:** `d9783aa4fff475810170f2217ea2cdca1b30baefe78d21d837980943c509ea47`
+- **ID:** F0
+- **Title:** Foundation Contract and Interface Skeleton
+- **Phase:** Design
+- **Status:** Self-check passed for F0 design scope; independent audit and user/product approval remain Open; stop condition reached
+- **Task source:** `DIVERGENCE-F0-STANDALONE-HANDOFF.md`
+- **Task-source SHA-256:** `5817361c8a5376e299e36d340c331ce2a7848d96c29513839ba8889d8ffbe887`
+- **Canonical master blueprint:** `02-MASTER-SYSTEM-AND-REQUIREMENT-BLUEPRINT.md`, SHA-256 `d9783aa4fff475810170f2217ea2cdca1b30baefe78d21d837980943c509ea47`
+- **Activation authority:** User reply `authorized`, received 2026-09-08 after the B0 handoff stated that F0 required separate explicit activation
 - **Untouched safety/layout branch:** `claude/remaining-second-pass-v1`
 - **Only task-writing branch:** `divergence/reliability-staging`
 - **Protected integration branch:** `divergence/reliability-v1`
-- **Repository mutation:** Authorized only on the staging branch and only for the B0 blueprint/control-record paths in `COURSE-CONTROL.json`
 
 ## Exact purpose
 
-Install the supplied blueprint at repository root as the canonical master system-and-requirement blueprint without redesigning, shortening, or otherwise changing its content. Update the repository controls so a context-free AI can identify the installed authority, the completed bounded task, the unchanged locks, and the exact next unfinished task.
+Produce one bounded, conceptual Foundation Contract and Interface Skeleton that gives later separate designers of S02, S03, S18, and S20 the same terminology, ownership, authority, evidence, conflict, dependency, and I01–I20 interface rules without designing those systems for them.
 
-## Required deliverables
+## Required outputs
 
-1. Exact canonical file: `02-MASTER-SYSTEM-AND-REQUIREMENT-BLUEPRINT.md`.
-2. Byte-for-byte and SHA-256 equality evidence against the supplied attachment.
-3. Updated control manifest and course-control policy naming B0 and allowing only its bounded files.
-4. Updated project authority, current task, task index, decision log, continuity ledger, evidence index, handoff, and integrity hashes.
-5. Exact diff review, required repository checks, and a commit on `divergence/reliability-staging`.
+1. One compact F0 contract package under `docs/reliability/f0/` containing every deliverable in task-source §10.
+2. Four separately usable bounded follow-on briefs for S02, S03, S18, and S20.
+3. An accurate FCIS-G01–G06 assessment with retained design evidence and limitations.
+4. Updated continuity, decision, evidence, task-index, gate, handoff, manifest, course-policy, and integrity records.
+5. Exact changed-path review, integrity and structural checks, repository checks applicable to design-only changes, a commit on staging, and the exact course-control gate.
 
 ## Allowed work
 
-- Install the attached blueprint under its exact filename at repository root.
-- Update only B0's explicitly allowed control and continuity paths.
-- Run file-integrity, policy, course-control, repository, and non-mutating verification checks.
-- Commit and push the accepted checkpoint to the existing staging branch.
+- Define conceptual terminology, envelopes, unique field ownership, authority, evidence and gate semantics, conflict/change state, the four dependency types, circular seams, and I01–I20 skeletons.
+- Record Q-U01, Q-U02, and Q-U06 as Open with their blocked scope.
+- Write bounded standalone briefs for the four later packages without executing them.
+- Define F1 reconciliation entry, comparison, decision/dissent, exit, Open, and Failed rules without performing reconciliation.
+- Update only F0 package and control/continuity paths allowed by `COURSE-CONTROL.json`.
+- Commit and push the accepted F0 checkpoint to the existing staging branch.
 
 ## Prohibited work
 
-- Do not redesign, shorten, rewrite, or silently correct the blueprint.
-- Do not execute or activate F0.
-- Do not implement any application or reliability system.
-- Do not modify application code, the interface, layout, or visual baseline.
-- Do not create, rename, merge, rebase, force-update, deploy, or delete any branch.
-- Do not touch `claude/remaining-second-pass-v1`.
-- Do not claim independent verification for this self-checked installation.
+- Do not fully design S02, S03, S18, or S20.
+- Do not perform the independent F0 audit or F1 reconciliation.
+- Do not select technology, vendor, database, framework, deployment, code structure, prompt, or implementation slice.
+- Do not create or change application code, tests, UI, layout, or visual baselines.
+- Do not resolve user-owned questions, claim product approval, or claim independent verification.
+- Do not create, rename, merge, rebase, force-update, deploy, or delete a branch; do not touch the safety branch.
+- Do not fix parked application E2E item P-002.
 
-## Acceptance evidence
+## Inputs and authority
 
-- Source and installed blueprint compare byte-for-byte equal.
-- Both files have SHA-256 `d9783aa4fff475810170f2217ea2cdca1b30baefe78d21d837980943c509ea47`.
-- `sha256sum -c docs/ai-control/SHA256SUMS` passes.
-- The course-controller test suite passes.
-- The exact-base/exact-head course-control validator accepts the committed checkpoint.
-- Repository checks applicable to this documentation-only change pass or are reported exactly; source-preserved blueprint formatting is not altered merely to satisfy a formatter.
-- The committed diff contains only B0-allowed paths and no application, interface, layout, visual-baseline, branch, merge, or deployment change. Control-record whitespace checks pass; any whole-diff warning caused solely by exact attachment bytes is retained and documented.
+The standalone F0 handoff is the complete task packet. The canonical blueprint supplies upstream planning definitions where needed but does not authorize expansion. Latest direct user authority controls value-bearing decisions; evidence resolves evidence-answerable facts; proposals remain proposals; no author or system may independently verify or approve its own load-bearing claim.
 
-## Status meaning
+## Gate plan
 
-The file is the canonical master planning/control blueprint in this repository. Its text remains exactly as supplied, including its internal status and limitations. Installation is not an independent audit, F0 execution, implementation, or proof that any product system works.
+- **FCIS-G01–G06:** May reach Self-check passed only with the exact retained design evidence named in the standalone task. Independent verification remains Open for a later separately authorized audit.
+- **RCG-01:** Report existing entry/control integrity and this session's read receipt.
+- **RCG-02:** Confirm exact staging branch, task base, and unchanged protected boundaries.
+- **RCG-03:** Confirm only F0/control paths changed and all extra work stayed parked.
+- **RCG-04:** Preserve the existing independently verified cold-start result; F0-specific resume clarity is only self-checked until another reviewer audits it.
+
+## Work history
+
+- 2026-09-08: User explicitly activated F0.
+- 2026-09-08: Fresh checkout at remote staging head `9323ed157c6739a76a24e8b6a09c11f2f136ca18`; working tree clean; mandatory controls and complete standalone assignment read; integrity manifest passed; preflight recorded as CL-0021.
+- 2026-09-08: Produced the F0.1 foundation contract and four standalone follow-on briefs. Structural checks found 15/15 owned shared concepts, I01–I20 complete and unique, 16/16 dependencies with one valid type, RP-01–RP-06 present, and every brief section present. FCIS-G01–G06 are Self-check passed; independent audit remains Open.
+- 2026-09-08: Unchanged application checks: unit 911/911 and desktop 1/1 passed; lint and build exited 0 with retained warnings. Browser E2E attempted and remained unavailable/Failed because the Chromium executable is not installed: 43 failed at launch and 2 skipped. No app or test file was changed.
+
+## Blockers and unresolved decisions
+
+- No blocker prevents the bounded F0 design.
+- Q-U01, Q-U02, and Q-U06 remain Open and must not be decided by F0.
+- Independent verification and user/product approval remain Open.
+- P-002 remains an out-of-scope application CI issue.
 
 ## Stop condition
 
-Stop after the B0 commit and required checks are complete. Do not continue into F0 or any application system.
+Stop after the F0 design package, accurate self-check evidence, control records, required checks, and staging commit are complete. Do not begin the independent audit, any follow-on system package, F1, or application implementation.
 
-## Exact next unfinished task
+**Reached:** The design and local verification portions are complete. Stop after final integrity refresh, commit, exact course-control validation, and authorized publication/readback.
 
-**F0 — Foundation Contract and Interface Skeleton**, using `DIVERGENCE-F0-STANDALONE-HANDOFF.md`. F0 remains locked and may not begin until the user gives a separate explicit instruction to activate it. No branch creation, merge, deployment, or application implementation is part of that next-task identification.
+## Exact next task after completion
+
+**Independent F0 audit**, but only after separate explicit user authorization. The audit must evaluate the committed F0 package against FCIS-G01–G06 and the task-source failure conditions, retain defects and dissent, and must not start S02, S03, S18, S20, F1, or implementation.

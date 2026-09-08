@@ -20,3 +20,11 @@ Unresolved items remain in `CURRENT-TASK.md`, the F0 assignment, or `PARKING-LOT
 **Status correction:** D-008's statement that F0 was the active task is historical and was explicitly superseded by D-010. G0 remains the only active task until its exit is recorded; F0 remains locked pending explicit user transition approval.
 
 **Later status correction:** D-010's active-G0 state became historical after G0 closed. The user's B0 instruction made canonical-blueprint installation the single bounded active task; B0 is complete by self-check. F0 is the exact next unfinished task but remains locked pending a separate explicit user activation instruction.
+
+## Later decisions
+
+| ID | Decision | Authority/status | Rationale | Supersession rule |
+|---|---|---|---|---|
+| D-013 | Activate F0, Foundation Contract and Interface Skeleton, as the only active task on `divergence/reliability-staging`; stop after its design package, records, checks, and commit without starting an independent audit, any S02/S03/S18/S20 package, F1, or application implementation. | User explicitly replied `authorized` after receiving the exact F0 lock/next-task statement; active | Satisfies the last F0 unlock prerequisite while preserving the established one-task sequence and branch boundary. | Only a later explicit user instruction may activate the independent F0 audit or any follow-on task. |
+
+**Current status correction:** D-013 supersedes only the historical active-task portions of D-008, D-010, and D-012. Their sequencing, branch, safety, and scope restrictions remain active. F0 is authorized; no later task is authorized.

@@ -2,64 +2,63 @@
 
 ## Outcome
 
-- B0, Canonical Master Blueprint Installation, is complete by self-check on `divergence/reliability-staging`.
-- `02-MASTER-SYSTEM-AND-REQUIREMENT-BLUEPRINT.md` is the repository's canonical master planning/control blueprint.
-- The installed file is byte-for-byte identical to the supplied 1,278-line attachment. Both SHA-256 values are `d9783aa4fff475810170f2217ea2cdca1b30baefe78d21d837980943c509ea47`; `cmp -s` passed.
-- The blueprint was not redesigned, shortened, or edited. Its internal status and limitations remain exactly as supplied.
-- G0 remains complete by self-check, with GitHub enforcement and RCG-04 independently verified.
-- F0 was not activated or executed. No application or reliability system was implemented.
-- The verified B0 content tree was published to the existing remote staging branch in commit `3c651a6c0791b3ee31c9d28b98030d5eb69896b2`; no new branch, PR, merge, or deployment was created by this task.
+- F0, Foundation Contract and Interface Skeleton, is complete by author self-check on `divergence/reliability-staging`; independent audit and user/product approval remain Open.
+- The F0.1 package defines the terminology/data dictionary, unique shared-field ownership, conceptual envelopes, authority boundaries, evidence/gate contract, change/conflict state model, four dependency types and six circular seams, I01–I20, unresolved decisions, four follow-on briefs, F1 reconciliation contract, exact sequence, and FCIS-G01–G06 assessment.
+- FCIS-G01–G06 are Self-check passed with retained design evidence. None is independently verified by this work.
+- Q-U01, Q-U02, and Q-U06 remain Open with blocked scope. P-002 remains parked.
+- No S02, S03, S18, or S20 package was executed. No F1 reconciliation, implementation technology, application code, test code, interface, layout, visual baseline, branch topology, merge, or deployment was changed.
 
-## Current authority and status
+## Current authority and repository state
 
 - Repository: `thatoneweirdfella1/Claude-Project-02`.
+- Active task base: `9323ed157c6739a76a24e8b6a09c11f2f136ca18`.
 - Only task-writing branch: `divergence/reliability-staging`.
 - Protected integration branch: `divergence/reliability-v1`.
-- Untouched safety/layout branch: `claude/remaining-second-pass-v1`.
-- Active recorded task: B0, complete by self-check; stop condition reached.
-- Canonical blueprint: `02-MASTER-SYSTEM-AND-REQUIREMENT-BLUEPRINT.md`.
-- Active task record: `docs/ai-control/CURRENT-TASK.md`.
-- Machine policy: `docs/ai-control/COURSE-CONTROL.json`.
+- Untouched safety/layout branch: `claude/remaining-second-pass-v1` at baseline `10894f704a39b6c56a7fadfafb54275b82526c33`.
+- Active recorded task: F0; design stop condition reached by self-check.
+- Task source: `DIVERGENCE-F0-STANDALONE-HANDOFF.md`, SHA-256 `5817361c8a5376e299e36d340c331ce2a7848d96c29513839ba8889d8ffbe887`.
+- Canonical blueprint: `02-MASTER-SYSTEM-AND-REQUIREMENT-BLUEPRINT.md`, unchanged SHA-256 `d9783aa4fff475810170f2217ea2cdca1b30baefe78d21d837980943c509ea47`.
 
-## B0 changed paths
+## F0 deliverables
 
-- `02-MASTER-SYSTEM-AND-REQUIREMENT-BLUEPRINT.md`
-- `docs/ai-control/CONTINUITY-LEDGER.md`
-- `docs/ai-control/CONTROL-MANIFEST.json`
-- `docs/ai-control/COURSE-CONTROL.json`
-- `docs/ai-control/CURRENT-TASK.md`
-- `docs/ai-control/DECISION-LOG.md`
-- `docs/ai-control/EVIDENCE-INDEX.md`
-- `docs/ai-control/GATE-STATUS.md`
-- `docs/ai-control/HANDOFF.md`
-- `docs/ai-control/PARKING-LOT.md`
-- `docs/ai-control/PROJECT-AUTHORITY.md`
-- `docs/ai-control/SHA256SUMS`
-- `docs/ai-control/TASK-INDEX.md`
+- `docs/reliability/f0/FOUNDATION-CONTRACT-AND-INTERFACE-SKELETON.md`
+- `docs/reliability/f0/follow-on/S02-REQUIREMENT-DECISION-COMPLETION-BRIEF.md`
+- `docs/reliability/f0/follow-on/S03-SOURCE-AUTHORITY-PROVENANCE-BRIEF.md`
+- `docs/reliability/f0/follow-on/S18-SECURITY-PRIVACY-CONSENT-BRIEF.md`
+- `docs/reliability/f0/follow-on/S20-EVALUATION-RELEASE-CHANGE-BRIEF.md`
 
-## Evidence and checks
+Artifact hashes and limitations are recorded in E-022 and `SHA256SUMS`.
 
-- Exact attachment/destination byte comparison: passed.
-- Blueprint source/destination SHA-256 comparison: passed.
-- Mandatory preflight read order and starting integrity manifest: passed and recorded in CL-0016.
-- Integrity manifest, JSON/policy alignment, control-record-only `git diff --check`, and exact changed-path review: passed.
-- Whole-task `git diff --check` reports the supplied blueprint's original Markdown hard-line-break spaces. They were intentionally retained because the installed file must remain byte-for-byte identical; source/destination equality and the canonical hash still pass.
-- Course-controller adversarial suite: 18/18 passed.
-- Exact course-control gate: accepted base `cda36d299f3579e2eec6b01ad59c99a59b478cf3` to checkpoint `3dafd8257db58ccbbeb01e337d3ff19615a56e2a` on the required repository and branch.
-- Unit suite: 911/911 passed across 102 test files. Desktop suite: 1/1 passed. Lint and production build exited 0; existing warnings were retained.
-- Local browser E2E: Open/not run because no browser was installed and Playwright's Chromium download repeatedly timed out.
-- Remote AI Course Control run `34170361276`: success.
-- Remote CI run `34170361298`: Typecheck/lint/unit job passed; Playwright E2E failed with 28 passed, 15 failed, and 2 skipped. This B0 task changed no application code. The failure is retained as E-021 and parked as P-002; fixing it was prohibited by B0 scope.
-- Terminal HTTPS push lacked credentials. After the user explicitly authorized publishing, the connected GitHub API advanced only the existing staging branch.
-- Full commands, results, and limitations are retained in CL-0018–CL-0020 and E-020–E-021.
-- This is a self-check, not independent verification.
+## Gate state
+
+| Gate | State | Limitation |
+|---|---|---|
+| FCIS-G01 | Self-check passed | Independent audit Open. |
+| FCIS-G02 | Self-check passed | Conceptual design; no implementation test. |
+| FCIS-G03 | Self-check passed | User-owned questions remain Open. |
+| FCIS-G04 | Self-check passed | No independent review occurred. |
+| FCIS-G05 | Self-check passed | Later packages may propose additional typed dependencies. |
+| FCIS-G06 | Self-check passed | Brief usability not independently cold-start tested. |
+| RCG-01 | Self-check passed | F0 read receipt retained in CL-0021. |
+| RCG-02 | Self-check passed | Existing staging branch/base only; no protected-branch write. |
+| RCG-03 | Self-check passed | F0/control-only diff; P-002 stayed parked. |
+| RCG-04 | Independently verified | E-018 verifies the control system; F0-specific handoff still awaits independent audit. |
+
+## Checks and retained failures
+
+- F0 structural assertions: passed. Ownership 15/15 with one owner rule; I01–I20 unique/complete; dependencies 16/16 each with one valid type; RP-01–RP-06 present; all mandatory brief sections present.
+- The first ownership assertion expected 16 rows and failed; inspection showed the matrix contains 15 complete rows. The fixture expectation was corrected and passed without changing design content.
+- JSON parsing/policy alignment and F0/control-file whitespace checks: passed before final integrity refresh.
+- Unit suite: 911/911 passed across 102 files. Desktop: 1/1 passed. Lint and build exited 0 with 17 retained lint warnings and the retained chunk-size warning.
+- Playwright E2E was attempted: 43 failed at launch and 2 skipped because the Chromium executable is absent. No app/test change was authorized or made. This environment failure and earlier application CI problem remain Open/out of scope under P-002.
+- Final integrity, commit, exact course-control, publication, and remote workflow readback must be appended before transfer.
 
 ## Prohibited continuation
 
-Do not create a branch, merge, rebase, force-update, deploy, touch the safety branch, redesign the interface, implement an application system, or treat canonical installation as independent audit evidence.
+Do not begin an audit, S02, S03, S18, S20, F1, or implementation without separate explicit user authorization. Do not create a branch, merge, rebase, force-update, deploy, touch the safety branch, redesign the interface, infer approval, or promote a self-check to independent verification.
 
-## Exact next unfinished task
+## Exact next task
 
-**F0 — Foundation Contract and Interface Skeleton**, using `DIVERGENCE-F0-STANDALONE-HANDOFF.md`.
+**Independent F0 audit** against `DIVERGENCE-F0-STANDALONE-HANDOFF.md`, FCIS-G01–G06, and every failure condition. It must review the committed F0 package, retain defects/dissent, and either independently verify applicable gates or return corrections.
 
-F0 remains locked and may not begin until the user gives a separate explicit instruction to activate it. Stop now; identifying F0 is not permission to execute it.
+This next task is identified but remains locked until the user separately and explicitly authorizes it. The auditor must stop without starting S02, S03, S18, S20, F1, or any implementation.
