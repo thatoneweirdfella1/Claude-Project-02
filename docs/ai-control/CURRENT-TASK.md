@@ -63,6 +63,7 @@ The standalone F0 handoff is the complete task packet. The canonical blueprint s
 - 2026-09-08: Fresh checkout at remote staging head `9323ed157c6739a76a24e8b6a09c11f2f136ca18`; working tree clean; mandatory controls and complete standalone assignment read; integrity manifest passed; preflight recorded as CL-0021.
 - 2026-09-08: Produced the F0.1 foundation contract and four standalone follow-on briefs. Structural checks found 15/15 owned shared concepts, I01–I20 complete and unique, 16/16 dependencies with one valid type, RP-01–RP-06 present, and every brief section present. FCIS-G01–G06 are Self-check passed; independent audit remains Open.
 - 2026-09-08: Unchanged application checks: unit 911/911 and desktop 1/1 passed; lint and build exited 0 with retained warnings. Browser E2E attempted and remained unavailable/Failed because the Chromium executable is not installed: 43 failed at launch and 2 skipped. No app or test file was changed.
+- 2026-09-08: Committed the bounded 15-path F0 checkpoint locally as `6574b70f9984b5cab4d1c3b8037781adfea259d6`; exact course control accepted it from base `9323ed157c6739a76a24e8b6a09c11f2f136ca18`. Published the identical tree by non-force fast-forward of only the existing staging ref as remote commit `0a957e7377ed28596461cf845086e92f0578619f`. No workflow run was registered for that commit during repeated readback, so remote CI is Open/not observed rather than claimed.
 
 ## Blockers and unresolved decisions
 

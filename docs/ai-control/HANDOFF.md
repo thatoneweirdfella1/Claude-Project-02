@@ -12,6 +12,7 @@
 
 - Repository: `thatoneweirdfella1/Claude-Project-02`.
 - Active task base: `9323ed157c6739a76a24e8b6a09c11f2f136ca18`.
+- Published F0 content commit: `0a957e7377ed28596461cf845086e92f0578619f` on the existing staging branch; parent is the exact task base and its tree matches the locally gated commit.
 - Only task-writing branch: `divergence/reliability-staging`.
 - Protected integration branch: `divergence/reliability-v1`.
 - Untouched safety/layout branch: `claude/remaining-second-pass-v1` at baseline `10894f704a39b6c56a7fadfafb54275b82526c33`.
@@ -51,7 +52,8 @@ Artifact hashes and limitations are recorded in E-022 and `SHA256SUMS`.
 - JSON parsing/policy alignment and F0/control-file whitespace checks: passed before final integrity refresh.
 - Unit suite: 911/911 passed across 102 files. Desktop: 1/1 passed. Lint and build exited 0 with 17 retained lint warnings and the retained chunk-size warning.
 - Playwright E2E was attempted: 43 failed at launch and 2 skipped because the Chromium executable is absent. No app/test change was authorized or made. This environment failure and earlier application CI problem remain Open/out of scope under P-002.
-- Final integrity, commit, exact course-control, publication, and remote workflow readback must be appended before transfer.
+- Final integrity passed. Local content commit `6574b70f9984b5cab4d1c3b8037781adfea259d6` passed the exact course-control gate from the task base and has the same tree as published remote content commit `0a957e7377ed28596461cf845086e92f0578619f`.
+- Terminal push failed for missing credentials; the connected GitHub application performed a non-force fast-forward of only the existing staging ref. Repeated remote readback found no workflow runs registered for the content commit, so remote Actions remain Open/not observed and no success is claimed.
 
 ## Prohibited continuation
 

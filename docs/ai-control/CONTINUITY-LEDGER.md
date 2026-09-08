@@ -348,3 +348,17 @@ Each new entry must contain:
 - **Failure/correction/uncertainty:** CL-0022's earlier whitespace statement applied before untracked artifacts were staged and was incomplete; this entry supplies the exact correction without rewriting history.
 - **Resulting status/gate change:** No FCIS status changed; final diff acceptance remains pending the corrected rerun.
 - **Exact next action:** Refresh all changed-record hashes, stage the correction, and rerun integrity, structural, whitespace, and course-controller checks.
+
+### CL-0024 — 2026-09-08 UTC — F0 checkpoint gated and published to existing staging
+
+- **Actor:** User-authorized OpenAI Codex / connected GitHub application
+- **Task/phase:** F0 / commit, exact gate, and remote publication
+- **Repository/branch/starting commit:** `thatoneweirdfella1/Claude-Project-02`; existing `divergence/reliability-staging`; remote base `9323ed157c6739a76a24e8b6a09c11f2f136ca18`
+- **Authority/source:** D-013 and F0 `CURRENT-TASK.md`, which authorize committing and pushing only the bounded F0 checkpoint to the existing staging branch.
+- **Action and affected files:** Created local 15-path commit `6574b70f9984b5cab4d1c3b8037781adfea259d6`. Terminal HTTPS push failed because no username/credential was configured. The connected GitHub application then created the identical tree and commit `0a957e7377ed28596461cf845086e92f0578619f` with the exact remote base as parent and advanced only the existing staging ref using `force:false`. No branch, PR, merge, rebase, deployment, integration, or safety ref changed.
+- **Reason and rejected alternatives:** Publish the authorized F0 artifact while preserving fast-forward ancestry and the one-branch scope. Rejected force update, new branch, PR/merge, deployment, or concealing unavailable remote checks.
+- **Command/test/check and actual result:** Final integrity manifest passed all entries; manifest/policy aligned on unlocked active F0; corrected staged and committed-range whitespace checks passed; course-controller adversarial tests passed 18/18; exact course gate accepted base `9323ed157c6739a76a24e8b6a09c11f2f136ca18` to local head `6574b70f9984b5cab4d1c3b8037781adfea259d6` and listed exactly 15 allowed paths. `git fetch` read back remote commit `0a957e7377ed28596461cf845086e92f0578619f`, its exact parent and tree; local and remote trees compared identical. Repeated GitHub workflow-run queries after publication returned an empty run list.
+- **Evidence/artifact/hash:** E-022–E-024; remote content commit `0a957e7377ed28596461cf845086e92f0578619f`.
+- **Failure/correction/uncertainty:** GitHub Actions did not register an observable run for the content commit, so remote course-control/CI success is Open and not claimed. Local Playwright remained unavailable/Failed as recorded. No independent F0 audit occurred.
+- **Resulting status/gate change:** F0 is complete by self-check and published. FCIS-G01–G06 remain Self-check passed; independent verification and user/product approval remain Open. Stop condition reached.
+- **Exact next action:** Stop. Await separate explicit user authorization for an independent F0 audit. Do not start S02, S03, S18, S20, F1, implementation, merge, or deployment.
