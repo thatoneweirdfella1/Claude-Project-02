@@ -53,7 +53,7 @@
 6. **G1-C** — Executable controls. **COMPLETED — self-check only.**
 7. **G1-D** — Full enforcement verification. **COMPLETED — self-check only.**
 8. **G1-E** — Independent G1 audit. **COMPLETED — Failed; retained.**
-9. **G2** — Maximum-feasible automation and non-bypass hardening. **READY — exact next work; authored changes require later independent audit.**
+9. **G2** — Maximum-feasible automation and non-bypass hardening. **IN PROGRESS — author self-check; independent audit Open.**
 10. **F0-AUDIT** — Independent F0 audit using the completed controls. **BLOCKED by failed/unaccepted G1 and unaudited G2 corrections.**
 11. **S02, S03, S18, S20** — Four separately bounded system-design packages. **BLOCKED by F0-AUDIT.**
 12. **F1** — Reconcile those four packages. **BLOCKED until all four are accepted.**

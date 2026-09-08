@@ -4,18 +4,18 @@
 
 **SAFE TO SWITCH: NO**
 
-G1-E was independently executed and **Failed**. The failed audit is retained. G1 is not accepted, every dependent task remains blocked, and the exact next authorized work is G2 hardening.
+G1-E was independently executed and **Failed**. G2 authored hardening is active. G1 is not accepted, every dependent task remains blocked, and all G2 changes require another AI's audit.
 
 ## Current task
 
-- **Task:** G1 — Continuity, Acceptance, and Contamination Controls
+- **Task:** G2 — Maximum-Feasible Automation and Non-Bypass Hardening
 - **Completed phase:** G1-A through G1-D by author self-check
-- **First unfinished phase:** G2 authored correction and hardening
-- **Status:** G1-E Failed; G1 not accepted
+- **First unfinished phase:** Complete G2 self-check/publication, then independent G2 audit
+- **Status:** G2 Active; authored changes only
 - **Task source:** `DIVERGENCE-G1-CONTROL-UPGRADE-HANDOFF.md`
 - **Source hash:** `e940049e4dffd0d87a9b303526df82c7a8f61c0a496f6afc1f6f34b9b8f75db8`
 - **Starting remote commit:** `f6e8a344b414a5e909028fbdf547ae879ade4b58`
-- **Latest confirmed remote checkpoint:** `0d51d82548b724b4eceee717ddd01be0e6041db6`
+- **Latest confirmed remote checkpoint:** `c4c6ec2e06dd18bed3158377db3c11a9903baf1c`
 - **Exact checkpoint G1-E must audit:** `983baaa2315db32e2cc772edc2bcad053e4e3d69`
 - **Only writable branch:** existing `divergence/reliability-staging`
 - **Accepted integration branch:** `divergence/reliability-v1`
@@ -44,4 +44,4 @@ Do not perform the independent F0 audit, S02/S03/S18/S20, F1, product implementa
 
 ## Exact next action
 
-Begin `G2 — Maximum-Feasible Automation and Non-Bypass Hardening`; preserve the G1-E failure and keep dependent work blocked.
+Validate integrity and the exact base-to-head G2 course gate, publish by non-force fast-forward to existing staging, confirm remote readback, and stop for a different independent G2 auditor.

@@ -1,83 +1,35 @@
-# Current Task — G1 Only
+# Current Task — G2 Only
 
-## Task identity
+## Identity
 
-- **ID:** G1
-- **Title:** Continuity, Acceptance, and Contamination Controls
-- **Phase:** Execution control
-- **Status:** G1-E independently executed and **Failed**; G1 is not accepted; user-authorized G2 correction is the only next work
-- **Task source:** `DIVERGENCE-G1-CONTROL-UPGRADE-HANDOFF.md`
-- **Task-source SHA-256:** `e940049e4dffd0d87a9b303526df82c7a8f61c0a496f6afc1f6f34b9b8f75db8`
-- **Canonical master blueprint:** `02-MASTER-SYSTEM-AND-REQUIREMENT-BLUEPRINT.md`, SHA-256 `d9783aa4fff475810170f2217ea2cdca1b30baefe78d21d837980943c509ea47`
-- **Activation authority:** User directed the AI to begin building the complete pre-work controls with checkpoints so another AI can finish after a usage interruption; received 2026-09-08
-- **Untouched safety/layout branch:** `claude/remaining-second-pass-v1`
-- **Only task-writing branch:** `divergence/reliability-staging`
-- **Protected integration branch:** `divergence/reliability-v1`
+- **ID:** G2
+- **Title:** Maximum-Feasible Automation and Non-Bypass Hardening
+- **Phase:** Execution-control correction
+- **Status:** Active; authored work; independent audit required
+- **Authority:** User's two-phase instruction dated 2026-09-08; D-015
+- **Only writable-continuation base:** c4c6ec2e06dd18bed3158377db3c11a9903baf1c
 
-## Exact purpose
+## Purpose
 
-Finish and mechanically test the authority, continuous-checkpoint, audit-blocking, dependency, acceptance, and contamination-containment controls described by the complete G1 standalone assignment. Preserve F0 unchanged and keep every product-system task locked.
+Implement every useful safeguard currently feasible within the existing control architecture after preserving the failed G1-E audit. Mechanically detect stale/overlapping checkpoints, require explicit ownership and audit queues, constrain failed-task correction transitions, and prevent a protected control-plane change from carrying its own approval claim.
 
-## Required outputs
+## Allowed paths
 
-1. Completed authority-package gap records without duplicating or redesigning valid existing material.
-2. Continuous resumable checkpoint and cross-account takeover contract.
-3. Executable task-state, dependency, audit, acceptance, lineage, contamination, and fail-closed enforcement.
-4. Plain-language block/safe-switch output that removes audit and handoff memory from the user.
-5. Adversarial tests and retained evidence for every required rejection and recovery case.
-6. Updated durable records and small confirmed remote checkpoints on the existing staging branch.
-
-## Allowed work
-
-- Perform only G1-A through G1-D from the standalone assignment.
-- Update only the assignment's control, governance, evidence, and validator paths.
-- Commit and push small accepted checkpoints to the existing staging branch.
-- Preserve optional provider-triggered audit as non-authoritative convenience only.
+Control/governance records, validators, focused tests, the existing course-control workflow, and G2 audit/evidence artifacts only.
 
 ## Prohibited work
 
-- Do not change the canonical blueprint, F0 artifacts, application code/tests, UI, layout, or visual baseline.
-- Do not perform the independent F0 audit, S02/S03/S18/S20 design, F1, or product implementation.
-- Do not create, rename, merge, rebase, force-update, deploy, or delete a branch; do not touch the safety branch.
-- Do not claim independent verification, semantic perfection, product approval, implementation, or production validation.
-- Do not fix P-002.
+No product or application code/test changes, F0 or F0 audit, S02/S03/S18/S20, F1, design-package work, UI/layout changes, deployment, merge/rebase, new branch, integration-branch write, safety-branch write, or independent approval of this author's G2 work.
 
-## Gate plan
+## Gates
 
-- **G1-G01:** Authority-package completeness and internal consistency.
-- **G1-G02:** Interrupted-task checkpoint and context-free resumption.
-- **G1-G03:** Audit/dependency/acceptance blocking and plain-language notification.
-- **G1-G04:** Traceable lineage, contamination propagation, and recovery boundary.
-- **G1-G05:** Executable adversarial enforcement and non-bypass behavior.
-- **G1-G06:** Independent cold-start audit. The author must leave this Open.
-
-## Work history
-
-- 2026-09-08: F0 completed by self-check and was published; independent F0 audit remained Open.
-- 2026-09-08: User explicitly authorized the pre-work control upgrade with frequent checkpoints and cross-account resumption.
-- 2026-09-08: G1-A began from exact remote staging commit `f6e8a344b414a5e909028fbdf547ae879ade4b58`; a clean detached worktree preserved three unrelated local-only historical G0 commits in the existing checkout.
-- 2026-09-08: G1-A passed the existing 18-case controller harness, policy/task alignment, integrity, whitespace, and exact base-to-head course gate; published by non-force fast-forward as remote commit `be9c32aa2f3be93635296091fd20f0c06251c3a2`.
-- 2026-09-08: The records-only safe-switch correction was published at `67d8fabaf297b0909c4551467fe56c763391474f`. G1-B then audited existing authority/layer material and added only the seven missing canonical control record types plus G1 traceability; G1-G01 is author Self-check passed pending publication and independent audit.
-- 2026-09-08: G1-B was published at `27c187f7db05c4fbd7fc38ad3f25b3c5896c5465`. G1-C added machine task/dependency/acceptance/lineage state, fail-closed transition checks, plain-language status output, stronger independent-review matching, accepted-baseline protection, and 22 new focused cases; the combined harness passes 40/40 locally.
-- 2026-09-08: G1-C was published at `049e2b0f7673e0b757131e4877baef77f6fe585c`. G1-D began; unsafe-interruption recovery-only behavior was added and the focused harness passes 41/41. Full repository checks were attempted together but the tool call was cancelled at the network-approval boundary before any result; they remain unfinished.
-- 2026-09-08: G1-D full checks were rerun using a dependency installation with the exact same `package-lock.json` hash. Unit tests passed 911/911 in 102 files, desktop passed 1/1, lint exited 0 with 17 retained warnings, production build exited 0 with the retained chunk-size warning, and the focused controller remained 41/41. No application/F0/layout source changed.
-- 2026-09-08: The completed G1-D author checkpoint was published and read back at `983baaa2315db32e2cc772edc2bcad053e4e3d69`. A complete standalone G1-E audit assignment was bound to that exact checkpoint, and the fully labeled user master checklist was added under the control package.
-- 2026-09-08: The checkpoint-bound G1-E audit packet and repository master checklist were published at `0d51d82548b724b4eceee717ddd01be0e6041db6`. The audit must examine G1-D checkpoint `983baaa2315db32e2cc772edc2bcad053e4e3d69`; the later commit only carries its assignment and final author handoff.
-
-## Blockers and unresolved decisions
-
-- No blocker prevents G1-A through G1-D.
-- Independent G1 verification must remain Open for another AI.
-- F0 independent audit, Q-U01/Q-U02/Q-U06, and P-002 remain Open and out of scope.
-
-## Stop condition
-
-Stop after G1-A through G1-D are self-checked, published in recoverable checkpoints, and the independent G1 audit is the only permitted next task. Stop earlier with a recoverable handoff if interrupted.
-
-## Independent-audit result
-
-G1-E was performed by `openai-codex-work-session-2026-09-08-g1e` against exact checkpoint `983baaa2315db32e2cc772edc2bcad053e4e3d69`. The retained verdict is **Failed**. The focused harness and repository checks passed, but the audited checkpoint had a stale next-action projection and candidate-controlled enforcement could weaken its workflow, validator, tests, policy, state, and hashes in the same change. See `docs/ai-control/independent-reviews/G1-G06.json` and the human-readable report.
+- G2-G01 freshness, ownership, audit queue, and next action: Self-check pending.
+- G2-G02 correction/dependency/contamination/recovery: Self-check pending.
+- G2-G03 protected control-plane change separation: Self-check pending.
+- G2-G04 live GitHub ruleset/check/reviewer binding: Open pending host readback.
+- G2-G05 residual-risk and semantic/notification disclosure: Self-check pending.
+- G2-G06 independent audit by another AI: Open.
 
 ## Exact next action
 
-Begin the separately user-authorized `G2 — Maximum-Feasible Automation and Non-Bypass Hardening`. Preserve the failed G1-E audit. All G2-authored changes require another AI's independent audit.
+Finish the focused hostile tests and durable records for G2, run all required repository checks, publish a small gated checkpoint to the existing staging branch, and stop for a different independent auditor.

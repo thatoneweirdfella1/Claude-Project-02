@@ -16,6 +16,8 @@ const errors = validateControlState(state, { requestedTask: requested });
 console.log(`REQUESTED TASK: ${requested}`);
 console.log(`CURRENT TASK: ${state.active_task} / ${state.current_phase}`);
 console.log(`SAFE TO SWITCH: ${state.safe_to_switch}`);
+const queued = (state.audit_queue || []).map((item) => `${item.task}=${item.status}`).join(", ");
+console.log(`AUDIT QUEUE: ${queued || "empty"}`);
 if (errors.length) {
   const notice = errors.find((error) => error.startsWith("BLOCKED:")) || blockNotice(requested, errors[0], state.first_unfinished_action);
   console.log(notice);

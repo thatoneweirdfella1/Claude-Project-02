@@ -75,6 +75,8 @@ export function validatePolicy(policy) {
   if (!Array.isArray(policy?.append_only_files)) errors.push("append_only_files must be an array");
   if (!Array.isArray(policy?.immutable_files)) errors.push("immutable_files must be an array");
   if (!Array.isArray(policy?.immutable_branches)) errors.push("immutable_branches must be an array");
+  if (!Array.isArray(policy?.protected_control_paths)) errors.push("protected_control_paths must be an array");
+  if (!Array.isArray(policy?.protected_control_paths)) errors.push("protected_control_paths must be an array");
   if (!policy?.control_state_file) errors.push("control_state_file is missing");
   if (!policy?.traceability_file) errors.push("traceability_file is missing");
   if (!policy?.handoff_file) errors.push("handoff_file is missing");
@@ -226,6 +228,9 @@ export function runGate({ policyPath, base, head, branch, repository, requestedT
 
   const stateResult = verifyControlState(policy, base, head, requestedTask);
   errors.push(...stateResult.errors);
+  if (branch === policy.working_branch && stateResult.state.last_confirmed_remote_checkpoint !== base) {
+    errors.push(`Stale checkpoint: expected base ${stateResult.state.last_confirmed_remote_checkpoint}, actual base ${base}`);
+  }
   if (branch === policy.integration_branch) {
     const task = stateResult.state.tasks?.[policy.active_task];
     if (task?.execution_state !== "Accepted" || task?.acceptance_state !== "Accepted") {
@@ -252,6 +257,22 @@ export function runGate({ policyPath, base, head, branch, repository, requestedT
   }
 
   const changedPaths = new Set(changes.map((change) => change.path));
+  const protectedChanges = changes.filter((change) => pathAllowed(change.path, policy.protected_control_paths));
+  if (protectedChanges.length) {
+    const declaration = stateResult.state.control_change;
+    const declaredPaths = new Set(declaration?.paths || []);
+    if (!declaration?.owner || !declaration?.gate || declaration?.independent_audit_required !== true || !declaration?.residual_risk) {
+      errors.push("Protected control-plane changes require owner, gate, independent-audit requirement, and residual risk");
+    }
+    for (const change of protectedChanges) {
+      if (!declaredPaths.has(change.path)) errors.push(`Undeclared protected control-plane change: ${change.path}`);
+    }
+    const reviewChanged = changes.some((change) => change.path.startsWith("docs/ai-control/independent-reviews/"));
+    const activeTask = stateResult.state.tasks?.[policy.active_task];
+    if (reviewChanged || ["Independently verified", "Accepted"].includes(activeTask?.execution_state) || activeTask?.acceptance_state === "Accepted") {
+      errors.push("A protected control-plane change cannot carry or claim its own independent approval");
+    }
+  }
   for (const requiredRecord of policy.required_changed_records) {
     if (!changedPaths.has(requiredRecord)) errors.push(`Required continuity record was not updated: ${requiredRecord}`);
   }

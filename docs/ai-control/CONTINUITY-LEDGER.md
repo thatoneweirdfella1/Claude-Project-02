@@ -503,3 +503,17 @@ Each new entry must contain:
 - **Failure/correction/uncertainty:** Overall G1-E verdict **Failed**. G1-G02, G1-G03, G1-G05, and G1-G06 fail. Reviewer identity is declarative rather than cryptographically bound. Live host ruleset state is Open.
 - **Resulting status/gate change:** G1 is Failed and not accepted. All dependents remain blocked. Failed audit history is immutable evidence for later correction review.
 - **Exact next action:** Begin user-authorized G2 hardening as an author, preserve this audit, and leave every correction awaiting a different independent auditor.
+
+### CL-0035 — 2026-09-08 UTC — G2 gap audit and first mechanical hardening
+
+- **Actor:** OpenAI Codex Work-session G2 author
+- **Task/phase:** G2 / gap audit and control-plane hardening
+- **Repository/branch/starting commit:** Existing staging; confirmed remote base `c4c6ec2e06dd18bed3158377db3c11a9903baf1c`
+- **Authority/source:** User's explicit Phase 2 instruction and D-015.
+- **Action and affected files:** Classified every requested enforcement gap; activated G2 as the authorized correction to failed G1; added active-task ownership/base lock, required audit queue, stale candidate-base rejection, explicit failed-task correction transition, protected-control-plane declaration, and prohibition on same-change review/acceptance claims. Added five focused hostile tests and documented host-only/residual limits.
+- **Reason and rejected alternatives:** Implement mechanically useful in-repository safeguards while accurately separating what requires GitHub administration or independent semantic review. Rejected deleting the failed audit, claiming repository code can defeat an administrator, making optional providers authoritative, or unlocking dependent work.
+- **Command/test/check and actual result:** Focused harness passed 46/46 after four initial fixture failures were corrected by aligning test checkpoint/handoff data and retaining resumable-state semantics. Unit tests passed 911/911 in 102 files; desktop passed 1/1; lint exited 0 with 17 retained warnings; production build exited 0 with the retained chunk-size warning. An initial mistyped `npm run buildibele` failed as an unknown script and was corrected by the actual `npm run build`; the typo is not build evidence. Integrity, exact course gate, publication, and remote readback remain.
+- **Evidence/artifact/hash:** E-032 and refreshed SHA256SUMS.
+- **Failure/correction/uncertainty:** G2-G04 and G2-G06 remain Open. Same-change detection is not a trust anchor against a malicious coordinated rewrite. Reviewer identity remains declarative absent host binding.
+- **Resulting status/gate change:** G2-G01/G02/G03/G05 are author Self-check passed; G2-G04/G06 Open. G1 remains Failed/unaccepted and dependents blocked.
+- **Exact next action:** Run integrity, focused, unit, desktop, lint, build, exact course gate, publish by non-force fast-forward, read back remote, and stop for a different G2 auditor.

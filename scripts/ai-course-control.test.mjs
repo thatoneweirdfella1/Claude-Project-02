@@ -56,6 +56,7 @@ const validPolicy = {
   append_only_files: ["ledger.md"],
   preserve_history_files: ["decisions.md"],
   immutable_files: ["baseline.png"],
+  protected_control_paths: [],
   task_profiles: {
     G0: {
       allowed_paths: [
@@ -114,9 +115,10 @@ function makeState() {
     recovery_action: "Recover G0 from the confirmed checkpoint.",
     meaning_confirmation: { interpreted_outcome: "Enforce course.", boundary: "No app work.", material_ambiguity: "none", authority: "test" },
     tasks: {
-      G0: { title: "Gate", execution_state: "Active", acceptance_state: "Not accepted", author_id: "author", reviewer_id: null, independent_review_path: null, accepted_integration_commit: null, prerequisites: [] },
+      G0: { title: "Gate", execution_state: "Active", acceptance_state: "Not accepted", author_id: "author", reviewer_id: null, independent_review_path: null, accepted_integration_commit: null, prerequisites: [], owner_id: "author", lock_acquired_at: "2026-09-08T00:00:00Z", lock_base_commit: "a".repeat(40) },
       F0: { title: "Next", execution_state: "Open", acceptance_state: "Not accepted", author_id: null, reviewer_id: null, independent_review_path: null, accepted_integration_commit: null, prerequisites: [{ task: "G0", type: "validation dependency", required_state: "Accepted" }] },
     },
+    audit_queue: [],
     lineage: { nodes: [{ id: "G0", state: "Active", commit: null }], edges: [] },
   };
 }
@@ -150,6 +152,11 @@ function setupFixture({ mutate, refreshChecksums = true } = {}) {
   git(root, ["commit", "-qm", "baseline"]);
   const base = git(root, ["rev-parse", "HEAD"]);
 
+  const candidateState = makeState();
+  candidateState.last_confirmed_remote_checkpoint = base;
+  candidateState.tasks.G0.lock_base_commit = base;
+  writeJson(join(root, "docs/ai-control/CONTROL-STATE.json"), candidateState);
+  writeFileSync(join(root, "handoff.md"), `**SAFE TO SWITCH: NO**\nCheckpoint ${base}\nNext: G0\n`);
   append(join(root, "task.md"), "accepted work\n");
   append(join(root, "ledger.md"), "CL-0002 accepted work\n");
   append(join(root, "evidence.md"), "E-002 accepted evidence\n");
@@ -331,7 +338,7 @@ test("meaning confirmation is mandatory", () => {
 test("another task cannot silently become active", () => {
   const state = makeState();
   state.tasks.F0.execution_state = "Active";
-  assert(validateControlState(state).some((error) => error.includes("No task other than active_task may be Active")));
+    assert(validateControlState(state).some((error) => error.includes("No task other than active_task may be Active")));
 });
 
 test("invalid dependency type is rejected", () => {
@@ -433,3 +440,49 @@ for (const blockedState of ["Open", "Active", "Self-check passed", "Awaiting ind
     assert(errors.some((error) => error.includes(`G0 is ${blockedState}; Accepted is required`)));
   });
 }
+
+test("stale confirmed checkpoint is rejected", () => {
+  const fixture = setupFixture({
+    mutate(root) {
+      const state = JSON.parse(readFileSync(join(root, "docs/ai-control/CONTROL-STATE.json")));
+      state.last_confirmed_remote_checkpoint = "b".repeat(40);
+      state.tasks.G0.lock_base_commit = "b".repeat(40);
+      writeJson(join(root, "docs/ai-control/CONTROL-STATE.json"), state);
+    },
+  });
+  expectRejected(fixture, "Stale checkpoint");
+});
+
+test("active task requires an ownership lock", () => {
+  const state = makeState();
+  delete state.tasks.G0.owner_id;
+  assert.ok(validateControlState(state).some((error) => error.includes("ownership lock")));
+});
+
+test("required independent audit must appear in queue", () => {
+  const state = makeState();
+  state.tasks.G0.independent_audit_required = true;
+  assert.ok(validateControlState(state).some((error) => error.includes("audit queue")));
+});
+
+test("failed task can transition only to its authorized correction", () => {
+  const before = makeState();
+  before.tasks.G0.execution_state = "Failed";
+  const after = structuredClone(before);
+  after.active_task = "G2";
+  after.tasks.G2 = { title: "Correction", execution_state: "Active", acceptance_state: "Not accepted", prerequisites: [], corrects_task: "G0", activation_authority: "user" };
+  assert.deepEqual(validateStateTransition(before, after), []);
+  delete after.tasks.G2.activation_authority;
+  assert.ok(validateStateTransition(before, after).length > 0);
+});
+
+test("protected control change requires declaration and cannot self-approve", () => {
+  const fixture = setupFixture({
+    mutate(root) {
+      const policy = JSON.parse(readFileSync(join(root, "docs/ai-control/COURSE-CONTROL.json")));
+      policy.protected_control_paths = ["task.md"];
+      writeJson(join(root, "docs/ai-control/COURSE-CONTROL.json"), policy);
+    },
+  });
+  expectRejected(fixture, "Protected control-plane changes require");
+});

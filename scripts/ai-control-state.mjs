@@ -51,6 +51,12 @@ export function validateControlState(state, { requestedTask, fileExists = exists
       if (!EXECUTION_STATES.has(dependency.required_state)) errors.push(`${id} has invalid required state ${dependency.required_state}`);
     }
     if (id === state.active_task) {
+      if (!task.owner_id || !task.lock_acquired_at || !isSha(task.lock_base_commit)) {
+        errors.push(`${id} active ownership lock is incomplete`);
+      }
+      if (task.lock_base_commit !== state.last_confirmed_remote_checkpoint) {
+        errors.push(`${id} ownership lock base disagrees with last confirmed remote checkpoint`);
+      }
       for (const dependency of task.prerequisites || []) {
         const actual = state.tasks[dependency.task]?.execution_state;
         if (!SATISFIES[dependency.required_state]?.has(actual)) {
@@ -73,6 +79,16 @@ export function validateControlState(state, { requestedTask, fileExists = exists
       if (!isSha(task.accepted_integration_commit)) errors.push(`${id} acceptance lacks a full integration commit`);
     }
     if (task.execution_state === "Potentially contaminated" && task.acceptance_state === "Accepted") errors.push(`${id} is contaminated but accepted`);
+  }
+
+  if (!Array.isArray(state?.audit_queue)) errors.push("Audit queue is missing");
+  for (const item of state?.audit_queue || []) {
+    if (!item.task || !state.tasks?.[item.task] || !item.required_audit || !item.status) errors.push("Audit queue item is incomplete");
+  }
+  const activeTask = state?.tasks?.[state?.active_task];
+  if (activeTask?.independent_audit_required) {
+    const queued = state.audit_queue?.some((item) => item.task === state.active_task && item.status === "Open");
+    if (!queued) errors.push(`${state.active_task} requires an Open independent-audit queue item`);
   }
 
   const targetId = requestedTask || state?.active_task;
@@ -115,9 +131,13 @@ export function validateStateTransition(before, after) {
   if (!before) return errors;
   if (before.active_task !== after.active_task) {
     const previous = before.tasks?.[before.active_task];
-    if (!previous || previous.execution_state !== "Accepted" || previous.acceptance_state !== "Accepted") {
-      errors.push(`Cannot leave unfinished or unaccepted task ${before.active_task}`);
-    }
+    const next = after.tasks?.[after.active_task];
+    const normalAdvance = previous?.execution_state === "Accepted" && previous?.acceptance_state === "Accepted";
+    const authorizedCorrection = previous?.execution_state === "Failed"
+      && next?.execution_state === "Active"
+      && next?.corrects_task === before.active_task
+      && Boolean(next?.activation_authority);
+    if (!normalAdvance && !authorizedCorrection) errors.push(`Cannot leave unfinished or unaccepted task ${before.active_task}`);
   }
   for (const [id, task] of Object.entries(after.tasks || {})) {
     const prior = before.tasks?.[id];

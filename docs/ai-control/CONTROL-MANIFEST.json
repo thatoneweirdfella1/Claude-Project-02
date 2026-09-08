@@ -54,10 +54,10 @@
   },
   "deployment_baseline": "docs/ai-control/VERCEL-BASELINE.md",
   "active_task": {
-    "id": "G1",
-    "title": "Continuity, Acceptance, and Contamination Controls",
+    "id": "G2",
+    "title": "Maximum-Feasible Automation and Non-Bypass Hardening",
     "source": "docs/ai-control/CURRENT-TASK.md",
-    "status": "G1-E Failed; G1 not accepted; G2 correction is the exact authorized next work",
+    "status": "Active authored correction; G1-E failure preserved; independent G2 audit required",
     "next_task_reveal_allowed": true
   },
   "scope": {

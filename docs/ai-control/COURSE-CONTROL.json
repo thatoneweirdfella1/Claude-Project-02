@@ -9,7 +9,17 @@
     "claude/remaining-second-pass-v1"
   ],
   "branch_creation_allowed": false,
-  "active_task": "G1",
+  "active_task": "G2",
+  "protected_control_paths": [
+    ".github/workflows/**",
+    ".github/CODEOWNERS",
+    "docs/ai-control/CONTROL-STATE.json",
+    "docs/ai-control/COURSE-CONTROL.json",
+    "scripts/ai-control-state.mjs",
+    "scripts/ai-control-status.mjs",
+    "scripts/ai-course-control.mjs",
+    "scripts/ai-course-control.test.mjs"
+  ],
   "control_state_file": "docs/ai-control/CONTROL-STATE.json",
   "traceability_file": "docs/reliability/control/G1-TRACEABILITY.json",
   "handoff_file": "docs/ai-control/HANDOFF.md",
@@ -60,7 +70,8 @@
     "docs/reliability/control/DIVERGENCE-G1-E-STANDALONE-INDEPENDENT-AUDIT.md",
     "docs/reliability/control/MASTER-CHECKLIST.md",
     "docs/ai-control/independent-reviews/G1-G06.json",
-    "docs/reliability/control/independent-reviews/G1-E-2026-09-08.md"
+    "docs/reliability/control/independent-reviews/G1-E-2026-09-08.md",
+    "docs/reliability/control/G2-ENFORCEMENT-GAP-AUDIT.md"
   ],
   "required_changed_records": [
     "docs/ai-control/CONTROL-STATE.json",
@@ -168,6 +179,22 @@
         "scripts/ai-course-control.mjs",
         "scripts/ai-course-control.test.mjs",
         "scripts/ai-control-*.mjs"
+      ]
+    },
+    "G2": {
+      "phase": "execution-control-hardening",
+      "locked": false,
+      "allowed_paths": [
+        ".github/CODEOWNERS",
+        ".github/workflows/ai-course-control.yml",
+        "AGENTS.md",
+        "CLAUDE.md",
+        "docs/ai-control/**",
+        "docs/reliability/control/**",
+        "scripts/ai-control-state.mjs",
+        "scripts/ai-control-status.mjs",
+        "scripts/ai-course-control.mjs",
+        "scripts/ai-course-control.test.mjs"
       ]
     }
   },

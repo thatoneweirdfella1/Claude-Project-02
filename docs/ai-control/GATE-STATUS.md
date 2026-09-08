@@ -57,3 +57,14 @@ F0 is not F1, independently verified, user/product approved, implemented, releas
 | G1-G06 Independent cold start | Failed | Independent G1-E audit found stale checkpoint direction and a same-change common-mode bypass because candidate-controlled workflow, validator, tests, policy, state, and hashes can approve their own weakening. |
 
 G1-E is complete with a retained **Failed** verdict. G1 is not accepted. G2 hardening is the exact authorized correction; F0 artifacts remain frozen and all dependent/product-system work remains blocked.
+
+## G2 hardening status
+
+| Gate | State | Meaning |
+|---|---|---|
+| G2-G01 | Self-check passed | Confirmed-base freshness, ownership lock, audit queue, and exact action are mechanically checked by focused tests. |
+| G2-G02 | Self-check passed | Failed-task transitions require an explicit authorized correction; retained dependency/contamination/recovery checks remain active. |
+| G2-G03 | Self-check passed | Protected control-plane changes require owner, gate, audit requirement, residual risk, and cannot carry their own review/acceptance claim. |
+| G2-G04 | Open | Current live ruleset, required-check, CODEOWNERS reviewer binding, bypass, and admin behavior require host readback/configuration. |
+| G2-G05 | Self-check passed | Provider notifications remain optional and non-authoritative; unguaranteed semantic/admin risks are explicit. |
+| G2-G06 | Open | A different AI must audit every G2-authored change. |
