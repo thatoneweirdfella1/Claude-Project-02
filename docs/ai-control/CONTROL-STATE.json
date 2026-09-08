@@ -87,7 +87,7 @@
       "accepted_integration_commit": null,
       "prerequisites": [
         {
-          "task": "G1",
+          "task": "G2",
           "type": "validation dependency",
           "required_state": "Accepted"
         }

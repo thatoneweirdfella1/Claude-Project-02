@@ -155,3 +155,66 @@ export function validateStateTransition(before, after) {
 export function readControlState(path) {
   return JSON.parse(readFileSync(path, "utf8"));
 }
+
+export function validatePublicationPreflight(state, { fileExists = existsSync, readJsonFile = defaultReadJson, readFile = readFileSync } = {}) {
+  const errors = [];
+
+  // Verify control state is in valid publication state
+  if (!state || !state.schema_version) errors.push("Control state is missing or invalid for publication");
+  if (!state.active_task) errors.push("No active task defined for publication");
+
+  // Verify required control files exist
+  const requiredControlFiles = [
+    "docs/ai-control/CONTROL-STATE.json",
+    "docs/ai-control/CONTROL-MANIFEST.json",
+    "docs/ai-control/CONTINUITY-LEDGER.md",
+    "docs/ai-control/EVIDENCE-INDEX.md",
+    "docs/ai-control/GATE-STATUS.md",
+    "docs/ai-control/HANDOFF.md",
+    "docs/ai-control/CURRENT-TASK.md",
+    "docs/ai-control/SHA256SUMS",
+  ];
+
+  for (const filePath of requiredControlFiles) {
+    if (!fileExists(filePath)) {
+      errors.push(`Required control file missing for publication: ${filePath}`);
+    }
+  }
+
+  // Verify integrity manifest (SHA256SUMS)
+  if (fileExists("docs/ai-control/SHA256SUMS")) {
+    try {
+      const lines = readFile("docs/ai-control/SHA256SUMS", "utf8").split(/\r?\n/).filter(Boolean);
+      for (const line of lines) {
+        const match = /^([a-f0-9]{64})  (.+)$/.exec(line);
+        if (!match) {
+          errors.push(`Malformed checksum in SHA256SUMS: ${line.slice(0, 70)}`);
+          continue;
+        }
+        const [, expected, target] = match;
+        if (!fileExists(target)) {
+          errors.push(`Checksum target missing: ${target}`);
+        }
+      }
+    } catch (error) {
+      errors.push(`Cannot read SHA256SUMS for publication: ${error.message || error}`);
+    }
+  }
+
+  // Verify active task state is publication-ready
+  const activeTask = state.tasks?.[state.active_task];
+  if (!activeTask) {
+    errors.push(`Active task ${state.active_task} not defined in state`);
+  } else if (!["Self-check passed", "Awaiting independent audit", "Independently verified", "Accepted"].includes(activeTask.execution_state)) {
+    errors.push(`Active task execution state ${activeTask.execution_state} is not ready for publication`);
+  }
+
+  // Verify no contradictory acceptance states
+  for (const [taskId, task] of Object.entries(state.tasks || {})) {
+    if (task.execution_state === "Accepted" && task.acceptance_state !== "Accepted") {
+      errors.push(`Task ${taskId} has contradictory accepted states for publication`);
+    }
+  }
+
+  return errors;
+}

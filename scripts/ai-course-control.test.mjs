@@ -486,3 +486,271 @@ test("protected control change requires declaration and cannot self-approve", ()
   });
   expectRejected(fixture, "Protected control-plane changes require");
 });
+
+// ===== G2 Correction: F0-AUDIT Prerequisite Replacement =====
+// Verify that the corrected prerequisite logic is enforced
+// These tests ensure G1's Failed state cannot unlock F0, and only G2:Accepted can.
+
+test("G2 correction: F0-AUDIT prerequisite changed from G1 to G2", () => {
+  const checkpoint = "abc1234567890123456789012345678901234567";
+  const state = {
+    schema_version: "1.0",
+    active_task: "G2",
+    tasks: {
+      G1: { execution_state: "Failed", acceptance_state: "Not accepted" },
+      G2: {
+        execution_state: "Self-check passed",
+        acceptance_state: "Not accepted",
+        author_id: "auth1",
+        owner_id: "auth1",
+        lock_acquired_at: "2026-09-08T00:00:00Z",
+        lock_base_commit: checkpoint
+      },
+      "F0-INDEPENDENT-AUDIT": {
+        execution_state: "Open",
+        acceptance_state: "Not accepted",
+        prerequisites: [{ task: "G2", type: "validation dependency", required_state: "Accepted" }],
+      },
+    },
+    safe_to_switch: "YES",
+    first_unfinished_action: "test",
+    recovery_action: "test",
+    meaning_confirmation: { interpreted_outcome: "test", boundary: "test", material_ambiguity: "none", authority: "test" },
+    last_confirmed_remote_checkpoint: checkpoint,
+    continuity_gates: {},
+    permitted_execution_states: ["Open", "Active", "Self-check passed", "Awaiting independent audit", "Independently verified", "Accepted", "Failed"],
+    lineage: { nodes: [], edges: [] },
+    audit_queue: [],
+  };
+  const errors = validateControlState(state);
+  // After G2 correction to "Self-check passed", F0-AUDIT prerequisite correctly points to G2
+  // and is still blocked (G2 not yet Accepted), but validation passes with no errors
+  assert.equal(errors.length, 0, `G2 correction prerequisite change should validate cleanly: ${errors.join("; ")}`);
+});
+
+test("G2 correction: F0-AUDIT blocked when G1 still required (old defect)", () => {
+  const state = {
+    schema_version: "1.0",
+    active_task: "G2",
+    tasks: {
+      G1: { execution_state: "Failed", acceptance_state: "Not accepted" },
+      "F0-INDEPENDENT-AUDIT": {
+        execution_state: "Open",
+        acceptance_state: "Not accepted",
+        prerequisites: [{ task: "G1", type: "validation dependency", required_state: "Accepted" }],
+      },
+    },
+    safe_to_switch: "YES",
+    first_unfinished_action: "test",
+    recovery_action: "test",
+    meaning_confirmation: { interpreted_outcome: "test", boundary: "test", material_ambiguity: "none", authority: "test" },
+    last_confirmed_remote_checkpoint: "abc1234567890123456789012345678901234567",
+    continuity_gates: {},
+    permitted_execution_states: ["Open", "Active", "Self-check passed", "Awaiting independent audit", "Independently verified", "Accepted", "Failed"],
+    lineage: { nodes: [], edges: [] },
+    audit_queue: [],
+  };
+  const errors = validateControlState(state, { requestedTask: "F0-INDEPENDENT-AUDIT" });
+  assert(errors.some(e => e.includes("BLOCKED") && e.includes("F0-INDEPENDENT-AUDIT")), "F0-AUDIT should be blocked when requiring G1:Accepted");
+});
+
+test("G2 correction: F0-AUDIT blocked when G2 is Self-check only", () => {
+  const state = {
+    schema_version: "1.0",
+    active_task: "G2",
+    tasks: {
+      G2: { execution_state: "Self-check passed", acceptance_state: "Not accepted" },
+      "F0-INDEPENDENT-AUDIT": {
+        execution_state: "Open",
+        acceptance_state: "Not accepted",
+        prerequisites: [{ task: "G2", type: "validation dependency", required_state: "Accepted" }],
+      },
+    },
+    safe_to_switch: "YES",
+    first_unfinished_action: "test",
+    recovery_action: "test",
+    meaning_confirmation: { interpreted_outcome: "test", boundary: "test", material_ambiguity: "none", authority: "test" },
+    last_confirmed_remote_checkpoint: "abc1234567890123456789012345678901234567",
+    continuity_gates: {},
+    permitted_execution_states: ["Open", "Active", "Self-check passed", "Awaiting independent audit", "Independently verified", "Accepted", "Failed"],
+    lineage: { nodes: [], edges: [] },
+    audit_queue: [],
+  };
+  const errors = validateControlState(state, { requestedTask: "F0-INDEPENDENT-AUDIT" });
+  assert(errors.some(e => e.includes("BLOCKED")), "F0-AUDIT should be blocked when G2 is only Self-check passed, not Accepted");
+});
+
+test("G2 correction: G1 Failed state is preserved in lineage", () => {
+  const checkpoint = "abc1234567890123456789012345678901234567";
+  const state = {
+    schema_version: "1.0",
+    active_task: "G2",
+    tasks: {
+      G1: { execution_state: "Failed", acceptance_state: "Not accepted" },
+      G2: {
+        execution_state: "Self-check passed",
+        acceptance_state: "Not accepted",
+        corrects_task: "G1",
+        author_id: "a",
+        owner_id: "a",
+        lock_acquired_at: "2026-09-08T00:00:00Z",
+        lock_base_commit: checkpoint
+      },
+    },
+    safe_to_switch: "YES",
+    first_unfinished_action: "test",
+    recovery_action: "test",
+    meaning_confirmation: { interpreted_outcome: "test", boundary: "test", material_ambiguity: "none", authority: "test" },
+    last_confirmed_remote_checkpoint: checkpoint,
+    continuity_gates: {},
+    permitted_execution_states: ["Open", "Active", "Self-check passed", "Awaiting independent audit", "Independently verified", "Accepted", "Failed"],
+    lineage: { nodes: [{ id: "G1", state: "Failed" }, { id: "G2", state: "Self-check passed" }], edges: [] },
+    audit_queue: [],
+  };
+  const errors = validateControlState(state);
+  assert.equal(errors.length, 0, "G1 Failed state and G2 correction must both be recorded in lineage");
+});
+
+test("G2 hostile: F0-AUDIT blocks when prerequisite task missing from state", () => {
+  const state = {
+    schema_version: "1.0",
+    active_task: "G2",
+    tasks: {
+      G2: { execution_state: "Self-check passed", acceptance_state: "Not accepted" },
+      "F0-INDEPENDENT-AUDIT": {
+        execution_state: "Open",
+        acceptance_state: "Not accepted",
+        prerequisites: [{ task: "G2", type: "validation dependency", required_state: "Accepted" }],
+      },
+    },
+    safe_to_switch: "YES",
+    first_unfinished_action: "test",
+    recovery_action: "test",
+    meaning_confirmation: { interpreted_outcome: "test", boundary: "test", material_ambiguity: "none", authority: "test" },
+    last_confirmed_remote_checkpoint: "abc1234567890123456789012345678901234567",
+    continuity_gates: {},
+    permitted_execution_states: ["Open", "Active", "Self-check passed", "Awaiting independent audit", "Independently verified", "Accepted", "Failed"],
+    lineage: { nodes: [], edges: [] },
+    audit_queue: [],
+  };
+  const errors = validateControlState(state, { requestedTask: "F0-INDEPENDENT-AUDIT" });
+  assert(errors.some(e => e.includes("BLOCKED")), "Missing prerequisite task should block F0-AUDIT");
+});
+
+test("G2 hostile: Task cannot authorize its own acceptance", () => {
+  const checkpoint = "abc1234567890123456789012345678901234567";
+  const state = {
+    schema_version: "1.0",
+    active_task: "G2",
+    tasks: {
+      G2: {
+        execution_state: "Accepted",
+        acceptance_state: "Accepted",
+        author_id: "same-person",
+        reviewer_id: "same-person",
+        independent_review_path: "docs/ai-control/independent-reviews/G2-G06.json",
+        accepted_integration_commit: checkpoint,
+        owner_id: "same-person",
+        lock_acquired_at: "2026-09-08T00:00:00Z",
+        lock_base_commit: checkpoint
+      },
+    },
+    safe_to_switch: "YES",
+    first_unfinished_action: "test",
+    recovery_action: "test",
+    meaning_confirmation: { interpreted_outcome: "test", boundary: "test", material_ambiguity: "none", authority: "test" },
+    last_confirmed_remote_checkpoint: checkpoint,
+    continuity_gates: {},
+    permitted_execution_states: ["Open", "Active", "Self-check passed", "Awaiting independent audit", "Independently verified", "Accepted", "Failed"],
+    lineage: { nodes: [], edges: [] },
+    audit_queue: [],
+  };
+  assert.ok(validateControlState(state).some((error) => error.includes("independent reviewer distinct")));
+});
+
+test("G2 hostile: Accepted task must have valid integration commit", () => {
+  const state = {
+    schema_version: "1.0",
+    active_task: "G2",
+    tasks: {
+      G2: {
+        execution_state: "Accepted",
+        acceptance_state: "Accepted",
+        author_id: "a",
+        reviewer_id: "r",
+        independent_review_path: "docs/ai-control/independent-reviews/G2-G06.json",
+        accepted_integration_commit: "invalid-hash",
+        owner_id: "a",
+        lock_acquired_at: "2026-09-08T00:00:00Z",
+        lock_base_commit: "abc1234567890123456789012345678901234567"
+      },
+    },
+    safe_to_switch: "YES",
+    first_unfinished_action: "test",
+    recovery_action: "test",
+    meaning_confirmation: { interpreted_outcome: "test", boundary: "test", material_ambiguity: "none", authority: "test" },
+    last_confirmed_remote_checkpoint: "abc1234567890123456789012345678901234567",
+    continuity_gates: {},
+    permitted_execution_states: ["Open", "Active", "Self-check passed", "Awaiting independent audit", "Independently verified", "Accepted", "Failed"],
+    lineage: { nodes: [], edges: [] },
+    audit_queue: [],
+  };
+  assert.ok(validateControlState(state).some((error) => error.includes("acceptance lacks a full integration commit")));
+});
+
+test("G2 hostile: Contaminated task cannot be accepted", () => {
+  const checkpoint = "abc1234567890123456789012345678901234567";
+  const state = {
+    schema_version: "1.0",
+    active_task: "G2",
+    tasks: {
+      G2: {
+        execution_state: "Potentially contaminated",
+        acceptance_state: "Accepted",
+        author_id: "a",
+        reviewer_id: "r",
+        independent_review_path: "docs/ai-control/independent-reviews/G2-G06.json",
+        accepted_integration_commit: checkpoint,
+        owner_id: "a",
+        lock_acquired_at: "2026-09-08T00:00:00Z",
+        lock_base_commit: checkpoint
+      },
+    },
+    safe_to_switch: "YES",
+    first_unfinished_action: "test",
+    recovery_action: "test",
+    meaning_confirmation: { interpreted_outcome: "test", boundary: "test", material_ambiguity: "none", authority: "test" },
+    last_confirmed_remote_checkpoint: checkpoint,
+    continuity_gates: {},
+    permitted_execution_states: ["Open", "Active", "Self-check passed", "Awaiting independent audit", "Independently verified", "Accepted", "Failed"],
+    lineage: { nodes: [], edges: [] },
+    audit_queue: [],
+  };
+  assert.ok(validateControlState(state).some((error) => error.includes("contaminated but accepted")));
+});
+
+test("G2 hostile: Failed prerequisite permanently blocks dependent", () => {
+  const state = {
+    schema_version: "1.0",
+    active_task: "test",
+    tasks: {
+      G1: { execution_state: "Failed", acceptance_state: "Not accepted" },
+      "downstream-task": {
+        execution_state: "Open",
+        acceptance_state: "Not accepted",
+        prerequisites: [{ task: "G1", type: "validation dependency", required_state: "Accepted" }],
+      },
+    },
+    safe_to_switch: "YES",
+    first_unfinished_action: "test",
+    recovery_action: "test",
+    meaning_confirmation: { interpreted_outcome: "test", boundary: "test", material_ambiguity: "none", authority: "test" },
+    last_confirmed_remote_checkpoint: "abc1234567890123456789012345678901234567",
+    continuity_gates: {},
+    permitted_execution_states: ["Open", "Active", "Self-check passed", "Awaiting independent audit", "Independently verified", "Accepted", "Failed"],
+    lineage: { nodes: [], edges: [] },
+    audit_queue: [],
+  };
+  const errors = validateControlState(state, { requestedTask: "downstream-task" });
+  assert(errors.some(e => e.includes("BLOCKED") && e.includes("G1 is Failed")), "Failed prerequisite must block dependent");
+});
