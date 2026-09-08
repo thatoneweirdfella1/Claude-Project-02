@@ -624,3 +624,16 @@ Each new entry must contain:
 - **Failure/correction/uncertainty:** G2-G04 (GitHub Actions host proof) remains Open/blocking (not resolved, intentionally left for auditor). User acceptance still unenforced mechanically (intentionally marked Open). G2-G06 still awaiting independent audit.
 - **Resulting status/gate change:** G2 execution_state = Self-check passed (correct for correction of failed task). Publication-preflight now passes. Lineage uses "correction" edge type to distinguish from validation dependencies. Safe to switch = NO (awaiting user acceptance, which is separate from audit verification).
 - **Exact next action:** (1) Verify publication-preflight passes at c4650d4. (2) Add hostile tests verifying: correction tasks can be verified independently, contamination only affects dependents, user acceptance is not automatic. (3) Commit CL-0043 and updated records. (4) Verify gate passes with full remote hash. (5) Provision independent auditor to verify complete c4650d4 checkpoint, including correction/contamination distinction and that user acceptance is separate.
+
+### CL-0044 — 2026-09-08 UTC — Remove routine user approval from autonomy path
+
+- **Actor:** OpenAI Codex correction author.
+- **Task/phase:** G2 autonomy architecture correction.
+- **Repository/branch/starting commit:** Existing `divergence/reliability-staging`; exact remote base `fbeccd0ab6cdc92d72b21654889485289870e3cf`; detached clean worktree used because the older local checkout had divergent unpublished history.
+- **Authority/source:** User explicitly rejected any design requiring routine human GitHub approval or a second account and required autonomous validation, audit, correction, recovery, and advancement.
+- **Action and affected files:** Added `DIVERGENCE-G3-A-TRUSTED-AUTONOMY-BOOTSTRAP.md`; recorded D-016; updated current-task, handoff, gate, and evidence records. No application, layout, branch, PR, merge, ruleset, deployment, or product-system change.
+- **Reason and rejected alternatives:** Rejected Claude's second-account/Code Owner route and the hostile audit's human-environment approval route because both make the user a recurring workflow dependency. Retained their candidate-independent trust-boundary findings.
+- **Command/test/check and actual result:** Source audit hash verified as `d31793b92a1622adf7104b58bd11d3307d9944c67961fbdcd2dc636814254670`; G3-A structural checks and `git diff --check` passed. Full repository gate and remote publication remain to be executed.
+- **Failure/correction/uncertainty:** This checkpoint defines authority and the bounded implementation contract only. External controller, queue, authenticated audit, automatic acceptance, hooks, and host enforcement are not yet implemented or independently verified.
+- **Resulting status/gate change:** Routine user acceptance is superseded; autonomous replacement is Open and blocking.
+- **Exact next action:** Refresh integrity hashes, run repository controls, commit and push this bounded documentation checkpoint, confirm the remote hash, then implement the G3-A controller package.

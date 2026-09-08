@@ -1,8 +1,8 @@
 # Handoff Record
 
-**SAFE TO SWITCH: NO** (awaiting independent audit + explicit user acceptance)
+**SAFE TO SWITCH: NO** (trusted autonomous acceptance replacement is not implemented)
 
-**Last confirmed remote checkpoint:** c4650d473800217e9c8e2e22a5b12d0fd61f5b5c
+**Last confirmed remote checkpoint:** fbeccd0ab6cdc92d72b21654889485289870e3cf
 
 **Full checkpoint lineage:** 
 - fe37f59: G2 correction critical fixes
@@ -11,7 +11,9 @@
 - 1ec11e1: G2 checkpoint sync
 - c4650d4: G2 final validation (execution_state corrected to Self-check passed)
 
-**Current active task:** G2 (Self-check passed; awaiting independent audit and user acceptance)
+**Current active task:** G2 autonomy correction (G3-A bootstrap contract authored; implementation and independent audit Open)
+
+**Latest controlling correction:** D-016 prohibits routine human approval, a second GitHub account, and manual audit/task routing. Do not ask the user to approve routine checkpoints. Implement and verify the candidate-independent automatic path defined in `docs/reliability/control/DIVERGENCE-G3-A-TRUSTED-AUTONOMY-BOOTSTRAP.md`.
 
 ## Status for Next Worker
 

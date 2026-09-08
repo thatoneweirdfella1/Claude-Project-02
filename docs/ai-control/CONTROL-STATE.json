@@ -4,16 +4,16 @@
   "working_branch": "divergence/reliability-staging",
   "accepted_branch": "divergence/reliability-v1",
   "active_task": "G2",
-  "current_phase": "G2 correction awaiting independent audit",
+  "current_phase": "G2 autonomy correction: trusted controller bootstrap Open",
   "safe_to_switch": "NO",
-  "last_confirmed_remote_checkpoint": "c4650d473800217e9c8e2e22a5b12d0fd61f5b5c",
-  "first_unfinished_action": "A different AI audits G2 correction at c4650d473800217e9c8e2e22a5b12d0fd61f5b5c and publishes review plus synchronized state records. Audit must verify prerequisite change, hostile tests, publication mechanism, contamination/correction distinction, and G2-G04 reviewer authentication vulnerability. After independent verification, user separately accepts or rejects G2 (acceptance is not automatic).",
-  "recovery_action": "Resume only G2 correction review from c4650d473800217e9c8e2e22a5b12d0fd61f5b5c; preserve all Failed audits; verify correction state (Self-check passed), hostile test coverage, and publication-preflight passes before independent audit.",
+  "last_confirmed_remote_checkpoint": "fbeccd0ab6cdc92d72b21654889485289870e3cf",
+  "first_unfinished_action": "Implement the candidate-independent trusted controller package defined by D-016 and DIVERGENCE-G3-A-TRUSTED-AUTONOMY-BOOTSTRAP.md. Routine user approval, second-account review, and manual audit/correction routing are prohibited dependencies.",
+  "recovery_action": "Resume G2 autonomy correction from the last confirmed remote checkpoint; preserve all Failed audits and implement automatic validation, independent-AI audit assignment, correction/retry, re-audit, acceptance, and dependency advancement before unlocking F0-AUDIT.",
   "meaning_confirmation": {
     "interpreted_outcome": "Make repository controls automatically keep every AI on the same verified course without requiring the user to remember audits or dependencies.",
     "boundary": "Do not change the product, F0, application, layout, branches, integration baseline, or independent-audit results.",
     "material_ambiguity": "none",
-    "authority": "User's 2026-09-08 two-phase G1-E then G2 hardening instruction; D-015"
+    "authority": "User's 2026-09-08 autonomy correction; D-016 supersedes routine-user-acceptance portions of D-015"
   },
   "permitted_execution_states": [
     "Open",
@@ -75,8 +75,14 @@
       "activation_authority": "User's 2026-09-08 bounded Phase 2 instruction",
       "owner_id": "openai-codex-work-session-2026-09-08-g2-author",
       "lock_acquired_at": "2026-09-08T15:54:15Z",
-      "lock_base_commit": "c4650d473800217e9c8e2e22a5b12d0fd61f5b5c",
-      "independent_audit_required": true
+      "lock_base_commit": "fbeccd0ab6cdc92d72b21654889485289870e3cf",
+      "independent_audit_required": true,
+      "routine_user_acceptance_required": false,
+      "automatic_acceptance_requires": [
+        "trusted external validation for exact candidate SHA",
+        "authenticated independent AI audit",
+        "no unresolved material product decision"
+      ]
     },
     "F0-INDEPENDENT-AUDIT": {
       "title": "Independent F0 audit",

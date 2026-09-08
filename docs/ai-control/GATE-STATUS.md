@@ -60,6 +60,8 @@ G1-E is complete with a retained **Failed** verdict. G1 is not accepted. G2 hard
 
 ## G2 hardening status
 
+**Authority correction D-016:** routine human approval and second-account review are rejected as normal-operation dependencies. G2 remains Open until a candidate-independent controller automatically performs validation, independent-AI audit assignment, correction/retry, re-audit, acceptance, and dependency advancement. The G3-A bootstrap contract is a proposed design artifact, not implementation evidence.
+
 | Gate | State | Meaning |
 |---|---|---|
 | G2-G01 | Self-check passed | Confirmed-base freshness, ownership lock, audit queue, and exact action are mechanically checked by focused tests. Base commit c4650d473800217e9c8e2e22a5b12d0fd61f5b5c matches last_confirmed_remote_checkpoint. |

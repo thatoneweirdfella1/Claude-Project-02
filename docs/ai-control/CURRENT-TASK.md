@@ -31,7 +31,11 @@ A different AI must perform independent audit of the complete corrected checkpoi
 6. SHA256SUMS regenerated and verified
 7. G2-G04 explicitly marked as Open and blocking (GitHub Actions integration required)
 
-After independent verification, user will separately accept or reject G2. F0 and all dependent work remain blocked.
+The earlier routine-user-acceptance requirement is superseded by D-016. G2 cannot close until the trusted autonomous acceptance replacement in `docs/reliability/control/DIVERGENCE-G3-A-TRUSTED-AUTONOMY-BOOTSTRAP.md` is implemented and independently verified. F0 and all dependent work remain blocked.
+
+## Autonomy correction
+
+Routine user approval, a second GitHub account, and manual audit/correction routing are not permitted dependencies. The replacement must automatically validate, assign an authenticated independent AI auditor, retain failures, create and reassign corrections, re-audit, accept verified work, and unlock satisfied dependents. User interruption is reserved for a material unresolved product decision.
 
 ## Safe to Switch
 
