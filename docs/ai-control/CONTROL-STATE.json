@@ -4,10 +4,10 @@
   "working_branch": "divergence/reliability-staging",
   "accepted_branch": "divergence/reliability-v1",
   "active_task": "G1",
-  "current_phase": "G1-D",
-  "safe_to_switch": "YES",
-  "last_confirmed_remote_checkpoint": "295a98afe05512f6aa17abfbeb06f03cf1033ceb",
-  "first_unfinished_action": "Resume G1-D and run the remaining full repository verification.",
+  "current_phase": "G1-E",
+  "safe_to_switch": "NO",
+  "last_confirmed_remote_checkpoint": "98942d3585cab2a78a0f303c3d549bae3f75897e",
+  "first_unfinished_action": "Publish the completed G1-D self-check, then have a different AI perform the standalone G1-E independent audit.",
   "recovery_action": "Restore or isolate the interrupted G1 patch from the last confirmed remote checkpoint, rerun its focused checks, and publish a coherent checkpoint before continuing.",
   "meaning_confirmation": {
     "interpreted_outcome": "Make repository controls automatically keep every AI on the same verified course without requiring the user to remember audits or dependencies.",
@@ -22,14 +22,14 @@
   "tasks": {
     "G1": {
       "title": "Continuity, Acceptance, and Contamination Controls",
-      "execution_state": "Active",
+      "execution_state": "Awaiting independent audit",
       "acceptance_state": "Not accepted",
       "author_id": "openai-codex-gpt5-session-2026-09-08",
       "reviewer_id": null,
       "independent_review_path": null,
       "accepted_integration_commit": null,
       "prerequisites": [],
-      "phases": {"G1-A":"Self-check passed", "G1-B":"Self-check passed", "G1-C":"Self-check passed", "G1-D":"Open", "G1-E":"Open"}
+      "phases": {"G1-A":"Self-check passed", "G1-B":"Self-check passed", "G1-C":"Self-check passed", "G1-D":"Self-check passed", "G1-E":"Open"}
     },
     "F0-INDEPENDENT-AUDIT": {
       "title": "Independent F0 audit",

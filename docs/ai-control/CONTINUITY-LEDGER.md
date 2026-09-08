@@ -447,3 +447,17 @@ Each new entry must contain:
 - **Failure/correction/uncertainty:** Full repository verification and G1-E remain Open. No independent verification is claimed.
 - **Resulting status/gate change:** `SAFE TO SWITCH: YES`; no gate promoted.
 - **Exact next action:** Resume G1-D and run the remaining full repository verification.
+
+### CL-0031 — 2026-09-08 UTC — G1-D full author verification completed
+
+- **Actor:** OpenAI Codex / GPT-5 author session
+- **Task/phase:** G1 / G1-D complete adversarial and repository self-check
+- **Repository/branch/starting commit:** Existing staging; confirmed remote checkpoint `98942d3585cab2a78a0f303c3d549bae3f75897e`
+- **Authority/source:** G1 standalone assignment, G1-O11, and the user's instruction to continue finishing the task.
+- **Action and affected files:** Ran the complete remaining G1-D verification without changing application, F0, layout, or product-system files. Prepared accurate completion records while keeping safe transfer false until publication.
+- **Reason and rejected alternatives:** Close the author-verification phase with actual results. Rejected treating the prior cancelled command as evidence, downloading unapproved replacements, fixing retained unrelated warnings, or performing the independent audit.
+- **Command/test/check and actual result:** The clean checkpoint lacked `node_modules`; network installation was denied and offline install reported uncached `zustand-5.0.14.tgz`. Located another clean checkout, confirmed both `package-lock.json` files had identical SHA-256 `589c069a0fc9a8a1034eee735a71e275f4992dfa57a2ad9b71b1a0b6407ea462`, and reused its dependency tree through an ignored local symlink. `npm test -- --run`: 102 files and 911 tests passed. `npm run test:desktop`: 1/1 passed. `npm run lint`: exit 0 with 17 retained warnings. `npm run build`: exit 0 with retained chunk-size warning. Focused course harness remains 41/41.
+- **Evidence/artifact/hash:** E-029 and refreshed `SHA256SUMS` after final record updates.
+- **Failure/correction/uncertainty:** G1-E remains Open and must be performed by a different AI. The 17 lint warnings and build chunk warning are retained pre-existing limitations, not G1 defects. Browser product E2E is outside this control-only task and unchanged.
+- **Resulting status/gate change:** G1-G05 becomes Self-check passed. G1-G06 remains Open. G1 execution state becomes Awaiting independent audit after publication.
+- **Exact next action:** Validate, gate, and publish this G1-D completion checkpoint; confirm remote; then create a standalone audit packet bound to that exact commit and stop.
