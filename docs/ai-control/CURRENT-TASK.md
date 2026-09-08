@@ -2,7 +2,7 @@
 
 **Task ID:** G2 autonomy correction / G3-A trusted controller
 **Status:** Interrupted — resumable; durable controller source confirmed remote; Vercel target isolation Failed and requires one-time recovery
-**Starting remote checkpoint:** `0f975d7746a59665ba0a9a8b85de5f054e88490f`
+**Starting remote checkpoint:** `21cff7c22de78e9ca63f6025b09b303a2f8c2f89`
 
 ## Authority and outcome
 
@@ -46,3 +46,5 @@ The deploy action reported that it was creating a preview deployment, but authen
 ## Safe to switch
 
 **SAFE TO SWITCH: YES** — the source and incident evidence are explicit; another AI can resume without guessing, but must not treat the current Vercel deployment as compliant.
+
+The user was asked for the one unresolved choice: authorize removal/replacement (recommended), or explicitly accept the isolated unlinked production target as non-product infrastructure. No answer was received before handoff.

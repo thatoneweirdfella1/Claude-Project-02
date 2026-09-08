@@ -2,7 +2,7 @@
 
 **SAFE TO SWITCH: YES**
 
-**Last confirmed remote checkpoint:** `0f975d7746a59665ba0a9a8b85de5f054e88490f`
+**Last confirmed remote checkpoint:** `21cff7c22de78e9ca63f6025b09b303a2f8c2f89`
 
 **Active task:** G2 autonomy correction / G3-A trusted controller.
 
@@ -17,5 +17,7 @@ An isolated unlinked Vercel project was created from the controller package, but
 ## Exact next action
 
 Remove the incorrectly production-targeted inert Vercel project/deployment and create a verifiably preview-only replacement from exact tree `38850ee1aebc6cce450e8116055e0881f2896c17`. Do not configure the current deployment, provision credentials, register the App, activate enforcement, or modify rulesets until target isolation is proven.
+
+The one unresolved user decision is retained: removal/replacement is recommended; alternatively the user may explicitly authorize treating this isolated unlinked project's Vercel production target as non-product infrastructure. No answer was received before this handoff.
 
 Routine user acceptance is not required. Only a genuinely unavoidable one-time account/security action or unresolved material product decision may be presented to the user.

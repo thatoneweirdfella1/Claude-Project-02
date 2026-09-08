@@ -716,3 +716,17 @@ Each new entry must contain:
 - **Failure/correction/uncertainty:** This is an isolated controller project and did not change the product deployment, but its Vercel environment label violates the user's non-production requirement. It has no secrets, Redis, GitHub App, installation, worker, or authority and remains inert. Removal and verified preview recreation require a one-time account-side recovery path because the connected deploy action could not enforce the target and exposes no deletion operation.
 - **Resulting status/gate change:** Vercel target isolation is Failed and blocking; enforcement remains inactive. `SAFE TO SWITCH: YES` after this incident record is published.
 - **Exact next action:** Obtain the user's one-time authorization/account action to remove the inert project/deployment and create a verifiably preview-only replacement; then resume Redis and GitHub App provisioning without changing rulesets.
+
+### CL-0051 — 2026-09-08 UTC — G3-A safe-switch handoff prepared
+
+- **Actor:** OpenAI Codex G3-A continuation author.
+- **Task/phase:** G2 autonomy correction / usage-boundary handoff.
+- **Repository/branch/starting commit:** Existing staging at confirmed remote incident checkpoint `21cff7c22de78e9ca63f6025b09b303a2f8c2f89`.
+- **Authority/source:** User reported approximately 17% usage remaining and asked whether to finish or wrap with an exact continuation note; the standing instruction requires completing and publishing the atomic checkpoint near 15%.
+- **Action and affected files:** Chose safe handoff rather than rushing Vercel recovery, credentials, App installation, and live hostile proof. Synchronized exact remote identity, blocker, user choice, evidence, recovery action, and next action across state, task, handoff, evidence, ledger, and integrity records.
+- **Reason and rejected alternatives:** Remaining external security work cannot be completed and truthfully proven within the usage boundary. Rejected configuring the noncompliant deployment, suppressing the target failure, inventing credentials, activating enforcement, or leaving the remote incident hash ambiguous.
+- **Command/test/check and actual result:** Incident checkpoint `21cff7c22de78e9ca63f6025b09b303a2f8c2f89` was fetched with exact tree `1bf9a343ba75c6d21878589fcdf6a8f96ad7a9d0` and clean local/remote state. Final focused, integrity, 61-control, exact course-gate, publication, and remote-hash verification follow this record edit.
+- **Evidence/artifact/hash:** E-043, E-044, CL-0048–CL-0051, and refreshed `SHA256SUMS`.
+- **Failure/correction/uncertainty:** The Vercel target decision remains unanswered. Redis, GitHub App, installation, worker endpoints, live hostile tests, and activation remain unfinished. The current Vercel project is inert and must not be configured or treated as compliant.
+- **Resulting status/gate change:** No gate is unlocked. Vercel target isolation remains Failed and blocking. `SAFE TO SWITCH: YES` once this record checkpoint is remotely verified.
+- **Exact next action:** Resolve the user's one-time Vercel target decision, then continue from the selected recovery path; do not advance to Redis/App configuration until non-production isolation is proven or explicitly reauthorized.

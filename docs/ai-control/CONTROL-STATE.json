@@ -6,13 +6,13 @@
   "active_task": "G2",
   "current_phase": "G2 autonomy correction: G3-A Vercel target-isolation recovery",
   "safe_to_switch": "YES",
-  "last_confirmed_remote_checkpoint": "0f975d7746a59665ba0a9a8b85de5f054e88490f",
-  "first_unfinished_action": "Resolve the isolated Vercel project's incorrect production target: deployment dpl_4NLyjv7qFrTSzwxP6JNxr5euUMXF must not be configured or used as the controller. Remove it and create a verifiably preview-only deployment before Redis, secrets, GitHub App registration, or hostile live proof.",
-  "recovery_action": "Resume from remote checkpoint 0f975d7746a59665ba0a9a8b85de5f054e88490f and CL-0050. Preserve the inert target-mismatch evidence. Do not configure deployment dpl_4NLyjv7qFrTSzwxP6JNxr5euUMXF, activate enforcement, or modify rulesets.",
+  "last_confirmed_remote_checkpoint": "21cff7c22de78e9ca63f6025b09b303a2f8c2f89",
+  "first_unfinished_action": "Obtain the unresolved one-time Vercel target decision recorded in CL-0050: remove and replace inert deployment dpl_4NLyjv7qFrTSzwxP6JNxr5euUMXF with a verifiably preview-only deployment, or explicitly authorize treating its isolated production target as non-product infrastructure. Do not configure or use it before that decision.",
+  "recovery_action": "Resume from remote checkpoint 21cff7c22de78e9ca63f6025b09b303a2f8c2f89 and CL-0050/CL-0051. Preserve the inert target-mismatch evidence. Do not configure deployment dpl_4NLyjv7qFrTSzwxP6JNxr5euUMXF, activate enforcement, or modify rulesets.",
   "meaning_confirmation": {
     "interpreted_outcome": "Make repository controls automatically keep every AI on the same verified course without requiring the user to remember audits or dependencies.",
     "boundary": "Do not change the product, F0, application, layout, branches, integration baseline, or independent-audit results.",
-    "material_ambiguity": "none",
+    "material_ambiguity": "Whether the isolated unlinked controller project's Vercel production target may count as non-product infrastructure; user choice requested after contradictory preview/create and production/readback evidence",
     "authority": "User's 2026-09-08 autonomy correction; D-016 supersedes routine-user-acceptance portions of D-015"
   },
   "permitted_execution_states": [
@@ -75,7 +75,7 @@
       "activation_authority": "User's 2026-09-08 bounded Phase 2 instruction",
       "owner_id": "openai-codex-work-session-2026-09-08-g2-author",
       "lock_acquired_at": "2026-09-08T20:00:00Z",
-      "lock_base_commit": "0f975d7746a59665ba0a9a8b85de5f054e88490f",
+      "lock_base_commit": "21cff7c22de78e9ca63f6025b09b303a2f8c2f89",
       "independent_audit_required": true,
       "routine_user_acceptance_required": false,
       "automatic_acceptance_requires": [
