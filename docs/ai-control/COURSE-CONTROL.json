@@ -58,7 +58,9 @@
     "docs/reliability/control/STATUS-VIEW-CONTRACT.md",
     "docs/reliability/control/TASK-LIFECYCLE.md",
     "docs/reliability/control/DIVERGENCE-G1-E-STANDALONE-INDEPENDENT-AUDIT.md",
-    "docs/reliability/control/MASTER-CHECKLIST.md"
+    "docs/reliability/control/MASTER-CHECKLIST.md",
+    "docs/ai-control/independent-reviews/G1-G06.json",
+    "docs/reliability/control/independent-reviews/G1-E-2026-09-08.md"
   ],
   "required_changed_records": [
     "docs/ai-control/CONTROL-STATE.json",

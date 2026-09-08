@@ -2,11 +2,11 @@
 
 **Purpose:** This is the user-facing reference for knowing what the project is doing, where it currently is, what each identifier means, what remains, and what must happen before actual reliability-system design begins.
 
-**Current position:** **G1-E — Independent audit of the G1 control package**
+**Current position:** **G1-E Failed; G2 hardening authorized**
 
 **Current result:** G1-D passed author self-check: control **41/41**, unit **911/911**, desktop **1/1**, lint/build successful with retained warnings. The exact audit target and standalone G1-E packet are published.
 
-**Next allowed work:** A different AI performs G1-E against exact checkpoint `983baaa2315db32e2cc772edc2bcad053e4e3d69`.
+**Next allowed work:** `G2 — Maximum-Feasible Automation and Non-Bypass Hardening`, preserving the failed G1-E result and requiring a different later auditor.
 
 **Not allowed yet:** F0-AUDIT, S02/S03/S18/S20, F1, or product implementation.
 
@@ -25,6 +25,7 @@
 | **G1-C** | Build automatic continuation, dependency, acceptance, audit-reminder, and contamination controls | Original checklist sections 2–4 and the required part of 5 |
 | **G1-D** | Attack and test those controls to prove they enforce the rules | Original checklist section 6 |
 | **G1-E** | Have a different, context-free AI independently audit G1 | Original checklist section 7 |
+| **G2** | Maximum-feasible automation and non-bypass hardening after the failed G1-E audit | Authorized correction work |
 | **F0-AUDIT** | Have a different AI independently audit the existing F0 design | Original checklist section 8 |
 | **S02/S03/S18/S20** | The first four actual reliability-system design packages | Actual system work after controls pass |
 | **F1** | Reconcile the four separately designed packages into one compatible foundation | After S02/S03/S18/S20 are accepted |
@@ -51,12 +52,13 @@
 5. **G1-B** — Authority package. **COMPLETED — self-check only.**
 6. **G1-C** — Executable controls. **COMPLETED — self-check only.**
 7. **G1-D** — Full enforcement verification. **COMPLETED — self-check only.**
-8. **G1-E** — Independent G1 audit. **READY — current position; must be performed by a different AI.**
-9. **F0-AUDIT** — Independent F0 audit using the completed controls. **BLOCKED by unfinished/unaccepted G1.**
-10. **S02, S03, S18, S20** — Four separately bounded system-design packages. **BLOCKED by F0-AUDIT.**
-11. **F1** — Reconcile those four packages. **BLOCKED until all four are accepted.**
-12. **Remaining S01–S20 work** — Continue in the blueprint’s dependency order. **BLOCKED by the preceding foundation work.**
-13. **Product implementation** — Implement only accepted designs through later controlled assignments. **Not started.**
+8. **G1-E** — Independent G1 audit. **COMPLETED — Failed; retained.**
+9. **G2** — Maximum-feasible automation and non-bypass hardening. **READY — exact next work; authored changes require later independent audit.**
+10. **F0-AUDIT** — Independent F0 audit using the completed controls. **BLOCKED by failed/unaccepted G1 and unaudited G2 corrections.**
+11. **S02, S03, S18, S20** — Four separately bounded system-design packages. **BLOCKED by F0-AUDIT.**
+12. **F1** — Reconcile those four packages. **BLOCKED until all four are accepted.**
+13. **Remaining S01–S20 work** — Continue in the blueprint’s dependency order. **BLOCKED by the preceding foundation work.**
+14. **Product implementation** — Implement only accepted designs through later controlled assignments. **Not started.**
 
 ---
 

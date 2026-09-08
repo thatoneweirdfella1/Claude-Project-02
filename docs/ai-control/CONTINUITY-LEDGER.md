@@ -489,3 +489,17 @@ Each new entry must contain:
 - **Failure/correction/uncertainty:** G1-E/G1-G06 remain Open. G1 acceptance and every dependent task remain blocked.
 - **Resulting status/gate change:** `SAFE TO SWITCH: YES`; G1 author stop condition reached.
 - **Exact next action:** A different AI performs G1-E using the standalone packet against `983baaa2315db32e2cc772edc2bcad053e4e3d69`.
+
+### CL-0034 — 2026-09-08 UTC — G1-E independent audit Failed and preserved
+
+- **Actor:** OpenAI Codex separate Work-session reviewer `openai-codex-work-session-2026-09-08-g1e`
+- **Task/phase:** G1 / G1-E independent audit
+- **Repository/branch/starting commit:** Existing staging handoff `77823f1640b776b539207f86331e738a1c9f4e7e`; exact audited checkpoint `983baaa2315db32e2cc772edc2bcad053e4e3d69`
+- **Authority/source:** User's bounded two-phase instruction and the checkpoint-bound G1-E standalone packet.
+- **Action and affected files:** Performed the audit without repairing the target; retained JSON and human-readable failure records; updated current state, gates, evidence, checklist, and handoff accurately.
+- **Reason and rejected alternatives:** The audit must preserve actual failures before any correction authoring. Rejected overlooking a stale status because later commits repaired it, accepting passing unit tests as proof against same-change judge tampering, or silently correcting G1 while acting as its independent reviewer.
+- **Command/test/check and actual result:** Integrity passed for every listed file; focused controller passed 41/41; unit passed 911/911 in 102 files; desktop passed 1/1; lint exited 0 with 17 retained warnings; build exited 0 with retained chunk warning. Exact-target status was stale. Workflow/trust inspection found candidate-controlled workflow, validator, tests, policy, state, and hashes can approve coordinated weakening. Live GitHub ruleset readback was unavailable and remains Open.
+- **Evidence/artifact/hash:** E-031; G1-G06 JSON; human-readable G1-E report.
+- **Failure/correction/uncertainty:** Overall G1-E verdict **Failed**. G1-G02, G1-G03, G1-G05, and G1-G06 fail. Reviewer identity is declarative rather than cryptographically bound. Live host ruleset state is Open.
+- **Resulting status/gate change:** G1 is Failed and not accepted. All dependents remain blocked. Failed audit history is immutable evidence for later correction review.
+- **Exact next action:** Begin user-authorized G2 hardening as an author, preserve this audit, and leave every correction awaiting a different independent auditor.

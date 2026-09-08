@@ -4,10 +4,10 @@
   "working_branch": "divergence/reliability-staging",
   "accepted_branch": "divergence/reliability-v1",
   "active_task": "G1",
-  "current_phase": "G1-E",
-  "safe_to_switch": "YES",
+  "current_phase": "G1-E failed; G2 correction authorized",
+  "safe_to_switch": "NO",
   "last_confirmed_remote_checkpoint": "0d51d82548b724b4eceee717ddd01be0e6041db6",
-  "first_unfinished_action": "Have a different AI perform G1-E using the standalone packet against audited checkpoint 983baaa2315db32e2cc772edc2bcad053e4e3d69.",
+  "first_unfinished_action": "Begin G2 — Maximum-Feasible Automation and Non-Bypass Hardening while preserving the failed G1-E audit.",
   "recovery_action": "Restore or isolate the interrupted G1 patch from the last confirmed remote checkpoint, rerun its focused checks, and publish a coherent checkpoint before continuing.",
   "meaning_confirmation": {
     "interpreted_outcome": "Make repository controls automatically keep every AI on the same verified course without requiring the user to remember audits or dependencies.",
@@ -22,14 +22,14 @@
   "tasks": {
     "G1": {
       "title": "Continuity, Acceptance, and Contamination Controls",
-      "execution_state": "Awaiting independent audit",
+      "execution_state": "Failed",
       "acceptance_state": "Not accepted",
       "author_id": "openai-codex-gpt5-session-2026-09-08",
-      "reviewer_id": null,
-      "independent_review_path": null,
+      "reviewer_id": "openai-codex-work-session-2026-09-08-g1e",
+      "independent_review_path": "docs/ai-control/independent-reviews/G1-G06.json",
       "accepted_integration_commit": null,
       "prerequisites": [],
-      "phases": {"G1-A":"Self-check passed", "G1-B":"Self-check passed", "G1-C":"Self-check passed", "G1-D":"Self-check passed", "G1-E":"Open"}
+      "phases": {"G1-A":"Self-check passed", "G1-B":"Self-check passed", "G1-C":"Self-check passed", "G1-D":"Self-check passed", "G1-E":"Failed"}
     },
     "F0-INDEPENDENT-AUDIT": {
       "title": "Independent F0 audit",

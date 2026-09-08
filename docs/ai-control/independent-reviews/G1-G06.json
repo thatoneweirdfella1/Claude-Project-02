@@ -1,0 +1,62 @@
+{
+  "schema_version": "1.0",
+  "task_id": "G1",
+  "audit_phase": "G1-E",
+  "audited_commit": "983baaa2315db32e2cc772edc2bcad053e4e3d69",
+  "author_id": "openai-codex-gpt5-session-2026-09-08",
+  "reviewer_id": "openai-codex-work-session-2026-09-08-g1e",
+  "reviewer_account_description": "Separate OpenAI Codex Work session; not the author or corrector of the audited checkpoint",
+  "independent_from_author": true,
+  "timestamp_utc": "2026-09-08T14:31:00Z",
+  "reviewed_paths": [
+    "AGENTS.md",
+    "docs/ai-control/**",
+    "DIVERGENCE-G1-CONTROL-UPGRADE-HANDOFF.md",
+    "docs/reliability/control/**",
+    "scripts/ai-control-state.mjs",
+    "scripts/ai-control-status.mjs",
+    "scripts/ai-course-control.mjs",
+    "scripts/ai-course-control.test.mjs",
+    ".github/workflows/ai-course-control.yml",
+    ".github/CODEOWNERS"
+  ],
+  "executed_checks": [
+    {"check":"integrity manifest","actual":"all entries passed","status":"Independently verified"},
+    {"check":"focused controller harness","actual":"41/41 passed","status":"Independently verified"},
+    {"check":"unit tests","actual":"911/911 passed in 102 files","status":"Independently verified"},
+    {"check":"desktop test","actual":"1/1 passed","status":"Independently verified"},
+    {"check":"lint","actual":"exit 0 with 17 retained warnings","status":"Independently verified"},
+    {"check":"production build","actual":"exit 0 with retained chunk-size warning","status":"Independently verified"},
+    {"check":"status at audited checkpoint","actual":"stale next action requested G1-D publication","status":"Failed"},
+    {"check":"same-change judge tampering","actual":"candidate controls workflow, validator, tests, policy, state, and hashes","status":"Failed"},
+    {"check":"live GitHub ruleset readback","actual":"unavailable in reviewer environment","status":"Open"}
+  ],
+  "hostile_cases": {
+    "retained_harness": "41/41 passed",
+    "case_31_same_change_weakening": "Failed at trust boundary",
+    "provider_unavailable": "Repository controls continued locally; host readback remained Open"
+  },
+  "findings": [
+    {"id":"G1E-F01","severity":"High","affected_outcomes":["G1-O02","G1-O05"],"affected_gates":["G1-G02","G1-G03","G1-G06"],"status":"Failed"},
+    {"id":"G1E-F02","severity":"Critical","affected_outcomes":["G1-O07","G1-O08","G1-O11"],"affected_gates":["G1-G03","G1-G05","G1-G06"],"status":"Failed"},
+    {"id":"G1E-F03","severity":"Medium","affected_outcomes":["G1-O08"],"affected_gates":["G1-G03","G1-G06"],"status":"Failed"},
+    {"id":"G1E-F04","severity":"Open limitation","affected_outcomes":["G1-O06","G1-O11"],"affected_gates":["G1-G05"],"status":"Open"}
+  ],
+  "gate_results": {
+    "G1-G01": "Independently verified",
+    "G1-G02": "Failed",
+    "G1-G03": "Failed",
+    "G1-G04": "Independently verified",
+    "G1-G05": "Failed",
+    "G1-G06": "Failed"
+  },
+  "unresolved_limitations": [
+    "Repository code cannot guarantee administrator non-bypass.",
+    "Current live rulesets were not available for readback.",
+    "Reviewer identity is not cryptographically bound by current repository controls."
+  ],
+  "verdict": "Failed",
+  "report_path": "docs/reliability/control/independent-reviews/G1-E-2026-09-08.md",
+  "report_sha256": "bf5c261c011e6f6567cc1e938d6e79cf639809859c6b2f44bcfae9aaee2a9b36",
+  "exact_next_action": "Perform G2 — Maximum-Feasible Automation and Non-Bypass Hardening as authored correction work; then require a different independent audit."
+}

@@ -54,6 +54,6 @@ F0 is not F1, independently verified, user/product approved, implemented, releas
 | G1-G03 Audit/dependency blocking | Self-check passed | Typed prerequisites, state transitions, separate review evidence, accepted-baseline restrictions, and plain-language blocked-next output are implemented and locally tested. Independent audit remains Open. |
 | G1-G04 Contamination containment | Self-check passed | Multi-level lineage propagation, contaminated-acceptance rejection, and verified-baseline recovery boundary are implemented and locally tested. Independent audit remains Open. |
 | G1-G05 Adversarial enforcement | Self-check passed | Focused controller harness passes 41/41; unit tests pass 911/911 in 102 files; desktop passes 1/1; lint exits 0 with 17 retained warnings; production build exits 0 with the retained chunk-size warning. Exact checkpoint publication and independent G1-E challenge remain Open. |
-| G1-G06 Independent cold start | Open | Must be performed by a separate AI after G1-A–G1-D are published. |
+| G1-G06 Independent cold start | Failed | Independent G1-E audit found stale checkpoint direction and a same-change common-mode bypass because candidate-controlled workflow, validator, tests, policy, state, and hashes can approve their own weakening. |
 
-G1 is the only active task. F0 artifacts remain frozen at their prior self-check state. Independent F0 audit and all product-system work remain blocked.
+G1-E is complete with a retained **Failed** verdict. G1 is not accepted. G2 hardening is the exact authorized correction; F0 artifacts remain frozen and all dependent/product-system work remains blocked.

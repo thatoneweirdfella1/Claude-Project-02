@@ -5,7 +5,7 @@
 - **ID:** G1
 - **Title:** Continuity, Acceptance, and Contamination Controls
 - **Phase:** Execution control
-- **Status:** G1-A through G1-D Self-check passed and published; G1-E packet published; awaiting a different AI's independent audit
+- **Status:** G1-E independently executed and **Failed**; G1 is not accepted; user-authorized G2 correction is the only next work
 - **Task source:** `DIVERGENCE-G1-CONTROL-UPGRADE-HANDOFF.md`
 - **Task-source SHA-256:** `e940049e4dffd0d87a9b303526df82c7a8f61c0a496f6afc1f6f34b9b8f75db8`
 - **Canonical master blueprint:** `02-MASTER-SYSTEM-AND-REQUIREMENT-BLUEPRINT.md`, SHA-256 `d9783aa4fff475810170f2217ea2cdca1b30baefe78d21d837980943c509ea47`
@@ -74,6 +74,10 @@ Finish and mechanically test the authority, continuous-checkpoint, audit-blockin
 
 Stop after G1-A through G1-D are self-checked, published in recoverable checkpoints, and the independent G1 audit is the only permitted next task. Stop earlier with a recoverable handoff if interrupted.
 
+## Independent-audit result
+
+G1-E was performed by `openai-codex-work-session-2026-09-08-g1e` against exact checkpoint `983baaa2315db32e2cc772edc2bcad053e4e3d69`. The retained verdict is **Failed**. The focused harness and repository checks passed, but the audited checkpoint had a stale next-action projection and candidate-controlled enforcement could weaken its workflow, validator, tests, policy, state, and hashes in the same change. See `docs/ai-control/independent-reviews/G1-G06.json` and the human-readable report.
+
 ## Exact next action
 
-Stop author work. A different AI must perform G1-E using `docs/reliability/control/DIVERGENCE-G1-E-STANDALONE-INDEPENDENT-AUDIT.md` against exact checkpoint `983baaa2315db32e2cc772edc2bcad053e4e3d69`.
+Begin the separately user-authorized `G2 — Maximum-Feasible Automation and Non-Bypass Hardening`. Preserve the failed G1-E audit. All G2-authored changes require another AI's independent audit.

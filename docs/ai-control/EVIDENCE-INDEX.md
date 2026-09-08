@@ -35,6 +35,8 @@
 | E-029 | Complete local G1-D verification run | G1-G05 author self-check | Self-check passed locally; exact checkpoint publication and independent G1-E Open | Control 41/41; unit 911/911 in 102 files; desktop 1/1; lint exit 0 with 17 retained warnings; build exit 0 with retained chunk warning | Dependencies were reused from another clean checkout only after confirming identical `package-lock.json` SHA-256 `589c069a0fc9a8a1034eee735a71e275f4992dfa57a2ad9b71b1a0b6407ea462`. This is author evidence, not independent verification. |
 | E-030 | `DIVERGENCE-G1-E-STANDALONE-INDEPENDENT-AUDIT.md` and `MASTER-CHECKLIST.md` | Exact context-free G1-E handoff and user/repository position mapping | Structural Self-check passed and published; independent execution Open | Audit target `983baaa2315db32e2cc772edc2bcad053e4e3d69`; packet publication `0d51d82548b724b4eceee717ddd01be0e6041db6`; exact file hashes in `SHA256SUMS` | The packet is an assignment, not an executed audit. The checklist is a status/reference projection, not proof. |
 
+| E-031 | `docs/ai-control/independent-reviews/G1-G06.json` and `docs/reliability/control/independent-reviews/G1-E-2026-09-08.md` | Independent G1-E audit against exact checkpoint `983baaa2315db32e2cc772edc2bcad053e4e3d69` | **Failed**, retained | Report SHA-256 `bf5c261c011e6f6567cc1e938d6e79cf639809859c6b2f44bcfae9aaee2a9b36` | Controller 41/41, unit 911/911, desktop 1/1, lint/build passed; load required failure because checkpoint direction was stale and candidate-controlled enforcement can approve same-change weakening. Live ruleset readback Open. |
+
 ## Evidence rules
 
 - Record observed results separately from plans or requirements.

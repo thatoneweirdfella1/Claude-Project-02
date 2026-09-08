@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "project": "Divergence.AI Reliability Layer",
-  "authority_status": "G0 enforcement and cold-start continuity independently verified; B0 installed the canonical blueprint; F0 completed by self-check and remains frozen pending audit; user explicitly activated G1 control hardening",
+  "authority_status": "G1-E independent audit Failed and is retained; G1 is not accepted; user authorized G2 hardening; F0 and all dependent work remain blocked",
   "repository": {
     "full_name": "thatoneweirdfella1/Claude-Project-02",
     "policy": "existing_repository_only",
@@ -57,7 +57,7 @@
     "id": "G1",
     "title": "Continuity, Acceptance, and Contamination Controls",
     "source": "docs/ai-control/CURRENT-TASK.md",
-    "status": "G1-A through G1-D Self-check passed and published; G1-E standalone packet published; awaiting a different AI's independent audit; G1 not accepted",
+    "status": "G1-E Failed; G1 not accepted; G2 correction is the exact authorized next work",
     "next_task_reveal_allowed": true
   },
   "scope": {
