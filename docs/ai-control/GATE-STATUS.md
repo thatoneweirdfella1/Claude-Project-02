@@ -63,8 +63,8 @@ G1-E is complete with a retained **Failed** verdict. G1 is not accepted. G2 hard
 | Gate | State | Meaning |
 |---|---|---|
 | G2-G01 | Self-check passed | Confirmed-base freshness, ownership lock, audit queue, and exact action are mechanically checked by focused tests. |
-| G2-G02 | Self-check passed | Failed-task transitions require an explicit authorized correction; retained dependency/contamination/recovery checks remain active. |
+| G2-G02 | Failed | Dependency correction incomplete: F0-AUDIT prerequisite not updated from G1 to G2. |
 | G2-G03 | Self-check passed | Protected control-plane changes require owner, gate, audit requirement, residual risk, and cannot carry their own review/acceptance claim. |
 | G2-G04 | Open | Current live ruleset, required-check, CODEOWNERS reviewer binding, bypass, and admin behavior require host readback/configuration. |
 | G2-G05 | Self-check passed | Provider notifications remain optional and non-authoritative; unguaranteed semantic/admin risks are explicit. |
-| G2-G06 | Open | A different AI must audit every G2-authored change. |
+| G2-G06 | Failed | Independent audit completed; critical defect found in prerequisite logic. |

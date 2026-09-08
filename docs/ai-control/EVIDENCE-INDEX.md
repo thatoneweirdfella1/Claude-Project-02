@@ -46,3 +46,4 @@
 - Use exact file hashes or stable versions after each material change.
 - A changed file invalidates its prior hash until a new evidence entry or correction is recorded.
 - No evidence produced by the task author is independently verified by that fact alone.
+| E-034 | G2 independent audit evidence | G2-G06 verdict and failure analysis | Comprehensive audit | File: `docs/ai-control/independent-reviews/G2-G06.json`; defect: F0-AUDIT prerequisite not changed from G1:Accepted to G2:Accepted; SATISFIES enforcement confirms permanent blocking | G2 cannot be accepted as-is; prerequisite change required before retry. |

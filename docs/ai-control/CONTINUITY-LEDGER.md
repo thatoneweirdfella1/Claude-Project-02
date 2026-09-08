@@ -540,3 +540,17 @@ Each new entry must contain:
 - **Failure/correction/uncertainty:** Live workflow triggering and current ruleset readback remain Open. Local test/gate success is not substituted for a missing hosted run.
 - **Resulting status/gate change:** G2-G04 remains Open; G2-G06 remains Open. All dependents stay blocked.
 - **Exact next action:** A different AI audits implementation `a4f67dad5d31ad07285851df3686dc8e6b00584f` plus every later G2 handoff commit at remote staging HEAD and rechecks host enforcement.
+
+### CL-0038 — 2026-09-08 UTC — G2 independent audit completed: FAILED
+
+- **Actor:** Claude (Opus 5) independent auditor, separate session
+- **Task/phase:** G2 / G2-G06 independent audit
+- **Repository/branch/starting commit:** Existing staging; audited through remote HEAD `e89a4d62b4f2e887c01ca38eb653b281b4d59d0f`
+- **Authority/source:** User's audit request and G2 publication handoff
+- **Action and affected files:** Performed comprehensive audit of G2 implementation and all handoff commits. Reviewed CONTROL-STATE, gap audit, gate status, validators, tests, and all related changes. Created independent review evidence.
+- **Reason and rejected alternatives:** Preserve accurate audit findings without repairing. Rejected overlooking incomplete prerequisite change because other safeguards are sound.
+- **Command/test/check and actual result:** All 46 course-control tests pass. Focused harness and unit tests pass. However, mechanical verification confirms F0-AUDIT prerequisite still requires G1:Accepted while G1 is Failed. SATISFIES["Accepted"] contains only {"Accepted"}, so validation will always return "G1 is Failed; Accepted is required". This blocks F0-AUDIT permanently even if G2 is accepted, making G2 unable to fulfill its core purpose.
+- **Evidence/artifact/hash:** E-034; independent review `docs/ai-control/independent-reviews/G2-G06.json`
+- **Failure/correction/uncertainty:** G2 implementation failed to implement the critical correction it was designed to make: replace G1:Accepted prerequisite with G2:Accepted prerequisite so G2 acceptance can unlock F0-AUDIT. G2-G02 (dependency/correction gate) is therefore Failed. G2-G06 (independent audit gate) is Failed.
+- **Resulting status/gate change:** G2 execution_state = Failed. G2-G02 = Failed. G2-G06 = Failed. All dependent work remains blocked.
+- **Exact next action:** Confirm this failed audit commit remote. Switch roles from auditor to correction author. Implement the missing prerequisite change. Retest. Mark as Self-check passed; awaiting independent audit. Do not claim independent verification of corrections.

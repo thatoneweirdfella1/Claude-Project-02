@@ -15,10 +15,34 @@
     "material_ambiguity": "none",
     "authority": "User's 2026-09-08 two-phase G1-E then G2 hardening instruction; D-015"
   },
-  "permitted_execution_states": ["Open", "Active", "Interrupted — resumable", "Interrupted — unsafe", "Self-check passed", "Awaiting independent audit", "Independently verified", "Accepted", "Failed", "Potentially contaminated"],
-  "permitted_gate_statuses": ["Self-check passed", "Independently verified", "Failed", "Open"],
-  "permitted_acceptance_states": ["Not accepted", "Accepted"],
-  "dependency_types": ["design prerequisite", "co-design dependency", "runtime input", "validation dependency"],
+  "permitted_execution_states": [
+    "Open",
+    "Active",
+    "Interrupted — resumable",
+    "Interrupted — unsafe",
+    "Self-check passed",
+    "Awaiting independent audit",
+    "Independently verified",
+    "Accepted",
+    "Failed",
+    "Potentially contaminated"
+  ],
+  "permitted_gate_statuses": [
+    "Self-check passed",
+    "Independently verified",
+    "Failed",
+    "Open"
+  ],
+  "permitted_acceptance_states": [
+    "Not accepted",
+    "Accepted"
+  ],
+  "dependency_types": [
+    "design prerequisite",
+    "co-design dependency",
+    "runtime input",
+    "validation dependency"
+  ],
   "tasks": {
     "G1": {
       "title": "Continuity, Acceptance, and Contamination Controls",
@@ -29,15 +53,21 @@
       "independent_review_path": "docs/ai-control/independent-reviews/G1-G06.json",
       "accepted_integration_commit": null,
       "prerequisites": [],
-      "phases": {"G1-A":"Self-check passed", "G1-B":"Self-check passed", "G1-C":"Self-check passed", "G1-D":"Self-check passed", "G1-E":"Failed"}
+      "phases": {
+        "G1-A": "Self-check passed",
+        "G1-B": "Self-check passed",
+        "G1-C": "Self-check passed",
+        "G1-D": "Self-check passed",
+        "G1-E": "Failed"
+      }
     },
     "G2": {
       "title": "Maximum-Feasible Automation and Non-Bypass Hardening",
-      "execution_state": "Awaiting independent audit",
+      "execution_state": "Failed",
       "acceptance_state": "Not accepted",
       "author_id": "openai-codex-work-session-2026-09-08-g2-author",
-      "reviewer_id": null,
-      "independent_review_path": null,
+      "reviewer_id": "claude-opus-5-independent-session-2026-09-08",
+      "independent_review_path": "docs/ai-control/independent-reviews/G2-G06.json",
       "accepted_integration_commit": null,
       "prerequisites": [],
       "corrects_task": "G1",
@@ -55,7 +85,13 @@
       "reviewer_id": null,
       "independent_review_path": null,
       "accepted_integration_commit": null,
-      "prerequisites": [{"task":"G1", "type":"validation dependency", "required_state":"Accepted"}]
+      "prerequisites": [
+        {
+          "task": "G1",
+          "type": "validation dependency",
+          "required_state": "Accepted"
+        }
+      ]
     },
     "S02": {
       "title": "Requirement and Decision Completion design package",
@@ -65,7 +101,13 @@
       "reviewer_id": null,
       "independent_review_path": null,
       "accepted_integration_commit": null,
-      "prerequisites": [{"task":"F0-INDEPENDENT-AUDIT", "type":"validation dependency", "required_state":"Accepted"}]
+      "prerequisites": [
+        {
+          "task": "F0-INDEPENDENT-AUDIT",
+          "type": "validation dependency",
+          "required_state": "Accepted"
+        }
+      ]
     },
     "S03": {
       "title": "Source Authority and Provenance design package",
@@ -75,7 +117,13 @@
       "reviewer_id": null,
       "independent_review_path": null,
       "accepted_integration_commit": null,
-      "prerequisites": [{"task":"F0-INDEPENDENT-AUDIT", "type":"validation dependency", "required_state":"Accepted"}]
+      "prerequisites": [
+        {
+          "task": "F0-INDEPENDENT-AUDIT",
+          "type": "validation dependency",
+          "required_state": "Accepted"
+        }
+      ]
     },
     "S18": {
       "title": "Security, Privacy, and Consent design package",
@@ -85,7 +133,13 @@
       "reviewer_id": null,
       "independent_review_path": null,
       "accepted_integration_commit": null,
-      "prerequisites": [{"task":"F0-INDEPENDENT-AUDIT", "type":"validation dependency", "required_state":"Accepted"}]
+      "prerequisites": [
+        {
+          "task": "F0-INDEPENDENT-AUDIT",
+          "type": "validation dependency",
+          "required_state": "Accepted"
+        }
+      ]
     },
     "S20": {
       "title": "Evaluation, Release, and Change design package",
@@ -95,7 +149,13 @@
       "reviewer_id": null,
       "independent_review_path": null,
       "accepted_integration_commit": null,
-      "prerequisites": [{"task":"F0-INDEPENDENT-AUDIT", "type":"validation dependency", "required_state":"Accepted"}]
+      "prerequisites": [
+        {
+          "task": "F0-INDEPENDENT-AUDIT",
+          "type": "validation dependency",
+          "required_state": "Accepted"
+        }
+      ]
     },
     "F1": {
       "title": "Foundation reconciliation",
@@ -106,10 +166,26 @@
       "independent_review_path": null,
       "accepted_integration_commit": null,
       "prerequisites": [
-        {"task":"S02", "type":"co-design dependency", "required_state":"Accepted"},
-        {"task":"S03", "type":"co-design dependency", "required_state":"Accepted"},
-        {"task":"S18", "type":"co-design dependency", "required_state":"Accepted"},
-        {"task":"S20", "type":"co-design dependency", "required_state":"Accepted"}
+        {
+          "task": "S02",
+          "type": "co-design dependency",
+          "required_state": "Accepted"
+        },
+        {
+          "task": "S03",
+          "type": "co-design dependency",
+          "required_state": "Accepted"
+        },
+        {
+          "task": "S18",
+          "type": "co-design dependency",
+          "required_state": "Accepted"
+        },
+        {
+          "task": "S20",
+          "type": "co-design dependency",
+          "required_state": "Accepted"
+        }
       ]
     }
   },
@@ -139,10 +215,28 @@
   },
   "lineage": {
     "nodes": [
-      {"id":"integration-baseline", "state":"Accepted", "commit":"7681344918a912f0ac35a2fb15c2b41b85638a3f"},
-      {"id":"G1-candidate", "state":"Failed", "commit":"983baaa2315db32e2cc772edc2bcad053e4e3d69"},
-      {"id":"G2-correction", "state":"Awaiting independent audit", "commit":"a4f67dad5d31ad07285851df3686dc8e6b00584f"}
+      {
+        "id": "integration-baseline",
+        "state": "Accepted",
+        "commit": "7681344918a912f0ac35a2fb15c2b41b85638a3f"
+      },
+      {
+        "id": "G1-candidate",
+        "state": "Failed",
+        "commit": "983baaa2315db32e2cc772edc2bcad053e4e3d69"
+      },
+      {
+        "id": "G2-correction",
+        "state": "Awaiting independent audit",
+        "commit": "a4f67dad5d31ad07285851df3686dc8e6b00584f"
+      }
     ],
-    "edges": [{"from":"integration-baseline", "to":"G1-candidate", "type":"design prerequisite"}]
+    "edges": [
+      {
+        "from": "integration-baseline",
+        "to": "G1-candidate",
+        "type": "design prerequisite"
+      }
+    ]
   }
 }
