@@ -688,3 +688,17 @@ Each new entry must contain:
 - **Failure/correction/uncertainty:** The App, Vercel project, Redis resource, secrets, workers, and live Check Run do not yet exist. The service defaults to `observe` and enforcement remains inactive. No independent verification is claimed.
 - **Resulting status/gate change:** Durable external-service source becomes author Self-check passed locally; G3A live-host and hostile-proof gates remain Open.
 - **Exact next action:** Refresh integrity, run focused and 61-control tests plus exact course gate, commit/push only staging and confirm remote; then create the isolated Vercel preview project in observe mode and provision its one-repository GitHub App boundary.
+
+### CL-0049 — 2026-09-08 UTC — Durable controller source confirmed remote
+
+- **Actor:** OpenAI Codex G3-A continuation author.
+- **Task/phase:** G2 autonomy correction / G3-A source publication receipt.
+- **Repository/branch/starting commit:** `thatoneweirdfella1/Claude-Project-02`; existing `divergence/reliability-staging`; exact parent `716a16367d7207a7ce87fb3482336ce39bc529f3`.
+- **Authority/source:** User's exact continuation and atomic-checkpoint requirements; CL-0048 implementation checkpoint.
+- **Action and affected files:** Completed syntax/JSON/integrity/whitespace, focused, course-control, and exact-gate verification; created the verified repository tree through the connected GitHub boundary; advanced only `divergence/reliability-staging` with `force:false`; fetched and compared remote bytes. No branch, PR, merge, deployment, ruleset, application, build, integration, safety, or production change occurred.
+- **Reason and rejected alternatives:** The terminal HTTPS remote lacked a configured credential. The connected boundary preserved exact tree identity and fast-forward ancestry. Rejected force update, a new branch, and claiming an initial incomplete large-blob upload as published; that unreachable tree was repaired before any ref moved.
+- **Command/test/check and actual result:** Focused G3-A suite 27/27; course controls 61/61; integrity manifest 89/89; JSON and syntax checks passed; exact course gate accepted the 37 authorized paths from `716a16367d7207a7ce87fb3482336ce39bc529f3`; remote commit `d1ef5539a6693358c284c28cacf26b07924b313a` fetched successfully; remote tree `38850ee1aebc6cce450e8116055e0881f2896c17` equals the tested local tree with an empty diff.
+- **Evidence/artifact/hash:** E-043; remote commit and tree above; refreshed `SHA256SUMS` after this publication receipt.
+- **Failure/correction/uncertainty:** Vercel deployment, Redis, GitHub App registration/installation, secrets, provider workers, live Check Runs, and hostile live proof remain Open. Enforcement remains inactive and no independent verification is claimed.
+- **Resulting status/gate change:** Durable controller source is author Self-check passed and remotely recoverable. `SAFE TO SWITCH: YES`; external provisioning is now the first unfinished action.
+- **Exact next action:** Deploy exact tree `38850ee1aebc6cce450e8116055e0881f2896c17` as a new isolated Vercel preview service in `observe` mode, then provision its durable Redis and one-repository GitHub App boundary.

@@ -5,9 +5,9 @@
   "accepted_branch": "divergence/reliability-v1",
   "active_task": "G2",
   "current_phase": "G2 autonomy correction: G3-A durable external controller implementation",
-  "safe_to_switch": "NO",
-  "last_confirmed_remote_checkpoint": "716a16367d7207a7ce87fb3482336ce39bc529f3",
-  "first_unfinished_action": "Publish the durable controller-code checkpoint, deploy it as a new preview-only Vercel project in observe mode, provision Redis and secrets, then register and install the narrowly permissioned GitHub App only on repository 1272469738. Do not activate enforcement or modify rulesets.",
+  "safe_to_switch": "YES",
+  "last_confirmed_remote_checkpoint": "d1ef5539a6693358c284c28cacf26b07924b313a",
+  "first_unfinished_action": "Deploy confirmed controller tree 38850ee1aebc6cce450e8116055e0881f2896c17 as a new preview-only Vercel project in observe mode, provision Redis and secrets, then register and install the narrowly permissioned GitHub App only on repository 1272469738. Do not activate enforcement or modify rulesets.",
   "recovery_action": "Resume G2 autonomy correction from the last confirmed remote checkpoint; preserve all Failed audits and implement automatic validation, independent-AI audit assignment, correction/retry, re-audit, acceptance, and dependency advancement before unlocking F0-AUDIT.",
   "meaning_confirmation": {
     "interpreted_outcome": "Make repository controls automatically keep every AI on the same verified course without requiring the user to remember audits or dependencies.",
@@ -75,7 +75,7 @@
       "activation_authority": "User's 2026-09-08 bounded Phase 2 instruction",
       "owner_id": "openai-codex-work-session-2026-09-08-g2-author",
       "lock_acquired_at": "2026-09-08T20:00:00Z",
-      "lock_base_commit": "716a16367d7207a7ce87fb3482336ce39bc529f3",
+      "lock_base_commit": "d1ef5539a6693358c284c28cacf26b07924b313a",
       "independent_audit_required": true,
       "routine_user_acceptance_required": false,
       "automatic_acceptance_requires": [

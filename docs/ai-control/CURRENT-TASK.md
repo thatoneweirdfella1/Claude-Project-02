@@ -1,8 +1,8 @@
 # Current Task Status
 
 **Task ID:** G2 autonomy correction / G3-A trusted controller
-**Status:** Active; durable controller source Self-check passed locally; external provisioning and hostile proof Open
-**Starting remote checkpoint:** `716a16367d7207a7ce87fb3482336ce39bc529f3`
+**Status:** Active; durable controller source Self-check passed and confirmed remote; external provisioning and hostile proof Open
+**Starting remote checkpoint:** `d1ef5539a6693358c284c28cacf26b07924b313a`
 
 ## Authority and outcome
 
@@ -30,15 +30,14 @@ The deployable source under `control-plane/g3a-controller/` now contains:
 - health, signed webhook, worker callback, bootstrap, and recovery endpoints;
 - controller threat model and least-privilege permission manifest.
 
-Focused G3-A tests pass 27/27 at the working checkpoint. This remains author self-check evidence. It is not evidence of deployment, App registration/installation, Redis provisioning, live worker credentials, live Check Runs, independence, or activation.
+Focused G3-A tests pass 27/27 at the checkpoint. The exact course gate passed from `716a16367d7207a7ce87fb3482336ce39bc529f3`; the connected GitHub boundary advanced only staging with `force:false`; remote commit `d1ef5539a6693358c284c28cacf26b07924b313a` has verified tree `38850ee1aebc6cce450e8116055e0881f2896c17`, identical to the tested local tree. This remains author self-check evidence. It is not evidence of deployment, App registration/installation, Redis provisioning, live worker credentials, live Check Runs, independence, or activation.
 
 ## Exact next action
 
-1. Complete continuity/integrity updates, run 61/61 course tests and the exact course gate, commit, push only to staging, and confirm the remote hash.
-2. Create a new non-production Vercel project with no product Git linkage; provision Redis and secrets; deploy this exact controller release in `observe` mode.
-3. Register a GitHub App with only metadata:read, contents:read, pull_requests:read, and checks:write; install it only on repository `1272469738`.
-4. Configure distinct authenticated author and auditor principals, then run G3A-01 through G3A-10 hostile tests against disposable inputs. Do not activate enforcement or change the integration ruleset before they pass.
+1. Create a new non-production Vercel project with no product Git linkage; provision Redis and secrets; deploy exact tree `38850ee1aebc6cce450e8116055e0881f2896c17` in `observe` mode.
+2. Register a GitHub App with only metadata:read, contents:read, pull_requests:read, and checks:write; install it only on repository `1272469738`.
+3. Configure distinct authenticated author and auditor principals, then run G3A-01 through G3A-10 hostile tests against disposable inputs. Do not activate enforcement or change the integration ruleset before they pass.
 
 ## Safe to switch
 
-**SAFE TO SWITCH: NO** — the current controller-code checkpoint is not yet remotely published.
+**SAFE TO SWITCH: YES** — the source checkpoint is remotely recoverable at the exact commit and tree above; provisioning is the first unfinished action.
