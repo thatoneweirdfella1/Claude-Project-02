@@ -9,7 +9,7 @@
     "claude/remaining-second-pass-v1"
   ],
   "branch_creation_allowed": false,
-  "active_task": "F0",
+  "active_task": "G1",
   "permitted_gate_statuses": [
     "Self-check passed",
     "Independently verified",
@@ -40,7 +40,8 @@
     "scripts/ai-course-control.test.mjs",
     ".github/workflows/ai-course-control.yml",
     ".github/CODEOWNERS",
-    "DIVERGENCE-F0-STANDALONE-HANDOFF.md"
+    "DIVERGENCE-F0-STANDALONE-HANDOFF.md",
+    "DIVERGENCE-G1-CONTROL-UPGRADE-HANDOFF.md"
   ],
   "required_changed_records": [
     "docs/ai-control/CONTINUITY-LEDGER.md",
@@ -129,6 +130,23 @@
         "docs/ai-control/PARKING-LOT.md",
         "docs/ai-control/SHA256SUMS",
         "docs/ai-control/TASK-INDEX.md"
+      ]
+    },
+    "G1": {
+      "phase": "execution-control",
+      "locked": false,
+      "allowed_paths": [
+        "DIVERGENCE-G1-CONTROL-UPGRADE-HANDOFF.md",
+        ".github/CODEOWNERS",
+        ".github/copilot-instructions.md",
+        ".github/workflows/ai-course-control.yml",
+        "AGENTS.md",
+        "CLAUDE.md",
+        "docs/ai-control/**",
+        "docs/reliability/control/**",
+        "scripts/ai-course-control.mjs",
+        "scripts/ai-course-control.test.mjs",
+        "scripts/ai-control-*.mjs"
       ]
     }
   },

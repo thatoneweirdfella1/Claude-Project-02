@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "project": "Divergence.AI Reliability Layer",
-  "authority_status": "G0 execution control complete by self-check; GitHub enforcement and cold-start continuity independently verified; canonical master blueprint installed unchanged by B0 self-check; user explicitly activated F0",
+  "authority_status": "G0 enforcement and cold-start continuity independently verified; B0 installed the canonical blueprint; F0 completed by self-check and remains frozen pending audit; user explicitly activated G1 control hardening",
   "repository": {
     "full_name": "thatoneweirdfella1/Claude-Project-02",
     "policy": "existing_repository_only",
@@ -31,7 +31,7 @@
     "replacement_or_redesign_authorized": false,
     "visual_baseline_directory": "docs/ai-control/visual-baseline"
   },
-  "phase": "design",
+  "phase": "execution-control",
   "course_control": {
     "policy": "docs/ai-control/COURSE-CONTROL.json",
     "validator": "scripts/ai-course-control.mjs",
@@ -54,10 +54,10 @@
   },
   "deployment_baseline": "docs/ai-control/VERCEL-BASELINE.md",
   "active_task": {
-    "id": "F0",
-    "title": "Foundation Contract and Interface Skeleton",
+    "id": "G1",
+    "title": "Continuity, Acceptance, and Contamination Controls",
     "source": "docs/ai-control/CURRENT-TASK.md",
-    "status": "Self-check passed for F0 design scope; independent F0 audit and user/product approval remain Open; stop condition reached",
+    "status": "Active; G1-A activation checkpoint in progress; independent G1 verification Open",
     "next_task_reveal_allowed": true
   },
   "scope": {
@@ -65,7 +65,7 @@
     "out_of_scope_destination": "docs/ai-control/PARKING-LOT.md",
     "new_systems_authorized": false,
     "product_implementation_authorized": false,
-    "execution_control_implementation_authorized": false,
+    "execution_control_implementation_authorized": true,
     "control_documentation_update_authorized": true
   },
   "permitted_gate_statuses": [

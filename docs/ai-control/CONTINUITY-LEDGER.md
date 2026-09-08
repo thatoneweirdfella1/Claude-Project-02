@@ -362,3 +362,18 @@ Each new entry must contain:
 - **Failure/correction/uncertainty:** GitHub Actions did not register an observable run for the content commit, so remote course-control/CI success is Open and not claimed. Local Playwright remained unavailable/Failed as recorded. No independent F0 audit occurred.
 - **Resulting status/gate change:** F0 is complete by self-check and published. FCIS-G01–G06 remain Self-check passed; independent verification and user/product approval remain Open. Stop condition reached.
 - **Exact next action:** Stop. Await separate explicit user authorization for an independent F0 audit. Do not start S02, S03, S18, S20, F1, implementation, merge, or deployment.
+
+### CL-0025 — 2026-09-08 03:57:20 UTC — G1 activation and preflight
+
+- **Actor:** OpenAI Codex / GPT-5 session
+- **Task/phase:** G1 Continuity, Acceptance, and Contamination Controls / G1-A activation
+- **Repository/branch/starting commit:** `thatoneweirdfella1/Claude-Project-02`; existing `divergence/reliability-staging`; exact remote start `f6e8a344b414a5e909028fbdf547ae879ade4b58`; clean detached worktree
+- **Authority/source:** After reviewing the complete pre-work list, the user instructed the AI to begin building those controls with checkpoints so a replacement AI can finish after a usage interruption. The standalone source is `DIVERGENCE-G1-CONTROL-UPGRADE-HANDOFF.md`, SHA-256 `e940049e4dffd0d87a9b303526df82c7a8f61c0a496f6afc1f6f34b9b8f75db8`.
+- **Control-file read receipt:** Read the mandatory entry order and task/authority/handoff/control records; verified every existing `SHA256SUMS` entry before mutation. Inspected the controller, its 18-case test harness, workflow, CODEOWNERS, task index, decisions, evidence, ledger, and parking lot.
+- **Action and affected files:** Created the exact G1 standalone assignment; promoted G1 as the sole active task in current task, decision, task index, manifest, course policy, gate status, evidence, handoff, ledger, and integrity records. Used a detached worktree from the exact remote head because the older primary checkout contained three local-only historical G0 commits; those commits were preserved and were not published or altered.
+- **Reason and rejected alternatives:** Establish a recoverable, machine-recognized checkpoint before substantial edits. Rejected beginning the F0 audit, system work, rebuilding valid F0, resetting the user's local history, creating a branch, or relying on conversational context.
+- **Allowed outputs:** G1 standalone assignment; entry/control files; `docs/reliability/control/**`; controller/workflow and focused validator tests required by G1.
+- **Prohibited actions:** No blueprint/F0/application/UI/test/layout changes; no F0 audit, S02/S03/S18/S20/F1/product implementation; no branch creation, merge, rebase, force update, deletion, deployment, or independent-verification claim.
+- **Failure/correction/uncertainty:** G1-A is activation only. G1-G01–G1-G06 remain Open. The author cannot perform G1-G06. External automatic AI review remains optional and cannot replace repository blocking.
+- **Resulting status/gate change:** F0 remains frozen at self-check. G1 becomes the only active task. Every later task remains blocked.
+- **Exact next action:** Validate and publish G1-A to the existing staging branch, then a replacement or current AI resumes G1-B authority-package gap completion.

@@ -1,66 +1,46 @@
 # Exact Handoff State
 
-## Outcome
+## Simple status
 
-- F0, Foundation Contract and Interface Skeleton, is complete by author self-check on `divergence/reliability-staging`; independent audit and user/product approval remain Open.
-- The F0.1 package defines the terminology/data dictionary, unique shared-field ownership, conceptual envelopes, authority boundaries, evidence/gate contract, change/conflict state model, four dependency types and six circular seams, I01–I20, unresolved decisions, four follow-on briefs, F1 reconciliation contract, exact sequence, and FCIS-G01–G06 assessment.
-- FCIS-G01–G06 are Self-check passed with retained design evidence. None is independently verified by this work.
-- Q-U01, Q-U02, and Q-U06 remain Open with blocked scope. P-002 remains parked.
-- No S02, S03, S18, or S20 package was executed. No F1 reconciliation, implementation technology, application code, test code, interface, layout, visual baseline, branch topology, merge, or deployment was changed.
+**SAFE TO SWITCH: NO — G1-A is not yet confirmed on GitHub.**
 
-## Current authority and repository state
+Current work is activating the control upgrade that will make interrupted tasks resumable and block unaudited or contaminated downstream work. Do not start the F0 audit or any product-system task.
 
-- Repository: `thatoneweirdfella1/Claude-Project-02`.
-- Active task base: `9323ed157c6739a76a24e8b6a09c11f2f136ca18`.
-- Published F0 content commit: `0a957e7377ed28596461cf845086e92f0578619f` on the existing staging branch; parent is the exact task base and its tree matches the locally gated commit.
-- Only task-writing branch: `divergence/reliability-staging`.
-- Protected integration branch: `divergence/reliability-v1`.
-- Untouched safety/layout branch: `claude/remaining-second-pass-v1` at baseline `10894f704a39b6c56a7fadfafb54275b82526c33`.
-- Active recorded task: F0; design stop condition reached by self-check.
-- Task source: `DIVERGENCE-F0-STANDALONE-HANDOFF.md`, SHA-256 `5817361c8a5376e299e36d340c331ce2a7848d96c29513839ba8889d8ffbe887`.
-- Canonical blueprint: `02-MASTER-SYSTEM-AND-REQUIREMENT-BLUEPRINT.md`, unchanged SHA-256 `d9783aa4fff475810170f2217ea2cdca1b30baefe78d21d837980943c509ea47`.
+## Current task
 
-## F0 deliverables
+- **Task:** G1 — Continuity, Acceptance, and Contamination Controls
+- **Current phase:** G1-A — activation and exact standalone assignment
+- **Status:** Active; local checkpoint being validated
+- **Task source:** `DIVERGENCE-G1-CONTROL-UPGRADE-HANDOFF.md`
+- **Source hash:** `e940049e4dffd0d87a9b303526df82c7a8f61c0a496f6afc1f6f34b9b8f75db8`
+- **Starting remote commit:** `f6e8a344b414a5e909028fbdf547ae879ade4b58`
+- **Only writable branch:** existing `divergence/reliability-staging`
+- **Accepted integration branch:** `divergence/reliability-v1`
+- **Untouched safety/layout baseline:** `claude/remaining-second-pass-v1` at `10894f704a39b6c56a7fadfafb54275b82526c33`
 
-- `docs/reliability/f0/FOUNDATION-CONTRACT-AND-INTERFACE-SKELETON.md`
-- `docs/reliability/f0/follow-on/S02-REQUIREMENT-DECISION-COMPLETION-BRIEF.md`
-- `docs/reliability/f0/follow-on/S03-SOURCE-AUTHORITY-PROVENANCE-BRIEF.md`
-- `docs/reliability/f0/follow-on/S18-SECURITY-PRIVACY-CONSENT-BRIEF.md`
-- `docs/reliability/f0/follow-on/S20-EVALUATION-RELEASE-CHANGE-BRIEF.md`
+## What remains in G1
 
-Artifact hashes and limitations are recorded in E-022 and `SHA256SUMS`.
+1. Publish G1-A so takeover is remotely recoverable.
+2. G1-B: audit and fill only real authority-package gaps.
+3. G1-C: implement checkpoint, task-transition, dependency, audit, acceptance, lineage, and contamination enforcement.
+4. G1-D: run every hostile enforcement and recovery test and retain failures/corrections.
+5. Stop with G1-E independent audit as the only permitted next task.
 
-## Gate state
+## Preserved completed work
 
-| Gate | State | Limitation |
-|---|---|---|
-| FCIS-G01 | Self-check passed | Independent audit Open. |
-| FCIS-G02 | Self-check passed | Conceptual design; no implementation test. |
-| FCIS-G03 | Self-check passed | User-owned questions remain Open. |
-| FCIS-G04 | Self-check passed | No independent review occurred. |
-| FCIS-G05 | Self-check passed | Later packages may propose additional typed dependencies. |
-| FCIS-G06 | Self-check passed | Brief usability not independently cold-start tested. |
-| RCG-01 | Self-check passed | F0 read receipt retained in CL-0021. |
-| RCG-02 | Self-check passed | Existing staging branch/base only; no protected-branch write. |
-| RCG-03 | Self-check passed | F0/control-only diff; P-002 stayed parked. |
-| RCG-04 | Independently verified | E-018 verifies the control system; F0-specific handoff still awaits independent audit. |
-
-## Checks and retained failures
-
-- F0 structural assertions: passed. Ownership 15/15 with one owner rule; I01–I20 unique/complete; dependencies 16/16 each with one valid type; RP-01–RP-06 present; all mandatory brief sections present.
-- The first ownership assertion expected 16 rows and failed; inspection showed the matrix contains 15 complete rows. The fixture expectation was corrected and passed without changing design content.
-- JSON parsing/policy alignment and F0/control-file whitespace checks: passed before final integrity refresh.
-- Unit suite: 911/911 passed across 102 files. Desktop: 1/1 passed. Lint and build exited 0 with 17 retained lint warnings and the retained chunk-size warning.
-- Playwright E2E was attempted: 43 failed at launch and 2 skipped because the Chromium executable is absent. No app/test change was authorized or made. This environment failure and earlier application CI problem remain Open/out of scope under P-002.
-- Final integrity passed. Local content commit `6574b70f9984b5cab4d1c3b8037781adfea259d6` passed the exact course-control gate from the task base and has the same tree as published remote content commit `0a957e7377ed28596461cf845086e92f0578619f`.
-- Terminal push failed for missing credentials; the connected GitHub application performed a non-force fast-forward of only the existing staging ref. Repeated remote readback found no workflow runs registered for the content commit, so remote Actions remain Open/not observed and no success is claimed.
+- G0 repository enforcement and context-free continuation remain independently verified by existing evidence.
+- The canonical blueprint remains installed unchanged.
+- F0 and its four follow-on briefs remain completed by author self-check and unchanged.
+- Independent F0 audit remains Open and pinned behind G1 verification.
 
 ## Prohibited continuation
 
-Do not begin an audit, S02, S03, S18, S20, F1, or implementation without separate explicit user authorization. Do not create a branch, merge, rebase, force-update, deploy, touch the safety branch, redesign the interface, infer approval, or promote a self-check to independent verification.
+Do not perform the independent F0 audit, S02/S03/S18/S20, F1, product implementation, app/test/UI/layout changes, branch creation, merge, rebase, force update, deployment, deletion, or safety-branch write. Do not claim independent verification.
 
-## Exact next task
+## Exact replacement-AI instruction
 
-**Independent F0 audit** against `DIVERGENCE-F0-STANDALONE-HANDOFF.md`, FCIS-G01–G06, and every failure condition. It must review the committed F0 package, retain defects/dissent, and either independently verify applicable gates or return corrections.
+> Open `thatoneweirdfella1/Claude-Project-02` on existing branch `divergence/reliability-staging`. Read the mandatory control files and `DIVERGENCE-G1-CONTROL-UPGRADE-HANDOFF.md`. Resume the first unfinished G1 checkpoint recorded in `CURRENT-TASK.md` and this handoff. Do not restart G1, begin F0 audit or system work, create a branch, merge, deploy, or change the existing Divergence layout.
 
-This next task is identified but remains locked until the user separately and explicitly authorizes it. The auditor must stop without starting S02, S03, S18, S20, F1, or any implementation.
+## Exact next action
+
+Validate, commit, gate, push, and read back G1-A. After remote confirmation, change the simple status to `SAFE TO SWITCH: YES` and make G1-B the first unfinished phase.

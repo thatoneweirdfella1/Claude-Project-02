@@ -38,6 +38,7 @@ A lower authority may identify a conflict but may not silently override a higher
 ## One-task scope lock
 
 - Exactly one task may be active.
+- G1, Continuity, Acceptance, and Contamination Controls, is the current active task under D-014. F0 remains frozen at author self-check pending later independent audit.
 - Only its stated deliverables, files, checks, and necessary contained corrections are allowed.
 - Do not add systems, features, dependencies, abstractions, refactors, documentation programs, or “helpful” cleanup not required by the active task.
 - Record useful extra findings in `PARKING-LOT.md`. Only an explicit user decision may promote one into `CURRENT-TASK.md`.
@@ -61,6 +62,8 @@ A lower authority may identify a conflict but may not silently override a higher
 ## Required durable records
 
 The manifest, integrity hashes, current task, task index, continuity ledger, decision log, evidence index, handoff, and parking lot are mandatory. If they disagree, do not guess: preserve all versions, identify the conflict, and leave the affected state `Open`.
+
+An interrupted task remains the active task. A replacement AI resumes its first unfinished checkpoint; interruption never authorizes the following task. A completed self-check awaiting audit also blocks dependent work and must cause the next AI to identify the required audit in plain language.
 
 ## Enforcement state
 

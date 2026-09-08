@@ -44,3 +44,16 @@ G0 is complete by self-check with external enforcement and RCG-04 independently 
 | RCG-04 | Independently verified | Existing exact-remote repository-only continuity evidence E-018 remains valid for the control system. F0-specific handoff clarity is author self-checked and awaits the independent F0 audit. |
 
 F0 is not F1, independently verified, user/product approved, implemented, released, or production validated.
+
+## G1 control-upgrade status
+
+| Gate | State | Current evidence and limitation |
+|---|---|---|
+| G1-G01 Authority package | Open | G1-A records the assignment; gap audit and completion are G1-B. |
+| G1-G02 Resumable checkpoints | Open | Required behavior is frozen in the G1 assignment; implementation and interruption test are G1-C/D. |
+| G1-G03 Audit/dependency blocking | Open | Required behavior is frozen; executable transition and plain-language blocker tests remain. |
+| G1-G04 Contamination containment | Open | Required lineage, descendant blocking, and recovery behavior is frozen; implementation/tests remain. |
+| G1-G05 Adversarial enforcement | Open | Existing 18-case G0 harness remains valid but does not cover the new G1 cases. |
+| G1-G06 Independent cold start | Open | Must be performed by a separate AI after G1-A–G1-D are published. |
+
+G1 is the only active task. F0 artifacts remain frozen at their prior self-check state. Independent F0 audit and all product-system work remain blocked.
