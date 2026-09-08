@@ -5,7 +5,7 @@
 - **ID:** G1
 - **Title:** Continuity, Acceptance, and Contamination Controls
 - **Phase:** Execution control
-- **Status:** G1-A through G1-D Self-check passed and published; G1-E packet prepared locally for a different AI; packet publication pending
+- **Status:** G1-A through G1-D Self-check passed and published; G1-E packet published; awaiting a different AI's independent audit
 - **Task source:** `DIVERGENCE-G1-CONTROL-UPGRADE-HANDOFF.md`
 - **Task-source SHA-256:** `e940049e4dffd0d87a9b303526df82c7a8f61c0a496f6afc1f6f34b9b8f75db8`
 - **Canonical master blueprint:** `02-MASTER-SYSTEM-AND-REQUIREMENT-BLUEPRINT.md`, SHA-256 `d9783aa4fff475810170f2217ea2cdca1b30baefe78d21d837980943c509ea47`
@@ -62,6 +62,7 @@ Finish and mechanically test the authority, continuous-checkpoint, audit-blockin
 - 2026-09-08: G1-C was published at `049e2b0f7673e0b757131e4877baef77f6fe585c`. G1-D began; unsafe-interruption recovery-only behavior was added and the focused harness passes 41/41. Full repository checks were attempted together but the tool call was cancelled at the network-approval boundary before any result; they remain unfinished.
 - 2026-09-08: G1-D full checks were rerun using a dependency installation with the exact same `package-lock.json` hash. Unit tests passed 911/911 in 102 files, desktop passed 1/1, lint exited 0 with 17 retained warnings, production build exited 0 with the retained chunk-size warning, and the focused controller remained 41/41. No application/F0/layout source changed.
 - 2026-09-08: The completed G1-D author checkpoint was published and read back at `983baaa2315db32e2cc772edc2bcad053e4e3d69`. A complete standalone G1-E audit assignment was bound to that exact checkpoint, and the fully labeled user master checklist was added under the control package.
+- 2026-09-08: The checkpoint-bound G1-E audit packet and repository master checklist were published at `0d51d82548b724b4eceee717ddd01be0e6041db6`. The audit must examine G1-D checkpoint `983baaa2315db32e2cc772edc2bcad053e4e3d69`; the later commit only carries its assignment and final author handoff.
 
 ## Blockers and unresolved decisions
 
@@ -75,4 +76,4 @@ Stop after G1-A through G1-D are self-checked, published in recoverable checkpoi
 
 ## Exact next action
 
-Validate and publish the G1-E packet/checklist checkpoint from remote base `983baaa2315db32e2cc772edc2bcad053e4e3d69`; confirm remote readback; then stop for a different AI to perform G1-E. Do not perform G1-E yourself.
+Stop author work. A different AI must perform G1-E using `docs/reliability/control/DIVERGENCE-G1-E-STANDALONE-INDEPENDENT-AUDIT.md` against exact checkpoint `983baaa2315db32e2cc772edc2bcad053e4e3d69`.

@@ -5,9 +5,9 @@
   "accepted_branch": "divergence/reliability-v1",
   "active_task": "G1",
   "current_phase": "G1-E",
-  "safe_to_switch": "NO",
-  "last_confirmed_remote_checkpoint": "983baaa2315db32e2cc772edc2bcad053e4e3d69",
-  "first_unfinished_action": "Publish the checkpoint-bound G1-E audit packet, then have a different AI audit G1 checkpoint 983baaa2315db32e2cc772edc2bcad053e4e3d69.",
+  "safe_to_switch": "YES",
+  "last_confirmed_remote_checkpoint": "0d51d82548b724b4eceee717ddd01be0e6041db6",
+  "first_unfinished_action": "Have a different AI perform G1-E using the standalone packet against audited checkpoint 983baaa2315db32e2cc772edc2bcad053e4e3d69.",
   "recovery_action": "Restore or isolate the interrupted G1 patch from the last confirmed remote checkpoint, rerun its focused checks, and publish a coherent checkpoint before continuing.",
   "meaning_confirmation": {
     "interpreted_outcome": "Make repository controls automatically keep every AI on the same verified course without requiring the user to remember audits or dependencies.",

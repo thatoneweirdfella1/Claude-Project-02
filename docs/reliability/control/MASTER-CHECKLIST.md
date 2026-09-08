@@ -2,10 +2,13 @@
 
 **Purpose:** This is the user-facing reference for knowing what the project is doing, where it currently is, what each identifier means, what remains, and what must happen before actual reliability-system design begins.
 
-**Current position:** **G1-D — Full enforcement verification**  
-**Current result:** Partial G1-D checkpoint saved; focused control tests pass **41/41**. Full repository verification is unfinished.  
-**Next allowed work:** Finish G1-D.  
-**Not allowed yet:** G1-E, F0-AUDIT, S02/S03/S18/S20, F1, or product implementation.
+**Current position:** **G1-E — Independent audit of the G1 control package**
+
+**Current result:** G1-D passed author self-check: control **41/41**, unit **911/911**, desktop **1/1**, lint/build successful with retained warnings. The exact audit target and standalone G1-E packet are published.
+
+**Next allowed work:** A different AI performs G1-E against exact checkpoint `983baaa2315db32e2cc772edc2bcad053e4e3d69`.
+
+**Not allowed yet:** F0-AUDIT, S02/S03/S18/S20, F1, or product implementation.
 
 ---
 
@@ -47,8 +50,8 @@
 4. **G1-A** — G1 activation and assignment. **COMPLETED — self-check only.**
 5. **G1-B** — Authority package. **COMPLETED — self-check only.**
 6. **G1-C** — Executable controls. **COMPLETED — self-check only.**
-7. **G1-D** — Full enforcement verification. **IN PROGRESS — current position.**
-8. **G1-E** — Independent G1 audit. **BLOCKED by unfinished G1-D.**
+7. **G1-D** — Full enforcement verification. **COMPLETED — self-check only.**
+8. **G1-E** — Independent G1 audit. **READY — current position; must be performed by a different AI.**
 9. **F0-AUDIT** — Independent F0 audit using the completed controls. **BLOCKED by unfinished/unaccepted G1.**
 10. **S02, S03, S18, S20** — Four separately bounded system-design packages. **BLOCKED by F0-AUDIT.**
 11. **F1** — Reconcile those four packages. **BLOCKED until all four are accepted.**
@@ -289,23 +292,25 @@
 - [x] Test every blocking prerequisite state: Open, Active, Self-check passed, Awaiting independent audit, Failed, and Potentially contaminated.
 - [x] Run the focused combined enforcement harness: **41/41 passed.**
 
-### Remaining G1-D verification
+### Completed G1-D verification
 
-- [ ] Run the full repository unit-test suite and record the actual result.
-- [ ] Run the desktop test suite and record the actual result.
-- [ ] Run lint and record warnings/errors accurately.
-- [ ] Run the production build and record the actual result.
-- [ ] Run integrity verification after final record updates.
-- [ ] Run the exact base-to-head course-control gate.
-- [ ] Confirm all G1-D files and records are on the existing remote staging branch.
-- [ ] Inspect the final diff for unauthorized product/F0/layout changes.
-- [ ] Set G1-G05 to Self-check passed only if every required G1-D check actually supports it.
-- [ ] Prepare the exact standalone G1-E audit assignment without performing the audit.
-- [ ] Publish a final safe handoff naming G1-E as the only next task.
+- [x] Run the full repository unit-test suite: **911/911 passed in 102 files.**
+- [x] Run the desktop test suite: **1/1 passed.**
+- [x] Run lint: **exit 0 with 17 retained warnings.**
+- [x] Run the production build: **exit 0 with the retained chunk-size warning.**
+- [x] Run integrity verification after final record updates.
+- [x] Run the exact base-to-head course-control gate.
+- [x] Confirm all G1-D files and records are on the existing remote staging branch.
+- [x] Inspect the final diff for unauthorized product/F0/layout changes: **none found.**
+- [x] Set G1-G05 to Self-check passed based on actual G1-D evidence.
+- [x] Prepare the exact standalone G1-E audit assignment without performing the audit.
+- [x] Publish a final safe handoff naming G1-E as the only next task.
 
-**Status:** **IN PROGRESS — THIS IS THE CURRENT POSITION.**  
-**Saved checkpoint:** `98942d3585cab2a78a0f303c3d549bae3f75897e`  
-**Exact next action:** Run and record the remaining full G1-D repository verification.
+**Status:** **COMPLETED — author self-check only.**
+
+**Exact audit target:** `983baaa2315db32e2cc772edc2bcad053e4e3d69`
+
+**Exact next action:** A different AI performs G1-E using the checkpoint-bound standalone audit packet.
 
 ## G1-E — Independent audit of the complete G1 control package
 
@@ -336,7 +341,7 @@
 - [ ] Keep G1 Failed/Open if any load-bearing defect remains.
 - [ ] Do not let the G1 author certify G1-E.
 
-**Status:** **BLOCKED until G1-D is completely self-checked and published.**
+**Status:** **READY — THIS IS THE CURRENT POSITION. It must be performed by a different AI.**
 
 ---
 
@@ -484,7 +489,7 @@ Every future progress response should use this exact order:
 
 Current example:
 
-> **Current:** `G1-D — Prove the controls actually enforce everything` | **Status:** `IN PROGRESS` | **Proof:** `41/41 focused tests passed; full repository checks unfinished` | **Next:** `Run and record the remaining full G1-D verification` | **Safe to switch:** `YES`
+> **Current:** `G1-E — Independent G1 control-package audit` | **Status:** `READY FOR A DIFFERENT AI` | **Proof:** `G1-D self-check passed: control 41/41, unit 911/911, desktop 1/1, lint/build successful; exact audit target published` | **Next:** `Independently audit checkpoint 983baaa2315db32e2cc772edc2bcad053e4e3d69` | **Safe to switch:** `YES`
 
 ---
 

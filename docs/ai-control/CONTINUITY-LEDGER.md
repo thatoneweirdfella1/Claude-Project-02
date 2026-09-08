@@ -475,3 +475,17 @@ Each new entry must contain:
 - **Failure/correction/uncertainty:** G1-E has not occurred. G1 is not independently verified or accepted. The packet/checklist commit is not yet confirmed remote at this entry.
 - **Resulting status/gate change:** G1-D/G1-G05 remain Self-check passed. G1-E/G1-G06 remain Open.
 - **Exact next action:** Validate, gate, publish, and read back the packet/checklist checkpoint, then set `SAFE TO SWITCH: YES` and stop for a different AI.
+
+### CL-0033 — 2026-09-08 UTC — G1 author stop condition reached
+
+- **Actor:** OpenAI Codex / GPT-5 author session and connected GitHub application
+- **Task/phase:** G1 / final author handoff to G1-E
+- **Repository/branch/starting commit:** Existing staging; exact G1-D audit target `983baaa2315db32e2cc772edc2bcad053e4e3d69`; packet/checklist publication `0d51d82548b724b4eceee717ddd01be0e6041db6`
+- **Authority/source:** G1 stop condition prohibits the author from performing G1-E.
+- **Action and affected files:** Confirmed the packet/checklist remote publication, updated machine and human records to safe transfer, and updated the repository master checklist from G1-D in progress to G1-E ready.
+- **Reason and rejected alternatives:** Make the next action unmistakable to the user and a context-free reviewer. Rejected author self-audit, silently treating G1 as accepted, or advancing to F0-AUDIT/system work.
+- **Command/test/check and actual result:** GitHub non-force update succeeded for `0d51d82548b724b4eceee717ddd01be0e6041db6`; packet is bound to exact earlier authored checkpoint `983baaa2315db32e2cc772edc2bcad053e4e3d69` so the audit assignment is not part of the audited implementation/evidence snapshot.
+- **Evidence/artifact/hash:** E-029–E-030 and refreshed integrity manifest.
+- **Failure/correction/uncertainty:** G1-E/G1-G06 remain Open. G1 acceptance and every dependent task remain blocked.
+- **Resulting status/gate change:** `SAFE TO SWITCH: YES`; G1 author stop condition reached.
+- **Exact next action:** A different AI performs G1-E using the standalone packet against `983baaa2315db32e2cc772edc2bcad053e4e3d69`.

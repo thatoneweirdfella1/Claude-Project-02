@@ -2,29 +2,30 @@
 
 ## Simple status
 
-**SAFE TO SWITCH: NO**
+**SAFE TO SWITCH: YES**
 
-G1-D is published at its exact audit checkpoint. The standalone G1-E packet is bound to that commit but is not yet published. Do not transfer until the packet checkpoint is confirmed remote.
+G1-D and its checkpoint-bound standalone G1-E audit packet are published. A different AI can now perform G1-E without this conversation. G1 is not independently verified or accepted, and all dependent work remains blocked.
 
 ## Current task
 
 - **Task:** G1 — Continuity, Acceptance, and Contamination Controls
 - **Completed phase:** G1-A through G1-D by author self-check
-- **First unfinished phase:** Publish the checkpoint-bound G1-E packet
-- **Status:** G1-D Awaiting independent audit; audit packet publication pending
+- **First unfinished phase:** G1-E independent audit by a different AI
+- **Status:** G1-D Self-check passed; Awaiting independent audit
 - **Task source:** `DIVERGENCE-G1-CONTROL-UPGRADE-HANDOFF.md`
 - **Source hash:** `e940049e4dffd0d87a9b303526df82c7a8f61c0a496f6afc1f6f34b9b8f75db8`
 - **Starting remote commit:** `f6e8a344b414a5e909028fbdf547ae879ade4b58`
-- **Latest confirmed remote checkpoint:** `983baaa2315db32e2cc772edc2bcad053e4e3d69`
+- **Latest confirmed remote checkpoint:** `0d51d82548b724b4eceee717ddd01be0e6041db6`
+- **Exact checkpoint G1-E must audit:** `983baaa2315db32e2cc772edc2bcad053e4e3d69`
 - **Only writable branch:** existing `divergence/reliability-staging`
 - **Accepted integration branch:** `divergence/reliability-v1`
 - **Untouched safety/layout baseline:** `claude/remaining-second-pass-v1` at `10894f704a39b6c56a7fadfafb54275b82526c33`
 
 ## What remains in G1
 
-1. Publish the standalone G1-E audit packet and labeled master checklist.
-2. Confirm the exact remote checkpoint.
-3. Stop with G1-E as the only permitted next phase for a different AI.
+1. A different AI performs G1-E using the standalone packet.
+2. It records an independent pass or failure with exact evidence.
+3. F0-AUDIT remains blocked until G1 is independently verified and separately accepted.
 
 ## Preserved completed work
 
@@ -39,8 +40,8 @@ Do not perform the independent F0 audit, S02/S03/S18/S20, F1, product implementa
 
 ## Exact replacement-AI instruction
 
-> Do not transfer yet. Publish the prepared standalone G1-E packet first; it audits exact G1-D checkpoint `983baaa2315db32e2cc772edc2bcad053e4e3d69`.
+> Open `thatoneweirdfella1/Claude-Project-02` on existing branch `divergence/reliability-staging` at current remote checkpoint `0d51d82548b724b4eceee717ddd01be0e6041db6`. Read and follow `AGENTS.md` and `docs/ai-control/00-READ-FIRST.md`. Perform only G1-E using `docs/reliability/control/DIVERGENCE-G1-E-STANDALONE-INDEPENDENT-AUDIT.md`. Audit exact authored checkpoint `983baaa2315db32e2cc772edc2bcad053e4e3d69`. Do not create a branch, perform F0-AUDIT, start system work, merge, deploy, or claim acceptance.
 
 ## Exact next action
 
-Publish and read back the G1-E packet/checklist checkpoint, then make the handoff safe for a different AI.
+Have a different AI perform G1-E against `983baaa2315db32e2cc772edc2bcad053e4e3d69`.
