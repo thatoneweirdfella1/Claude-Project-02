@@ -1,0 +1,106 @@
+{
+  "schema_version": "1.0",
+  "repository": "thatoneweirdfella1/Claude-Project-02",
+  "working_branch": "divergence/reliability-staging",
+  "accepted_branch": "divergence/reliability-v1",
+  "active_task": "G1",
+  "current_phase": "G1-D",
+  "safe_to_switch": "NO",
+  "last_confirmed_remote_checkpoint": "27c187f7db05c4fbd7fc38ad3f25b3c5896c5465",
+  "first_unfinished_action": "Publish G1-C, then run the complete G1-D adversarial and recovery verification.",
+  "meaning_confirmation": {
+    "interpreted_outcome": "Make repository controls automatically keep every AI on the same verified course without requiring the user to remember audits or dependencies.",
+    "boundary": "Do not change the product, F0, application, layout, branches, integration baseline, or independent-audit results.",
+    "material_ambiguity": "none",
+    "authority": "D-014 and DIVERGENCE-G1-CONTROL-UPGRADE-HANDOFF.md"
+  },
+  "permitted_execution_states": ["Open", "Active", "Interrupted — resumable", "Interrupted — unsafe", "Self-check passed", "Awaiting independent audit", "Independently verified", "Accepted", "Failed", "Potentially contaminated"],
+  "permitted_gate_statuses": ["Self-check passed", "Independently verified", "Failed", "Open"],
+  "permitted_acceptance_states": ["Not accepted", "Accepted"],
+  "dependency_types": ["design prerequisite", "co-design dependency", "runtime input", "validation dependency"],
+  "tasks": {
+    "G1": {
+      "title": "Continuity, Acceptance, and Contamination Controls",
+      "execution_state": "Active",
+      "acceptance_state": "Not accepted",
+      "author_id": "openai-codex-gpt5-session-2026-09-08",
+      "reviewer_id": null,
+      "independent_review_path": null,
+      "accepted_integration_commit": null,
+      "prerequisites": [],
+      "phases": {"G1-A":"Self-check passed", "G1-B":"Self-check passed", "G1-C":"Self-check passed", "G1-D":"Open", "G1-E":"Open"}
+    },
+    "F0-INDEPENDENT-AUDIT": {
+      "title": "Independent F0 audit",
+      "execution_state": "Open",
+      "acceptance_state": "Not accepted",
+      "author_id": null,
+      "reviewer_id": null,
+      "independent_review_path": null,
+      "accepted_integration_commit": null,
+      "prerequisites": [{"task":"G1", "type":"validation dependency", "required_state":"Accepted"}]
+    },
+    "S02": {
+      "title": "Requirement and Decision Completion design package",
+      "execution_state": "Open",
+      "acceptance_state": "Not accepted",
+      "author_id": null,
+      "reviewer_id": null,
+      "independent_review_path": null,
+      "accepted_integration_commit": null,
+      "prerequisites": [{"task":"F0-INDEPENDENT-AUDIT", "type":"validation dependency", "required_state":"Accepted"}]
+    },
+    "S03": {
+      "title": "Source Authority and Provenance design package",
+      "execution_state": "Open",
+      "acceptance_state": "Not accepted",
+      "author_id": null,
+      "reviewer_id": null,
+      "independent_review_path": null,
+      "accepted_integration_commit": null,
+      "prerequisites": [{"task":"F0-INDEPENDENT-AUDIT", "type":"validation dependency", "required_state":"Accepted"}]
+    },
+    "S18": {
+      "title": "Security, Privacy, and Consent design package",
+      "execution_state": "Open",
+      "acceptance_state": "Not accepted",
+      "author_id": null,
+      "reviewer_id": null,
+      "independent_review_path": null,
+      "accepted_integration_commit": null,
+      "prerequisites": [{"task":"F0-INDEPENDENT-AUDIT", "type":"validation dependency", "required_state":"Accepted"}]
+    },
+    "S20": {
+      "title": "Evaluation, Release, and Change design package",
+      "execution_state": "Open",
+      "acceptance_state": "Not accepted",
+      "author_id": null,
+      "reviewer_id": null,
+      "independent_review_path": null,
+      "accepted_integration_commit": null,
+      "prerequisites": [{"task":"F0-INDEPENDENT-AUDIT", "type":"validation dependency", "required_state":"Accepted"}]
+    },
+    "F1": {
+      "title": "Foundation reconciliation",
+      "execution_state": "Open",
+      "acceptance_state": "Not accepted",
+      "author_id": null,
+      "reviewer_id": null,
+      "independent_review_path": null,
+      "accepted_integration_commit": null,
+      "prerequisites": [
+        {"task":"S02", "type":"co-design dependency", "required_state":"Accepted"},
+        {"task":"S03", "type":"co-design dependency", "required_state":"Accepted"},
+        {"task":"S18", "type":"co-design dependency", "required_state":"Accepted"},
+        {"task":"S20", "type":"co-design dependency", "required_state":"Accepted"}
+      ]
+    }
+  },
+  "lineage": {
+    "nodes": [
+      {"id":"integration-baseline", "state":"Accepted", "commit":"7681344918a912f0ac35a2fb15c2b41b85638a3f"},
+      {"id":"G1-candidate", "state":"Active", "commit":null}
+    ],
+    "edges": [{"from":"integration-baseline", "to":"G1-candidate", "type":"design prerequisite"}]
+  }
+}

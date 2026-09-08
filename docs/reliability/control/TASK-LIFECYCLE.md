@@ -26,4 +26,4 @@
 
 ## Exact package sequence after G1
 
-Independent G1 audit → independent F0 audit → bounded S02 package → bounded S03 package → bounded S18 package → bounded S20 package → reconciliation. A failed or incomplete earlier required step blocks only the dependent sequence and names the correction/audit as the permitted next action.
+Independent G1 audit → independent F0 audit → four separately bounded packages (`S02`, `S03`, `S18`, and `S20`, each independently activatable after F0 acceptance) → F1 reconciliation after all four are accepted. A failed or incomplete prerequisite blocks only its dependents and names the correction/audit as the permitted next action.

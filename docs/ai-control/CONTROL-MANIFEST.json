@@ -57,7 +57,7 @@
     "id": "G1",
     "title": "Continuity, Acceptance, and Contamination Controls",
     "source": "docs/ai-control/CURRENT-TASK.md",
-    "status": "Active; G1-B authority package self-checked locally; remote checkpoint pending; G1-C next; independent G1 verification Open",
+    "status": "Active; G1-C executable controls self-checked locally; remote checkpoint and G1-D remain; independent G1 verification Open",
     "next_task_reveal_allowed": true
   },
   "scope": {

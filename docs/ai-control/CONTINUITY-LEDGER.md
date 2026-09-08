@@ -405,3 +405,17 @@ Each new entry must contain:
 - **Failure/correction/uncertainty:** These records define controls; they do not implement G1-C, execute G1-D, or independently verify G1-E. The simple view correctly remains `SAFE TO SWITCH: NO` until GitHub readback.
 - **Resulting status/gate change:** G1-G01 is Self-check passed locally with independent audit Open. G1-G02–G1-G05 remain Open. G1-G06 remains Open for a separate AI.
 - **Exact next action:** Validate and publish this bounded G1-B checkpoint to the existing staging branch with non-force fast-forward, read it back, and then begin G1-C.
+
+### CL-0028 — 2026-09-08 UTC — G1-C executable control implementation
+
+- **Actor:** OpenAI Codex / GPT-5 session
+- **Task/phase:** G1 / G1-C executable checkpoint, transition, dependency, audit, acceptance, and contamination enforcement
+- **Repository/branch/starting commit:** `thatoneweirdfella1/Claude-Project-02`; existing `divergence/reliability-staging`; confirmed remote base `27c187f7db05c4fbd7fc38ad3f25b3c5896c5465`
+- **Authority/source:** G1 outcomes G1-O02–G1-O10 and G1-O12, the G1-B contracts, D-014, and current project authority.
+- **Action and affected files:** Added canonical machine state; typed prerequisite and task-transition checks; same-task interruption semantics; review-evidence actor/metadata matching; accepted-integration restriction; accepted-task staging lock; multi-level contamination propagation; traceability completeness; status/current-task consistency; and a read-only plain-language status command. Updated all AI entrypoints to run the status command before requested work.
+- **Reason and rejected alternatives:** Make the repository remember and block unsafe sequencing without user micromanagement. Rejected prose-only enforcement, external-AI dependence, branch creation, treating a commit/self-check as accepted, or allowing an author to self-promote.
+- **Command/test/check and actual result:** Combined controller harness passes 40/40 locally: retained 18 cases plus locked/unknown requests, meaning, single-current-task, dependency type/state, review forgery, acceptance, contamination propagation, transition skipping, stale status, incomplete traceability, resumable interruption, and blocker-output cases. `ai-control-status.mjs --requested-task S02` exits 2 and names F0 audit plus the exact G1 next action; current G1 exits 0.
+- **Evidence/artifact/hash:** E-027 and refreshed `SHA256SUMS`.
+- **Failure/correction/uncertainty:** The first upgraded run failed 14 fixtures because the validator hardcoded production record paths; policy-configured paths corrected it. A later run failed two fixtures because review evidence was out of scope and missing task files threw instead of failing cleanly; both were corrected and retained in this history. G1-D full verification and G1-E independent audit remain Open.
+- **Resulting status/gate change:** G1-G02, G1-G03, and G1-G04 are author Self-check passed locally. G1-G05 remains Open pending full G1-D and publication. G1-G06 remains Open.
+- **Exact next action:** Refresh integrity and control records, run exact G1-C checks and course gate, publish non-force to existing staging, read back, then perform G1-D.

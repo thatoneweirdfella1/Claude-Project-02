@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import process from "node:process";
+import { validateControlState, validateStateTransition } from "./ai-control-state.mjs";
 
 export class GateFailure extends Error {
   constructor(message, details = []) {
@@ -74,6 +75,10 @@ export function validatePolicy(policy) {
   if (!Array.isArray(policy?.append_only_files)) errors.push("append_only_files must be an array");
   if (!Array.isArray(policy?.immutable_files)) errors.push("immutable_files must be an array");
   if (!Array.isArray(policy?.immutable_branches)) errors.push("immutable_branches must be an array");
+  if (!policy?.control_state_file) errors.push("control_state_file is missing");
+  if (!policy?.traceability_file) errors.push("traceability_file is missing");
+  if (!policy?.handoff_file) errors.push("handoff_file is missing");
+  if (!policy?.current_task_file) errors.push("current_task_file is missing");
   if (!Array.isArray(policy?.permitted_gate_statuses) || policy.permitted_gate_statuses.length !== 4) {
     errors.push("Exactly four permitted gate statuses are required");
   }
@@ -162,7 +167,54 @@ function verifyIndependentClaims(policy, base, head) {
   return errors;
 }
 
-export function runGate({ policyPath, base, head, branch, repository }) {
+function parseRevisionJson(revision, filePath) {
+  const text = readAtRevision(revision, filePath);
+  if (text === null) return null;
+  try { return JSON.parse(text); } catch { return null; }
+}
+
+function verifyTraceability(policy) {
+  const errors = [];
+  const trace = readJson(policy.traceability_file);
+  if (!Array.isArray(trace.outcomes) || trace.outcomes.length !== 12) {
+    return ["G1 traceability must contain exactly 12 registered outcomes"];
+  }
+  const ids = new Set();
+  for (const outcome of trace.outcomes) {
+    if (ids.has(outcome.id)) errors.push(`Duplicate traceability ID: ${outcome.id}`);
+    ids.add(outcome.id);
+    for (const field of ["id", "definition", "owner", "design_location", "acceptance_test", "evidence", "gate"]) {
+      if (!outcome[field]) errors.push(`${outcome.id || "Unknown outcome"} missing traceability field ${field}`);
+    }
+    if (outcome.design_location && !existsSync(outcome.design_location)) errors.push(`${outcome.id} design location is missing: ${outcome.design_location}`);
+  }
+  return errors;
+}
+
+function verifyControlState(policy, base, head, requestedTask) {
+  const errors = [];
+  const state = readJson(policy.control_state_file);
+  if (state.repository !== policy.repository) errors.push("Control-state repository does not match policy");
+  if (state.working_branch !== policy.working_branch) errors.push("Control-state working branch does not match policy");
+  if (state.accepted_branch !== policy.integration_branch) errors.push("Control-state accepted branch does not match policy");
+  if (state.active_task !== policy.active_task) errors.push("Control-state active task does not match policy");
+  errors.push(...validateControlState(state, { requestedTask }));
+  const before = parseRevisionJson(base, policy.control_state_file);
+  const after = parseRevisionJson(head, policy.control_state_file);
+  if (!after) errors.push("Control state is missing or invalid at candidate head");
+  else errors.push(...validateStateTransition(before, after));
+
+  const handoff = existsSync(policy.handoff_file) ? readFileSync(policy.handoff_file, "utf8") : "";
+  const currentTask = existsSync(policy.current_task_file) ? readFileSync(policy.current_task_file, "utf8") : "";
+  if (!handoff) errors.push("Handoff record is missing");
+  if (!currentTask) errors.push("Current-task record is missing");
+  if (!handoff.includes(`SAFE TO SWITCH: ${state.safe_to_switch}`)) errors.push("Simple handoff safe-switch state disagrees with machine state");
+  if (!handoff.includes(state.last_confirmed_remote_checkpoint)) errors.push("Handoff omits the machine state's last confirmed remote checkpoint");
+  if (!currentTask.includes(`ID:** ${state.active_task}`)) errors.push("Current-task record disagrees with machine active task");
+  return { errors, state };
+}
+
+export function runGate({ policyPath, base, head, branch, repository, requestedTask }) {
   const policy = readJson(policyPath);
   validatePolicy(policy);
   const errors = [];
@@ -171,6 +223,18 @@ export function runGate({ policyPath, base, head, branch, repository }) {
   const allowedBranches = new Set([policy.working_branch, policy.integration_branch]);
   if (!allowedBranches.has(branch)) errors.push(`Wrong branch: ${branch}`);
   if (policy.immutable_branches.includes(branch)) errors.push(`Immutable branch cannot be modified: ${branch}`);
+
+  const stateResult = verifyControlState(policy, base, head, requestedTask);
+  errors.push(...stateResult.errors);
+  if (branch === policy.integration_branch) {
+    const task = stateResult.state.tasks?.[policy.active_task];
+    if (task?.execution_state !== "Accepted" || task?.acceptance_state !== "Accepted") {
+      errors.push(`Accepted baseline cannot receive unaccepted task ${policy.active_task}`);
+    }
+  }
+  if (branch === policy.working_branch && stateResult.state.tasks?.[policy.active_task]?.execution_state === "Accepted") {
+    errors.push(`Accepted task ${policy.active_task} cannot be modified on staging; activate the exact next authorized task`);
+  }
 
   for (const required of policy.required_files) {
     if (!existsSync(required)) errors.push(`Required control file missing: ${required}`);
@@ -206,6 +270,7 @@ export function runGate({ policyPath, base, head, branch, repository }) {
 
   errors.push(...verifyIntegrityManifest("docs/ai-control/SHA256SUMS"));
   errors.push(...verifyIndependentClaims(policy, base, head));
+  errors.push(...verifyTraceability(policy));
 
   if (errors.length) throw new GateFailure("AI course-control gate rejected the change", errors);
   return {
@@ -229,6 +294,7 @@ function main() {
     head: args.head,
     branch: args.branch,
     repository: args.repository,
+    requestedTask: args["requested-task"],
   });
   console.log(JSON.stringify(result, null, 2));
 }
