@@ -6,7 +6,7 @@ export const EXECUTION_STATES = new Set([
   "Accepted", "Failed", "Potentially contaminated",
 ]);
 export const DEPENDENCY_TYPES = new Set([
-  "design prerequisite", "co-design dependency", "runtime input", "validation dependency",
+  "design prerequisite", "co-design dependency", "runtime input", "validation dependency", "correction",
 ]);
 export const GATE_STATUSES = new Set(["Self-check passed", "Independently verified", "Failed", "Open"]);
 
@@ -117,7 +117,12 @@ export function validateControlState(state, { requestedTask, fileExists = exists
   let changed = true;
   while (changed) {
     changed = false;
-    for (const edge of edges) if (invalid.has(edge.from) && !invalid.has(edge.to)) { invalid.add(edge.to); changed = true; }
+    for (const edge of edges) {
+      if (edge.type !== "correction" && invalid.has(edge.from) && !invalid.has(edge.to)) {
+        invalid.add(edge.to);
+        changed = true;
+      }
+    }
   }
   for (const id of invalid) {
     const stateValue = nodeMap.get(id)?.state;

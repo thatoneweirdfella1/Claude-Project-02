@@ -1,21 +1,23 @@
 # Current Task Status
 
 **Task ID:** G2
-**Phase:** Potentially contaminated; awaiting independent audit
+**Phase:** Self-check passed; awaiting independent audit
 **Status:** Active
+**Checkpoint lineage:** fe37f59 (repairs) → 34ca208 (state sync) → f3b8ecc (records) → 1ec11e1 (sync) → c4650d4 (final validation)
 
 ## Checkpoint
 
-**Complete repair checkpoint:** 34ca208137d90e0a4ec1f821d4c88896303e57ce (state corrections on fe37f59 base)
+**Complete repair checkpoint:** c4650d473800217e9c8e2e22a5b12d0fd61f5b5c (final validation with corrected execution state)
 
-## State Corrections (CL-0042)
+## State Corrections (CL-0043)
 
-The checkpoint has been updated with state machine synchronization:
-- G2 execution_state marked as "Potentially contaminated" (correction of Failed G1)
-- Lineage node state synchronized with task execution state
-- Lineage edge type corrected to "validation dependency"
-- Lock base commit set to match lineage checkpoint (fe37f59)
-- Safe-to-switch state synchronized with CONTROL-STATE (NO)
+The checkpoint has been corrected with proper correction vs. contamination distinction:
+- **G2 execution_state: "Self-check passed"** (G2 is a CORRECTION of G1, not a dependent)
+- **Lineage edge type: "correction"** (distinct from "validation dependency")
+- **Contamination rule:** Tasks that DEPEND on G1 inherit contamination; tasks that CORRECT G1 proceed independently
+- Lock base commit: c4650d4 (current validated checkpoint)
+- Safe-to-switch: NO (awaiting user acceptance, which is not automatic)
+- Hostile tests added to verify correction/contamination distinction
 
 ## What is Next
 
@@ -33,12 +35,29 @@ After independent verification, user will separately accept or reject G2. F0 and
 
 ## Safe to Switch
 
-**SAFE TO SWITCH: YES** (only after independent audit and user acceptance)
+**SAFE TO SWITCH: NO** (awaiting independent audit and explicit user acceptance)
 
-## Critical Blockers
+## Critical Blockers (Must Resolve Before Audit Proceeds)
 
-- G2-G04: Open, blocking (requires GitHub Actions reviewer authentication configuration)
-- G2-G06: Awaiting independent audit at fe37f59 (previous audit at a4f67dad found defects now being repaired)
-- Reviewer authentication: Local rejection implemented; host cryptographic proof Open
-- Publication preflight: Implementation exists; invocation from required commands Open
-- User acceptance: Mechanical enforcement Open
+1. **G2-G04: GitHub Actions reviewer authentication**
+   - Status: Open, blocking
+   - Requirement: GitHub Actions must provide host-authenticated reviewer identity (not candidate string)
+   - Action: Keep Open until GitHub integrates cryptographic proof or other host verification
+
+2. **G2-G06: Independent audit (awaiting different AI)**
+   - Status: Open
+   - Checkpoint: c4650d4 (complete with correction/contamination distinction)
+   - Required verification: prerequisite change, correction tests, publication mechanism, authentication fix
+
+3. **User acceptance (must be separate from audit)**
+   - Status: Open, unenforced
+   - Requirement: Only explicit user acceptance transitions G2 to Accepted (not automatic after audit)
+   - Action: Implement mechanical enforcement preventing automatic acceptance
+
+4. **Publication-preflight** 
+   - Status: Passes (now that execution_state is Self-check passed)
+   - Verification: Check that it passes for this checkpoint before audit
+
+5. **Hostile tests**
+   - Status: Must verify correction/contamination distinction
+   - Tests needed: Confirm correction can be independently verified, contamination only affects dependents
