@@ -66,6 +66,7 @@ G1-E is complete with a retained **Failed** verdict. G1 is not accepted. G2 hard
 |---|---|---|
 | Schemas and transition engine | Self-check passed | Six JSON schemas, transition table, and eight focused tests cover authenticated actors, distinct audit, automatic acceptance, product-decision blocking, correction, dependency unlock, and lease recovery. Candidate-side only; external authority remains Open. |
 | Controller core | Self-check passed | Five controller tests plus eight transition tests pass. Automatic audit, correction, acceptance, and dependency unlock are executable through adapters. Only the in-memory test adapter exists; durable and host/provider enforcement remain Open. |
+| GitHub App boundary | Self-check passed | Seven App tests plus thirteen controller/transition tests pass. Live preflight proves `build` is immutable and rejects that route. App registration, deployment, durable store, provider separation, and host readback remain Open. |
 
 | Gate | State | Meaning |
 |---|---|---|

@@ -661,3 +661,15 @@ Each new entry must contain:
 - **Failure/correction/uncertainty:** Candidate-side core cannot serve as its own trust boundary. Durable store, GitHub App/host adapter, provider worker launcher, periodic reconciliation, hooks, and end-to-end hostile proof remain Open.
 - **Resulting status/gate change:** Controller-core semantics Self-check passed locally; external authority still Open.
 - **Exact next action:** Publish after full validation, then implement durable external store and real host/provider adapter boundaries.
+
+### CL-0047 — 2026-09-08 UTC — Host preflight and GitHub App boundary
+
+- **Actor:** OpenAI Codex correction author.
+- **Task/phase:** G2 autonomy correction / G3-A external trust boundary.
+- **Repository/branch/starting commit:** Existing staging at confirmed remote `f26684204a9764408a46d8629815a1e2837fc8a3`; no branch created.
+- **Action and affected files:** Performed authenticated live ruleset/default-branch/workflow readback; added `HOST-PREFLIGHT.md`, signed-webhook and host-identity adapter, App check builder, and seven tests; synchronized records.
+- **Reason and rejected alternatives:** Rejected the default-branch workflow route because active build ruleset `20917696` restricts updates with empty bypass and `current_user_can_bypass: never`. Selected external GitHub App without weakening branch safety.
+- **Command/test/check and actual result:** App 7/7 plus controller/transition 13/13 tests passed. Full repository validation and publication remain checkpoint actions.
+- **Failure/correction/uncertainty:** App is not registered or deployed; no durable external store, provider credentials, live Check Run, or ruleset expected-source change exists.
+- **Resulting status/gate change:** External-App code boundary Self-check passed locally; live authority remains Open.
+- **Exact next action:** Publish checkpoint; then register/deploy App, configure durable persistence and provider-separated workers, and hostile-test before any ruleset change.

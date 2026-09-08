@@ -4,10 +4,10 @@
   "working_branch": "divergence/reliability-staging",
   "accepted_branch": "divergence/reliability-v1",
   "active_task": "G2",
-  "current_phase": "G2 autonomy correction: G3-A controller core self-check",
+  "current_phase": "G2 autonomy correction: G3-A external GitHub App boundary self-check",
   "safe_to_switch": "NO",
-  "last_confirmed_remote_checkpoint": "648390b338994ba2e4ce411a877bc1a10e22cf56",
-  "first_unfinished_action": "Continue G3-A from the controller-core checkpoint: implement durable external state/lease persistence, GitHub exact-SHA adapter, authenticated provider worker/auditor launcher, periodic recovery reconciler, and Claude lifecycle hooks. Candidate-side reference code is not authoritative.",
+  "last_confirmed_remote_checkpoint": "f26684204a9764408a46d8629815a1e2837fc8a3",
+  "first_unfinished_action": "Register and deploy the narrowly permissioned external GitHub App/controller, add durable state/lease persistence and provider-separated worker launchers, then hostile-test the App-specific exact-SHA check before changing the integration ruleset. Do not modify build.",
   "recovery_action": "Resume G2 autonomy correction from the last confirmed remote checkpoint; preserve all Failed audits and implement automatic validation, independent-AI audit assignment, correction/retry, re-audit, acceptance, and dependency advancement before unlocking F0-AUDIT.",
   "meaning_confirmation": {
     "interpreted_outcome": "Make repository controls automatically keep every AI on the same verified course without requiring the user to remember audits or dependencies.",
@@ -75,7 +75,7 @@
       "activation_authority": "User's 2026-09-08 bounded Phase 2 instruction",
       "owner_id": "openai-codex-work-session-2026-09-08-g2-author",
       "lock_acquired_at": "2026-09-08T15:54:15Z",
-      "lock_base_commit": "648390b338994ba2e4ce411a877bc1a10e22cf56",
+      "lock_base_commit": "f26684204a9764408a46d8629815a1e2837fc8a3",
       "independent_audit_required": true,
       "routine_user_acceptance_required": false,
       "automatic_acceptance_requires": [

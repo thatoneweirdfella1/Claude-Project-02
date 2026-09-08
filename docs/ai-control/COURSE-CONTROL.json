@@ -196,6 +196,8 @@
         "scripts/ai-control-controller-core.mjs",
         "scripts/ai-control-controller-core.test.mjs",
         "scripts/ai-control-controller-memory-store.mjs",
+        "scripts/ai-control-github-app.mjs",
+        "scripts/ai-control-github-app.test.mjs",
         "scripts/ai-control-trusted-transition.mjs",
         "scripts/ai-control-trusted-transition.test.mjs",
         "scripts/ai-course-control.mjs",

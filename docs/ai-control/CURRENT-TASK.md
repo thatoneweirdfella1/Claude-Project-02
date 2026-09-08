@@ -43,6 +43,8 @@ Six versioned controller-input schemas, a deterministic transition table, and a 
 
 The controller core and in-memory test adapter now exercise autonomous task acquisition, dependency blocking, audit assignment, signed-attestation rejection, automatic correction, automatic acceptance, and dependent unlocking. Thirteen focused lifecycle/controller tests pass locally. Durable external persistence and real host/provider adapters remain Open.
 
+Live host preflight rejected the `build`-branch judge because the active `build` ruleset restricts all updates with no bypass. `HOST-PREFLIGHT.md` preserves the exact evidence. The selected path is an external GitHub App/controller. Its signed-webhook, host-identity normalization, duplicate-delivery protection, and aggregate-check logic are implemented and locally tested; registration, deployment, durable persistence, and real worker-provider credentials remain Open.
+
 ## Safe to Switch
 
 **SAFE TO SWITCH: NO** (awaiting independent audit and explicit user acceptance)
