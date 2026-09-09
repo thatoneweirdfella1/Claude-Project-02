@@ -2,7 +2,7 @@
 
 **SAFE TO SWITCH: NO**
 
-**Last confirmed remote checkpoint:** `7ec98c2a8d815c263ecfc502d3c4e2bd7e8034ec`
+**Last confirmed remote checkpoint:** `a968bff2ded4db6f1df0ef501da2d0927fcd248c`
 
 **Active task:** G2 autonomy correction / G3-A trusted controller.
 
@@ -14,10 +14,16 @@ The confirmed remote checkpoint contains a deployable, preview-only controller u
 
 D-017 retains the isolated unlinked Vercel project as stable non-product controller infrastructure. Authenticated readback reports `target: production` for deployment `dpl_4NLyjv7qFrTSzwxP6JNxr5euUMXF` in project `prj_2tCUMX2TrV6ZIdKQnGDmOXZDPST3`; here that label identifies the permanent environment inside the separate controller project, not the DIVERGENCE.AI product deployment. The project remains `link:null`, controller-only, and inactive pending Redis, App credentials, separated workers, and hostile proof.
 
+## Current live proof
+
+The corrected staging checkpoint is `a968bff2ded4db6f1df0ef501da2d0927fcd248c`, with exact tested tree `6c47fdbd79494015cd3ada8f89c0fc286f375034` and controller-source digest `675a965131519111495e877e7d3b95502d213637`. Only `BOOTSTRAP_SECRET` and `CONTROLLER_RELEASE_DIGEST` were replaced. Deployment `dpl_7igFACJPxHH9K19NrLG5AaR6C4rN` is READY and owns the stable controller alias.
+
+The first authenticated bootstrap returned `created:true`; the second returned `created:false`. Post-bootstrap health returns `ok:true`, `mode:observe`, `durable_state_initialized:true`, and `authoritative_enforcement_active:false`, with the exact configured digest. An unsigned live webhook returns HTTP 400 `Invalid webhook signature`.
+
+`AUTHOR_WORKER_URL` and `AUDITOR_WORKER_URL` are absent and remain blocking. No live autonomous worker execution is claimed from local tests.
+
 ## Exact next action
 
-The three retained signed-webhook HTTP 400s fail before any Redis call. Official Vercel runtime documentation confirms the Node helper parses `application/json`; the deployed handler then attempted to reread an already consumed stream and verified an empty body. The bounded correction changes only the webhook route to the Web-standard handler, reads exact bytes with `Request.text()`, and adds a regression test. Focused G3-A tests pass 29/29 locally.
-
-Publish the exact tested correction to staging, compute the resulting controller-source digest, replace only `BOOTSTRAP_SECRET` and `CONTROLLER_RELEASE_DIGEST`, redeploy that exact source, bootstrap once, and complete live duplicate/invalid webhook proof. Keep enforcement inactive and do not modify rulesets.
+Publish this evidence checkpoint to staging, confirm its genuine signed Hookshot delivery succeeds, and obtain one authenticated GitHub redelivery to prove duplicate refusal. Then synchronize the final records and publish the exact final hash. Do not begin the independent audit, activate enforcement, merge, change rulesets, or modify product files.
 
 Routine user acceptance is not required. Only a genuinely unavoidable one-time account/security action or unresolved material product decision may be presented to the user.

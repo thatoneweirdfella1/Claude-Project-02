@@ -6,9 +6,9 @@
   "active_task": "G2",
   "current_phase": "G2 autonomy correction: G3-A external controller provisioning",
   "safe_to_switch": "NO",
-  "last_confirmed_remote_checkpoint": "7ec98c2a8d815c263ecfc502d3c4e2bd7e8034ec",
-  "first_unfinished_action": "Complete the required validation suite, publish the exact Web-standard signed-webhook correction to staging, compute its controller-source digest, replace only BOOTSTRAP_SECRET and CONTROLLER_RELEASE_DIGEST, and redeploy the tested source.",
-  "recovery_action": "Resume from remote checkpoint 7ec98c2a8d815c263ecfc502d3c4e2bd7e8034ec and E-048. The Vercel Node helper parsed application/json before signature verification; preserve E-047, publish only the tested Web-standard webhook correction, keep observe mode and enforcement inactive, then complete bootstrap and live hostile proof.",
+  "last_confirmed_remote_checkpoint": "a968bff2ded4db6f1df0ef501da2d0927fcd248c",
+  "first_unfinished_action": "Publish this live-proof checkpoint to staging, confirm its genuine signed webhook returns HTTP 200, obtain one authenticated GitHub redelivery to prove duplicate refusal, then publish the final synchronized evidence checkpoint.",
+  "recovery_action": "Resume from remote checkpoint a968bff2ded4db6f1df0ef501da2d0927fcd248c and E-049. Deployment dpl_7igFACJPxHH9K19NrLG5AaR6C4rN is READY at exact release 675a965131519111495e877e7d3b95502d213637; Redis bootstrap returned created:true then created:false; health and invalid-signature proof passed. Keep observe mode and enforcement inactive while completing genuine signed and duplicate redelivery proof.",
   "meaning_confirmation": {
     "interpreted_outcome": "Make repository controls automatically keep every AI on the same verified course without requiring the user to remember audits or dependencies.",
     "boundary": "Do not change the product, F0, application, layout, branches, integration baseline, or independent-audit results.",
@@ -75,7 +75,7 @@
       "activation_authority": "User's 2026-09-08 bounded Phase 2 instruction",
       "owner_id": "openai-codex-work-session-2026-09-08-g2-author",
       "lock_acquired_at": "2026-09-08T20:00:00Z",
-      "lock_base_commit": "7ec98c2a8d815c263ecfc502d3c4e2bd7e8034ec",
+      "lock_base_commit": "a968bff2ded4db6f1df0ef501da2d0927fcd248c",
       "independent_audit_required": true,
       "routine_user_acceptance_required": false,
       "automatic_acceptance_requires": [

@@ -1,8 +1,8 @@
 # Current Task Status
 
 **Task ID:** G2 autonomy correction / G3-A trusted controller
-**Status:** Active; genuine signed-webhook transport correction Self-check passed locally, publication and live proof pending
-**Starting remote checkpoint:** `7ec98c2a8d815c263ecfc502d3c4e2bd7e8034ec`
+**Status:** Active; exact-source deployment, durable bootstrap, health, and invalid-signature proof passed; genuine signed and duplicate-redelivery proof pending
+**Starting remote checkpoint:** `a968bff2ded4db6f1df0ef501da2d0927fcd248c`
 
 ## Authority and outcome
 
@@ -36,10 +36,16 @@ Focused G3-A tests pass 27/27 at the checkpoint. The exact course gate passed fr
 
 The deploy action reported preview while authenticated readback reports deployment `dpl_4NLyjv7qFrTSzwxP6JNxr5euUMXF` and project `prj_2tCUMX2TrV6ZIdKQnGDmOXZDPST3` as `target: production`. The retained failure evidence remains valid. D-017 resolves the ambiguity: this stable target is accepted strictly as permanent non-product controller infrastructure because the project is isolated (`link: null`), contains only the controller package, and does not alter the `claude-project-02` product deployment. It remains non-authoritative until its store, App identity, separated workers, and hostile proof are complete.
 
+## Live checkpoint
+
+Remote correction `a968bff2ded4db6f1df0ef501da2d0927fcd248c` has tested tree `6c47fdbd79494015cd3ada8f89c0fc286f375034`. Exact controller-source digest `675a965131519111495e877e7d3b95502d213637` is configured and reported by health. Production controller deployment `dpl_7igFACJPxHH9K19NrLG5AaR6C4rN` is READY at the isolated stable alias. Bootstrap returned `created:true` once and `created:false` on the required second call. Post-bootstrap health returns `ok:true`, `mode:observe`, `durable_state_initialized:true`, and `authoritative_enforcement_active:false`. An unsigned live delivery returns HTTP 400 `Invalid webhook signature`.
+
+`AUTHOR_WORKER_URL` and `AUDITOR_WORKER_URL` are not configured and remain blocking. Local worker tests do not prove live autonomous worker execution.
+
 ## Exact next action
 
-Publish the tested Web-standard webhook correction to staging, compute its exact controller-source digest, replace only the inaccessible bootstrap secret and stale release value in controller project `prj_2tCUMX2TrV6ZIdKQnGDmOXZDPST3`, redeploy exactly that tested source, and bootstrap Redis exactly once. Then prove a second bootstrap refuses overwrite and complete genuine/duplicate/invalid live webhook checks. Do not activate enforcement or change a ruleset.
+Publish this evidence checkpoint to staging and confirm the resulting genuine GitHub Hookshot request succeeds. Obtain one authenticated GitHub redelivery of that delivery and prove it returns the duplicate-safe response. Then synchronize final records and publish the exact final remote checkpoint. Do not activate enforcement, begin the independent audit, merge, change rulesets, or modify product files.
 
 ## Safe to switch
 
-**SAFE TO SWITCH: NO** — the correction checkpoint is active. Redis is not initialized; E-047's three genuine HTTP 400 deliveries remain retained failure evidence until the corrected live delivery succeeds.
+**SAFE TO SWITCH: NO** — deployment and bootstrap are complete, but genuine signed and duplicate-redelivery live proof remain unfinished.
