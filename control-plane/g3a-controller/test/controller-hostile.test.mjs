@@ -1,9 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { createHmac } from "node:crypto";
 import { DurableControllerStore } from "../lib/durable-store.mjs";
 import { DurableWorkers, WorkerConfigurationError } from "../lib/workers.mjs";
 import { validateHostChange } from "../lib/trusted-validator.mjs";
 import { rawBody } from "../lib/http.mjs";
+import { handleWebhook } from "../lib/github-events.mjs";
 
 class FakeRedis {
   constructor() { this.data = new Map(); this.lists = new Map(); this.zsets = new Map(); }
@@ -37,6 +39,78 @@ test("web handler preserves exact JSON bytes for GitHub signature verification",
   const body = '{\n  "repository": { "id": 1272469738 },\n  "ref": "refs/heads/divergence/reliability-staging"\n}\n';
   const request = new Request("https://controller.invalid/api/webhook", { method: "POST", headers: { "content-type": "application/json" }, body });
   assert.equal(await rawBody(request), body);
+});
+
+function signedWebhookFixture() {
+  const secret = "host-only-webhook-secret";
+  const deliveryId = "delivery-123";
+  const raw = JSON.stringify({
+    after: sha,
+    before: base,
+    ref: "refs/heads/divergence/reliability-staging",
+    repository: { id: repositoryId, full_name: "thatoneweirdfella1/Claude-Project-02" },
+    installation: { id: 160186328 },
+    sender: { id: 1 },
+  });
+  const signature = `sha256=${createHmac("sha256", secret).update(raw).digest("hex")}`;
+  const records = new Map();
+  const deliveryStore = {
+    has: async id => records.has(id),
+    reserve: async id => records.has(id) ? false : (records.set(id, "reserved"), true),
+    complete: async id => records.set(id, "complete"),
+    fail: async (id, error) => records.set(id, `failed:${error}`),
+  };
+  const headers = {
+    "x-github-event": "push",
+    "x-github-delivery": deliveryId,
+    "x-hub-signature-256": signature,
+  };
+  return { secret, deliveryId, raw, records, deliveryStore, headers };
+}
+
+test("valid signed staging push is accepted and durably completed", async () => {
+  const fixture = signedWebhookFixture();
+  let calls = 0;
+  const result = await handleWebhook({
+    headers: fixture.headers,
+    rawBody: fixture.raw,
+    secret: fixture.secret,
+    expectedRepositoryId: repositoryId,
+    controller: { onGitHubEvent: async event => ({ observed: true, deliveryId: event.deliveryId, calls: ++calls }) },
+    deliveryStore: fixture.deliveryStore,
+  });
+  assert.deepEqual(result, { observed: true, deliveryId: fixture.deliveryId, calls: 1 });
+  assert.equal(fixture.records.get(fixture.deliveryId), "complete");
+});
+
+test("redelivered signed webhook is refused as a duplicate without controller re-entry", async () => {
+  const fixture = signedWebhookFixture();
+  let calls = 0;
+  const input = {
+    headers: fixture.headers,
+    rawBody: fixture.raw,
+    secret: fixture.secret,
+    expectedRepositoryId: repositoryId,
+    controller: { onGitHubEvent: async () => ({ observed: true, calls: ++calls }) },
+    deliveryStore: fixture.deliveryStore,
+  };
+  await handleWebhook(input);
+  assert.deepEqual(await handleWebhook(input), { duplicate: true });
+  assert.equal(calls, 1);
+});
+
+test("invalid webhook signature is rejected before reserving a delivery", async () => {
+  const fixture = signedWebhookFixture();
+  fixture.headers["x-hub-signature-256"] = `sha256=${"0".repeat(64)}`;
+  await assert.rejects(handleWebhook({
+    headers: fixture.headers,
+    rawBody: fixture.raw,
+    secret: fixture.secret,
+    expectedRepositoryId: repositoryId,
+    controller: { onGitHubEvent: async () => assert.fail("controller must not run") },
+    deliveryStore: fixture.deliveryStore,
+  }), /Invalid webhook signature/);
+  assert.equal(fixture.records.size, 0);
 });
 
 test("bootstrap is atomic, retains migration history, and never overwrites durable state", async () => {

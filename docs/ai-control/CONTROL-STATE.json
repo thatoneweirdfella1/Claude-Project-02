@@ -7,8 +7,8 @@
   "current_phase": "G2 autonomy correction: G3-A external controller provisioning",
   "safe_to_switch": "NO",
   "last_confirmed_remote_checkpoint": "a968bff2ded4db6f1df0ef501da2d0927fcd248c",
-  "first_unfinished_action": "Publish this live-proof checkpoint to staging, confirm its genuine signed webhook returns HTTP 200, obtain one authenticated GitHub redelivery to prove duplicate refusal, then publish the final synchronized evidence checkpoint.",
-  "recovery_action": "Resume from remote checkpoint a968bff2ded4db6f1df0ef501da2d0927fcd248c and E-049. Deployment dpl_7igFACJPxHH9K19NrLG5AaR6C4rN is READY at exact release 675a965131519111495e877e7d3b95502d213637; Redis bootstrap returned created:true then created:false; health and invalid-signature proof passed. Keep observe mode and enforcement inactive while completing genuine signed and duplicate redelivery proof.",
+  "first_unfinished_action": "Publish the forward-only ledger recovery and safe webhook diagnostic checkpoint, deploy its exact tested controller source in observe mode, generate a genuine signed staging delivery, prove successful processing and authenticated duplicate refusal, then publish final synchronized evidence.",
+  "recovery_action": "Use a968bff2ded4db6f1df0ef501da2d0927fcd248c as the last trusted append-only base. Retain malformed remote commit b9af1b0b91afabd850d4c6667ccb2887d9027e0f in history, restore the current ledger from a968bff2 and append the correction. Deployment dpl_7igFACJPxHH9K19NrLG5AaR6C4rN is healthy in observe mode; complete genuine signed and duplicate-redelivery proof without activating enforcement.",
   "meaning_confirmation": {
     "interpreted_outcome": "Make repository controls automatically keep every AI on the same verified course without requiring the user to remember audits or dependencies.",
     "boundary": "Do not change the product, F0, application, layout, branches, integration baseline, or independent-audit results.",

@@ -1,7 +1,7 @@
 # Current Task Status
 
 **Task ID:** G2 autonomy correction / G3-A trusted controller
-**Status:** Active; exact-source deployment, durable bootstrap, health, and invalid-signature proof passed; genuine signed and duplicate-redelivery proof pending
+**Status:** Active; durable bootstrap, health, and invalid-signature proof passed; malformed ledger publication is being corrected forward-only and genuine signed/duplicate-redelivery proof remains pending
 **Starting remote checkpoint:** `a968bff2ded4db6f1df0ef501da2d0927fcd248c`
 
 ## Authority and outcome
@@ -42,9 +42,11 @@ Remote correction `a968bff2ded4db6f1df0ef501da2d0927fcd248c` has tested tree `6c
 
 `AUTHOR_WORKER_URL` and `AUDITOR_WORKER_URL` are not configured and remain blocking. Local worker tests do not prove live autonomous worker execution.
 
+Remote staging subsequently advanced to `b9af1b0b91afabd850d4c6667ccb2887d9027e0f`, but that records-only publication corrupted `CONTINUITY-LEDGER.md` and did not produce successful genuine signed-delivery evidence. The corruption is retained in Git history. The current recovery restores the ledger bytes from the last trusted checkpoint `a968bff2ded4db6f1df0ef501da2d0927fcd248c`, appends a correction entry, adds safe rejection metadata logging, and adds valid-signed, duplicate, and invalid-signature hostile tests. No payload or secret is logged.
+
 ## Exact next action
 
-Publish this evidence checkpoint to staging and confirm the resulting genuine GitHub Hookshot request succeeds. Obtain one authenticated GitHub redelivery of that delivery and prove it returns the duplicate-safe response. Then synchronize final records and publish the exact final remote checkpoint. Do not activate enforcement, begin the independent audit, merge, change rulesets, or modify product files.
+Publish the forward-only ledger recovery and diagnostic checkpoint to staging. Deploy its exact tested controller source in observe mode, then publish one synchronized records-only checkpoint to generate a genuine GitHub Hookshot request. Diagnose and correct any remaining rejection from safe live metadata, prove one successful genuine delivery plus one authenticated duplicate redelivery, and publish the final synchronized evidence. Do not activate enforcement, begin the independent audit, merge, change rulesets, or modify product files.
 
 ## Safe to switch
 

@@ -57,7 +57,7 @@
     "id": "G2",
     "title": "Maximum-Feasible Automation and Non-Bypass Hardening",
     "source": "docs/ai-control/CURRENT-TASK.md",
-    "status": "G3-A corrected controller deployed at exact tested digest; durable bootstrap and health proof passed; genuine signed delivery and authenticated duplicate redelivery proof remain Open; worker URLs are unconfigured blockers; independent audit Open; G1 remains Failed/unaccepted",
+    "status": "G3-A durable bootstrap and health proof passed; malformed b9af1b0 records publication is retained and being corrected forward-only; genuine signed delivery and authenticated duplicate redelivery proof remain Open; worker URLs are unconfigured blockers; independent audit Open; G1 remains Failed/unaccepted",
     "next_task_reveal_allowed": true
   },
   "scope": {

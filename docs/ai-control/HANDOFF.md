@@ -22,8 +22,10 @@ The first authenticated bootstrap returned `created:true`; the second returned `
 
 `AUTHOR_WORKER_URL` and `AUDITOR_WORKER_URL` are absent and remain blocking. No live autonomous worker execution is claimed from local tests.
 
+Remote staging advanced afterward to `b9af1b0b91afabd850d4c6667ccb2887d9027e0f`, but that publication corrupted the continuity ledger and did not prove a successful genuine signed delivery. The bad commit remains visible in history. Recovery restores the current ledger from the last trusted append-only bytes at `a968bff2ded4db6f1df0ef501da2d0927fcd248c`, appends a correction record, and adds safe webhook outcome logging plus valid/duplicate/invalid hostile tests. It does not rewrite history, log payloads, or expose secrets.
+
 ## Exact next action
 
-Publish this evidence checkpoint to staging, confirm its genuine signed Hookshot delivery succeeds, and obtain one authenticated GitHub redelivery to prove duplicate refusal. Then synchronize the final records and publish the exact final hash. Do not begin the independent audit, activate enforcement, merge, change rulesets, or modify product files.
+Publish the recovery/diagnostic checkpoint, deploy its exact tested controller source in observe mode, and publish a synchronized records-only checkpoint to generate a genuine Hookshot request. Use only safe delivery metadata to diagnose any rejection; then prove a successful genuine delivery and authenticated duplicate redelivery before publishing the final exact hash. Do not begin the independent audit, activate enforcement, merge, change rulesets, or modify product files.
 
 Routine user acceptance is not required. Only a genuinely unavoidable one-time account/security action or unresolved material product decision may be presented to the user.
