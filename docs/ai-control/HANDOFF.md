@@ -1,8 +1,8 @@
 # Handoff Record
 
-**SAFE TO SWITCH: YES**
+**SAFE TO SWITCH: NO**
 
-**Last confirmed remote checkpoint:** `b1a6dfa4fafe7888368ef6650273fcc7acc4ba5a`
+**Last confirmed remote checkpoint:** `7ec98c2a8d815c263ecfc502d3c4e2bd7e8034ec`
 
 **Active task:** G2 autonomy correction / G3-A trusted controller.
 
@@ -16,6 +16,8 @@ D-017 retains the isolated unlinked Vercel project as stable non-product control
 
 ## Exact next action
 
-After required action-time authorization, replace only the inaccessible bootstrap secret and stale release value in the controller project, redeploy exact subtree `ccf15ce25afa6d01c0694085c7d58d9a97752ef3`, bootstrap Redis once, and diagnose the three genuine signed-webhook HTTP 400 results. Then continue live G3A-01 through G3A-10 proof. Keep enforcement inactive and do not modify rulesets.
+The three retained signed-webhook HTTP 400s fail before any Redis call. Official Vercel runtime documentation confirms the Node helper parses `application/json`; the deployed handler then attempted to reread an already consumed stream and verified an empty body. The bounded correction changes only the webhook route to the Web-standard handler, reads exact bytes with `Request.text()`, and adds a regression test. Focused G3-A tests pass 29/29 locally.
+
+Publish the exact tested correction to staging, compute the resulting controller-source digest, replace only `BOOTSTRAP_SECRET` and `CONTROLLER_RELEASE_DIGEST`, redeploy that exact source, bootstrap once, and complete live duplicate/invalid webhook proof. Keep enforcement inactive and do not modify rulesets.
 
 Routine user acceptance is not required. Only a genuinely unavoidable one-time account/security action or unresolved material product decision may be presented to the user.

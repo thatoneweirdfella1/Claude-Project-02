@@ -69,6 +69,7 @@ G1-E is complete with a retained **Failed** verdict. G1 is not accepted. G2 hard
 | GitHub App boundary | Self-check passed | Seven App tests plus fourteen controller/transition tests pass. Live preflight proves `build` is immutable and rejects that route. App registration, deployment, and host readback remain Open. |
 | Durable external-service source | Self-check passed | Preview-only service source adds Redis state/history/queue/lease/retry/dead-letter records, exact host repository/SHA validation, GitHub App authentication, credential-separated worker launchers, and observe-mode endpoints. Six new hostile tests pass; deployment, resources, credentials, and live hostile proof remain Open. |
 | Vercel target isolation | Self-check passed | D-017 retains the stable production target strictly as non-product controller infrastructure. Authenticated readback confirms separate project `prj_2tCUMX2TrV6ZIdKQnGDmOXZDPST3`, `link:null`, controller-only deployment `dpl_4NLyjv7qFrTSzwxP6JNxr5euUMXF`, and no effect on the `claude-project-02` product deployment. External configuration and hostile proof remain Open. |
+| Signed-webhook transport correction | Self-check passed | Live Vercel request evidence and official runtime documentation show the Node helper parsed `application/json` before the controller read the signed bytes. The webhook alone now uses Vercel's Web-standard handler and exact `Request.text()` bytes; focused regression suite passes 29/29. Corrected deployment and genuine signed delivery remain Open. |
 
 | Gate | State | Meaning |
 |---|---|---|

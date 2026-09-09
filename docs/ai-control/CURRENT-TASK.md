@@ -1,8 +1,8 @@
 # Current Task Status
 
 **Task ID:** G2 autonomy correction / G3-A trusted controller
-**Status:** Interrupted — resumable; Phase 1 published and exact controller deployed, bootstrap blocked on action-time secret authorization
-**Starting remote checkpoint:** `83b2fc21c10113df1a8f2c21ab8a7c6daf837944`
+**Status:** Active; genuine signed-webhook transport correction Self-check passed locally, publication and live proof pending
+**Starting remote checkpoint:** `7ec98c2a8d815c263ecfc502d3c4e2bd7e8034ec`
 
 ## Authority and outcome
 
@@ -38,8 +38,8 @@ The deploy action reported preview while authenticated readback reports deployme
 
 ## Exact next action
 
-After required action-time authorization, replace only the inaccessible bootstrap secret and stale release value in controller project `prj_2tCUMX2TrV6ZIdKQnGDmOXZDPST3`, redeploy exact subtree `ccf15ce25afa6d01c0694085c7d58d9a97752ef3`, bootstrap Redis exactly once, and diagnose the genuine signed-webhook HTTP 400. Then continue honest G3A-01 through G3A-10 proof. Do not activate enforcement or change a ruleset.
+Publish the tested Web-standard webhook correction to staging, compute its exact controller-source digest, replace only the inaccessible bootstrap secret and stale release value in controller project `prj_2tCUMX2TrV6ZIdKQnGDmOXZDPST3`, redeploy exactly that tested source, and bootstrap Redis exactly once. Then prove a second bootstrap refuses overwrite and complete genuine/duplicate/invalid live webhook checks. Do not activate enforcement or change a ruleset.
 
 ## Safe to switch
 
-**SAFE TO SWITCH: YES** — resume from E-047 and the exact next action above. Redis is not initialized; do not treat the three HTTP 400 signed webhook deliveries as a pass.
+**SAFE TO SWITCH: NO** — the correction checkpoint is active. Redis is not initialized; E-047's three genuine HTTP 400 deliveries remain retained failure evidence until the corrected live delivery succeeds.

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { DurableControllerStore } from "../lib/durable-store.mjs";
 import { DurableWorkers, WorkerConfigurationError } from "../lib/workers.mjs";
 import { validateHostChange } from "../lib/trusted-validator.mjs";
+import { rawBody } from "../lib/http.mjs";
 
 class FakeRedis {
   constructor() { this.data = new Map(); this.lists = new Map(); this.zsets = new Map(); }
@@ -31,6 +32,12 @@ class FakeRedis {
 const sha = "a".repeat(40), base = "b".repeat(40), repositoryId = 1272469738;
 const initialState = () => ({ schema_version: "1.0", repository_id: repositoryId, active_task: "A", decision_queue: [], audit_queue: [], tasks: { A: { state: "Open", attempt: 1, dependencies: [], base_sha: base, candidate_sha: null, author_principal: null, allowed_paths: ["docs/ai-control/**"] } } });
 const initial = () => ({ bootstrap_version: "2.0", repository_id: repositoryId, source_commit: base, source_tree: sha, state: initialState(), retained_history: [{ event_id: "seed", type: "migration-seed" }] });
+
+test("web handler preserves exact JSON bytes for GitHub signature verification", async () => {
+  const body = '{\n  "repository": { "id": 1272469738 },\n  "ref": "refs/heads/divergence/reliability-staging"\n}\n';
+  const request = new Request("https://controller.invalid/api/webhook", { method: "POST", headers: { "content-type": "application/json" }, body });
+  assert.equal(await rawBody(request), body);
+});
 
 test("bootstrap is atomic, retains migration history, and never overwrites durable state", async () => {
   const redis = new FakeRedis(), store = new DurableControllerStore(redis), seed = initial();

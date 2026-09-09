@@ -5,10 +5,10 @@
   "accepted_branch": "divergence/reliability-v1",
   "active_task": "G2",
   "current_phase": "G2 autonomy correction: G3-A external controller provisioning",
-  "safe_to_switch": "YES",
-  "last_confirmed_remote_checkpoint": "b1a6dfa4fafe7888368ef6650273fcc7acc4ba5a",
-  "first_unfinished_action": "Obtain action-time authorization to replace only BOOTSTRAP_SECRET and CONTROLLER_RELEASE_DIGEST, redeploy exact controller subtree ccf15ce25afa6d01c0694085c7d58d9a97752ef3, bootstrap Redis once, and diagnose the genuine signed-webhook HTTP 400.",
-  "recovery_action": "Resume from remote checkpoint b1a6dfa4fafe7888368ef6650273fcc7acc4ba5a and E-047. Do not claim live bootstrap or G3A proof; preserve the signed-webhook failures and keep observe mode/enforcement inactive.",
+  "safe_to_switch": "NO",
+  "last_confirmed_remote_checkpoint": "7ec98c2a8d815c263ecfc502d3c4e2bd7e8034ec",
+  "first_unfinished_action": "Complete the required validation suite, publish the exact Web-standard signed-webhook correction to staging, compute its controller-source digest, replace only BOOTSTRAP_SECRET and CONTROLLER_RELEASE_DIGEST, and redeploy the tested source.",
+  "recovery_action": "Resume from remote checkpoint 7ec98c2a8d815c263ecfc502d3c4e2bd7e8034ec and E-048. The Vercel Node helper parsed application/json before signature verification; preserve E-047, publish only the tested Web-standard webhook correction, keep observe mode and enforcement inactive, then complete bootstrap and live hostile proof.",
   "meaning_confirmation": {
     "interpreted_outcome": "Make repository controls automatically keep every AI on the same verified course without requiring the user to remember audits or dependencies.",
     "boundary": "Do not change the product, F0, application, layout, branches, integration baseline, or independent-audit results.",
@@ -75,7 +75,7 @@
       "activation_authority": "User's 2026-09-08 bounded Phase 2 instruction",
       "owner_id": "openai-codex-work-session-2026-09-08-g2-author",
       "lock_acquired_at": "2026-09-08T20:00:00Z",
-      "lock_base_commit": "b1a6dfa4fafe7888368ef6650273fcc7acc4ba5a",
+      "lock_base_commit": "7ec98c2a8d815c263ecfc502d3c4e2bd7e8034ec",
       "independent_audit_required": true,
       "routine_user_acceptance_required": false,
       "automatic_acceptance_requires": [
