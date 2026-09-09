@@ -1,8 +1,8 @@
 # Current Task Status
 
 **Task ID:** G2 autonomy correction / G3-A trusted controller
-**Status:** Active — stable isolated controller target accepted as non-product infrastructure; external provisioning continues
-**Starting remote checkpoint:** `6b6cdd5946b80bf2bd4b53a1a37817e75b8bcb75`
+**Status:** Interrupted — resumable; Phase 1 published and exact controller deployed, bootstrap blocked on action-time secret authorization
+**Starting remote checkpoint:** `83b2fc21c10113df1a8f2c21ab8a7c6daf837944`
 
 ## Authority and outcome
 
@@ -38,8 +38,8 @@ The deploy action reported preview while authenticated readback reports deployme
 
 ## Exact next action
 
-Publish the tested create-only bootstrap migration checkpoint, then deploy it to existing controller project `prj_2tCUMX2TrV6ZIdKQnGDmOXZDPST3` in observe mode and initialize Redis resource `02fe2fd1-403f-4248-8fc0-d81f21b8505c` exactly once. Verify App `4879098`, installation `160186328`, repository `1272469738`, release digest, health, and host evidence before recording G3A-01 through G3A-10. Do not activate enforcement or change a ruleset.
+After required action-time authorization, replace only the inaccessible bootstrap secret and stale release value in controller project `prj_2tCUMX2TrV6ZIdKQnGDmOXZDPST3`, redeploy exact subtree `ccf15ce25afa6d01c0694085c7d58d9a97752ef3`, bootstrap Redis exactly once, and diagnose the genuine signed-webhook HTTP 400. Then continue honest G3A-01 through G3A-10 proof. Do not activate enforcement or change a ruleset.
 
 ## Safe to switch
 
-**SAFE TO SWITCH: NO** — this worker has resumed the active external-provisioning checkpoint. If interrupted, it must first publish exact continuity and release the lease before another writer proceeds.
+**SAFE TO SWITCH: YES** — resume from E-047 and the exact next action above. Redis is not initialized; do not treat the three HTTP 400 signed webhook deliveries as a pass.

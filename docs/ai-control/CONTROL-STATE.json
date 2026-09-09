@@ -5,10 +5,10 @@
   "accepted_branch": "divergence/reliability-v1",
   "active_task": "G2",
   "current_phase": "G2 autonomy correction: G3-A external controller provisioning",
-  "safe_to_switch": "NO",
-  "last_confirmed_remote_checkpoint": "83b2fc21c10113df1a8f2c21ab8a7c6daf837944",
-  "first_unfinished_action": "Publish the tested create-only bootstrap migration, deploy those exact controller bytes in observe mode, initialize Redis exactly once, and run honest live/local G3A-01 through G3A-10 proof.",
-  "recovery_action": "Resume from remote checkpoint 83b2fc21c10113df1a8f2c21ab8a7c6daf837944 and D-018. Preserve all retained failures and audit lineage; do not modify product deployment, rulesets, integration, safety, or build.",
+  "safe_to_switch": "YES",
+  "last_confirmed_remote_checkpoint": "b1a6dfa4fafe7888368ef6650273fcc7acc4ba5a",
+  "first_unfinished_action": "Obtain action-time authorization to replace only BOOTSTRAP_SECRET and CONTROLLER_RELEASE_DIGEST, redeploy exact controller subtree ccf15ce25afa6d01c0694085c7d58d9a97752ef3, bootstrap Redis once, and diagnose the genuine signed-webhook HTTP 400.",
+  "recovery_action": "Resume from remote checkpoint b1a6dfa4fafe7888368ef6650273fcc7acc4ba5a and E-047. Do not claim live bootstrap or G3A proof; preserve the signed-webhook failures and keep observe mode/enforcement inactive.",
   "meaning_confirmation": {
     "interpreted_outcome": "Make repository controls automatically keep every AI on the same verified course without requiring the user to remember audits or dependencies.",
     "boundary": "Do not change the product, F0, application, layout, branches, integration baseline, or independent-audit results.",
@@ -75,7 +75,7 @@
       "activation_authority": "User's 2026-09-08 bounded Phase 2 instruction",
       "owner_id": "openai-codex-work-session-2026-09-08-g2-author",
       "lock_acquired_at": "2026-09-08T20:00:00Z",
-      "lock_base_commit": "83b2fc21c10113df1a8f2c21ab8a7c6daf837944",
+      "lock_base_commit": "b1a6dfa4fafe7888368ef6650273fcc7acc4ba5a",
       "independent_audit_required": true,
       "routine_user_acceptance_required": false,
       "automatic_acceptance_requires": [

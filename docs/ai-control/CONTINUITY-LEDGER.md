@@ -757,3 +757,14 @@ Each new entry must contain:
 - **Failure/correction/uncertainty:** Live deployment, bootstrap, health, Redis content, webhook delivery, logs, and G3A-01–G3A-10 host proof remain pending Phase 2/3. No enforcement, acceptance, merge, PR, product, ruleset, or protected-branch mutation occurred.
 - **Resulting status/gate change:** Bootstrap migration is author Self-check passed; all live-host gates remain Open.
 - **Exact next action:** Refresh integrity, run the exact course gate, publish the Phase 1 checkpoint only to staging, verify the remote hash, then deploy exactly that tested controller source in observe mode and initialize Redis once.
+
+### CL-0054 — 2026-09-09 UTC — Phase 1 published; live bootstrap blocked safely
+
+- **Actor:** OpenAI Codex G3-A live-bootstrap author.
+- **Task/phase:** G2 autonomy correction / G3-A Phase 2 partial deployment.
+- **Repository/branch/checkpoint:** Phase 1 published by non-force update only to staging as `b1a6dfa4fafe7888368ef6650273fcc7acc4ba5a`, tree `df40c7c5122741553f85e0c50a970fcb365d90d7`; fetched bytes matched the tested local tree.
+- **Action and affected resources:** Deployed the exact 22 controller-package files to existing isolated project `prj_2tCUMX2TrV6ZIdKQnGDmOXZDPST3`; deployment `dpl_BUCJSvw8V7HAPNcce9tvczFtzbT3` became READY and received the stable alias. No product project, branch, PR, merge, ruleset, or enforcement setting changed.
+- **Observed evidence:** Health returned exactly `{"ok":true,"mode":"observe","repository_id":1272469738,"release":"38850ee1aebc6cce450e8116055e0881f2896c17","durable_state_initialized":false,"authoritative_enforcement_active":false}`. Runtime logs show three genuine webhook POSTs caused by the staging checkpoint, all HTTP 400. An isolated unsigned hostile POST also returned HTTP 400 with `Invalid webhook signature`.
+- **Failure/correction/uncertainty:** Release health still identifies the prior digest rather than deployed subtree `ccf15ce25afa6d01c0694085c7d58d9a97752ef3`. The existing bootstrap secret is not available to this environment. Replacing that secret and the release value is a persistent security-setting change; the required action-time authorization prompt returned no selection. Redis remains uninitialized and every other live hostile gate remains Open.
+- **Resulting status/gate change:** Phase 1 bootstrap safety is Self-check passed. G3A-01 has live evidence only for unsigned rejection; genuine signed delivery is Failed/Open. G3A-02 through G3A-10 remain Open for live proof. `SAFE TO SWITCH: YES` after this record commit is remotely confirmed.
+- **Exact next action:** With action-time authorization, replace only `BOOTSTRAP_SECRET` and `CONTROLLER_RELEASE_DIGEST` in the controller project, redeploy exact subtree `ccf15ce…`, bootstrap once, verify `created:true` then `created:false`, and investigate the signed webhook 400 before any further live proof.

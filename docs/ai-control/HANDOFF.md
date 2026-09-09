@@ -1,8 +1,8 @@
 # Handoff Record
 
-**SAFE TO SWITCH: NO**
+**SAFE TO SWITCH: YES**
 
-**Last confirmed remote checkpoint:** `83b2fc21c10113df1a8f2c21ab8a7c6daf837944`
+**Last confirmed remote checkpoint:** `b1a6dfa4fafe7888368ef6650273fcc7acc4ba5a`
 
 **Active task:** G2 autonomy correction / G3-A trusted controller.
 
@@ -16,6 +16,6 @@ D-017 retains the isolated unlinked Vercel project as stable non-product control
 
 ## Exact next action
 
-Finish and publish the create-only bootstrap migration checkpoint, deploy those exact bytes to the retained controller project in observe mode, initialize the existing Redis resource exactly once, then execute honest live/local G3A-01 through G3A-10 proof. Keep enforcement inactive and do not modify rulesets.
+After required action-time authorization, replace only the inaccessible bootstrap secret and stale release value in the controller project, redeploy exact subtree `ccf15ce25afa6d01c0694085c7d58d9a97752ef3`, bootstrap Redis once, and diagnose the three genuine signed-webhook HTTP 400 results. Then continue live G3A-01 through G3A-10 proof. Keep enforcement inactive and do not modify rulesets.
 
 Routine user acceptance is not required. Only a genuinely unavoidable one-time account/security action or unresolved material product decision may be presented to the user.
