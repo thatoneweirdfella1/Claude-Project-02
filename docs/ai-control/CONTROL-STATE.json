@@ -6,9 +6,9 @@
   "active_task": "G2",
   "current_phase": "G2 autonomy correction: G3-A external controller provisioning",
   "safe_to_switch": "NO",
-  "last_confirmed_remote_checkpoint": "a968bff2ded4db6f1df0ef501da2d0927fcd248c",
-  "first_unfinished_action": "Publish the forward-only ledger recovery and safe webhook diagnostic checkpoint, deploy its exact tested controller source in observe mode, generate a genuine signed staging delivery, prove successful processing and authenticated duplicate refusal, then publish final synchronized evidence.",
-  "recovery_action": "Use a968bff2ded4db6f1df0ef501da2d0927fcd248c as the last trusted append-only base. Retain malformed remote commit b9af1b0b91afabd850d4c6667ccb2887d9027e0f in history, restore the current ledger from a968bff2 and append the correction. Deployment dpl_7igFACJPxHH9K19NrLG5AaR6C4rN is healthy in observe mode; complete genuine signed and duplicate-redelivery proof without activating enforcement.",
+  "last_confirmed_remote_checkpoint": "4d76dbea0ba872ed4426af2a7c4a242ed1beb467",
+  "first_unfinished_action": "Publish this synchronized records-only checkpoint to trigger a genuine signed staging delivery against diagnostic deployment dpl_8N5fdgtDovjrrjyHf8e6BubmqALM, then prove successful processing and authenticated duplicate refusal before final evidence publication.",
+  "recovery_action": "Resume from remote recovery 4d76dbea0ba872ed4426af2a7c4a242ed1beb467 and E-050. Exact controller digest b8a044d14415d97cfe41853548d3ef50d61e00d9 is deployed READY as dpl_8N5fdgtDovjrrjyHf8e6BubmqALM; stable health is correct in observe mode. Retain malformed b9af1b0 in history and complete genuine signed plus duplicate-redelivery proof without activating enforcement.",
   "meaning_confirmation": {
     "interpreted_outcome": "Make repository controls automatically keep every AI on the same verified course without requiring the user to remember audits or dependencies.",
     "boundary": "Do not change the product, F0, application, layout, branches, integration baseline, or independent-audit results.",
@@ -75,7 +75,7 @@
       "activation_authority": "User's 2026-09-08 bounded Phase 2 instruction",
       "owner_id": "openai-codex-work-session-2026-09-08-g2-author",
       "lock_acquired_at": "2026-09-08T20:00:00Z",
-      "lock_base_commit": "a968bff2ded4db6f1df0ef501da2d0927fcd248c",
+      "lock_base_commit": "4d76dbea0ba872ed4426af2a7c4a242ed1beb467",
       "independent_audit_required": true,
       "routine_user_acceptance_required": false,
       "automatic_acceptance_requires": [

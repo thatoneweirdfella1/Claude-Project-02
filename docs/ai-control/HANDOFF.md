@@ -2,7 +2,7 @@
 
 **SAFE TO SWITCH: NO**
 
-**Last confirmed remote checkpoint:** `a968bff2ded4db6f1df0ef501da2d0927fcd248c`
+**Last confirmed remote checkpoint:** `4d76dbea0ba872ed4426af2a7c4a242ed1beb467`
 
 **Active task:** G2 autonomy correction / G3-A trusted controller.
 
@@ -24,8 +24,10 @@ The first authenticated bootstrap returned `created:true`; the second returned `
 
 Remote staging advanced afterward to `b9af1b0b91afabd850d4c6667ccb2887d9027e0f`, but that publication corrupted the continuity ledger and did not prove a successful genuine signed delivery. The bad commit remains visible in history. Recovery restores the current ledger from the last trusted append-only bytes at `a968bff2ded4db6f1df0ef501da2d0927fcd248c`, appends a correction record, and adds safe webhook outcome logging plus valid/duplicate/invalid hostile tests. It does not rewrite history, log payloads, or expose secrets.
 
+Recovery commit `4d76dbea0ba872ed4426af2a7c4a242ed1beb467` is remotely confirmed at exact tree `a33332e934eff1476181b45f79feea0cf17f5e83`. Controller digest `b8a044d14415d97cfe41853548d3ef50d61e00d9` is configured and exact source deployment `dpl_8N5fdgtDovjrrjyHf8e6BubmqALM` is READY. Stable health reports that exact digest with `ok:true`, `mode:observe`, `durable_state_initialized:true`, and `authoritative_enforcement_active:false`.
+
 ## Exact next action
 
-Publish the recovery/diagnostic checkpoint, deploy its exact tested controller source in observe mode, and publish a synchronized records-only checkpoint to generate a genuine Hookshot request. Use only safe delivery metadata to diagnose any rejection; then prove a successful genuine delivery and authenticated duplicate redelivery before publishing the final exact hash. Do not begin the independent audit, activate enforcement, merge, change rulesets, or modify product files.
+Publish this synchronized records-only checkpoint to generate a genuine Hookshot request against the new deployment. Use only safe delivery metadata to diagnose any rejection; then prove a successful genuine delivery and authenticated duplicate redelivery before publishing the final exact hash. Do not begin the independent audit, activate enforcement, merge, change rulesets, or modify product files.
 
 Routine user acceptance is not required. Only a genuinely unavoidable one-time account/security action or unresolved material product decision may be presented to the user.

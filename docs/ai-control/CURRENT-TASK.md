@@ -1,8 +1,8 @@
 # Current Task Status
 
 **Task ID:** G2 autonomy correction / G3-A trusted controller
-**Status:** Active; durable bootstrap, health, and invalid-signature proof passed; malformed ledger publication is being corrected forward-only and genuine signed/duplicate-redelivery proof remains pending
-**Starting remote checkpoint:** `a968bff2ded4db6f1df0ef501da2d0927fcd248c`
+**Status:** Active; forward-only ledger recovery and exact diagnostic deployment passed; genuine signed/duplicate-redelivery proof remains pending
+**Starting remote checkpoint:** `4d76dbea0ba872ed4426af2a7c4a242ed1beb467`
 
 ## Authority and outcome
 
@@ -44,9 +44,11 @@ Remote correction `a968bff2ded4db6f1df0ef501da2d0927fcd248c` has tested tree `6c
 
 Remote staging subsequently advanced to `b9af1b0b91afabd850d4c6667ccb2887d9027e0f`, but that records-only publication corrupted `CONTINUITY-LEDGER.md` and did not produce successful genuine signed-delivery evidence. The corruption is retained in Git history. The current recovery restores the ledger bytes from the last trusted checkpoint `a968bff2ded4db6f1df0ef501da2d0927fcd248c`, appends a correction entry, adds safe rejection metadata logging, and adds valid-signed, duplicate, and invalid-signature hostile tests. No payload or secret is logged.
 
+Recovery commit `4d76dbea0ba872ed4426af2a7c4a242ed1beb467` is remotely confirmed with exact tested tree `a33332e934eff1476181b45f79feea0cf17f5e83`. Its controller subtree digest is `b8a044d14415d97cfe41853548d3ef50d61e00d9`. That digest is configured in Vercel and exact source deployment `dpl_8N5fdgtDovjrrjyHf8e6BubmqALM` is READY on the stable controller alias. Health returns the exact new digest with durable state initialized, observe mode, and authoritative enforcement inactive.
+
 ## Exact next action
 
-Publish the forward-only ledger recovery and diagnostic checkpoint to staging. Deploy its exact tested controller source in observe mode, then publish one synchronized records-only checkpoint to generate a genuine GitHub Hookshot request. Diagnose and correct any remaining rejection from safe live metadata, prove one successful genuine delivery plus one authenticated duplicate redelivery, and publish the final synchronized evidence. Do not activate enforcement, begin the independent audit, merge, change rulesets, or modify product files.
+Publish this synchronized records-only checkpoint to generate a genuine GitHub Hookshot request against deployment `dpl_8N5fdgtDovjrrjyHf8e6BubmqALM`. Diagnose and correct any rejection from safe live metadata, prove one successful genuine delivery plus one authenticated duplicate redelivery, and publish the final synchronized evidence. Do not activate enforcement, begin the independent audit, merge, change rulesets, or modify product files.
 
 ## Safe to switch
 
