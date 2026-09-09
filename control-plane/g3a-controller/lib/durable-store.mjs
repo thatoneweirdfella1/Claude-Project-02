@@ -8,7 +8,14 @@ export class DurableControllerStore {
   constructor(redis, { clock = () => new Date(), retryLimit = 5 } = {}) { this.redis = redis; this.clock = clock; this.retryLimit = retryLimit; }
   key(repositoryId, type, suffix = "") { return `g3a:${repositoryId}:${type}${suffix ? `:${suffix}` : ""}`; }
 
-  async initialize(repositoryId, state) { return this.redis.command("SET", this.key(repositoryId, "state"), json(state), "NX"); }
+  async initialize(repositoryId, bootstrap) {
+    if (bootstrap?.bootstrap_version !== "2.0" || Number(bootstrap?.repository_id) !== Number(repositoryId) || !bootstrap?.state || !Array.isArray(bootstrap?.retained_history)) throw new Error("Invalid bootstrap package");
+    const stateKey = this.key(repositoryId, "state"), historyKey = this.key(repositoryId, "history"), metadataKey = this.key(repositoryId, "bootstrap");
+    const script = "if redis.call('EXISTS',KEYS[1])==1 then return 0 end; redis.call('SET',KEYS[1],ARGV[1]); redis.call('SET',KEYS[2],ARGV[2]); for i=3,#ARGV do redis.call('RPUSH',KEYS[3],ARGV[i]) end; return 1";
+    const args = ["EVAL", script, "3", stateKey, metadataKey, historyKey, json(bootstrap.state), json({ bootstrap_version: bootstrap.bootstrap_version, source_commit: bootstrap.source_commit, source_tree: bootstrap.source_tree }), ...bootstrap.retained_history.map(json)];
+    const result = await this.redis.command(...args);
+    return Number(result) === 1;
+  }
   async getState(repositoryId) { return parse(await this.redis.command("GET", this.key(repositoryId, "state"))); }
   async getLease(repositoryId, taskId) { return parse(await this.redis.command("GET", this.key(repositoryId, "lease", taskId))); }
 

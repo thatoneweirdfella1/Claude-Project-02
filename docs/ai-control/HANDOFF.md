@@ -2,7 +2,7 @@
 
 **SAFE TO SWITCH: NO**
 
-**Last confirmed remote checkpoint:** `6b6cdd5946b80bf2bd4b53a1a37817e75b8bcb75`
+**Last confirmed remote checkpoint:** `83b2fc21c10113df1a8f2c21ab8a7c6daf837944`
 
 **Active task:** G2 autonomy correction / G3-A trusted controller.
 
@@ -16,6 +16,6 @@ D-017 retains the isolated unlinked Vercel project as stable non-product control
 
 ## Exact next action
 
-Provision the durable Redis store for the retained isolated controller project, then create/install the least-privilege repository-only GitHub App and configure separated workers. Keep enforcement inactive and do not modify rulesets until G3A-01 through G3A-10 hostile proof passes.
+Finish and publish the create-only bootstrap migration checkpoint, deploy those exact bytes to the retained controller project in observe mode, initialize the existing Redis resource exactly once, then execute honest live/local G3A-01 through G3A-10 proof. Keep enforcement inactive and do not modify rulesets.
 
 Routine user acceptance is not required. Only a genuinely unavoidable one-time account/security action or unresolved material product decision may be presented to the user.

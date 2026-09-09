@@ -18,6 +18,7 @@ class FakeRedis {
     if (op !== "EVAL") throw new Error(`Unsupported ${op}`);
     const [script, keyCount, ...rest] = args, count = Number(keyCount), keys = rest.slice(0, count), argv = rest.slice(count);
     if (script.startsWith("local c=")) { const current = this.data.get(keys[0]) || ""; if (current !== argv[0]) return 0; this.data.set(keys[0], argv[1]); return 1; }
+    if (script.startsWith("if redis.call('EXISTS',KEYS[1])==1 then return 0 end; redis.call('SET',KEYS[1],ARGV[1]); redis.call('SET',KEYS[2],ARGV[2])")) { if (this.data.has(keys[0])) return 0; this.data.set(keys[0], argv[0]); this.data.set(keys[1], argv[1]); this.lists.set(keys[2], argv.slice(2)); return 1; }
     if (script.startsWith("if redis.call('EXISTS'")) { if (this.data.has(keys[0])) return 0; this.data.set(keys[0], argv[0]); const z = this.zsets.get(keys[1]) || new Map(); z.set(argv[2], Number(argv[1])); this.zsets.set(keys[1], z); return 1; }
     if (script.startsWith("local x=redis.call('ZRANGEBYSCORE'")) { const z = this.zsets.get(keys[0]) || new Map(); const due = [...z].filter(([, score]) => score <= Number(argv[0])).sort((a,b) => a[1]-b[1])[0]; if (!due) return null; z.delete(due[0]); return this.data.get(argv[1] + due[0]) || null; }
     if (script.includes("l.worker_principal")) { const lease = JSON.parse(this.data.get(keys[0]) || "null"); if (!lease || lease.worker_principal !== argv[0]) return null; lease.heartbeat_at = argv[1]; lease.expires_at = argv[2]; const value = JSON.stringify(lease); this.data.set(keys[0], value); return value; }
@@ -28,7 +29,19 @@ class FakeRedis {
 }
 
 const sha = "a".repeat(40), base = "b".repeat(40), repositoryId = 1272469738;
-const initial = () => ({ decision_queue: [], audit_queue: [], tasks: { A: { state: "Open", attempt: 1, dependencies: [], candidate_sha: null, author_principal: null, allowed_paths: ["docs/ai-control/**"] } } });
+const initialState = () => ({ schema_version: "1.0", repository_id: repositoryId, active_task: "A", decision_queue: [], audit_queue: [], tasks: { A: { state: "Open", attempt: 1, dependencies: [], base_sha: base, candidate_sha: null, author_principal: null, allowed_paths: ["docs/ai-control/**"] } } });
+const initial = () => ({ bootstrap_version: "2.0", repository_id: repositoryId, source_commit: base, source_tree: sha, state: initialState(), retained_history: [{ event_id: "seed", type: "migration-seed" }] });
+
+test("bootstrap is atomic, retains migration history, and never overwrites durable state", async () => {
+  const redis = new FakeRedis(), store = new DurableControllerStore(redis), seed = initial();
+  assert.equal(await store.initialize(repositoryId, seed), true);
+  assert.deepEqual(await store.getState(repositoryId), seed.state);
+  assert.equal(redis.lists.get(`g3a:${repositoryId}:history`).length, 1);
+  const replacement = initial(); replacement.state.tasks.A.state = "Failed";
+  assert.equal(await store.initialize(repositoryId, replacement), false);
+  assert.equal((await store.getState(repositoryId)).tasks.A.state, "Open");
+  await assert.rejects(store.initialize(repositoryId, { ...seed, bootstrap_version: "1.0" }), /Invalid bootstrap/);
+});
 
 test("durable lease acquisition is atomic and heartbeat is owner-bound", async () => {
   const store = new DurableControllerStore(new FakeRedis(), { clock: () => new Date("2026-09-08T20:00:00Z") }); await store.initialize(repositoryId, initial());

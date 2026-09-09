@@ -6,9 +6,9 @@
   "active_task": "G2",
   "current_phase": "G2 autonomy correction: G3-A external controller provisioning",
   "safe_to_switch": "NO",
-  "last_confirmed_remote_checkpoint": "6b6cdd5946b80bf2bd4b53a1a37817e75b8bcb75",
-  "first_unfinished_action": "Provision the durable Redis store for isolated controller project prj_2tCUMX2TrV6ZIdKQnGDmOXZDPST3, then create the least-privilege repository-only GitHub App. Keep enforcement inactive until hostile proof passes.",
-  "recovery_action": "Resume from remote checkpoint 6b6cdd5946b80bf2bd4b53a1a37817e75b8bcb75 and D-017. Preserve E-044 as the original mismatch evidence; retain the project as stable non-product controller infrastructure. Do not modify product deployment, rulesets, integration, safety, or build.",
+  "last_confirmed_remote_checkpoint": "83b2fc21c10113df1a8f2c21ab8a7c6daf837944",
+  "first_unfinished_action": "Publish the tested create-only bootstrap migration, deploy those exact controller bytes in observe mode, initialize Redis exactly once, and run honest live/local G3A-01 through G3A-10 proof.",
+  "recovery_action": "Resume from remote checkpoint 83b2fc21c10113df1a8f2c21ab8a7c6daf837944 and D-018. Preserve all retained failures and audit lineage; do not modify product deployment, rulesets, integration, safety, or build.",
   "meaning_confirmation": {
     "interpreted_outcome": "Make repository controls automatically keep every AI on the same verified course without requiring the user to remember audits or dependencies.",
     "boundary": "Do not change the product, F0, application, layout, branches, integration baseline, or independent-audit results.",
@@ -75,7 +75,7 @@
       "activation_authority": "User's 2026-09-08 bounded Phase 2 instruction",
       "owner_id": "openai-codex-work-session-2026-09-08-g2-author",
       "lock_acquired_at": "2026-09-08T20:00:00Z",
-      "lock_base_commit": "6b6cdd5946b80bf2bd4b53a1a37817e75b8bcb75",
+      "lock_base_commit": "83b2fc21c10113df1a8f2c21ab8a7c6daf837944",
       "independent_audit_required": true,
       "routine_user_acceptance_required": false,
       "automatic_acceptance_requires": [

@@ -744,3 +744,16 @@ Each new entry must contain:
 - **Failure/correction/uncertainty:** This is author self-check only. Redis, GitHub App registration/installation, credentials, distinct live workers, live Check Run, hostile proof, independent audit, and activation remain Open. Creating persistent credentials or an external data resource requires action-time security/account confirmation.
 - **Resulting status/gate change:** Vercel target isolation changes from Failed/blocking to Self-check passed. G3-A remains active and non-authoritative; `SAFE TO SWITCH: NO` while this worker holds the active checkpoint.
 - **Exact next action:** Provision the controller's durable Redis store and then create/install the least-privilege GitHub App on repository `1272469738`; keep enforcement inactive until hostile proof passes.
+
+### CL-0053 — 2026-09-09 UTC — safe bootstrap migration authored
+
+- **Actor:** OpenAI Codex G3-A live-bootstrap author.
+- **Task/phase:** G2 autonomy correction / G3-A Phase 1 safe bootstrap.
+- **Repository/branch/starting commit:** Exact fetched remote `divergence/reliability-staging` commit `83b2fc21c10113df1a8f2c21ab8a7c6daf837944`; clean checkout; no branch created.
+- **Authority/source:** User's bounded live-bootstrap and observe-mode hostile-proof instruction; D-016–D-018.
+- **Preflight:** Mandatory records read; all 89 integrity entries passed; status authorized G2; no current heartbeat or competing-worker evidence existed beyond the stale 2026-09-08 lock; external facts were supplied but not treated as live proof.
+- **Action and affected files:** Compared the one-task seed with authoritative state, decisions, evidence, audit queue, history, and dependencies. Replaced it with versioned package `2.0`, retaining G1 failure, G2 failed-audit/correction lineage, D-016/D-017, E-043–E-045, CL-0048–CL-0052, the open G2 audit, and the F0 audit dependency. Initialization now atomically creates state, migration metadata, and retained history only when no state exists; a second bootstrap returns `created:false` without overwrite.
+- **Command/test/check and actual result:** Focused G3-A suite passed 28/28; course-control suite passed 61/61; JSON and changed JavaScript syntax checks passed.
+- **Failure/correction/uncertainty:** Live deployment, bootstrap, health, Redis content, webhook delivery, logs, and G3A-01–G3A-10 host proof remain pending Phase 2/3. No enforcement, acceptance, merge, PR, product, ruleset, or protected-branch mutation occurred.
+- **Resulting status/gate change:** Bootstrap migration is author Self-check passed; all live-host gates remain Open.
+- **Exact next action:** Refresh integrity, run the exact course gate, publish the Phase 1 checkpoint only to staging, verify the remote hash, then deploy exactly that tested controller source in observe mode and initialize Redis once.

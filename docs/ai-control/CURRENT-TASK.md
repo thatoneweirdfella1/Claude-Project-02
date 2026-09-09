@@ -38,9 +38,7 @@ The deploy action reported preview while authenticated readback reports deployme
 
 ## Exact next action
 
-1. Provision the durable Redis store for the retained isolated controller project, scoped only to controller state.
-2. Register a GitHub App with only metadata:read, contents:read, pull_requests:read, and checks:write; install it only on repository `1272469738`.
-3. Configure distinct authenticated author and auditor principals, then run G3A-01 through G3A-10 hostile tests against disposable inputs. Do not activate enforcement or change the integration ruleset before they pass.
+Publish the tested create-only bootstrap migration checkpoint, then deploy it to existing controller project `prj_2tCUMX2TrV6ZIdKQnGDmOXZDPST3` in observe mode and initialize Redis resource `02fe2fd1-403f-4248-8fc0-d81f21b8505c` exactly once. Verify App `4879098`, installation `160186328`, repository `1272469738`, release digest, health, and host evidence before recording G3A-01 through G3A-10. Do not activate enforcement or change a ruleset.
 
 ## Safe to switch
 
