@@ -2,7 +2,7 @@
 
 **SAFE TO SWITCH: NO**
 
-**Last confirmed remote checkpoint:** `4d76dbea0ba872ed4426af2a7c4a242ed1beb467`
+**Last confirmed remote checkpoint:** `269afa2b3810543a3807f26cea986984096168db`
 
 **Active task:** G2 autonomy correction / G3-A trusted controller.
 
@@ -28,6 +28,8 @@ Recovery commit `4d76dbea0ba872ed4426af2a7c4a242ed1beb467` is remotely confirmed
 
 ## Exact next action
 
-Publish this synchronized records-only checkpoint to generate a genuine Hookshot request against the new deployment. Use only safe delivery metadata to diagnose any rejection; then prove a successful genuine delivery and authenticated duplicate redelivery before publishing the final exact hash. Do not begin the independent audit, activate enforcement, merge, change rulesets, or modify product files.
+The records-only trigger is remotely confirmed at `269afa2b3810543a3807f26cea986984096168db`. Vercel logs prove its real Hookshot push reached exact deployment `dpl_8N5fdgtDovjrrjyHf8e6BubmqALM` with `signaturePresent:true`, `contentType:application/json`, and `rawLength:9409`, but failed `Invalid webhook signature`; therefore GitHub and Vercel hold different webhook secrets.
+
+Publish and deploy the tested App-JWT maintenance checkpoint. Replace only `BOOTSTRAP_SECRET` in the isolated controller project with a fresh secret and use the authenticated maintenance endpoint to set the GitHub App webhook secret equal to Vercel's already-stored `GITHUB_WEBHOOK_SECRET`. Then publish one records-only trigger, verify its genuine signed push succeeds, request the latest successful push redelivery through the App API, and verify the controller returns a duplicate without re-entry. Do not use GitHub password login, rotate the App private key, activate enforcement, begin the independent audit, merge, change rulesets, or modify product files.
 
 Routine user acceptance is not required. Only a genuinely unavoidable one-time account/security action or unresolved material product decision may be presented to the user.

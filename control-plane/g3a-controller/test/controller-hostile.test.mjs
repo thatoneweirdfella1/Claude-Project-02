@@ -1,11 +1,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createHmac } from "node:crypto";
+import { createHmac, generateKeyPairSync } from "node:crypto";
 import { DurableControllerStore } from "../lib/durable-store.mjs";
 import { DurableWorkers, WorkerConfigurationError } from "../lib/workers.mjs";
 import { validateHostChange } from "../lib/trusted-validator.mjs";
 import { rawBody } from "../lib/http.mjs";
 import { handleWebhook } from "../lib/github-events.mjs";
+import { GitHubHost } from "../lib/github-host.mjs";
+import { webhookAdminHandler } from "../api/webhook-admin.mjs";
 
 class FakeRedis {
   constructor() { this.data = new Map(); this.lists = new Map(); this.zsets = new Map(); }
@@ -111,6 +113,56 @@ test("invalid webhook signature is rejected before reserving a delivery", async 
     deliveryStore: fixture.deliveryStore,
   }), /Invalid webhook signature/);
   assert.equal(fixture.records.size, 0);
+});
+
+function fakeResponse() {
+  return {
+    statusCode: null,
+    headers: {},
+    body: null,
+    setHeader(name, value) { this.headers[name] = value; },
+    end(body) { this.body = JSON.parse(body); },
+  };
+}
+
+test("App JWT synchronizes the GitHub webhook secret without an installation or user token", async () => {
+  const { privateKey } = generateKeyPairSync("rsa", { modulusLength: 2048, privateKeyEncoding: { type: "pkcs8", format: "pem" }, publicKeyEncoding: { type: "spki", format: "pem" } });
+  const calls = [];
+  const host = new GitHubHost({ appId: "4879098", privateKey, webhookSecret: "expected-secret" }, async (url, options) => {
+    calls.push({ url, options });
+    return new Response(JSON.stringify({ content_type: "json", secret: "********" }), { status: 200, headers: { "content-type": "application/json" } });
+  });
+  assert.deepEqual(await host.synchronizeWebhookSecret(), { synchronized: true, content_type: "json" });
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].url, "https://api.github.com/app/hook/config");
+  assert.match(calls[0].options.headers.authorization, /^Bearer [^.]+\.[^.]+\.[^.]+$/);
+  assert.deepEqual(JSON.parse(calls[0].options.body), { secret: "expected-secret" });
+});
+
+test("maintenance endpoint rejects unauthenticated secret synchronization", async () => {
+  const response = fakeResponse();
+  let called = false;
+  await webhookAdminHandler({ method: "POST", url: "https://controller.invalid/api/webhook-admin?action=synchronize-secret", headers: { authorization: "Bearer wrong" } }, response, () => ({
+    config: { bootstrapSecret: "right" },
+    host: { synchronizeWebhookSecret: async () => { called = true; } },
+  }));
+  assert.equal(response.statusCode, 401);
+  assert.equal(called, false);
+});
+
+test("authenticated maintenance endpoint invokes only the named action", async () => {
+  const response = fakeResponse();
+  const calls = [];
+  await webhookAdminHandler({ method: "POST", url: "https://controller.invalid/api/webhook-admin?action=redeliver-latest-successful-push", headers: { authorization: "Bearer right" } }, response, () => ({
+    config: { bootstrapSecret: "right" },
+    host: {
+      synchronizeWebhookSecret: async () => calls.push("sync"),
+      redeliverLatestSuccessfulPush: async () => (calls.push("redeliver"), { requested: true, delivery_id: 7, delivery_guid: "guid", event: "push" }),
+    },
+  }));
+  assert.equal(response.statusCode, 202);
+  assert.deepEqual(calls, ["redeliver"]);
+  assert.equal(response.body.delivery_id, 7);
 });
 
 test("bootstrap is atomic, retains migration history, and never overwrites durable state", async () => {

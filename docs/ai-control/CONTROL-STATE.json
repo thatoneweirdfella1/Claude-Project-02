@@ -6,9 +6,9 @@
   "active_task": "G2",
   "current_phase": "G2 autonomy correction: G3-A external controller provisioning",
   "safe_to_switch": "NO",
-  "last_confirmed_remote_checkpoint": "4d76dbea0ba872ed4426af2a7c4a242ed1beb467",
-  "first_unfinished_action": "Publish this synchronized records-only checkpoint to trigger a genuine signed staging delivery against diagnostic deployment dpl_8N5fdgtDovjrrjyHf8e6BubmqALM, then prove successful processing and authenticated duplicate refusal before final evidence publication.",
-  "recovery_action": "Resume from remote recovery 4d76dbea0ba872ed4426af2a7c4a242ed1beb467 and E-050. Exact controller digest b8a044d14415d97cfe41853548d3ef50d61e00d9 is deployed READY as dpl_8N5fdgtDovjrrjyHf8e6BubmqALM; stable health is correct in observe mode. Retain malformed b9af1b0 in history and complete genuine signed plus duplicate-redelivery proof without activating enforcement.",
+  "last_confirmed_remote_checkpoint": "269afa2b3810543a3807f26cea986984096168db",
+  "first_unfinished_action": "Publish and deploy the tested App-JWT webhook-maintenance checkpoint, set a fresh BOOTSTRAP_SECRET only in the isolated controller project, invoke authenticated secret synchronization, then generate one genuine signed staging delivery and request its App-authenticated redelivery before final evidence publication.",
+  "recovery_action": "Resume from remote trigger 269afa2b3810543a3807f26cea986984096168db and E-052. Genuine Hookshot delivery 4010aa1e-ac0b-11f1-9a8b-b30352f0b612 reached exact deployment dpl_8N5fdgtDovjrrjyHf8e6BubmqALM with a nonempty raw body and signature but failed because the GitHub App and Vercel webhook secrets differ. Use the tested App-JWT maintenance endpoint; do not use GitHub password login, expose secrets, activate enforcement, or rotate the App private key.",
   "meaning_confirmation": {
     "interpreted_outcome": "Make repository controls automatically keep every AI on the same verified course without requiring the user to remember audits or dependencies.",
     "boundary": "Do not change the product, F0, application, layout, branches, integration baseline, or independent-audit results.",
@@ -75,7 +75,7 @@
       "activation_authority": "User's 2026-09-08 bounded Phase 2 instruction",
       "owner_id": "openai-codex-work-session-2026-09-08-g2-author",
       "lock_acquired_at": "2026-09-08T20:00:00Z",
-      "lock_base_commit": "4d76dbea0ba872ed4426af2a7c4a242ed1beb467",
+      "lock_base_commit": "269afa2b3810543a3807f26cea986984096168db",
       "independent_audit_required": true,
       "routine_user_acceptance_required": false,
       "automatic_acceptance_requires": [

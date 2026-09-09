@@ -57,7 +57,7 @@
     "id": "G2",
     "title": "Maximum-Feasible Automation and Non-Bypass Hardening",
     "source": "docs/ai-control/CURRENT-TASK.md",
-    "status": "G3-A forward-only ledger recovery is remotely confirmed and exact diagnostic controller deployment is READY/healthy in observe mode; genuine signed delivery and authenticated duplicate redelivery proof remain Open; worker URLs are unconfigured blockers; independent audit Open; G1 remains Failed/unaccepted",
+    "status": "G3-A genuine Hookshot failure is proven to be a GitHub/Vercel webhook-secret mismatch; App-JWT login-free repair is self-checked and awaits publication/deployment; genuine signed delivery and authenticated duplicate redelivery proof remain Open; worker URLs are unconfigured blockers; independent audit Open; G1 remains Failed/unaccepted",
     "next_task_reveal_allowed": true
   },
   "scope": {

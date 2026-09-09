@@ -1,8 +1,8 @@
 # Current Task Status
 
 **Task ID:** G2 autonomy correction / G3-A trusted controller
-**Status:** Active; forward-only ledger recovery and exact diagnostic deployment passed; genuine signed/duplicate-redelivery proof remains pending
-**Starting remote checkpoint:** `4d76dbea0ba872ed4426af2a7c4a242ed1beb467`
+**Status:** Active; the genuine signed-delivery failure is proven to be a GitHub/Vercel webhook-secret mismatch; login-free App-JWT repair is self-checked and awaits publication/deployment
+**Starting remote checkpoint:** `269afa2b3810543a3807f26cea986984096168db`
 
 ## Authority and outcome
 
@@ -48,7 +48,7 @@ Recovery commit `4d76dbea0ba872ed4426af2a7c4a242ed1beb467` is remotely confirmed
 
 ## Exact next action
 
-Publish this synchronized records-only checkpoint to generate a genuine GitHub Hookshot request against deployment `dpl_8N5fdgtDovjrrjyHf8e6BubmqALM`. Diagnose and correct any rejection from safe live metadata, prove one successful genuine delivery plus one authenticated duplicate redelivery, and publish the final synchronized evidence. Do not activate enforcement, begin the independent audit, merge, change rulesets, or modify product files.
+Publish and deploy the tested App-JWT webhook-maintenance checkpoint. Replace only `BOOTSTRAP_SECRET` in the isolated controller project with a fresh secret, invoke the authenticated `synchronize-secret` action so GitHub adopts Vercel's existing `GITHUB_WEBHOOK_SECRET`, then publish one records-only trigger and use the App-authenticated redelivery action to prove duplicate refusal. Do not use GitHub password login, rotate the App private key, activate enforcement, begin the independent audit, merge, change rulesets, or modify product files.
 
 ## Safe to switch
 

@@ -5,10 +5,18 @@ import { validateHostChange } from "./trusted-validator.mjs";
 const b64 = value => Buffer.from(JSON.stringify(value)).toString("base64url");
 export class GitHubHost {
   constructor(config, fetchImpl = fetch) { this.config = config; this.fetch = fetchImpl; this.token = null; this.tokenExpires = 0; }
+  appJwt() {
+    const now = Math.floor(Date.now() / 1000), unsigned = `${b64({ alg: "RS256", typ: "JWT" })}.${b64({ iat: now - 30, exp: now + 540, iss: this.config.appId })}`;
+    return `${unsigned}.${sign("RSA-SHA256", Buffer.from(unsigned), createPrivateKey(this.config.privateKey)).toString("base64url")}`;
+  }
+  async appRequest(path, options = {}) {
+    const response = await this.fetch(`https://api.github.com${path}`, { ...options, headers: { authorization: `Bearer ${this.appJwt()}`, accept: "application/vnd.github+json", "x-github-api-version": "2022-11-28", "content-type": "application/json", ...options.headers } });
+    if (!response.ok) throw new Error(`GitHub App API ${response.status} ${path.split("?")[0]}`);
+    return response.status === 204 ? null : response.json();
+  }
   async appToken() {
     if (this.token && Date.now() < this.tokenExpires - 60_000) return this.token;
-    const now = Math.floor(Date.now() / 1000), unsigned = `${b64({ alg: "RS256", typ: "JWT" })}.${b64({ iat: now - 30, exp: now + 540, iss: this.config.appId })}`;
-    const jwt = `${unsigned}.${sign("RSA-SHA256", Buffer.from(unsigned), createPrivateKey(this.config.privateKey)).toString("base64url")}`;
+    const jwt = this.appJwt();
     const response = await this.fetch(`https://api.github.com/app/installations/${this.config.installationId}/access_tokens`, { method: "POST", headers: { authorization: `Bearer ${jwt}`, accept: "application/vnd.github+json", "x-github-api-version": "2022-11-28" } });
     if (!response.ok) throw new Error(`GitHub installation token HTTP ${response.status}`);
     const data = await response.json(); this.token = data.token; this.tokenExpires = Date.parse(data.expires_at); return this.token;
@@ -16,6 +24,17 @@ export class GitHubHost {
   async github(path, options = {}) {
     const response = await this.fetch(`https://api.github.com${path}`, { ...options, headers: { authorization: `Bearer ${await this.appToken()}`, accept: "application/vnd.github+json", "x-github-api-version": "2022-11-28", "content-type": "application/json", ...options.headers } });
     if (!response.ok) throw new Error(`GitHub API ${response.status} ${path}`); return response.status === 204 ? null : response.json();
+  }
+  async synchronizeWebhookSecret() {
+    const result = await this.appRequest("/app/hook/config", { method: "PATCH", body: JSON.stringify({ secret: this.config.webhookSecret }) });
+    return { synchronized: true, content_type: result?.content_type || null };
+  }
+  async redeliverLatestSuccessfulPush() {
+    const deliveries = await this.appRequest("/app/hook/deliveries?per_page=20");
+    const delivery = deliveries.find(item => item.event === "push" && Number(item.status_code) >= 200 && Number(item.status_code) < 300);
+    if (!delivery) throw new Error("No successful push delivery is available for redelivery");
+    await this.appRequest(`/app/hook/deliveries/${delivery.id}/attempts`, { method: "POST" });
+    return { requested: true, delivery_id: delivery.id, delivery_guid: delivery.guid || null, event: delivery.event };
   }
   signAttestation(attestation) { return createHmac("sha256", this.config.attestationSecret).update(JSON.stringify(attestation)).digest("hex"); }
   async verifyAttestation(attestation) {
