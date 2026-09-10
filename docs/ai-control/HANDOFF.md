@@ -1,40 +1,35 @@
-# Exact Handoff State
+# Handoff Record
 
-## Current state
+**SAFE TO SWITCH: NO**
 
-- The reliability meta-blueprint has been finalized as a proposed planning artifact, not an approved or independently verified architecture.
-- The standalone F0 task exists and now includes mandatory repository, branch, layout, scope, logging, and handoff controls.
-- The cross-AI packet was installed on integration branch `divergence/reliability-v1`; exactly one reusable task branch, `divergence/reliability-staging`, now exists from integration commit `7681344918a912f0ac35a2fb15c2b41b85638a3f`.
-- F0 has not been executed and is blocked while G0 is active.
-- G0's fail-closed course controller is installed at commit `d417f10cd3ee543fb0facde7bd620b0a029ebd72`.
-- The validator and revised adversarial harness pass 18/18 local tests. First staging-flow runs failed because G0's allowlist omitted its necessary standalone-handoff update; that failure is retained as E-013. The corrected integration run `34070234656` and staging run `34070235162` both passed.
-- The existing GitHub ruleset protects only branch `build`; the four required DIVERGENCE rulesets remain Open.
-- No application code, interface, test, or deployment was changed during this preparation. The only repository change so far was creation of the isolated working branch at the unchanged baseline commit.
-- The user's preferred Vercel site has been traced to safety/layout branch `claude/remaining-second-pass-v1` and deployed commit `10894f704a39b6c56a7fadfafb54275b82526c33`.
-- Integration branch `divergence/reliability-v1` was created from that exact commit and verified identical at creation. The safety branch was not modified.
-- All new task writes must use the single reusable staging branch; accepted work reaches integration only after the course-control check passes.
+**Last confirmed remote checkpoint:** `269afa2b3810543a3807f26cea986984096168db`
 
-## Fixed decisions
+**Active task:** G2 autonomy correction / G3-A trusted controller.
 
-- Use the existing Divergence repository, not a new repository.
-- Preserve the existing Divergence interface/layout and the supplied three-part baseline.
-- Do not create another branch. Reuse the existing staging branch.
-- Maintain one active task and park extra ideas.
-- Keep durable action/rationale, decision, evidence, and handoff records.
+## Current truth
 
-## Current blockers
+The repository checkout began clean at the exact remote commit above. Integrity passed; existing G3-A tests passed 20/20; course-control tests passed 61/61. The previous recorded lock pointed to `f266842…` with no current heartbeat and was stale relative to the supplied starting commit; no active competing worker was found.
 
-- **GitHub mutation:** Task writes are allowed only on `divergence/reliability-staging`; accepted work may be merged into `divergence/reliability-v1` only after the required check passes.
-- **Non-bypass enforcement:** Open until the repository owner enables the GitHub ruleset described in `GITHUB-RULESET-REQUIRED.md` or explicitly accepts weaker procedural enforcement.
-- **Cold-start continuity:** Open until a separate AI attempts to resume from repository files alone.
-- **F0 independent verification:** Blocked until F0 is first completed with retained evidence.
-- **S02/S03/S18/S20/F1:** Blocked by F0 and its independent audit.
-- **Mechanical enforcement:** Not implemented or tested; the present packet is procedural.
+The confirmed remote checkpoint contains a deployable, preview-only controller under `control-plane/g3a-controller/`. Repository test entrypoints import the same transition, GitHub-event, and controller-core bytes packaged for deployment. Durable Redis state/queue/lease/retry/dead-letter behavior, exact host identity/SHA validation, GitHub App authentication, separated worker launchers, correction re-audit, and recovery endpoints are implemented. Focused tests pass 27/27; course controls pass 61/61; the exact course gate accepted the 37-path change. Remote tree `38850ee1aebc6cce450e8116055e0881f2896c17` exactly matches the tested local tree.
+
+D-017 retains the isolated unlinked Vercel project as stable non-product controller infrastructure. Authenticated readback reports `target: production` for deployment `dpl_4NLyjv7qFrTSzwxP6JNxr5euUMXF` in project `prj_2tCUMX2TrV6ZIdKQnGDmOXZDPST3`; here that label identifies the permanent environment inside the separate controller project, not the DIVERGENCE.AI product deployment. The project remains `link:null`, controller-only, and inactive pending Redis, App credentials, separated workers, and hostile proof.
+
+## Current live proof
+
+The corrected staging checkpoint is `a968bff2ded4db6f1df0ef501da2d0927fcd248c`, with exact tested tree `6c47fdbd79494015cd3ada8f89c0fc286f375034` and controller-source digest `675a965131519111495e877e7d3b95502d213637`. Only `BOOTSTRAP_SECRET` and `CONTROLLER_RELEASE_DIGEST` were replaced. Deployment `dpl_7igFACJPxHH9K19NrLG5AaR6C4rN` is READY and owns the stable controller alias.
+
+The first authenticated bootstrap returned `created:true`; the second returned `created:false`. Post-bootstrap health returns `ok:true`, `mode:observe`, `durable_state_initialized:true`, and `authoritative_enforcement_active:false`, with the exact configured digest. An unsigned live webhook returns HTTP 400 `Invalid webhook signature`.
+
+`AUTHOR_WORKER_URL` and `AUDITOR_WORKER_URL` are absent and remain blocking. No live autonomous worker execution is claimed from local tests.
+
+Remote staging advanced afterward to `b9af1b0b91afabd850d4c6667ccb2887d9027e0f`, but that publication corrupted the continuity ledger and did not prove a successful genuine signed delivery. The bad commit remains visible in history. Recovery restores the current ledger from the last trusted append-only bytes at `a968bff2ded4db6f1df0ef501da2d0927fcd248c`, appends a correction record, and adds safe webhook outcome logging plus valid/duplicate/invalid hostile tests. It does not rewrite history, log payloads, or expose secrets.
+
+Recovery commit `4d76dbea0ba872ed4426af2a7c4a242ed1beb467` is remotely confirmed at exact tree `a33332e934eff1476181b45f79feea0cf17f5e83`. Controller digest `b8a044d14415d97cfe41853548d3ef50d61e00d9` is configured and exact source deployment `dpl_8N5fdgtDovjrrjyHf8e6BubmqALM` is READY. Stable health reports that exact digest with `ok:true`, `mode:observe`, `durable_state_initialized:true`, and `authoritative_enforcement_active:false`.
 
 ## Exact next action
 
-Enable the exact GitHub rulesets in `GITHUB-RULESET-REQUIRED.md`, perform a separate cold-start AI continuity trial, record the evidence, and stop. Do not execute F0 or create another branch.
+The records-only trigger is remotely confirmed at `269afa2b3810543a3807f26cea986984096168db`. Vercel logs prove its real Hookshot push reached exact deployment `dpl_8N5fdgtDovjrrjyHf8e6BubmqALM` with `signaturePresent:true`, `contentType:application/json`, and `rawLength:9409`, but failed `Invalid webhook signature`; therefore GitHub and Vercel hold different webhook secrets.
 
-## Required next handoff update
+Publish and deploy the tested App-JWT maintenance checkpoint. Replace only `BOOTSTRAP_SECRET` in the isolated controller project with a fresh secret and use the authenticated maintenance endpoint to set the GitHub App webhook secret equal to Vercel's already-stored `GITHUB_WEBHOOK_SECRET`. Then publish one records-only trigger, verify its genuine signed push succeeds, request the latest successful push redelivery through the App API, and verify the controller returns a duplicate without re-entry. Do not use GitHub password login, rotate the App private key, activate enforcement, begin the independent audit, merge, change rulesets, or modify product files.
 
-The F0 designer must replace this current-state section with the resulting artifact list, hashes, decisions, failures, gate states, exact blocked scope, and one exact next action while preserving the prior state in `CONTINUITY-LEDGER.md`.
+Routine user acceptance is not required. Only a genuinely unavoidable one-time account/security action or unresolved material product decision may be presented to the user.

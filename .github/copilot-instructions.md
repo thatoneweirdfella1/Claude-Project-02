@@ -7,3 +7,5 @@ Preserve `claude/remaining-second-pass-v1` as the untouched safety/layout branch
 Canonical authority is in `docs/ai-control/`; this file must remain a pointer rather than a separate architecture or task definition.
 
 The active machine policy is `docs/ai-control/COURSE-CONTROL.json`. A checkpoint is unacceptable unless `scripts/ai-course-control.mjs` passes with the exact repository, branch, base, and head.
+
+Run `node scripts/ai-control-status.mjs --requested-task <TASK-ID>` before work when a requested ID is known. A `BLOCKED` result prohibits that task and supplies the only permitted next action.

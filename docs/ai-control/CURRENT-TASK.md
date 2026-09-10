@@ -1,73 +1,55 @@
-# Current Task — G0 Only
+# Current Task Status
 
-## Task identity
+**Task ID:** G2 autonomy correction / G3-A trusted controller
+**Status:** Active; the genuine signed-delivery failure is proven to be a GitHub/Vercel webhook-secret mismatch; login-free App-JWT repair is self-checked and awaits publication/deployment
+**Starting remote checkpoint:** `269afa2b3810543a3807f26cea986984096168db`
 
-- **ID:** G0
-- **Title:** AI Course-Control Gate
-- **Phase:** Execution control
-- **Status:** Open; implementation self-check passed, GitHub non-bypass rules and cold-start trial unresolved
-- **Untouched safety/layout branch:** `claude/remaining-second-pass-v1`
-- **Only task-writing branch:** `divergence/reliability-staging`
-- **Protected integration branch:** `divergence/reliability-v1`
-- **Repository mutation:** Authorized only on the working branch and only for G0/control records
+## Authority and outcome
 
-## Exact purpose
+D-016 and the user's 2026-09-08 continuation instruction require a candidate-independent controller that automatically validates, assigns a distinct authenticated auditor, retains failures, launches correction and re-audit, accepts verified work, unlocks satisfied dependencies, and recovers interrupted work. Routine user approval, a second GitHub account, and manual audit routing are forbidden dependencies. Only an unresolved material product decision may interrupt the user.
 
-Install a fail-closed repository controller that rejects AI work performed on the wrong branch, outside the one active task, outside its allowed files, without required continuity/evidence records, with rewritten history, with invalid hashes, or with unsupported completion claims.
+The complete task source is `docs/reliability/control/DIVERGENCE-G3-A-TRUSTED-AUTONOMY-BOOTSTRAP.md`. F0, S02, S03, S18, S20, F1, product/application/UI work, production deployment, branch creation, integration/safety/build mutation, and ruleset changes before hostile proof remain prohibited.
 
-## Required deliverables
+## Completed before this checkpoint
 
-1. Machine-readable one-task policy: `docs/ai-control/COURSE-CONTROL.json`.
-2. Executable validator: `scripts/ai-course-control.mjs`.
-3. Automated validator tests: `scripts/ai-course-control.test.mjs`.
-4. GitHub Actions check: `.github/workflows/ai-course-control.yml`.
-5. Code-owner boundary for controller files: `.github/CODEOWNERS`.
-6. Exact one-time non-bypass GitHub configuration: `docs/ai-control/GITHUB-RULESET-REQUIRED.md`.
-7. Plain-language gate state: `docs/ai-control/GATE-STATUS.md`.
-8. Updated task, decision, evidence, integrity, continuity, and handoff records.
+- Six schemas, transition table, and reference transition engine.
+- Adapter-driven controller core and in-memory tests.
+- Host preflight selecting an external GitHub App instead of modifying `build`.
+- Signed-webhook normalization, duplicate-delivery boundary, and Check Run builder.
 
-## Required rejection tests
+## Current atomic checkpoint
 
-The retained test evidence must show rejection of:
+The deployable source under `control-plane/g3a-controller/` now contains:
 
-- the wrong repository or branch;
-- a new or protected branch;
-- an out-of-scope application file;
-- deletion of any tracked file;
-- alteration of an immutable visual baseline;
-- rewriting or truncating the append-only ledger;
-- omission of required continuity records;
-- an invalid checksum;
-- an invalid gate status;
-- a self-declared independent pass without a separate review artifact; and
-- activation of a locked task.
+- the same transition/controller core imported by repository tests;
+- Redis REST durable state, history, queue, lease, heartbeat, retry, dead-letter, correction, attestation, and delivery records;
+- host-derived GitHub repository/ref/comparison validation bound to repository ID `1272469738` and exact base/candidate SHAs;
+- GitHub App installation-token and Check Run adapter;
+- credential-separated author/correction and auditor launchers;
+- preview-only Vercel configuration and `observe` mode that cannot emit acceptance;
+- health, signed webhook, worker callback, bootstrap, and recovery endpoints;
+- controller threat model and least-privilege permission manifest.
 
-## Allowed work
+Focused G3-A tests pass 27/27 at the checkpoint. The exact course gate passed from `716a16367d7207a7ce87fb3482336ce39bc529f3`; the connected GitHub boundary advanced only staging with `force:false`; remote commit `d1ef5539a6693358c284c28cacf26b07924b313a` has verified tree `38850ee1aebc6cce450e8116055e0881f2896c17`, identical to the tested local tree. This remains author self-check evidence. It is not evidence of deployment, App registration/installation, Redis provisioning, live worker credentials, live Check Runs, independence, or activation.
 
-- Add or modify only the paths allowed by the G0 profile in `COURSE-CONTROL.json`.
-- Run local unit, integration, and deliberately failing rejection tests.
-- Install and verify the GitHub workflow on both the reusable staging and protected integration branches.
-- Update the required durable records.
+## External provisioning decision
 
-## Prohibited work
+The deploy action reported preview while authenticated readback reports deployment `dpl_4NLyjv7qFrTSzwxP6JNxr5euUMXF` and project `prj_2tCUMX2TrV6ZIdKQnGDmOXZDPST3` as `target: production`. The retained failure evidence remains valid. D-017 resolves the ambiguity: this stable target is accepted strictly as permanent non-product controller infrastructure because the project is isolated (`link: null`), contains only the controller package, and does not alter the `claude-project-02` product deployment. It remains non-authoritative until its store, App identity, separated workers, and hostile proof are complete.
 
-- Do not execute F0.
-- Do not modify application code or the visual baseline.
-- Do not create, rename, merge, rebase, force-update, deploy, or delete any branch.
-- Do not touch `claude/remaining-second-pass-v1`.
-- Do not mark external GitHub enforcement or cold-start continuity independently verified without actual evidence.
-- Do not unlock the next task without explicit user approval.
+## Live checkpoint
 
-## Exit requirements
+Remote correction `a968bff2ded4db6f1df0ef501da2d0927fcd248c` has tested tree `6c47fdbd79494015cd3ada8f89c0fc286f375034`. Exact controller-source digest `675a965131519111495e877e7d3b95502d213637` is configured and reported by health. Production controller deployment `dpl_7igFACJPxHH9K19NrLG5AaR6C4rN` is READY at the isolated stable alias. Bootstrap returned `created:true` once and `created:false` on the required second call. Post-bootstrap health returns `ok:true`, `mode:observe`, `durable_state_initialized:true`, and `authoritative_enforcement_active:false`. An unsigned live delivery returns HTTP 400 `Invalid webhook signature`.
 
-G0 may stop with a self-check only after all deliverables exist, positive tests pass, every required rejection case is observed failing for the intended reason, repository readback succeeds, and the safety branch is verified unchanged.
+`AUTHOR_WORKER_URL` and `AUDITOR_WORKER_URL` are not configured and remain blocking. Local worker tests do not prove live autonomous worker execution.
 
-F0 remains blocked until:
+Remote staging subsequently advanced to `b9af1b0b91afabd850d4c6667ccb2887d9027e0f`, but that records-only publication corrupted `CONTINUITY-LEDGER.md` and did not produce successful genuine signed-delivery evidence. The corruption is retained in Git history. The current recovery restores the ledger bytes from the last trusted checkpoint `a968bff2ded4db6f1df0ef501da2d0927fcd248c`, appends a correction entry, adds safe rejection metadata logging, and adds valid-signed, duplicate, and invalid-signature hostile tests. No payload or secret is logged.
 
-1. a separate AI completes a cold-start continuity trial from repository files alone;
-2. GitHub non-bypass rules are enabled, or the user explicitly accepts procedural-only enforcement; and
-3. the user explicitly approves the transition to F0.
+Recovery commit `4d76dbea0ba872ed4426af2a7c4a242ed1beb467` is remotely confirmed with exact tested tree `a33332e934eff1476181b45f79feea0cf17f5e83`. Its controller subtree digest is `b8a044d14415d97cfe41853548d3ef50d61e00d9`. That digest is configured in Vercel and exact source deployment `dpl_8N5fdgtDovjrrjyHf8e6BubmqALM` is READY on the stable controller alias. Health returns the exact new digest with durable state initialized, observe mode, and authoritative enforcement inactive.
 
 ## Exact next action
 
-Enable the GitHub rulesets in `GITHUB-RULESET-REQUIRED.md`, then have a separate AI perform the cold-start repository-only continuity trial. Do not execute F0.
+Publish and deploy the tested App-JWT webhook-maintenance checkpoint. Replace only `BOOTSTRAP_SECRET` in the isolated controller project with a fresh secret, invoke the authenticated `synchronize-secret` action so GitHub adopts Vercel's existing `GITHUB_WEBHOOK_SECRET`, then publish one records-only trigger and use the App-authenticated redelivery action to prove duplicate refusal. Do not use GitHub password login, rotate the App private key, activate enforcement, begin the independent audit, merge, change rulesets, or modify product files.
+
+## Safe to switch
+
+**SAFE TO SWITCH: NO** — deployment and bootstrap are complete, but genuine signed and duplicate-redelivery live proof remain unfinished.

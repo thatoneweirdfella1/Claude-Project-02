@@ -19,6 +19,7 @@ import {
   runGate,
   validatePolicy,
 } from "./ai-course-control.mjs";
+import { blockNotice, validateControlState, validateStateTransition } from "./ai-control-state.mjs";
 
 const REPOSITORY = "owner/repo";
 const WORKING_BRANCH = "divergence/reliability-staging";
@@ -33,6 +34,10 @@ const validPolicy = {
   immutable_branches: ["safety"],
   branch_creation_allowed: false,
   active_task: "G0",
+  control_state_file: "docs/ai-control/CONTROL-STATE.json",
+  traceability_file: "traceability.json",
+  handoff_file: "handoff.md",
+  current_task_file: "task.md",
   permitted_gate_statuses: ["Self-check passed", "Independently verified", "Failed", "Open"],
   required_files: [
     "task.md",
@@ -42,13 +47,16 @@ const validPolicy = {
     "handoff.md",
     "baseline.png",
     "docs/ai-control/CONTROL-MANIFEST.json",
+    "docs/ai-control/CONTROL-STATE.json",
     "docs/ai-control/COURSE-CONTROL.json",
     "docs/ai-control/SHA256SUMS",
+    "traceability.json",
   ],
   required_changed_records: ["ledger.md", "evidence.md", "handoff.md", "docs/ai-control/SHA256SUMS"],
   append_only_files: ["ledger.md"],
   preserve_history_files: ["decisions.md"],
   immutable_files: ["baseline.png"],
+  protected_control_paths: [],
   task_profiles: {
     G0: {
       allowed_paths: [
@@ -59,11 +67,15 @@ const validPolicy = {
         "handoff.md",
         "baseline.png",
         "docs/ai-control/CONTROL-MANIFEST.json",
+        "docs/ai-control/CONTROL-STATE.json",
         "docs/ai-control/COURSE-CONTROL.json",
         "docs/ai-control/SHA256SUMS",
+        "traceability.json",
+        "review.json",
       ],
     },
     F0: { locked: true, allowed_paths: ["task.md", "ledger.md", "evidence.md", "handoff.md", "docs/ai-control/**"] },
+    G2: { allowed_paths: ["task.md", "ledger.md", "decisions.md", "evidence.md", "handoff.md", "baseline.png", "docs/ai-control/**", "review.json"] },
   },
 };
 
@@ -90,20 +102,48 @@ function append(filePath, text) {
   writeFileSync(filePath, `${readFileSync(filePath, "utf8")}${text}`);
 }
 
+function makeState() {
+  return {
+    schema_version: "1.0",
+    repository: REPOSITORY,
+    working_branch: WORKING_BRANCH,
+    accepted_branch: "divergence/reliability-v1",
+    active_task: "G0",
+    current_phase: "G0-C",
+    safe_to_switch: "NO",
+    last_confirmed_remote_checkpoint: "a".repeat(40),
+    first_unfinished_action: "Finish G0-C.",
+    recovery_action: "Recover G0 from the confirmed checkpoint.",
+    meaning_confirmation: { interpreted_outcome: "Enforce course.", boundary: "No app work.", material_ambiguity: "none", authority: "test" },
+    tasks: {
+      G0: { title: "Gate", execution_state: "Active", acceptance_state: "Not accepted", author_id: "author", reviewer_id: null, independent_review_path: null, accepted_integration_commit: null, prerequisites: [], owner_id: "author", lock_acquired_at: "2026-09-08T00:00:00Z", lock_base_commit: "a".repeat(40) },
+      F0: { title: "Next", execution_state: "Open", acceptance_state: "Not accepted", author_id: null, reviewer_id: null, independent_review_path: null, accepted_integration_commit: null, prerequisites: [{ task: "G0", type: "validation dependency", required_state: "Accepted" }] },
+    },
+    audit_queue: [],
+    lineage: { nodes: [{ id: "G0", state: "Active", commit: null }], edges: [] },
+  };
+}
+
+function makeTraceability() {
+  return { outcomes: Array.from({ length: 12 }, (_, index) => ({ id: `G1-O${String(index + 1).padStart(2, "0")}`, definition: "Defined", owner: "G1", design_location: "task.md", acceptance_test: "test", evidence: "evidence", gate: "G1-G05" })) };
+}
+
 function setupFixture({ mutate, refreshChecksums = true } = {}) {
   const root = mkdtempSync(join(tmpdir(), "divergence-gate-"));
   mkdirSync(join(root, "docs/ai-control"), { recursive: true });
-  writeFileSync(join(root, "task.md"), "# G0\n");
+  writeFileSync(join(root, "task.md"), "# G0\n- **ID:** G0\n");
   writeFileSync(join(root, "ledger.md"), "CL-0001 baseline\n");
   writeFileSync(join(root, "decisions.md"), "D-001 preserve\n");
   writeFileSync(join(root, "evidence.md"), "E-001 baseline\n");
-  writeFileSync(join(root, "handoff.md"), "Next: G0\n");
+  writeFileSync(join(root, "handoff.md"), `**SAFE TO SWITCH: NO**\nCheckpoint ${"a".repeat(40)}\nNext: G0\n`);
   writeFileSync(join(root, "baseline.png"), "immutable visual bytes\n");
   writeJson(join(root, "docs/ai-control/COURSE-CONTROL.json"), validPolicy);
   writeJson(join(root, "docs/ai-control/CONTROL-MANIFEST.json"), {
     active_task: { id: "G0" },
     continuity_gates: { "RCG-01": "Open" },
   });
+  writeJson(join(root, "docs/ai-control/CONTROL-STATE.json"), makeState());
+  writeJson(join(root, "traceability.json"), makeTraceability());
   const tracked = validPolicy.required_files;
   writeChecksums(root, tracked);
   git(root, ["init", "-q"]);
@@ -113,6 +153,11 @@ function setupFixture({ mutate, refreshChecksums = true } = {}) {
   git(root, ["commit", "-qm", "baseline"]);
   const base = git(root, ["rev-parse", "HEAD"]);
 
+  const candidateState = makeState();
+  candidateState.last_confirmed_remote_checkpoint = base;
+  candidateState.tasks.G0.lock_base_commit = base;
+  writeJson(join(root, "docs/ai-control/CONTROL-STATE.json"), candidateState);
+  writeFileSync(join(root, "handoff.md"), `**SAFE TO SWITCH: NO**\nCheckpoint ${base}\nNext: G0\n`);
   append(join(root, "task.md"), "accepted work\n");
   append(join(root, "ledger.md"), "CL-0002 accepted work\n");
   append(join(root, "evidence.md"), "E-002 accepted evidence\n");
@@ -180,8 +225,17 @@ test("immutable safety branch is rejected", () => {
   expectRejected(setupFixture(), "Immutable branch cannot be modified", { branch: "safety" });
 });
 
-test("protected integration branch is a valid post-merge checkpoint", () => {
-  assert.equal(executeFixture(setupFixture(), { branch: "divergence/reliability-v1" }).accepted, true);
+test("protected integration branch accepts only an independently reviewed accepted checkpoint", () => {
+  const fixture = setupFixture({ mutate(root) {
+    const review = "review.json";
+    writeJson(join(root, review), { task_id: "G0", author_id: "author", reviewer_id: "reviewer", verdict: "Independently verified", audited_commit: "c".repeat(40) });
+    const statePath = join(root, "docs/ai-control/CONTROL-STATE.json");
+    const state = JSON.parse(readFileSync(statePath, "utf8"));
+    Object.assign(state.tasks.G0, { execution_state: "Accepted", acceptance_state: "Accepted", reviewer_id: "reviewer", independent_review_path: review, accepted_integration_commit: "b".repeat(40) });
+    state.lineage.nodes[0].state = "Accepted";
+    writeJson(statePath, state);
+  }});
+  assert.equal(executeFixture(fixture, { branch: "divergence/reliability-v1" }).accepted, true);
 });
 
 test("out-of-scope application file is rejected", () => {
@@ -264,4 +318,578 @@ test("policy fails closed when branch creation becomes allowed", () => {
     () => validatePolicy({ ...validPolicy, branch_creation_allowed: true }),
     (error) => error instanceof GateFailure && error.details.includes("Branch creation must remain denied"),
   );
+});
+
+test("requested dependent task is blocked with the exact current action", () => {
+  const fixture = setupFixture();
+  expectRejected(fixture, "BLOCKED: F0 cannot start because G0 is Active; Accepted is required. NEXT: Finish G0-C.", { requestedTask: "F0" });
+});
+
+test("unregistered task request fails closed", () => {
+  const fixture = setupFixture();
+  expectRejected(fixture, "BLOCKED: INVENTED cannot start because the task is not registered", { requestedTask: "INVENTED" });
+});
+
+test("meaning confirmation is mandatory", () => {
+  const state = makeState();
+  delete state.meaning_confirmation.boundary;
+  assert(validateControlState(state).some((error) => error.includes("Meaning confirmation missing boundary")));
+});
+
+test("another task cannot silently become active", () => {
+  const state = makeState();
+  state.tasks.F0.execution_state = "Active";
+    assert(validateControlState(state).some((error) => error.includes("No task other than active_task may be Active")));
+});
+
+test("invalid dependency type is rejected", () => {
+  const state = makeState();
+  state.tasks.F0.prerequisites[0].type = "hard dependency";
+  assert(validateControlState(state).some((error) => error.includes("invalid dependency type")));
+});
+
+test("independent verification requires a different reviewer and retained evidence", () => {
+  const state = makeState();
+  Object.assign(state.tasks.G0, { execution_state: "Independently verified", reviewer_id: "author", independent_review_path: "missing.json" });
+  const errors = validateControlState(state, { fileExists: () => false });
+  assert(errors.some((error) => error.includes("distinct from its author")));
+  assert(errors.some((error) => error.includes("lacks retained independent review evidence")));
+});
+
+test("forged or mismatched review metadata is rejected", () => {
+  const state = makeState();
+  Object.assign(state.tasks.G0, { execution_state: "Independently verified", reviewer_id: "reviewer", independent_review_path: "review.json" });
+  const errors = validateControlState(state, { fileExists: () => true, readJsonFile: () => ({ task_id: "OTHER", author_id: "author", reviewer_id: "reviewer", verdict: "Independently verified", audited_commit: "c".repeat(40) }) });
+  assert(errors.some((error) => error.includes("independent review evidence does not match")));
+});
+
+test("acceptance requires consistent state and an integration commit", () => {
+  const state = makeState();
+  Object.assign(state.tasks.G0, { execution_state: "Accepted", acceptance_state: "Accepted", reviewer_id: "reviewer", independent_review_path: "review.json" });
+  const errors = validateControlState(state, { fileExists: () => true });
+  assert(errors.some((error) => error.includes("acceptance lacks a full integration commit")));
+});
+
+test("invalidated lineage contaminates every descendant", () => {
+  const state = makeState();
+  state.lineage = {
+    nodes: [{ id: "upstream", state: "Failed" }, { id: "child", state: "Accepted" }, { id: "grandchild", state: "Active" }],
+    edges: [{ from: "upstream", to: "child", type: "design prerequisite" }, { from: "child", to: "grandchild", type: "validation dependency" }],
+  };
+  const errors = validateControlState(state);
+  assert(errors.some((error) => error.includes("Lineage descendant child must be Potentially contaminated")));
+  assert(errors.some((error) => error.includes("Lineage descendant grandchild must be Potentially contaminated")));
+});
+
+test("contaminated work cannot be accepted", () => {
+  const state = makeState();
+  Object.assign(state.tasks.G0, { execution_state: "Potentially contaminated", acceptance_state: "Accepted", reviewer_id: "reviewer", independent_review_path: "review.json", accepted_integration_commit: "b".repeat(40) });
+  assert(validateControlState(state, { fileExists: () => true }).some((error) => error.includes("contaminated but accepted")));
+});
+
+test("task transition cannot skip an unfinished current task", () => {
+  const before = makeState();
+  const after = makeState();
+  after.active_task = "F0";
+  after.tasks.G0.execution_state = "Self-check passed";
+  after.tasks.F0.execution_state = "Active";
+  assert(validateStateTransition(before, after).some((error) => error.includes("Cannot leave unfinished or unaccepted task G0")));
+});
+
+test("unaccepted staging work cannot update the accepted baseline", () => {
+  const fixture = setupFixture();
+  expectRejected(fixture, "Accepted baseline cannot receive unaccepted task G0", { branch: "divergence/reliability-v1" });
+});
+
+test("stale simple status is rejected", () => {
+  const fixture = setupFixture({ mutate(root) { writeFileSync(join(root, "handoff.md"), `**SAFE TO SWITCH: YES**\nCheckpoint ${"a".repeat(40)}\n`); }});
+  expectRejected(fixture, "Simple handoff safe-switch state disagrees with machine state");
+});
+
+test("incomplete traceability is rejected", () => {
+  const fixture = setupFixture({ mutate(root) {
+    const trace = makeTraceability();
+    delete trace.outcomes[4].evidence;
+    writeJson(join(root, "traceability.json"), trace);
+  }});
+  expectRejected(fixture, "G1-O05 missing traceability field evidence");
+});
+
+test("resumable interruption retains the same current task", () => {
+  const state = makeState();
+  state.tasks.G0.execution_state = "Interrupted — resumable";
+  state.safe_to_switch = "YES";
+  assert.deepEqual(validateControlState(state), []);
+});
+
+test("unsafe interruption permits recovery only", () => {
+  const state = makeState();
+  state.tasks.G0.execution_state = "Interrupted — unsafe";
+  const errors = validateControlState(state, { requestedTask: "G0" });
+  assert(errors.some((error) => error === "BLOCKED: G0 cannot start because its interrupted checkpoint is unsafe. NEXT: Recover G0 from the confirmed checkpoint."));
+});
+
+test("plain blocker output is stable and copyable", () => {
+  assert.equal(blockNotice("S02", "F0 audit is Open", "Run the independent F0 audit."), "BLOCKED: S02 cannot start because F0 audit is Open. NEXT: Run the independent F0 audit.");
+});
+
+for (const blockedState of ["Open", "Active", "Self-check passed", "Awaiting independent audit", "Failed", "Potentially contaminated"]) {
+  test(`dependency state ${blockedState} cannot unlock an Accepted prerequisite`, () => {
+    const state = makeState();
+    state.tasks.G0.execution_state = blockedState;
+    const errors = validateControlState(state, { requestedTask: "F0" });
+    assert(errors.some((error) => error.includes(`G0 is ${blockedState}; Accepted is required`)));
+  });
+}
+
+test("stale confirmed checkpoint is rejected", () => {
+  const fixture = setupFixture({
+    mutate(root) {
+      const state = JSON.parse(readFileSync(join(root, "docs/ai-control/CONTROL-STATE.json")));
+      state.last_confirmed_remote_checkpoint = "b".repeat(40);
+      state.tasks.G0.lock_base_commit = "b".repeat(40);
+      writeJson(join(root, "docs/ai-control/CONTROL-STATE.json"), state);
+    },
+  });
+  expectRejected(fixture, "Stale checkpoint");
+});
+
+test("active task requires an ownership lock", () => {
+  const state = makeState();
+  delete state.tasks.G0.owner_id;
+  assert.ok(validateControlState(state).some((error) => error.includes("ownership lock")));
+});
+
+test("required independent audit must appear in queue", () => {
+  const state = makeState();
+  state.tasks.G0.independent_audit_required = true;
+  assert.ok(validateControlState(state).some((error) => error.includes("audit queue")));
+});
+
+test("failed task can transition only to its authorized correction", () => {
+  const before = makeState();
+  before.tasks.G0.execution_state = "Failed";
+  const after = structuredClone(before);
+  after.active_task = "G2";
+  after.tasks.G2 = { title: "Correction", execution_state: "Active", acceptance_state: "Not accepted", prerequisites: [], corrects_task: "G0", activation_authority: "user" };
+  assert.deepEqual(validateStateTransition(before, after), []);
+  delete after.tasks.G2.activation_authority;
+  assert.ok(validateStateTransition(before, after).length > 0);
+});
+
+test("protected control change requires declaration and cannot self-approve", () => {
+  const fixture = setupFixture({
+    mutate(root) {
+      const policy = JSON.parse(readFileSync(join(root, "docs/ai-control/COURSE-CONTROL.json")));
+      policy.protected_control_paths = ["task.md"];
+      writeJson(join(root, "docs/ai-control/COURSE-CONTROL.json"), policy);
+    },
+  });
+  expectRejected(fixture, "Protected control-plane changes require");
+});
+
+// ===== G2 Correction: F0-AUDIT Prerequisite Replacement =====
+// Verify that the corrected prerequisite logic is enforced
+// These tests ensure G1's Failed state cannot unlock F0, and only G2:Accepted can.
+
+test("G2 correction: F0-AUDIT prerequisite changed from G1 to G2", () => {
+  const checkpoint = "abc1234567890123456789012345678901234567";
+  const state = {
+    schema_version: "1.0",
+    active_task: "G2",
+    tasks: {
+      G1: { execution_state: "Failed", acceptance_state: "Not accepted" },
+      G2: {
+        execution_state: "Self-check passed",
+        acceptance_state: "Not accepted",
+        author_id: "auth1",
+        owner_id: "auth1",
+        lock_acquired_at: "2026-09-08T00:00:00Z",
+        lock_base_commit: checkpoint
+      },
+      "F0-INDEPENDENT-AUDIT": {
+        execution_state: "Open",
+        acceptance_state: "Not accepted",
+        prerequisites: [{ task: "G2", type: "validation dependency", required_state: "Accepted" }],
+      },
+    },
+    safe_to_switch: "YES",
+    first_unfinished_action: "test",
+    recovery_action: "test",
+    meaning_confirmation: { interpreted_outcome: "test", boundary: "test", material_ambiguity: "none", authority: "test" },
+    last_confirmed_remote_checkpoint: checkpoint,
+    continuity_gates: {},
+    permitted_execution_states: ["Open", "Active", "Self-check passed", "Awaiting independent audit", "Independently verified", "Accepted", "Failed"],
+    lineage: { nodes: [], edges: [] },
+    audit_queue: [],
+  };
+  const errors = validateControlState(state);
+  // After G2 correction to "Self-check passed", F0-AUDIT prerequisite correctly points to G2
+  // and is still blocked (G2 not yet Accepted), but validation passes with no errors
+  assert.equal(errors.length, 0, `G2 correction prerequisite change should validate cleanly: ${errors.join("; ")}`);
+});
+
+test("G2 correction: F0-AUDIT blocked when G1 still required (old defect)", () => {
+  const state = {
+    schema_version: "1.0",
+    active_task: "G2",
+    tasks: {
+      G1: { execution_state: "Failed", acceptance_state: "Not accepted" },
+      "F0-INDEPENDENT-AUDIT": {
+        execution_state: "Open",
+        acceptance_state: "Not accepted",
+        prerequisites: [{ task: "G1", type: "validation dependency", required_state: "Accepted" }],
+      },
+    },
+    safe_to_switch: "YES",
+    first_unfinished_action: "test",
+    recovery_action: "test",
+    meaning_confirmation: { interpreted_outcome: "test", boundary: "test", material_ambiguity: "none", authority: "test" },
+    last_confirmed_remote_checkpoint: "abc1234567890123456789012345678901234567",
+    continuity_gates: {},
+    permitted_execution_states: ["Open", "Active", "Self-check passed", "Awaiting independent audit", "Independently verified", "Accepted", "Failed"],
+    lineage: { nodes: [], edges: [] },
+    audit_queue: [],
+  };
+  const errors = validateControlState(state, { requestedTask: "F0-INDEPENDENT-AUDIT" });
+  assert(errors.some(e => e.includes("BLOCKED") && e.includes("F0-INDEPENDENT-AUDIT")), "F0-AUDIT should be blocked when requiring G1:Accepted");
+});
+
+test("G2 correction: F0-AUDIT blocked when G2 is Self-check only", () => {
+  const state = {
+    schema_version: "1.0",
+    active_task: "G2",
+    tasks: {
+      G2: { execution_state: "Self-check passed", acceptance_state: "Not accepted" },
+      "F0-INDEPENDENT-AUDIT": {
+        execution_state: "Open",
+        acceptance_state: "Not accepted",
+        prerequisites: [{ task: "G2", type: "validation dependency", required_state: "Accepted" }],
+      },
+    },
+    safe_to_switch: "YES",
+    first_unfinished_action: "test",
+    recovery_action: "test",
+    meaning_confirmation: { interpreted_outcome: "test", boundary: "test", material_ambiguity: "none", authority: "test" },
+    last_confirmed_remote_checkpoint: "abc1234567890123456789012345678901234567",
+    continuity_gates: {},
+    permitted_execution_states: ["Open", "Active", "Self-check passed", "Awaiting independent audit", "Independently verified", "Accepted", "Failed"],
+    lineage: { nodes: [], edges: [] },
+    audit_queue: [],
+  };
+  const errors = validateControlState(state, { requestedTask: "F0-INDEPENDENT-AUDIT" });
+  assert(errors.some(e => e.includes("BLOCKED")), "F0-AUDIT should be blocked when G2 is only Self-check passed, not Accepted");
+});
+
+test("G2 correction: G1 Failed state is preserved in lineage", () => {
+  const checkpoint = "abc1234567890123456789012345678901234567";
+  const state = {
+    schema_version: "1.0",
+    active_task: "G2",
+    tasks: {
+      G1: { execution_state: "Failed", acceptance_state: "Not accepted" },
+      G2: {
+        execution_state: "Self-check passed",
+        acceptance_state: "Not accepted",
+        corrects_task: "G1",
+        author_id: "a",
+        owner_id: "a",
+        lock_acquired_at: "2026-09-08T00:00:00Z",
+        lock_base_commit: checkpoint
+      },
+    },
+    safe_to_switch: "YES",
+    first_unfinished_action: "test",
+    recovery_action: "test",
+    meaning_confirmation: { interpreted_outcome: "test", boundary: "test", material_ambiguity: "none", authority: "test" },
+    last_confirmed_remote_checkpoint: checkpoint,
+    continuity_gates: {},
+    permitted_execution_states: ["Open", "Active", "Self-check passed", "Awaiting independent audit", "Independently verified", "Accepted", "Failed"],
+    lineage: { nodes: [{ id: "G1", state: "Failed" }, { id: "G2", state: "Self-check passed" }], edges: [] },
+    audit_queue: [],
+  };
+  const errors = validateControlState(state);
+  assert.equal(errors.length, 0, "G1 Failed state and G2 correction must both be recorded in lineage");
+});
+
+test("G2 hostile: F0-AUDIT blocks when prerequisite task missing from state", () => {
+  const state = {
+    schema_version: "1.0",
+    active_task: "G2",
+    tasks: {
+      G2: { execution_state: "Self-check passed", acceptance_state: "Not accepted" },
+      "F0-INDEPENDENT-AUDIT": {
+        execution_state: "Open",
+        acceptance_state: "Not accepted",
+        prerequisites: [{ task: "G2", type: "validation dependency", required_state: "Accepted" }],
+      },
+    },
+    safe_to_switch: "YES",
+    first_unfinished_action: "test",
+    recovery_action: "test",
+    meaning_confirmation: { interpreted_outcome: "test", boundary: "test", material_ambiguity: "none", authority: "test" },
+    last_confirmed_remote_checkpoint: "abc1234567890123456789012345678901234567",
+    continuity_gates: {},
+    permitted_execution_states: ["Open", "Active", "Self-check passed", "Awaiting independent audit", "Independently verified", "Accepted", "Failed"],
+    lineage: { nodes: [], edges: [] },
+    audit_queue: [],
+  };
+  const errors = validateControlState(state, { requestedTask: "F0-INDEPENDENT-AUDIT" });
+  assert(errors.some(e => e.includes("BLOCKED")), "Missing prerequisite task should block F0-AUDIT");
+});
+
+test("G2 hostile: Task cannot authorize its own acceptance", () => {
+  const checkpoint = "abc1234567890123456789012345678901234567";
+  const state = {
+    schema_version: "1.0",
+    active_task: "G2",
+    tasks: {
+      G2: {
+        execution_state: "Accepted",
+        acceptance_state: "Accepted",
+        author_id: "same-person",
+        reviewer_id: "same-person",
+        independent_review_path: "docs/ai-control/independent-reviews/G2-G06.json",
+        accepted_integration_commit: checkpoint,
+        owner_id: "same-person",
+        lock_acquired_at: "2026-09-08T00:00:00Z",
+        lock_base_commit: checkpoint
+      },
+    },
+    safe_to_switch: "YES",
+    first_unfinished_action: "test",
+    recovery_action: "test",
+    meaning_confirmation: { interpreted_outcome: "test", boundary: "test", material_ambiguity: "none", authority: "test" },
+    last_confirmed_remote_checkpoint: checkpoint,
+    continuity_gates: {},
+    permitted_execution_states: ["Open", "Active", "Self-check passed", "Awaiting independent audit", "Independently verified", "Accepted", "Failed"],
+    lineage: { nodes: [], edges: [] },
+    audit_queue: [],
+  };
+  assert.ok(validateControlState(state).some((error) => error.includes("independent reviewer distinct")));
+});
+
+test("G2 hostile: Accepted task must have valid integration commit", () => {
+  const state = {
+    schema_version: "1.0",
+    active_task: "G2",
+    tasks: {
+      G2: {
+        execution_state: "Accepted",
+        acceptance_state: "Accepted",
+        author_id: "a",
+        reviewer_id: "r",
+        independent_review_path: "docs/ai-control/independent-reviews/G2-G06.json",
+        accepted_integration_commit: "invalid-hash",
+        owner_id: "a",
+        lock_acquired_at: "2026-09-08T00:00:00Z",
+        lock_base_commit: "abc1234567890123456789012345678901234567"
+      },
+    },
+    safe_to_switch: "YES",
+    first_unfinished_action: "test",
+    recovery_action: "test",
+    meaning_confirmation: { interpreted_outcome: "test", boundary: "test", material_ambiguity: "none", authority: "test" },
+    last_confirmed_remote_checkpoint: "abc1234567890123456789012345678901234567",
+    continuity_gates: {},
+    permitted_execution_states: ["Open", "Active", "Self-check passed", "Awaiting independent audit", "Independently verified", "Accepted", "Failed"],
+    lineage: { nodes: [], edges: [] },
+    audit_queue: [],
+  };
+  assert.ok(validateControlState(state).some((error) => error.includes("acceptance lacks a full integration commit")));
+});
+
+test("G2 hostile: Contaminated task cannot be accepted", () => {
+  const checkpoint = "abc1234567890123456789012345678901234567";
+  const state = {
+    schema_version: "1.0",
+    active_task: "G2",
+    tasks: {
+      G2: {
+        execution_state: "Potentially contaminated",
+        acceptance_state: "Accepted",
+        author_id: "a",
+        reviewer_id: "r",
+        independent_review_path: "docs/ai-control/independent-reviews/G2-G06.json",
+        accepted_integration_commit: checkpoint,
+        owner_id: "a",
+        lock_acquired_at: "2026-09-08T00:00:00Z",
+        lock_base_commit: checkpoint
+      },
+    },
+    safe_to_switch: "YES",
+    first_unfinished_action: "test",
+    recovery_action: "test",
+    meaning_confirmation: { interpreted_outcome: "test", boundary: "test", material_ambiguity: "none", authority: "test" },
+    last_confirmed_remote_checkpoint: checkpoint,
+    continuity_gates: {},
+    permitted_execution_states: ["Open", "Active", "Self-check passed", "Awaiting independent audit", "Independently verified", "Accepted", "Failed"],
+    lineage: { nodes: [], edges: [] },
+    audit_queue: [],
+  };
+  assert.ok(validateControlState(state).some((error) => error.includes("contaminated but accepted")));
+});
+
+test("G2 hostile: Failed prerequisite permanently blocks dependent", () => {
+  const state = {
+    schema_version: "1.0",
+    active_task: "test",
+    tasks: {
+      G1: { execution_state: "Failed", acceptance_state: "Not accepted" },
+      "downstream-task": {
+        execution_state: "Open",
+        acceptance_state: "Not accepted",
+        prerequisites: [{ task: "G1", type: "validation dependency", required_state: "Accepted" }],
+      },
+    },
+    safe_to_switch: "YES",
+    first_unfinished_action: "test",
+    recovery_action: "test",
+    meaning_confirmation: { interpreted_outcome: "test", boundary: "test", material_ambiguity: "none", authority: "test" },
+    last_confirmed_remote_checkpoint: "abc1234567890123456789012345678901234567",
+    continuity_gates: {},
+    permitted_execution_states: ["Open", "Active", "Self-check passed", "Awaiting independent audit", "Independently verified", "Accepted", "Failed"],
+    lineage: { nodes: [], edges: [] },
+    audit_queue: [],
+  };
+  const errors = validateControlState(state, { requestedTask: "downstream-task" });
+  assert(errors.some(e => e.includes("BLOCKED") && e.includes("G1 is Failed")), "Failed prerequisite must block dependent");
+});
+
+test("G2 gate: audit publication allowed with different reviewer", () => {
+  const state = {
+    schema_version: "1.0",
+    active_task: "G2",
+    tasks: {
+      G2: {
+        execution_state: "Self-check passed",
+        acceptance_state: "Not accepted",
+        author_id: "author-session-1",
+        reviewer_id: "auditor-session-2",
+        independent_review_path: "docs/ai-control/independent-reviews/G2-G06.json",
+        owner_id: "author-session-1",
+        lock_acquired_at: "2026-09-08T15:54:15Z",
+        lock_base_commit: "abc1234567890123456789012345678901234567"
+      },
+    },
+    safe_to_switch: "YES",
+    first_unfinished_action: "test",
+    recovery_action: "test",
+    meaning_confirmation: { interpreted_outcome: "test", boundary: "test", material_ambiguity: "none", authority: "test" },
+    last_confirmed_remote_checkpoint: "abc1234567890123456789012345678901234567",
+    continuity_gates: {},
+    permitted_execution_states: ["Open", "Active", "Self-check passed", "Awaiting independent audit", "Independently verified", "Accepted", "Failed"],
+    lineage: { nodes: [], edges: [] },
+    audit_queue: [],
+  };
+  // Gate should accept review publication from different reviewer
+  const errors = validateControlState(state);
+  assert(!errors.some(e => e.includes("cannot carry or claim")), "Different reviewer should be allowed to publish review and sync state");
+});
+
+test("G2 gate: self-approval still rejected when author is reviewer", () => {
+  const checkpoint = "abc1234567890123456789012345678901234567";
+  const state = {
+    schema_version: "1.0",
+    active_task: "G2",
+    tasks: {
+      G2: {
+        execution_state: "Independently verified",
+        acceptance_state: "Accepted",
+        author_id: "same-author",
+        reviewer_id: "same-author",
+        independent_review_path: "docs/ai-control/independent-reviews/G2-G06.json",
+        accepted_integration_commit: checkpoint,
+        owner_id: "same-author",
+        lock_acquired_at: "2026-09-08T15:54:15Z",
+        lock_base_commit: checkpoint
+      },
+    },
+    safe_to_switch: "YES",
+    first_unfinished_action: "test",
+    recovery_action: "test",
+    meaning_confirmation: { interpreted_outcome: "test", boundary: "test", material_ambiguity: "none", authority: "test" },
+    last_confirmed_remote_checkpoint: checkpoint,
+    continuity_gates: {},
+    permitted_execution_states: ["Open", "Active", "Self-check passed", "Awaiting independent audit", "Independently verified", "Accepted", "Failed"],
+    lineage: { nodes: [], edges: [] },
+    audit_queue: [],
+  };
+  assert(validateControlState(state).some(error => error.includes("independent reviewer distinct")));
+});
+
+test("G2-G04 enforcement: decision recorded or explicitly Open", () => {
+  const state = JSON.parse(readFileSync("docs/ai-control/CONTROL-STATE.json", "utf8"));
+  const g2 = state.tasks.G2;
+  // G2-G04 decision must be recorded in gate_status or control_change
+  // For now, verify it's at least documented in continuity records
+  const ledger = readFileSync("docs/ai-control/CONTINUITY-LEDGER.md", "utf8");
+  const hasG2G04 = ledger.includes("G2-G04") || state.tasks.G2.gate_status_g2_g04 !== undefined;
+  assert(hasG2G04 || state.tasks.G2.execution_state !== "Accepted", "G2-G04 must be decided before acceptance");
+});
+
+test("gate rejects review publication without host-authenticated reviewer", () => {
+  const fixture = setupFixture({
+    mutate(root) {
+      const policy = JSON.parse(readFileSync(join(root, "docs/ai-control/COURSE-CONTROL.json")));
+      const state = JSON.parse(readFileSync(join(root, "docs/ai-control/CONTROL-STATE.json")));
+      policy.protected_control_paths = ["docs/ai-control/CONTROL-STATE.json"];
+      policy.active_task = "G2";
+      state.active_task = "G2";
+      state.tasks.G2 = {
+        title: "Test Task",
+        execution_state: "Self-check passed",
+        acceptance_state: "Not accepted",
+        author_id: "author1",
+        reviewer_id: "auditor2",
+        independent_review_path: "docs/ai-control/independent-reviews/G2-test.json",
+        owner_id: "author1",
+        lock_acquired_at: "2026-09-08T16:00:00Z",
+        lock_base_commit: "a".repeat(40),
+      };
+      writeJson(join(root, "docs/ai-control/CONTROL-STATE.json"), state);
+      writeJson(join(root, "docs/ai-control/COURSE-CONTROL.json"), policy);
+      mkdirSync(join(root, "docs/ai-control/independent-reviews"), { recursive: true });
+      writeFileSync(
+        join(root, "docs/ai-control/independent-reviews/G2-test.json"),
+        JSON.stringify({ task_id: "G2", reviewer_id: "auditor2", verdict: "Independently verified" })
+      );
+    },
+  });
+  expectRejected(fixture, "host-authenticated independent reviewer");
+});
+
+test("gate correctly rejects self-approval attempt", () => {
+  const fixture = setupFixture({
+    mutate(root) {
+      const policy = JSON.parse(readFileSync(join(root, "docs/ai-control/COURSE-CONTROL.json")));
+      const state = JSON.parse(readFileSync(join(root, "docs/ai-control/CONTROL-STATE.json")));
+      policy.protected_control_paths = ["docs/ai-control/CONTROL-STATE.json"];
+      policy.active_task = "G2";
+      state.active_task = "G2";
+      state.tasks.G2 = {
+        title: "Test",
+        execution_state: "Accepted",
+        acceptance_state: "Accepted",
+        author_id: "same-actor",
+        reviewer_id: "same-actor",
+        independent_review_path: "docs/ai-control/independent-reviews/test.json",
+        accepted_integration_commit: "a".repeat(40),
+        owner_id: "same-actor",
+        lock_acquired_at: "2026-09-08T16:00:00Z",
+        lock_base_commit: "a".repeat(40),
+      };
+      writeJson(join(root, "docs/ai-control/CONTROL-STATE.json"), state);
+      writeJson(join(root, "docs/ai-control/COURSE-CONTROL.json"), policy);
+      mkdirSync(join(root, "docs/ai-control/independent-reviews"), { recursive: true });
+      writeFileSync(join(root, "docs/ai-control/independent-reviews/test.json"), "{}");
+    },
+  });
+  expectRejected(fixture, "independent reviewer distinct");
+});
+
+test("G2-G04 must remain Open until GitHub Actions provides reviewer authentication", () => {
+  const state = JSON.parse(readFileSync("docs/ai-control/CONTROL-STATE.json", "utf8"));
+  const gateStatus = readFileSync("docs/ai-control/GATE-STATUS.md", "utf8");
+  assert(gateStatus.includes("G2-G04") && gateStatus.includes("Open") && gateStatus.includes("BLOCKING"), "G2-G04 must be explicitly Open and blocking");
 });

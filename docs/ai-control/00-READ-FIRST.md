@@ -11,16 +11,19 @@ Read these files completely, in this order, before doing work:
 1. `docs/ai-control/CONTROL-MANIFEST.json`
 2. `docs/ai-control/SHA256SUMS` and verify every listed file
 3. `docs/ai-control/COURSE-CONTROL.json`
-4. `docs/ai-control/GATE-STATUS.md`
-5. `docs/ai-control/VERCEL-BASELINE.md`
-6. `docs/ai-control/PROJECT-AUTHORITY.md`
-7. `docs/ai-control/CURRENT-TASK.md`
-8. The complete task source named by `CURRENT-TASK.md`, when one is specified
-9. `docs/ai-control/HANDOFF.md`
-10. `docs/ai-control/DECISION-LOG.md`
-11. `docs/ai-control/CONTINUITY-LEDGER.md`
-12. `docs/ai-control/EVIDENCE-INDEX.md`
-13. `docs/ai-control/PARKING-LOT.md`
+4. `docs/ai-control/CONTROL-STATE.json`
+5. `docs/ai-control/GATE-STATUS.md`
+6. `docs/ai-control/VERCEL-BASELINE.md`
+7. `docs/ai-control/PROJECT-AUTHORITY.md`
+8. `docs/ai-control/CURRENT-TASK.md`
+9. The complete task source named by `CURRENT-TASK.md`, when one is specified
+10. `docs/ai-control/TASK-INDEX.md`
+11. `docs/ai-control/GITHUB-RULESET-REQUIRED.md`
+12. `docs/ai-control/HANDOFF.md`
+13. `docs/ai-control/DECISION-LOG.md`
+14. `docs/ai-control/CONTINUITY-LEDGER.md`
+15. `docs/ai-control/EVIDENCE-INDEX.md`
+16. `docs/ai-control/PARKING-LOT.md`
 
 Do not substitute the 176-page meta-blueprint for the active standalone task packet. Read the blueprint only when the active task explicitly identifies an unresolved definition that is not included in its standalone packet.
 
@@ -37,6 +40,8 @@ Before any mutation, report and record:
 - allowed outputs and prohibited actions;
 - unresolved blockers; and
 - intended first action and reason.
+
+Run `node scripts/ai-control-status.mjs --requested-task <TASK-ID>` using the task the user asked for. If it prints `BLOCKED`, do not begin that task; show the user the printed block and `NEXT` action. If the user did not name a stable task ID, run the command without `--requested-task` and remain on the machine-recorded current task.
 
 Then apply these rules:
 

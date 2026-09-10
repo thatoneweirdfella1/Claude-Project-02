@@ -1,0 +1,23 @@
+{
+  "bootstrap_version": "2.0",
+  "repository_id": 1272469738,
+  "source_commit": "83b2fc21c10113df1a8f2c21ab8a7c6daf837944",
+  "source_tree": "685158d30d072b0fd049def79df8f61714f96060",
+  "state": {
+    "schema_version": "1.0",
+    "repository_id": 1272469738,
+    "active_task": "G2",
+    "decision_queue": [],
+    "audit_queue": ["G2"],
+    "tasks": {
+      "G1": { "state": "Failed", "attempt": 1, "dependencies": [], "base_sha": "f6e8a344b414a5e909028fbdf547ae879ade4b58", "candidate_sha": "983baaa2315db32e2cc772edc2bcad053e4e3d69", "author_principal": "openai-codex-gpt5-session-2026-09-08", "allowed_paths": ["docs/ai-control/**", "docs/reliability/control/**"] },
+      "G2": { "state": "Open", "attempt": 1, "dependencies": [], "base_sha": "83b2fc21c10113df1a8f2c21ab8a7c6daf837944", "candidate_sha": null, "author_principal": null, "allowed_paths": [".github/CODEOWNERS", ".github/workflows/ai-course-control.yml", "AGENTS.md", "CLAUDE.md", "control-plane/g3a-controller/**", "docs/ai-control/**", "docs/reliability/control/**", "scripts/ai-control-*.mjs", "scripts/ai-course-control.mjs", "scripts/ai-course-control.test.mjs"] },
+      "F0-INDEPENDENT-AUDIT": { "state": "Open", "attempt": 1, "dependencies": ["G2"], "base_sha": "83b2fc21c10113df1a8f2c21ab8a7c6daf837944", "candidate_sha": null, "author_principal": null, "allowed_paths": ["docs/ai-control/**", "docs/reliability/f0/**"] }
+    }
+  },
+  "retained_history": [
+    { "event_id": "migration-g1-failure", "type": "retained-failure", "task": "G1", "verdict": "Failed", "candidate_sha": "983baaa2315db32e2cc772edc2bcad053e4e3d69", "review_path": "docs/ai-control/independent-reviews/G1-G06.json" },
+    { "event_id": "migration-g2-audit-lineage", "type": "retained-audit", "task": "G2", "verdict": "Failed", "review_path": "docs/ai-control/independent-reviews/G2-G06.json", "correction": "G2 autonomy correction / G3-A trusted controller" },
+    { "event_id": "migration-controller-checkpoint", "type": "migration-checkpoint", "task": "G2", "source_commit": "83b2fc21c10113df1a8f2c21ab8a7c6daf837944", "source_tree": "685158d30d072b0fd049def79df8f61714f96060", "decision_ids": ["D-016", "D-017"], "evidence_ids": ["E-043", "E-044", "E-045"], "continuity_entries": ["CL-0048", "CL-0049", "CL-0050", "CL-0051", "CL-0052"] }
+  ]
+}

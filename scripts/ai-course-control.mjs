@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import process from "node:process";
+import { validateControlState, validateStateTransition } from "./ai-control-state.mjs";
 
 export class GateFailure extends Error {
   constructor(message, details = []) {
@@ -74,6 +75,12 @@ export function validatePolicy(policy) {
   if (!Array.isArray(policy?.append_only_files)) errors.push("append_only_files must be an array");
   if (!Array.isArray(policy?.immutable_files)) errors.push("immutable_files must be an array");
   if (!Array.isArray(policy?.immutable_branches)) errors.push("immutable_branches must be an array");
+  if (!Array.isArray(policy?.protected_control_paths)) errors.push("protected_control_paths must be an array");
+  if (!Array.isArray(policy?.protected_control_paths)) errors.push("protected_control_paths must be an array");
+  if (!policy?.control_state_file) errors.push("control_state_file is missing");
+  if (!policy?.traceability_file) errors.push("traceability_file is missing");
+  if (!policy?.handoff_file) errors.push("handoff_file is missing");
+  if (!policy?.current_task_file) errors.push("current_task_file is missing");
   if (!Array.isArray(policy?.permitted_gate_statuses) || policy.permitted_gate_statuses.length !== 4) {
     errors.push("Exactly four permitted gate statuses are required");
   }
@@ -162,7 +169,54 @@ function verifyIndependentClaims(policy, base, head) {
   return errors;
 }
 
-export function runGate({ policyPath, base, head, branch, repository }) {
+function parseRevisionJson(revision, filePath) {
+  const text = readAtRevision(revision, filePath);
+  if (text === null) return null;
+  try { return JSON.parse(text); } catch { return null; }
+}
+
+function verifyTraceability(policy) {
+  const errors = [];
+  const trace = readJson(policy.traceability_file);
+  if (!Array.isArray(trace.outcomes) || trace.outcomes.length !== 12) {
+    return ["G1 traceability must contain exactly 12 registered outcomes"];
+  }
+  const ids = new Set();
+  for (const outcome of trace.outcomes) {
+    if (ids.has(outcome.id)) errors.push(`Duplicate traceability ID: ${outcome.id}`);
+    ids.add(outcome.id);
+    for (const field of ["id", "definition", "owner", "design_location", "acceptance_test", "evidence", "gate"]) {
+      if (!outcome[field]) errors.push(`${outcome.id || "Unknown outcome"} missing traceability field ${field}`);
+    }
+    if (outcome.design_location && !existsSync(outcome.design_location)) errors.push(`${outcome.id} design location is missing: ${outcome.design_location}`);
+  }
+  return errors;
+}
+
+function verifyControlState(policy, base, head, requestedTask) {
+  const errors = [];
+  const state = readJson(policy.control_state_file);
+  if (state.repository !== policy.repository) errors.push("Control-state repository does not match policy");
+  if (state.working_branch !== policy.working_branch) errors.push("Control-state working branch does not match policy");
+  if (state.accepted_branch !== policy.integration_branch) errors.push("Control-state accepted branch does not match policy");
+  if (state.active_task !== policy.active_task) errors.push("Control-state active task does not match policy");
+  errors.push(...validateControlState(state, { requestedTask }));
+  const before = parseRevisionJson(base, policy.control_state_file);
+  const after = parseRevisionJson(head, policy.control_state_file);
+  if (!after) errors.push("Control state is missing or invalid at candidate head");
+  else errors.push(...validateStateTransition(before, after));
+
+  const handoff = existsSync(policy.handoff_file) ? readFileSync(policy.handoff_file, "utf8") : "";
+  const currentTask = existsSync(policy.current_task_file) ? readFileSync(policy.current_task_file, "utf8") : "";
+  if (!handoff) errors.push("Handoff record is missing");
+  if (!currentTask) errors.push("Current-task record is missing");
+  if (!handoff.includes(`SAFE TO SWITCH: ${state.safe_to_switch}`)) errors.push("Simple handoff safe-switch state disagrees with machine state");
+  if (!handoff.includes(state.last_confirmed_remote_checkpoint)) errors.push("Handoff omits the machine state's last confirmed remote checkpoint");
+  if (!currentTask.includes(`ID:** ${state.active_task}`)) errors.push("Current-task record disagrees with machine active task");
+  return { errors, state };
+}
+
+export function runGate({ policyPath, base, head, branch, repository, requestedTask }) {
   const policy = readJson(policyPath);
   validatePolicy(policy);
   const errors = [];
@@ -171,6 +225,21 @@ export function runGate({ policyPath, base, head, branch, repository }) {
   const allowedBranches = new Set([policy.working_branch, policy.integration_branch]);
   if (!allowedBranches.has(branch)) errors.push(`Wrong branch: ${branch}`);
   if (policy.immutable_branches.includes(branch)) errors.push(`Immutable branch cannot be modified: ${branch}`);
+
+  const stateResult = verifyControlState(policy, base, head, requestedTask);
+  errors.push(...stateResult.errors);
+  if (branch === policy.working_branch && stateResult.state.last_confirmed_remote_checkpoint !== base) {
+    errors.push(`Stale checkpoint: expected base ${stateResult.state.last_confirmed_remote_checkpoint}, actual base ${base}`);
+  }
+  if (branch === policy.integration_branch) {
+    const task = stateResult.state.tasks?.[policy.active_task];
+    if (task?.execution_state !== "Accepted" || task?.acceptance_state !== "Accepted") {
+      errors.push(`Accepted baseline cannot receive unaccepted task ${policy.active_task}`);
+    }
+  }
+  if (branch === policy.working_branch && stateResult.state.tasks?.[policy.active_task]?.execution_state === "Accepted") {
+    errors.push(`Accepted task ${policy.active_task} cannot be modified on staging; activate the exact next authorized task`);
+  }
 
   for (const required of policy.required_files) {
     if (!existsSync(required)) errors.push(`Required control file missing: ${required}`);
@@ -188,6 +257,36 @@ export function runGate({ policyPath, base, head, branch, repository }) {
   }
 
   const changedPaths = new Set(changes.map((change) => change.path));
+  const protectedChanges = changes.filter((change) => pathAllowed(change.path, policy.protected_control_paths));
+  if (protectedChanges.length) {
+    const declaration = stateResult.state.control_change;
+    const declaredPaths = new Set(declaration?.paths || []);
+    if (!declaration?.owner || !declaration?.gate || declaration?.independent_audit_required !== true || !declaration?.residual_risk) {
+      errors.push("Protected control-plane changes require owner, gate, independent-audit requirement, and residual risk");
+    }
+    for (const change of protectedChanges) {
+      if (!declaredPaths.has(change.path)) errors.push(`Undeclared protected control-plane change: ${change.path}`);
+    }
+    const reviewChanged = changes.some((change) => change.path.startsWith("docs/ai-control/independent-reviews/"));
+    const activeTask = stateResult.state.tasks?.[policy.active_task];
+
+    // CRITICAL: author_id and reviewer_id in candidate-controlled CONTROL-STATE cannot be trusted.
+    // They are just strings. An author can write two different strings and impersonate independence.
+    // This is a common-mode vulnerability: the thing being tested controls its own test inputs.
+    // Solution: Keep reviewer authentication Open/blocking until host provides cryptographic proof
+    // (e.g., GitHub Actions context, commit signature, etc.)
+    if (reviewChanged) {
+      const hasHostProof = false; // No host-based authentication available in this environment
+      if (!hasHostProof) {
+        errors.push("Review publication requires host-authenticated independent reviewer (GitHub Actions context or cryptographic signature). Declarative author_id/reviewer_id strings in candidate state cannot verify independence. Keep this requirement Open and blocking until host integration is complete.");
+      }
+    }
+
+    const isSelfApproval = ["Independently verified", "Accepted"].includes(activeTask?.execution_state) || activeTask?.acceptance_state === "Accepted";
+    if (isSelfApproval) {
+      errors.push("A protected control-plane change cannot claim its own independent approval");
+    }
+  }
   for (const requiredRecord of policy.required_changed_records) {
     if (!changedPaths.has(requiredRecord)) errors.push(`Required continuity record was not updated: ${requiredRecord}`);
   }
@@ -206,6 +305,7 @@ export function runGate({ policyPath, base, head, branch, repository }) {
 
   errors.push(...verifyIntegrityManifest("docs/ai-control/SHA256SUMS"));
   errors.push(...verifyIndependentClaims(policy, base, head));
+  errors.push(...verifyTraceability(policy));
 
   if (errors.length) throw new GateFailure("AI course-control gate rejected the change", errors);
   return {
@@ -218,8 +318,103 @@ export function runGate({ policyPath, base, head, branch, repository }) {
   };
 }
 
+export function verifyPublicationPreflight({ repository, branch, state }) {
+  const errors = [];
+
+  // Verify remote branch exists and is reachable
+  try {
+    const remoteHead = git(["ls-remote", "origin", `refs/heads/${branch}`]);
+    if (!remoteHead) {
+      errors.push(`Remote branch ${branch} does not exist or is not accessible`);
+    } else {
+      const remoteHash = remoteHead.split(/\s+/)[0];
+      if (!/^[a-f0-9]{40}$/.test(remoteHash)) {
+        errors.push(`Remote branch ${branch} returned invalid hash: ${remoteHash}`);
+      }
+    }
+  } catch (error) {
+    errors.push(`Cannot verify remote branch: ${error.message || error}`);
+  }
+
+  // Verify all critical files exist
+  const criticalFiles = [
+    "docs/ai-control/CONTROL-STATE.json",
+    "docs/ai-control/CONTROL-MANIFEST.json",
+    "docs/ai-control/CONTINUITY-LEDGER.md",
+    "docs/ai-control/EVIDENCE-INDEX.md",
+    "docs/ai-control/GATE-STATUS.md",
+    "docs/ai-control/HANDOFF.md",
+    "docs/ai-control/CURRENT-TASK.md",
+    "docs/ai-control/SHA256SUMS",
+  ];
+
+  for (const filePath of criticalFiles) {
+    if (!existsSync(filePath)) {
+      errors.push(`Critical file missing for publication: ${filePath}`);
+    }
+  }
+
+  // Verify integrity manifest (SHA256SUMS)
+  if (existsSync("docs/ai-control/SHA256SUMS")) {
+    try {
+      const manifestErrors = verifyIntegrityManifest("docs/ai-control/SHA256SUMS");
+      errors.push(...manifestErrors);
+    } catch (error) {
+      errors.push(`Cannot verify SHA256SUMS: ${error.message || error}`);
+    }
+  }
+
+  // Verify state is publication-ready
+  if (state) {
+    const activeTask = state.tasks?.[state.active_task];
+    if (activeTask?.execution_state === "Accepted") {
+      errors.push(`Active task ${state.active_task} is Accepted; cannot modify on staging branch`);
+    }
+    if (!["Self-check passed", "Awaiting independent audit", "Independently verified"].includes(activeTask?.execution_state)) {
+      errors.push(`Active task execution state ${activeTask?.execution_state} is not publication-ready`);
+    }
+  }
+
+  // Verify local state matches last confirmed remote
+  try {
+    const localHead = git(["rev-parse", "HEAD"]);
+    const remoteRef = git(["rev-parse", `origin/${branch}`]);
+    if (localHead !== remoteRef) {
+      errors.push(`Local HEAD ${localHead.slice(0, 7)} diverges from remote ${remoteRef.slice(0, 7)}; push or pull first`);
+    }
+  } catch (error) {
+    errors.push(`Cannot verify local/remote sync: ${error.message || error}`);
+  }
+
+  return {
+    ready: errors.length === 0,
+    errors,
+    checks_passed: [
+      errors.length === 0 && "Remote branch exists",
+      existsSync("docs/ai-control/SHA256SUMS") && "Critical files present",
+      errors.length === 0 && "Integrity verified",
+      errors.length === 0 && "Publication-ready state",
+      errors.length === 0 && "Local/remote sync",
+    ].filter(Boolean),
+  };
+}
+
 function main() {
   const args = parseArgs(process.argv.slice(2));
+
+  // Handle publication-preflight command
+  if (args.command === "publication-preflight") {
+    const state = readJson(args.state || "docs/ai-control/CONTROL-STATE.json");
+    const result = verifyPublicationPreflight({
+      repository: args.repository || state.repository,
+      branch: args.branch || state.working_branch,
+      state,
+    });
+    console.log(JSON.stringify(result, null, 2));
+    process.exitCode = result.ready ? 0 : 1;
+    return;
+  }
+
   const required = ["policy", "base", "head", "branch", "repository"];
   const missing = required.filter((key) => !args[key]);
   if (missing.length) throw new GateFailure("Missing required arguments", missing.map((key) => `--${key}`));
@@ -229,6 +424,7 @@ function main() {
     head: args.head,
     branch: args.branch,
     repository: args.repository,
+    requestedTask: args["requested-task"],
   });
   console.log(JSON.stringify(result, null, 2));
 }

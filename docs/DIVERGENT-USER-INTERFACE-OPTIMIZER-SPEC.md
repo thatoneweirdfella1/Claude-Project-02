@@ -31,6 +31,24 @@ An unchecked item means: do not analyze or alter that category during this run. 
 
 Progress and a final status message may be displayed, but they must not introduce additional customer decisions.
 
+## 2.1 Approved default interaction rule: quiet User Mode
+
+This rule is approved product authority and applies across the ordinary Divergence.AI customer experience, not only personalization setup.
+
+User Mode must silently translate, structure, route, and send the customer's request by default. A routine request must not require the customer to inspect or approve the generated technical prompt before useful output appears.
+
+The default interaction must minimize reading, choices, interruptions, and working-memory demands. It should expose only the conversation, natural-language input, destination or automatic destination, Send, and any approval that is genuinely necessary.
+
+Raw prompts, transformation rules, internal methods, routing logic, evidence controls, risk settings, confidence details, token estimates, provider diagnostics, execution logs, and developer controls must remain collapsed or hidden from the normal path. They must remain available through optional transparency controls and an Advanced settings area. Developer Mode may expose the complete technical machinery without changing the quiet User Mode default.
+
+An optional **View changes** control may show a short plain-language explanation of what Divergence changed and whether meaning was preserved. Viewing the complete technical prompt must require a separate explicit action.
+
+The system may interrupt User Mode only when it cannot safely continue without the customer. Qualifying reasons are a material risk that translation changed the customer's meaning, consequential ambiguity, external-action approval, credentials, spending, destructive or irreversible action, privacy-sensitive disclosure, deployment or production change, or another authority boundary explicitly reserved to the customer. Routine translation, routing, prompt formatting, evidence selection, and harmless defaults do not qualify.
+
+User Mode must not display a large raw-prompt review modal for an ordinary request. It must not force customers to understand prompt syntax, methods, routing internals, token accounting, or copy-versus-open mechanics before receiving routine assistance. Technical transparency must remain accessible without becoming mandatory friction.
+
+Acceptance requires genuine browser proof that a customer can enter and send a simple request without seeing or approving the raw generated prompt; translation and routing occur in the background while preserving meaning; a short optional change summary is available; the complete prompt and technical controls appear only after an explicit transparency or Advanced settings action; Developer Mode retains full inspection capability; and every permitted interruption condition is tested separately.
+
 ## 3. Proposed customer checklist
 
 These are plain-language customer choices. The technical datasets remain hidden.
