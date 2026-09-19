@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "test:r31:google": "node scripts/r31-live-google-proof.mjs",
     "test:desktop": "npm --prefix desktop test",
     "desktop:install": "npm --prefix desktop install",
     "desktop:start": "npm run build && npm --prefix desktop start",
