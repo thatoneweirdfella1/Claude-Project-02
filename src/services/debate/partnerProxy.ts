@@ -38,6 +38,11 @@ export interface PartnerProxyRequestBody {
   maxTokens?: number;
 }
 
+export interface PartnerProxyUsage {
+  inputTokens?: number;
+  outputTokens?: number;
+}
+
 /** What a provider adapter must supply: how to build the upstream call, and
     how to pull plain text back out of that provider's response shape. */
 export interface PartnerAdapter {
@@ -52,6 +57,9 @@ export interface PartnerAdapter {
       rather than silently returning empty text that would read to the user as
       "the partner had nothing to say". */
   extractText: (payload: unknown) => string | null;
+  /** Normalize provider usage while the full upstream payload is still
+      server-side. Optional because a provider may not report token usage. */
+  extractUsage?: (payload: unknown) => PartnerProxyUsage | null;
   /** Name of the env var this provider's key comes from — used only in the
       misconfiguration message, never to read the value (the platform entry
       passes the value in). */
@@ -150,7 +158,11 @@ export async function handlePartnerRequest(
     return jsonResponse({ error: "Partner API returned no usable text" }, 502);
   }
 
+  // Normalize usage while the provider payload is still server-side. The
+  // browser receives only token counts, never the raw provider response.
+  const usage = adapter.extractUsage?.(payload) ?? null;
+
   // Normalized shape — every partner endpoint answers the same way, so the
   // client never needs to know which provider it just called.
-  return jsonResponse({ text }, 200);
+  return jsonResponse(usage ? { text, usage } : { text }, 200);
 }
