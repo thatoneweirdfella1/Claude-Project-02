@@ -19,6 +19,12 @@ interface ChatCompletionsConfig {
 
 interface ChatCompletionsResponse {
   choices?: { message?: { content?: unknown } }[];
+  usage?: {
+    prompt_tokens?: unknown;
+    completion_tokens?: unknown;
+    input_tokens?: unknown;
+    output_tokens?: unknown;
+  };
 }
 
 export function chatCompletionsAdapter(config: ChatCompletionsConfig): PartnerAdapter {
@@ -38,6 +44,21 @@ export function chatCompletionsAdapter(config: ChatCompletionsConfig): PartnerAd
     extractText: (payload: unknown) => {
       const content = (payload as ChatCompletionsResponse)?.choices?.[0]?.message?.content;
       return typeof content === "string" ? content : null;
+    },
+    extractUsage: (payload: unknown) => {
+      const usage = (payload as ChatCompletionsResponse)?.usage;
+      if (!usage) return null;
+      const inputTokens =
+        typeof usage.prompt_tokens === "number" ? usage.prompt_tokens :
+        typeof usage.input_tokens === "number" ? usage.input_tokens :
+        undefined;
+      const outputTokens =
+        typeof usage.completion_tokens === "number" ? usage.completion_tokens :
+        typeof usage.output_tokens === "number" ? usage.output_tokens :
+        undefined;
+      return inputTokens === undefined && outputTokens === undefined
+        ? null
+        : { inputTokens, outputTokens };
     },
   };
 }
