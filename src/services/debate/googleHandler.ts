@@ -11,16 +11,21 @@
 import { handlePartnerRequest, type PartnerAdapter, type PartnerProxyRequestBody } from "./partnerProxy.js";
 
 const MODEL_ID = "gemini-3.1-pro";
+export const GOOGLE_UPSTREAM_MODEL_ID = "gemini-3.1-pro-preview";
 
 interface GeminiResponse {
   candidates?: { content?: { parts?: { text?: unknown }[] } }[];
+  usageMetadata?: {
+    promptTokenCount?: unknown;
+    candidatesTokenCount?: unknown;
+  };
 }
 
 export const GOOGLE_ADAPTER: PartnerAdapter = {
   modelId: MODEL_ID,
   keyEnvVar: "GOOGLE_API_KEY",
   url: () =>
-    `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_ID}:generateContent`,
+    `https://generativelanguage.googleapis.com/v1beta/models/${GOOGLE_UPSTREAM_MODEL_ID}:generateContent`,
   // Key goes in a header, not the query string — a URL-embedded key can land
   // in proxy/CDN access logs, which is exactly what this proxy exists to avoid.
   headers: (apiKey) => ({ "x-goog-api-key": apiKey }),
@@ -38,6 +43,17 @@ export const GOOGLE_ADAPTER: PartnerAdapter = {
       .map((part) => (typeof part?.text === "string" ? part.text : ""))
       .join("");
     return text.length > 0 ? text : null;
+  },
+  extractUsage: (payload: unknown) => {
+    const usage = (payload as GeminiResponse)?.usageMetadata;
+    if (!usage) return null;
+    const inputTokens =
+      typeof usage.promptTokenCount === "number" ? usage.promptTokenCount : undefined;
+    const outputTokens =
+      typeof usage.candidatesTokenCount === "number" ? usage.candidatesTokenCount : undefined;
+    return inputTokens === undefined && outputTokens === undefined
+      ? null
+      : { inputTokens, outputTokens };
   },
 };
 
