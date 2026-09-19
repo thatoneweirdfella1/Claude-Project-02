@@ -5,7 +5,7 @@
 
 import { describe, expect, it, vi } from "vitest";
 import { handleOpenAiRequest, OPENAI_ADAPTER } from "./openaiHandler";
-import { handleGoogleRequest, GOOGLE_ADAPTER } from "./googleHandler";
+import { handleGoogleRequest, GOOGLE_ADAPTER, GOOGLE_UPSTREAM_MODEL_ID } from "./googleHandler";
 import { handleXaiRequest } from "./xaiHandler";
 import { handleDeepseekRequest } from "./deepseekHandler";
 
@@ -26,8 +26,14 @@ function okFetch(payload: unknown): typeof fetch {
   })) as unknown as typeof fetch;
 }
 
-const CHAT_OK = { choices: [{ message: { content: "The partner's argument." } }] };
-const GEMINI_OK = { candidates: [{ content: { parts: [{ text: "Gemini's argument." }] } }] };
+const CHAT_OK = {
+  choices: [{ message: { content: "The partner's argument." } }],
+  usage: { prompt_tokens: 11, completion_tokens: 7 },
+};
+const GEMINI_OK = {
+  candidates: [{ content: { parts: [{ text: "Gemini's argument." }] } }],
+  usageMetadata: { promptTokenCount: 13, candidatesTokenCount: 5 },
+};
 
 describe("partner proxy — guards", () => {
   it("rejects a non-POST request", async () => {
@@ -104,6 +110,7 @@ describe("partner proxy — the API key stays server-side", () => {
 
     const [url, init] = vi.mocked(fetchImpl).mock.calls[0];
     expect(String(url)).not.toContain(KEY);
+    expect(String(url)).toContain(`/models/${GOOGLE_UPSTREAM_MODEL_ID}:generateContent`);
     expect((init!.headers as Record<string, string>)["x-goog-api-key"]).toBe(KEY);
   });
 });
@@ -112,7 +119,10 @@ describe("partner proxy — normalized success shape", () => {
   it("returns { text } from an OpenAI-compatible reply", async () => {
     const response = await handleOpenAiRequest(post({ model: "gpt-5.5", system: "s", input: "i" }), KEY, okFetch(CHAT_OK));
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ text: "The partner's argument." });
+    expect(await response.json()).toEqual({
+      text: "The partner's argument.",
+      usage: { inputTokens: 11, outputTokens: 7 },
+    });
   });
 
   it("returns the same { text } shape from Gemini's different response shape", async () => {
@@ -121,7 +131,10 @@ describe("partner proxy — normalized success shape", () => {
       KEY,
       okFetch(GEMINI_OK),
     );
-    expect(await response.json()).toEqual({ text: "Gemini's argument." });
+    expect(await response.json()).toEqual({
+      text: "Gemini's argument.",
+      usage: { inputTokens: 13, outputTokens: 5 },
+    });
   });
 
   it("joins Gemini's multi-part replies rather than truncating to the first part", () => {
