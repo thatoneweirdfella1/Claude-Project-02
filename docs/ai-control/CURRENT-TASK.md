@@ -5,7 +5,7 @@
 **Starting remote checkpoint:** `269afa2b3810543a3807f26cea986984096168db`
 **Last confirmed remote checkpoint:** `2a6434d8f13af23dfa3787d58c8dd33e82035ff4`
 
-> **G2 side-checkpoint (CL-0059, does not advance G3-A):** publication enforcement is completed and wired into the push workflow; the correction/contamination guard is now covered by four tests (61 -> 65); and two CL-0043 claims are retracted in E-038 — the earlier "preflight passes" result came from a dead duplicate that never compared hashes, and the hostile-test coverage it claimed did not exist. The completed preflight also caught that `2a6434d` recorded `269afa2` while its real parent is `703106e`; this checkpoint repairs that stale record. G2-G04 and the G3-A provisioning action below are unchanged and still Open.
+> **G2 side-checkpoint (CL-0059, does not advance G3-A):** publication enforcement is completed and wired into the push workflow; the correction/contamination guard is now covered by four tests (61 -> 65); and two CL-0043 claims are retracted in E-038 — the earlier "preflight passes" result came from a dead duplicate that never compared hashes, and the hostile-test coverage it claimed did not exist. The completed preflight also caught that `2a6434d` recorded `269afa2` while its real parent is `703106e`; this checkpoint repairs that stale record. G2-G04 and the G3-A provisioning action below are unchanged and still Open. **Hosted confirmation (CL-0060):** push run `35746157026` succeeded with the new preflight step genuinely executing; the paired pull_request run `35746165430` failed for the structural whole-branch scope reason and correctly skipped that step. Both are recorded in GATE-STATUS as observed, not as expected success.
 
 ## Authority and outcome
 

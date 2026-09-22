@@ -2,7 +2,7 @@
 
 **SAFE TO SWITCH: NO**
 
-**Last confirmed remote checkpoint:** `2a6434d8f13af23dfa3787d58c8dd33e82035ff4`
+**Last confirmed remote checkpoint:** `43005abf53ad9aca1d3fb4dbf8ec32a6dbf0f9c7`
 
 **Active task:** G2 autonomy correction / G3-A trusted controller.
 
