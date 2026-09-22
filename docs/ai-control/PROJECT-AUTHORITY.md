@@ -4,6 +4,7 @@
 
 - Continue the existing Divergence.AI project.
 - Use the existing repository: `thatoneweirdfella1/Claude-Project-02`.
+- Use `02-MASTER-SYSTEM-AND-REQUIREMENT-BLUEPRINT.md` as the canonical master planning/control blueprint. Its exact supplied content and internal proposal/audit limitations are preserved; canonical installation does not by itself activate F0 or prove implementation.
 - Preserve `claude/remaining-second-pass-v1` as the untouched safety/layout branch. The exact site snapshot the user identified was deployed from commit `10894f704a39b6c56a7fadfafb54275b82526c33`.
 - Make all new reliability task commits on reusable staging branch `divergence/reliability-staging`. Merge only gate-accepted work into protected integration branch `divergence/reliability-v1`.
 - Preserve and build from the existing Divergence interface/layout.
@@ -18,7 +19,7 @@ When instructions conflict, use this order:
 2. An explicit user-approved decision recorded in `DECISION-LOG.md`.
 3. The active standalone task packet and its accepted prerequisites.
 4. `CURRENT-TASK.md` execution boundaries.
-5. The proposed reliability meta-blueprint for background only where the task packet explicitly requires it.
+5. The canonical `02-MASTER-SYSTEM-AND-REQUIREMENT-BLUEPRINT.md` for background and complete system/requirement definitions where the active task packet explicitly requires it.
 6. Prior AI suggestions, conventions, or inferred preferences.
 
 A lower authority may identify a conflict but may not silently override a higher authority. Record unresolved conflicts as `Open` and stop only the affected work.
@@ -37,6 +38,7 @@ A lower authority may identify a conflict but may not silently override a higher
 ## One-task scope lock
 
 - Exactly one task may be active.
+- G1, Continuity, Acceptance, and Contamination Controls, is the current active task under D-014. F0 remains frozen at author self-check pending later independent audit.
 - Only its stated deliverables, files, checks, and necessary contained corrections are allowed.
 - Do not add systems, features, dependencies, abstractions, refactors, documentation programs, or “helpful” cleanup not required by the active task.
 - Record useful extra findings in `PARKING-LOT.md`. Only an explicit user decision may promote one into `CURRENT-TASK.md`.
@@ -61,6 +63,8 @@ A lower authority may identify a conflict but may not silently override a higher
 
 The manifest, integrity hashes, current task, task index, continuity ledger, decision log, evidence index, handoff, and parking lot are mandatory. If they disagree, do not guess: preserve all versions, identify the conflict, and leave the affected state `Open`.
 
-## Enforcement limitation
+An interrupted task remains the active task. A replacement AI resumes its first unfinished checkpoint; interruption never authorizes the following task. A completed self-check awaiting audit also blocks dependent work and must cause the next AI to identify the required audit in plain language.
 
-These files provide cross-AI procedural control and conventional automatic entrypoints. Mechanical enforcement by a repository validator or CI rule has not been implemented or tested and must not be claimed.
+## Enforcement state
+
+Mechanical enforcement is installed through `scripts/ai-course-control.mjs`, its 18-case adversarial harness, the GitHub Actions check, and the active repository rulesets recorded in `EVIDENCE-INDEX.md`. This does not prove product implementation or mounted-interface behavior.

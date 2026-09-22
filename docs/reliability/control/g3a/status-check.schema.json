@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://divergence.ai/control/g3a/status-check.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["repository_id", "target_branch", "base_sha", "candidate_sha", "controller_release_digest", "validation", "audit", "decision_state", "conclusion", "timestamp", "host_signature"],
+  "properties": {
+    "repository_id": { "type": "integer", "minimum": 1 },
+    "target_branch": { "const": "divergence/reliability-v1" },
+    "base_sha": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "candidate_sha": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "controller_release_digest": { "type": "string", "minLength": 1 },
+    "validation": { "enum": ["passed", "failed", "open"] },
+    "audit": { "enum": ["Independently verified", "Failed", "Open"] },
+    "decision_state": { "enum": ["none", "resolved", "user decision required"] },
+    "conclusion": { "enum": ["success", "failure", "pending"] },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "host_signature": { "type": "string", "minLength": 1 }
+  }
+}

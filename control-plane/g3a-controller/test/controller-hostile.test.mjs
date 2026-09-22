@@ -1,0 +1,218 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { createHmac, generateKeyPairSync } from "node:crypto";
+import { DurableControllerStore } from "../lib/durable-store.mjs";
+import { DurableWorkers, WorkerConfigurationError } from "../lib/workers.mjs";
+import { validateHostChange } from "../lib/trusted-validator.mjs";
+import { rawBody } from "../lib/http.mjs";
+import { handleWebhook } from "../lib/github-events.mjs";
+import { GitHubHost } from "../lib/github-host.mjs";
+import { webhookAdminHandler } from "../api/webhook-admin.mjs";
+
+class FakeRedis {
+  constructor() { this.data = new Map(); this.lists = new Map(); this.zsets = new Map(); }
+  async command(op, ...args) {
+    op = op.toUpperCase();
+    if (op === "GET") return this.data.get(args[0]) ?? null;
+    if (op === "SET") { const [key, value, ...flags] = args; if (flags.includes("NX") && this.data.has(key)) return null; this.data.set(key, value); return "OK"; }
+    if (op === "EXISTS") return this.data.has(args[0]) ? 1 : 0;
+    if (op === "DEL") return this.data.delete(args[0]) ? 1 : 0;
+    if (op === "RPUSH") { const list = this.lists.get(args[0]) || []; list.push(args[1]); this.lists.set(args[0], list); return list.length; }
+    if (op === "LINDEX") { const list = this.lists.get(args[0]) || []; return list.at(Number(args[1])); }
+    if (op === "ZADD") { const z = this.zsets.get(args[0]) || new Map(); z.set(args[2], Number(args[1])); this.zsets.set(args[0], z); return 1; }
+    if (op !== "EVAL") throw new Error(`Unsupported ${op}`);
+    const [script, keyCount, ...rest] = args, count = Number(keyCount), keys = rest.slice(0, count), argv = rest.slice(count);
+    if (script.startsWith("local c=")) { const current = this.data.get(keys[0]) || ""; if (current !== argv[0]) return 0; this.data.set(keys[0], argv[1]); return 1; }
+    if (script.startsWith("if redis.call('EXISTS',KEYS[1])==1 then return 0 end; redis.call('SET',KEYS[1],ARGV[1]); redis.call('SET',KEYS[2],ARGV[2])")) { if (this.data.has(keys[0])) return 0; this.data.set(keys[0], argv[0]); this.data.set(keys[1], argv[1]); this.lists.set(keys[2], argv.slice(2)); return 1; }
+    if (script.startsWith("if redis.call('EXISTS'")) { if (this.data.has(keys[0])) return 0; this.data.set(keys[0], argv[0]); const z = this.zsets.get(keys[1]) || new Map(); z.set(argv[2], Number(argv[1])); this.zsets.set(keys[1], z); return 1; }
+    if (script.startsWith("local x=redis.call('ZRANGEBYSCORE'")) { const z = this.zsets.get(keys[0]) || new Map(); const due = [...z].filter(([, score]) => score <= Number(argv[0])).sort((a,b) => a[1]-b[1])[0]; if (!due) return null; z.delete(due[0]); return this.data.get(argv[1] + due[0]) || null; }
+    if (script.includes("l.worker_principal")) { const lease = JSON.parse(this.data.get(keys[0]) || "null"); if (!lease || lease.worker_principal !== argv[0]) return null; lease.heartbeat_at = argv[1]; lease.expires_at = argv[2]; const value = JSON.stringify(lease); this.data.set(keys[0], value); return value; }
+    if (script.includes("redis.call('SET',KEYS[2],ARGV[2])")) { if (this.data.get(keys[0]) !== argv[0]) return 0; this.data.set(keys[1], argv[1]); const list = this.lists.get(keys[2]) || []; list.push(argv[2]); this.lists.set(keys[2], list); this.data.delete(keys[0]); return 1; }
+    if (script.includes("redis.call('DEL',KEYS[1])")) { if (this.data.get(keys[0]) === argv[0]) return this.data.delete(keys[0]) ? 1 : 0; return 0; }
+    throw new Error("Unsupported script");
+  }
+}
+
+const sha = "a".repeat(40), base = "b".repeat(40), repositoryId = 1272469738;
+const initialState = () => ({ schema_version: "1.0", repository_id: repositoryId, active_task: "A", decision_queue: [], audit_queue: [], tasks: { A: { state: "Open", attempt: 1, dependencies: [], base_sha: base, candidate_sha: null, author_principal: null, allowed_paths: ["docs/ai-control/**"] } } });
+const initial = () => ({ bootstrap_version: "2.0", repository_id: repositoryId, source_commit: base, source_tree: sha, state: initialState(), retained_history: [{ event_id: "seed", type: "migration-seed" }] });
+
+test("web handler preserves exact JSON bytes for GitHub signature verification", async () => {
+  const body = '{\n  "repository": { "id": 1272469738 },\n  "ref": "refs/heads/divergence/reliability-staging"\n}\n';
+  const request = new Request("https://controller.invalid/api/webhook", { method: "POST", headers: { "content-type": "application/json" }, body });
+  assert.equal(await rawBody(request), body);
+});
+
+function signedWebhookFixture() {
+  const secret = "host-only-webhook-secret";
+  const deliveryId = "delivery-123";
+  const raw = JSON.stringify({
+    after: sha,
+    before: base,
+    ref: "refs/heads/divergence/reliability-staging",
+    repository: { id: repositoryId, full_name: "thatoneweirdfella1/Claude-Project-02" },
+    installation: { id: 160186328 },
+    sender: { id: 1 },
+  });
+  const signature = `sha256=${createHmac("sha256", secret).update(raw).digest("hex")}`;
+  const records = new Map();
+  const deliveryStore = {
+    has: async id => records.has(id),
+    reserve: async id => records.has(id) ? false : (records.set(id, "reserved"), true),
+    complete: async id => records.set(id, "complete"),
+    fail: async (id, error) => records.set(id, `failed:${error}`),
+  };
+  const headers = {
+    "x-github-event": "push",
+    "x-github-delivery": deliveryId,
+    "x-hub-signature-256": signature,
+  };
+  return { secret, deliveryId, raw, records, deliveryStore, headers };
+}
+
+test("valid signed staging push is accepted and durably completed", async () => {
+  const fixture = signedWebhookFixture();
+  let calls = 0;
+  const result = await handleWebhook({
+    headers: fixture.headers,
+    rawBody: fixture.raw,
+    secret: fixture.secret,
+    expectedRepositoryId: repositoryId,
+    controller: { onGitHubEvent: async event => ({ observed: true, deliveryId: event.deliveryId, calls: ++calls }) },
+    deliveryStore: fixture.deliveryStore,
+  });
+  assert.deepEqual(result, { observed: true, deliveryId: fixture.deliveryId, calls: 1 });
+  assert.equal(fixture.records.get(fixture.deliveryId), "complete");
+});
+
+test("redelivered signed webhook is refused as a duplicate without controller re-entry", async () => {
+  const fixture = signedWebhookFixture();
+  let calls = 0;
+  const input = {
+    headers: fixture.headers,
+    rawBody: fixture.raw,
+    secret: fixture.secret,
+    expectedRepositoryId: repositoryId,
+    controller: { onGitHubEvent: async () => ({ observed: true, calls: ++calls }) },
+    deliveryStore: fixture.deliveryStore,
+  };
+  await handleWebhook(input);
+  assert.deepEqual(await handleWebhook(input), { duplicate: true });
+  assert.equal(calls, 1);
+});
+
+test("invalid webhook signature is rejected before reserving a delivery", async () => {
+  const fixture = signedWebhookFixture();
+  fixture.headers["x-hub-signature-256"] = `sha256=${"0".repeat(64)}`;
+  await assert.rejects(handleWebhook({
+    headers: fixture.headers,
+    rawBody: fixture.raw,
+    secret: fixture.secret,
+    expectedRepositoryId: repositoryId,
+    controller: { onGitHubEvent: async () => assert.fail("controller must not run") },
+    deliveryStore: fixture.deliveryStore,
+  }), /Invalid webhook signature/);
+  assert.equal(fixture.records.size, 0);
+});
+
+function fakeResponse() {
+  return {
+    statusCode: null,
+    headers: {},
+    body: null,
+    setHeader(name, value) { this.headers[name] = value; },
+    end(body) { this.body = JSON.parse(body); },
+  };
+}
+
+test("App JWT synchronizes the GitHub webhook secret without an installation or user token", async () => {
+  const { privateKey } = generateKeyPairSync("rsa", { modulusLength: 2048, privateKeyEncoding: { type: "pkcs8", format: "pem" }, publicKeyEncoding: { type: "spki", format: "pem" } });
+  const calls = [];
+  const host = new GitHubHost({ appId: "4879098", privateKey, webhookSecret: "expected-secret" }, async (url, options) => {
+    calls.push({ url, options });
+    return new Response(JSON.stringify({ content_type: "json", secret: "********" }), { status: 200, headers: { "content-type": "application/json" } });
+  });
+  assert.deepEqual(await host.synchronizeWebhookSecret(), { synchronized: true, content_type: "json" });
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].url, "https://api.github.com/app/hook/config");
+  assert.match(calls[0].options.headers.authorization, /^Bearer [^.]+\.[^.]+\.[^.]+$/);
+  assert.deepEqual(JSON.parse(calls[0].options.body), { secret: "expected-secret" });
+});
+
+test("maintenance endpoint rejects unauthenticated secret synchronization", async () => {
+  const response = fakeResponse();
+  let called = false;
+  await webhookAdminHandler({ method: "POST", url: "https://controller.invalid/api/webhook-admin?action=synchronize-secret", headers: { authorization: "Bearer wrong" } }, response, () => ({
+    config: { bootstrapSecret: "right" },
+    host: { synchronizeWebhookSecret: async () => { called = true; } },
+  }));
+  assert.equal(response.statusCode, 401);
+  assert.equal(called, false);
+});
+
+test("authenticated maintenance endpoint invokes only the named action", async () => {
+  const response = fakeResponse();
+  const calls = [];
+  await webhookAdminHandler({ method: "POST", url: "https://controller.invalid/api/webhook-admin?action=redeliver-latest-successful-push", headers: { authorization: "Bearer right" } }, response, () => ({
+    config: { bootstrapSecret: "right" },
+    host: {
+      synchronizeWebhookSecret: async () => calls.push("sync"),
+      redeliverLatestSuccessfulPush: async () => (calls.push("redeliver"), { requested: true, delivery_id: 7, delivery_guid: "guid", event: "push" }),
+    },
+  }));
+  assert.equal(response.statusCode, 202);
+  assert.deepEqual(calls, ["redeliver"]);
+  assert.equal(response.body.delivery_id, 7);
+});
+
+test("bootstrap is atomic, retains migration history, and never overwrites durable state", async () => {
+  const redis = new FakeRedis(), store = new DurableControllerStore(redis), seed = initial();
+  assert.equal(await store.initialize(repositoryId, seed), true);
+  assert.deepEqual(await store.getState(repositoryId), seed.state);
+  assert.equal(redis.lists.get(`g3a:${repositoryId}:history`).length, 1);
+  const replacement = initial(); replacement.state.tasks.A.state = "Failed";
+  assert.equal(await store.initialize(repositoryId, replacement), false);
+  assert.equal((await store.getState(repositoryId)).tasks.A.state, "Open");
+  await assert.rejects(store.initialize(repositoryId, { ...seed, bootstrap_version: "1.0" }), /Invalid bootstrap/);
+});
+
+test("durable lease acquisition is atomic and heartbeat is owner-bound", async () => {
+  const store = new DurableControllerStore(new FakeRedis(), { clock: () => new Date("2026-09-08T20:00:00Z") }); await store.initialize(repositoryId, initial());
+  const lease = { lease_id: "l1", repository_id: repositoryId, task: "A", attempt: 1, worker_principal: "author:a", base_sha: base, issued_at: "2026-09-08T20:00:00Z", heartbeat_at: "2026-09-08T20:00:00Z", expires_at: "2026-09-08T20:15:00Z", allowed_paths: ["docs/ai-control/**"] };
+  await store.compareAndSetLease(repositoryId, "A", null, lease);
+  await assert.rejects(store.compareAndSetLease(repositoryId, "A", null, { ...lease, lease_id: "l2" }), /collision/);
+  await assert.rejects(store.heartbeatLease(repositoryId, "A", "intruder", lease.heartbeat_at, 1000), /owner/);
+  assert.equal((await store.heartbeatLease(repositoryId, "A", "author:a", "2026-09-08T20:01:00Z", 60_000)).expires_at, "2026-09-08T20:02:00.000Z");
+});
+
+test("delivery reservation and queued jobs are idempotent", async () => {
+  const store = new DurableControllerStore(new FakeRedis(), { clock: () => new Date("2026-09-08T20:00:00Z") }); await store.initialize(repositoryId, initial());
+  const deliveries = store.deliveryStore(repositoryId); assert.equal(await deliveries.reserve("same"), true); assert.equal(await deliveries.reserve("same"), false);
+  assert.equal(Number(await store.enqueueJob(repositoryId, "audit", { taskId: "A" }, `A:${sha}`)), 1); assert.equal(Number(await store.enqueueJob(repositoryId, "audit", { taskId: "A" }, `A:${sha}`)), 0);
+  assert.equal((await store.claimDueJob(repositoryId)).kind, "audit");
+});
+
+test("retry ceiling retains dead-letter evidence and requeues same job", async () => {
+  const clock = { now: Date.parse("2026-09-08T20:00:00Z") }, store = new DurableControllerStore(new FakeRedis(), { clock: () => new Date(clock.now), retryLimit: 2 }); await store.initialize(repositoryId, initial());
+  await store.enqueueJob(repositoryId, "author", { taskId: "A" }, "A:1"); const job = await store.claimDueJob(repositoryId);
+  assert.equal(await store.failJob(repositoryId, job, "usage lost"), "retry"); job.attempts = 1;
+  assert.equal(await store.failJob(repositoryId, job, "usage lost again"), "dead-lettered-and-requeued");
+});
+
+test("author and auditor cannot share principal or credential", () => {
+  const store = {};
+  assert.throws(() => new DurableWorkers({ store, repositoryId, author: { principal: "same", token: "a" }, auditor: { principal: "same", token: "b" } }), WorkerConfigurationError);
+  assert.throws(() => new DurableWorkers({ store, repositoryId, author: { principal: "a", token: "same" }, auditor: { principal: "b", token: "same" } }), WorkerConfigurationError);
+});
+
+test("trusted validator binds host repository and exact remote SHA", async () => {
+  const github = async path => path === `/repositories/${repositoryId}` ? { id: repositoryId, full_name: "thatoneweirdfella1/Claude-Project-02" } : path.includes("git/ref") ? { object: { sha } } : { status: "ahead", files: [{ filename: "docs/ai-control/HANDOFF.md", status: "modified" }] };
+  const result = await validateHostChange({ github, repositoryId, repositoryFullName: "thatoneweirdfella1/Claude-Project-02", stagingBranch: "divergence/reliability-staging", baseSha: base, candidateSha: sha, allowedPaths: ["docs/ai-control/**"] });
+  assert.equal(result.passed, true); assert.equal(result.observed_staging_sha, sha);
+});
+
+test("candidate validator edits cannot widen deployed policy", async () => {
+  const github = async path => path === `/repositories/${repositoryId}` ? { id: repositoryId, full_name: "thatoneweirdfella1/Claude-Project-02" } : path.includes("git/ref") ? { object: { sha } } : { status: "ahead", files: [{ filename: "scripts/ai-course-control.mjs", status: "modified" }, { filename: "src/App.tsx", status: "modified" }] };
+  const result = await validateHostChange({ github, repositoryId, repositoryFullName: "thatoneweirdfella1/Claude-Project-02", stagingBranch: "divergence/reliability-staging", baseSha: base, candidateSha: sha, allowedPaths: ["scripts/ai-course-control.mjs"] });
+  assert.equal(result.passed, false); assert.ok(result.failures.includes("out-of-scope:src/App.tsx"));
+});

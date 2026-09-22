@@ -9,6 +9,7 @@ Non-negotiable defaults:
 - Make new task commits only on reusable staging branch `divergence/reliability-staging`. Merge accepted work into protected integration branch `divergence/reliability-v1`. Do not create another branch.
 - Do not mutate the repository while `branch_mutation_authorized` is false or the checked-out branch differs from `approved_branch`.
 - Perform only the one task named in `docs/ai-control/CURRENT-TASK.md`.
+- Before work, run `node scripts/ai-control-status.mjs --requested-task <TASK-ID>` when a requested ID is known. A printed `BLOCKED` result is the user-facing answer and the named `NEXT` action is the only permitted continuation.
 - Put every useful but out-of-scope discovery in `docs/ai-control/PARKING-LOT.md`; do not implement it.
 - Record what you did, why, evidence, failures, and the exact next action in the required continuity files.
 - Before accepting any repository checkpoint, run `node scripts/ai-course-control.mjs` with the exact base, head, branch, repository, and policy arguments. A failed or unavailable gate means stop; never bypass it.

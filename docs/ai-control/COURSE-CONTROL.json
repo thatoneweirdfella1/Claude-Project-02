@@ -9,7 +9,21 @@
     "claude/remaining-second-pass-v1"
   ],
   "branch_creation_allowed": false,
-  "active_task": "G0",
+  "active_task": "G2",
+  "protected_control_paths": [
+    ".github/workflows/**",
+    ".github/CODEOWNERS",
+    "docs/ai-control/CONTROL-STATE.json",
+    "docs/ai-control/COURSE-CONTROL.json",
+    "scripts/ai-control-state.mjs",
+    "scripts/ai-control-status.mjs",
+    "scripts/ai-course-control.mjs",
+    "scripts/ai-course-control.test.mjs"
+  ],
+  "control_state_file": "docs/ai-control/CONTROL-STATE.json",
+  "traceability_file": "docs/reliability/control/G1-TRACEABILITY.json",
+  "handoff_file": "docs/ai-control/HANDOFF.md",
+  "current_task_file": "docs/ai-control/CURRENT-TASK.md",
   "permitted_gate_statuses": [
     "Self-check passed",
     "Independently verified",
@@ -17,11 +31,13 @@
     "Open"
   ],
   "required_files": [
+    "02-MASTER-SYSTEM-AND-REQUIREMENT-BLUEPRINT.md",
     "AGENTS.md",
     "CLAUDE.md",
     ".github/copilot-instructions.md",
     "docs/ai-control/00-READ-FIRST.md",
     "docs/ai-control/CONTROL-MANIFEST.json",
+    "docs/ai-control/CONTROL-STATE.json",
     "docs/ai-control/COURSE-CONTROL.json",
     "docs/ai-control/CURRENT-TASK.md",
     "docs/ai-control/TASK-INDEX.md",
@@ -35,13 +51,35 @@
     "docs/ai-control/HANDOFF.md",
     "docs/ai-control/PARKING-LOT.md",
     "docs/ai-control/SHA256SUMS",
+    "control-plane/g3a-controller/THREAT-MODEL.md",
+    "control-plane/g3a-controller/PERMISSIONS.json",
+    "control-plane/g3a-controller/package.json",
+    "control-plane/g3a-controller/vercel.json",
     "scripts/ai-course-control.mjs",
     "scripts/ai-course-control.test.mjs",
+    "scripts/ai-control-state.mjs",
+    "scripts/ai-control-status.mjs",
     ".github/workflows/ai-course-control.yml",
     ".github/CODEOWNERS",
-    "DIVERGENCE-F0-STANDALONE-HANDOFF.md"
+    "DIVERGENCE-F0-STANDALONE-HANDOFF.md",
+    "DIVERGENCE-G1-CONTROL-UPGRADE-HANDOFF.md",
+    "docs/reliability/control/AUTHORITY-PACKAGE-GAP-AUDIT.md",
+    "docs/reliability/control/CONTROL-CONSTITUTION.md",
+    "docs/reliability/control/CONTROL-SYSTEM-MAP.md",
+    "docs/reliability/control/G1-TRACEABILITY.json",
+    "docs/reliability/control/MEANING-CONFIRMATION-PROTOCOL.md",
+    "docs/reliability/control/STANDALONE-ASSIGNMENT-CONTRACT.md",
+    "docs/reliability/control/STATUS-VIEW-CONTRACT.md",
+    "docs/reliability/control/TASK-LIFECYCLE.md",
+    "docs/reliability/control/DIVERGENCE-G1-E-STANDALONE-INDEPENDENT-AUDIT.md",
+    "docs/reliability/control/MASTER-CHECKLIST.md",
+    "docs/ai-control/independent-reviews/G1-G06.json",
+    "docs/reliability/control/independent-reviews/G1-E-2026-09-08.md",
+    "docs/reliability/control/G2-ENFORCEMENT-GAP-AUDIT.md"
   ],
   "required_changed_records": [
+    "docs/ai-control/CONTROL-STATE.json",
+    "docs/ai-control/CURRENT-TASK.md",
     "docs/ai-control/CONTINUITY-LEDGER.md",
     "docs/ai-control/EVIDENCE-INDEX.md",
     "docs/ai-control/HANDOFF.md",
@@ -59,6 +97,24 @@
     "docs/ai-control/visual-baseline/DivergenceAI-3of3-Response-Right-Rail-Settings.png"
   ],
   "task_profiles": {
+    "B0": {
+      "phase": "execution-control-documentation",
+      "allowed_paths": [
+        "02-MASTER-SYSTEM-AND-REQUIREMENT-BLUEPRINT.md",
+        "docs/ai-control/CONTINUITY-LEDGER.md",
+        "docs/ai-control/CONTROL-MANIFEST.json",
+        "docs/ai-control/COURSE-CONTROL.json",
+        "docs/ai-control/CURRENT-TASK.md",
+        "docs/ai-control/DECISION-LOG.md",
+        "docs/ai-control/EVIDENCE-INDEX.md",
+        "docs/ai-control/GATE-STATUS.md",
+        "docs/ai-control/HANDOFF.md",
+        "docs/ai-control/PARKING-LOT.md",
+        "docs/ai-control/PROJECT-AUTHORITY.md",
+        "docs/ai-control/SHA256SUMS",
+        "docs/ai-control/TASK-INDEX.md"
+      ]
+    },
     "G0": {
       "phase": "execution-control",
       "allowed_paths": [
@@ -76,9 +132,11 @@
         "docs/ai-control/DECISION-LOG.md",
         "docs/ai-control/EVIDENCE-INDEX.md",
         "docs/ai-control/GATE-STATUS.md",
-        "docs/ai-control/GITHUB-RULESET-REQUIRED.md",
-        "docs/ai-control/HANDOFF.md",
+    "docs/ai-control/GITHUB-RULESET-REQUIRED.md",
+    "docs/ai-control/HANDOFF.md",
+    "docs/ai-control/independent-reviews/RCG-04.json",
         "docs/ai-control/PARKING-LOT.md",
+        "docs/ai-control/PROJECT-AUTHORITY.md",
         "docs/ai-control/SHA256SUMS",
         "docs/ai-control/TASK-INDEX.md",
         "scripts/ai-course-control.mjs",
@@ -87,7 +145,7 @@
     },
     "F0": {
       "phase": "design",
-      "locked": true,
+      "locked": false,
       "unlock_requires": [
         "G0 self-check passed",
         "independent cold-start continuity trial",
@@ -97,25 +155,71 @@
       "allowed_paths": [
         "docs/reliability/f0/**",
         "docs/ai-control/CONTINUITY-LEDGER.md",
+        "docs/ai-control/CONTROL-MANIFEST.json",
+        "docs/ai-control/COURSE-CONTROL.json",
         "docs/ai-control/CURRENT-TASK.md",
         "docs/ai-control/DECISION-LOG.md",
         "docs/ai-control/EVIDENCE-INDEX.md",
+        "docs/ai-control/GATE-STATUS.md",
         "docs/ai-control/HANDOFF.md",
+        "docs/ai-control/independent-reviews/RCG-04.json",
         "docs/ai-control/PARKING-LOT.md",
         "docs/ai-control/SHA256SUMS",
         "docs/ai-control/TASK-INDEX.md"
+      ]
+    },
+    "G1": {
+      "phase": "execution-control",
+      "locked": false,
+      "allowed_paths": [
+        "DIVERGENCE-G1-CONTROL-UPGRADE-HANDOFF.md",
+        ".github/CODEOWNERS",
+        ".github/copilot-instructions.md",
+        ".github/workflows/ai-course-control.yml",
+        "AGENTS.md",
+        "CLAUDE.md",
+        "docs/ai-control/**",
+        "docs/reliability/control/**",
+        "scripts/ai-course-control.mjs",
+        "scripts/ai-course-control.test.mjs",
+        "scripts/ai-control-*.mjs"
+      ]
+    },
+    "G2": {
+      "phase": "execution-control-hardening",
+      "locked": false,
+      "allowed_paths": [
+        ".github/CODEOWNERS",
+        ".github/workflows/ai-course-control.yml",
+        "AGENTS.md",
+        "CLAUDE.md",
+        "control-plane/g3a-controller/**",
+        "docs/ai-control/**",
+        "docs/reliability/control/**",
+        "scripts/ai-control-state.mjs",
+        "scripts/ai-control-status.mjs",
+        "scripts/ai-control-controller-core.mjs",
+        "scripts/ai-control-controller-core.test.mjs",
+        "scripts/ai-control-controller-memory-store.mjs",
+        "scripts/ai-control-github-app.mjs",
+        "scripts/ai-control-github-app.test.mjs",
+        "scripts/ai-control-trusted-transition.mjs",
+        "scripts/ai-control-trusted-transition.test.mjs",
+        "scripts/ai-course-control.mjs",
+        "scripts/ai-course-control.test.mjs"
       ]
     }
   },
   "transition_control": {
     "self_activation_forbidden": true,
-    "user_approval_required": true,
+    "routine_user_approval_required": false,
+    "unresolved_material_product_decision_blocks_affected_acceptance": true,
     "independent_verification_cannot_be_self_declared": true
   },
   "external_enforcement": {
     "github_ruleset_required": true,
     "configuration": "docs/ai-control/GITHUB-RULESET-REQUIRED.md",
-    "status": "Open",
+    "status": "Independently verified",
     "required_flow": "reuse divergence/reliability-staging, pass AI Course Control, then merge by pull request into divergence/reliability-v1"
   }
 }

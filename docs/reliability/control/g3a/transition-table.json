@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "transitions": {
+    "Open": ["Leased", "Blocked — user decision required"],
+    "Leased": ["In progress", "Open"],
+    "In progress": ["Self-check passed", "Open", "Blocked — user decision required"],
+    "Self-check passed": ["Awaiting independent audit"],
+    "Awaiting independent audit": ["Failed", "Independently verified"],
+    "Failed": ["Correction in progress"],
+    "Correction in progress": ["Self-check passed", "Failed", "Open"],
+    "Independently verified": ["Accepted"],
+    "Accepted": [],
+    "Blocked — user decision required": ["Open"]
+  },
+  "automatic": {
+    "Self-check passed->Awaiting independent audit": "queue distinct authenticated auditor",
+    "Awaiting independent audit->Failed": "retain attestation and create bounded correction",
+    "Failed->Correction in progress": "lease correction to eligible worker",
+    "Independently verified->Accepted": "only when trusted validation passes and decision queue is empty",
+    "Accepted": "unlock only dependencies whose complete prerequisites are Accepted"
+  }
+}

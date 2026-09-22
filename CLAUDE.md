@@ -6,4 +6,6 @@ Preserve `claude/remaining-second-pass-v1` as the untouched safety/layout branch
 
 The machine-enforced course policy is `docs/ai-control/COURSE-CONTROL.json`. Run `scripts/ai-course-control.mjs` before accepting a checkpoint. Failure or unavailable enforcement means stop, not bypass.
 
+Before work, run `node scripts/ai-control-status.mjs --requested-task <TASK-ID>` when the requested ID is known. If it prints `BLOCKED`, do not begin that task; return its plain-language `NEXT` action.
+
 This file is only an entrypoint. Canonical authority is in `docs/ai-control/`; do not create a competing instruction set.

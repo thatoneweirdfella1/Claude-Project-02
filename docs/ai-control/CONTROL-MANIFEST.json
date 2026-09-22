@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "project": "Divergence.AI Reliability Layer",
-  "authority_status": "Proposed execution control installed on the approved working branch; independent verification remains open",
+  "authority_status": "G1-E independent audit Failed and is retained; G1 is not accepted; user authorized G2 hardening; F0 and all dependent work remain blocked",
   "repository": {
     "full_name": "thatoneweirdfella1/Claude-Project-02",
     "policy": "existing_repository_only",
@@ -41,24 +41,32 @@
     "workflow_status": "Self-check passed",
     "implementation_commit": "d417f10cd3ee543fb0facde7bd620b0a029ebd72",
     "workflow_run_id": 34066339481,
-    "github_ruleset_status": "Open",
-    "cold_start_trial_status": "Open"
+    "github_ruleset_status": "Independently verified",
+    "cold_start_trial_status": "Independently verified"
   },
   "integrity_manifest": "docs/ai-control/SHA256SUMS",
+  "canonical_master_blueprint": {
+    "path": "02-MASTER-SYSTEM-AND-REQUIREMENT-BLUEPRINT.md",
+    "sha256": "d9783aa4fff475810170f2217ea2cdca1b30baefe78d21d837980943c509ea47",
+    "installation_status": "Self-check passed",
+    "content_status": "Exact supplied bytes; internal proposal/audit limitations preserved",
+    "not_authority_for": "F0 activation, implementation, redesign, merge, or deployment"
+  },
   "deployment_baseline": "docs/ai-control/VERCEL-BASELINE.md",
   "active_task": {
-    "id": "G0",
-    "title": "AI Course-Control Gate",
+    "id": "G2",
+    "title": "Maximum-Feasible Automation and Non-Bypass Hardening",
     "source": "docs/ai-control/CURRENT-TASK.md",
-    "status": "Open; implementation self-check passed, external enforcement and cold-start trial unresolved",
-    "next_task_reveal_allowed": false
+    "status": "G3-A genuine Hookshot failure is proven to be a GitHub/Vercel webhook-secret mismatch; App-JWT login-free repair is self-checked and awaits publication/deployment; genuine signed delivery and authenticated duplicate redelivery proof remain Open; worker URLs are unconfigured blockers; independent audit Open; G1 remains Failed/unaccepted",
+    "next_task_reveal_allowed": true
   },
   "scope": {
     "one_active_task_only": true,
     "out_of_scope_destination": "docs/ai-control/PARKING-LOT.md",
     "new_systems_authorized": false,
     "product_implementation_authorized": false,
-    "execution_control_implementation_authorized": true
+    "execution_control_implementation_authorized": true,
+    "control_documentation_update_authorized": true
   },
   "permitted_gate_statuses": [
     "Self-check passed",
@@ -69,7 +77,7 @@
   "continuity_gates": {
     "RCG-01": "Self-check passed",
     "RCG-02": "Self-check passed",
-    "RCG-03": "Open",
-    "RCG-04": "Open"
+    "RCG-03": "Self-check passed",
+    "RCG-04": "Independently verified"
   }
 }

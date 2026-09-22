@@ -43,3 +43,16 @@ jobs:
           --head "${{ github.sha }}"
           --branch "${{ steps.context.outputs.branch }}"
           --repository "${{ github.repository }}"
+
+      # Publication preflight verifies the authorized branch, the expected remote
+      # parent, every recorded hash, and the complete control-record set. It is
+      # meaningful only for a real push to the working branch: a pull_request
+      # build checks out a synthetic merge ref, so local/remote identity and the
+      # parent chain cannot hold there.
+      - name: Verify publication preflight
+        if: github.event_name == 'push' && github.ref_name == 'divergence/reliability-staging'
+        run: >-
+          node scripts/ai-course-control.mjs
+          --command publication-preflight
+          --branch "${{ steps.context.outputs.branch }}"
+          --repository "${{ github.repository }}"
