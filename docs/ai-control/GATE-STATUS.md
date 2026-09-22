@@ -75,9 +75,19 @@ G1-E is complete with a retained **Failed** verdict. G1 is not accepted. G2 hard
 
 | Gate | State | Meaning |
 |---|---|---|
-| G2-G01 | Self-check passed | Confirmed-base freshness, ownership lock, audit queue, and exact action are mechanically checked by focused tests. Base commit c4650d473800217e9c8e2e22a5b12d0fd61f5b5c matches last_confirmed_remote_checkpoint. |
-| G2-G02 | Awaiting independent audit | Prerequisite changed from G1:Accepted to G2:Accepted; gate deadlock fix allows independent auditor to publish review + synchronized state. Publication preflight passes at c4650d4. Checkpoint lineage: fe37f59 (repairs) → 34ca208 (state sync) → f3b8ecc (records) → 1ec11e1 (sync) → c4650d4 (final validation). Awaiting independent verification at c4650d4. |
+| G2-G01 | Self-check passed | Confirmed-base freshness, ownership lock, audit queue, and exact action are mechanically checked by focused tests. Base commit `2a6434d8f13af23dfa3787d58c8dd33e82035ff4` matches last_confirmed_remote_checkpoint. The completed preflight also detected that `2a6434d` itself recorded `269afa2` while its real parent is `703106e`; this checkpoint repairs that stale record. |
+| G2-G02 | Awaiting independent audit | Prerequisite changed from G1:Accepted to G2:Accepted; gate deadlock fix allows independent auditor to publish review + synchronized state. Publication preflight is now real and wired: `verifyPublicationPreflight` gained the authorized-branch and expected-remote-parent checks, and the workflow runs it on push to the working branch. The earlier "preflight passes at c4650d4" claim is **retracted** — it exercised a dead duplicate that never compared hashes (E-053). Checkpoint lineage: fe37f59 (repairs) → 34ca208 (state sync) → f3b8ecc (records) → 1ec11e1 (sync) → c4650d4 (final validation). Awaiting independent verification at c4650d4. |
 | G2-G03 | Self-check passed | Protected control-plane changes require owner, gate, audit requirement, residual risk, and cannot carry their own review/acceptance claim. Audit publication now requires host-authenticated reviewer (not candidate-controlled strings). |
 | G2-G04 | Open — BLOCKING | GitHub Actions host authentication remains unresolved. Requires cryptographic proof of reviewer identity or explicit host configuration. This gate blocks until host provides evidence. |
 | G2-G05 | Self-check passed | Provider notifications remain optional and non-authoritative; unguaranteed semantic/admin risks are explicit. |
 | G2-G06 | Awaiting independent audit | Previous audit at a4f67dad found prerequisite defect. Corrections with contamination/correction distinction published at c4650d4. Independent verification must confirm: prerequisite change (G1→G2) complete, contamination logic distinguishes corrections (non-propagating) from dependents (propagating), correction/contamination hostile tests pass (G2 can be independently verified without rewriting G1:Failed), gate deadlock resolved, all records synchronized, reviewer authentication vulnerability marked Open/blocking, publication preflight passes. |
+
+## Hosted required checks — observed results
+
+Recorded as observed, not as expected success. Both failures below are reproduced and explained; neither is claimed green.
+
+| Hosted check | Observed state | Evidence and cause |
+|---|---|---|
+| AI Course Control — push to `divergence/reliability-staging` | Self-check passed | Reproduced locally with push semantics (`--base` = previous head, `--head` = new head, `--branch divergence/reliability-staging`): `accepted: true`. |
+| AI Course Control — pull_request on PR #16 | **Failed** | Reproduced locally with PR semantics (`--base` = `divergence/reliability-v1` tip): rejected for out-of-scope paths. PR #16 aggregates the whole staging branch, so B0/F0/G1 artifacts (`02-MASTER-SYSTEM-AND-REQUIREMENT-BLUEPRINT.md`, `docs/reliability/f0/**`, `.github/copilot-instructions.md`, `DIVERGENCE-G1-CONTROL-UPGRADE-HANDOFF.md`) fall outside the active G2 profile's `allowed_paths`. Structural and permanent while PR #16 remains a whole-branch pull request; it is correct policy enforcement, not a defect to suppress. |
+| Playwright E2E suite | **Failed** | Pre-existing and environmental; no browser available in the runner. Retained as E-020/E-023/E-024. Outside G2 scope; no application file changed. |

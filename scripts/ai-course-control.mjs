@@ -321,6 +321,14 @@ export function runGate({ policyPath, base, head, branch, repository, requestedT
 export function verifyPublicationPreflight({ repository, branch, state }) {
   const errors = [];
 
+  // Verify publication targets the authorized working branch
+  if (state?.working_branch && branch !== state.working_branch) {
+    errors.push(`Publication branch ${branch} is not the authorized working branch ${state.working_branch}`);
+  }
+  if (state?.accepted_branch && branch === state.accepted_branch) {
+    errors.push(`Publication branch ${branch} is the protected integration branch; publish to staging instead`);
+  }
+
   // Verify remote branch exists and is reachable
   try {
     const remoteHead = git(["ls-remote", "origin", `refs/heads/${branch}`]);
@@ -386,15 +394,38 @@ export function verifyPublicationPreflight({ repository, branch, state }) {
     errors.push(`Cannot verify local/remote sync: ${error.message || error}`);
   }
 
+  // Verify the published head builds on the confirmed remote checkpoint
+  const expectedParent = state?.last_confirmed_remote_checkpoint;
+  if (expectedParent) {
+    try {
+      const parentCount = git(["rev-list", "--parents", "-n", "1", "HEAD"]).split(/\s+/).length - 1;
+      if (parentCount === 0) {
+        errors.push("Published head is a root commit; it cannot build on the confirmed remote checkpoint");
+      } else {
+        const actualParent = git(["rev-parse", "HEAD^"]);
+        if (actualParent !== expectedParent) {
+          errors.push(`Published head parent ${actualParent.slice(0, 7)} is not the confirmed remote checkpoint ${expectedParent.slice(0, 7)}`);
+        }
+      }
+    } catch (error) {
+      errors.push(`Cannot verify expected remote parent: ${error.message || error}`);
+    }
+  } else {
+    errors.push("Control state has no confirmed remote checkpoint to verify the published parent against");
+  }
+
+  const ready = errors.length === 0;
   return {
-    ready: errors.length === 0,
+    ready,
     errors,
     checks_passed: [
-      errors.length === 0 && "Remote branch exists",
+      ready && "Authorized working branch",
+      ready && "Remote branch exists",
       existsSync("docs/ai-control/SHA256SUMS") && "Critical files present",
-      errors.length === 0 && "Integrity verified",
-      errors.length === 0 && "Publication-ready state",
-      errors.length === 0 && "Local/remote sync",
+      ready && "Integrity verified",
+      ready && "Publication-ready state",
+      ready && "Local/remote sync",
+      ready && "Expected remote parent",
     ].filter(Boolean),
   };
 }

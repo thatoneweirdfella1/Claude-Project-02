@@ -387,6 +387,50 @@ test("contaminated work cannot be accepted", () => {
   assert(validateControlState(state, { fileExists: () => true }).some((error) => error.includes("contaminated but accepted")));
 });
 
+test("correction edge does not contaminate the task that corrects a failure", () => {
+  const state = makeState();
+  state.lineage = {
+    nodes: [{ id: "G1", state: "Failed", commit: null }, { id: "G2", state: "Self-check passed", commit: null }],
+    edges: [{ from: "G1", to: "G2", type: "correction" }],
+  };
+  const errors = validateControlState(state);
+  assert.ok(!errors.some((error) => error.includes("Lineage descendant G2")), `correction must not contaminate: ${errors.join("; ")}`);
+  assert.ok(!errors.some((error) => error.includes("invalid dependency type")), `correction must be a registered edge type: ${errors.join("; ")}`);
+});
+
+test("contamination still propagates through a non-correction edge", () => {
+  const state = makeState();
+  state.lineage = {
+    nodes: [{ id: "G1", state: "Failed", commit: null }, { id: "G2", state: "Self-check passed", commit: null }],
+    edges: [{ from: "G1", to: "G2", type: "validation dependency" }],
+  };
+  assert.ok(validateControlState(state).some((error) => error.includes("Lineage descendant G2 must be Potentially contaminated")));
+});
+
+test("correcting a failed predecessor never rewrites its Failed history", () => {
+  const state = makeState();
+  state.lineage = {
+    nodes: [{ id: "G1", state: "Failed", commit: null }, { id: "G2", state: "Self-check passed", commit: null }],
+    edges: [{ from: "G1", to: "G2", type: "correction" }],
+  };
+  const errors = validateControlState(state);
+  assert.equal(state.lineage.nodes.find((node) => node.id === "G1").state, "Failed");
+  assert.ok(!errors.some((error) => error.includes("G1")), `predecessor must stay Failed without complaint: ${errors.join("; ")}`);
+  assert.ok(!errors.some((error) => error.includes("Lineage descendant G2")), `corrector must still be verifiable: ${errors.join("; ")}`);
+});
+
+test("a correction edge cannot launder an unmet prerequisite", () => {
+  const state = makeState();
+  state.tasks.G1 = { title: "Failed predecessor", execution_state: "Failed", acceptance_state: "Not accepted", author_id: "author", reviewer_id: null, independent_review_path: null, accepted_integration_commit: null, prerequisites: [] };
+  state.tasks.F0.prerequisites = [{ task: "G1", type: "validation dependency", required_state: "Accepted" }];
+  state.lineage = {
+    nodes: [{ id: "G1", state: "Failed", commit: null }, { id: "F0", state: "Open", commit: null }],
+    edges: [{ from: "G1", to: "F0", type: "correction" }],
+  };
+  const errors = validateControlState(state, { requestedTask: "F0" });
+  assert.ok(errors.some((error) => error.includes("G1 is Failed; Accepted is required")), `dependency gating must ignore lineage edge type: ${errors.join("; ")}`);
+});
+
 test("task transition cannot skip an unfinished current task", () => {
   const before = makeState();
   const after = makeState();
