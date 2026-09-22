@@ -852,3 +852,17 @@ Each new entry must contain:
 - **Failure/correction/uncertainty:** Hosted success proves the wiring executes, not that the control plane resists a malicious administrator. The preflight remains candidate-side code. PR #16 stays **Failed** and is untouched. G2-G04 remains Open and blocking.
 - **Resulting status/gate change:** No gate advanced. G2 remains `Self-check passed`; `SAFE TO SWITCH: NO`.
 - **Exact next action:** Unchanged — continue G3-A external controller provisioning per CONTROL-STATE `first_unfinished_action`.
+
+### CL-0061 — 2026-09-22 UTC — failing E2E check re-characterized from primary logs
+
+- **Actor:** Claude Code G2 continuation author (same author lineage as CL-0059/CL-0060; not an independent reviewer).
+- **Task/phase:** G2 autonomy correction / accurate recording of required hosted checks.
+- **Repository/branch/starting commit:** Existing `divergence/reliability-staging` at `077c572ef115b277316c4381c704c670abd4203a`.
+- **Authority/source:** Requirement #8 — record every required hosted check as it actually is.
+- **Action and affected files:** Read hosted Playwright job logs `106808204898` (at `43005ab`) and `102691312025` (at `2a6434d`) and corrected the E2E row in `GATE-STATUS.md`; added E-054 to `EVIDENCE-INDEX.md`; noted the correction in `CURRENT-TASK.md`.
+- **Reason and rejected alternatives:** CL-0059 described the E2E failure as "pre-existing and environmental; no browser available in the runner," carried forward from E-020/E-023/E-024 without checking the current logs. That is false for the hosted runner: Chromium launches, the suite executes, and a 52-file report is produced. The failure is application-level. Rejected leaving the inaccurate cause in place, and rejected repairing the tests, which is prohibited product work.
+- **Command/test/check and actual result:** Hosted job `106808204898`: 28 passed, 15 failed, 2 skipped. Representative failures: `html[data-layout]` expected `"gold"` but resolved empty; `getByRole("button", {name:"Talk to AI"})` timed out at 30s; `.screen-trash` never visible. Pre-existing and not attributable to this work: the `2a6434d` job twelve days and many commits earlier produced a 21,831,380-byte / 52-file report against 21,828,649 bytes / 52 files here, and no application file changed in this checkpoint.
+- **Evidence/artifact/hash:** E-054; job IDs above; exact hashes in `SHA256SUMS`.
+- **Failure/correction/uncertainty:** This corrects a statement this author wrote two checkpoints earlier. The underlying finding — that the approved shell does not render the attributes and controls its own E2E expects — is surfaced for the user as a product observation. It is not diagnosed, not repaired, and not a G2 gate result. E-020/E-023/E-024 are retained unchanged as accurate records of the earlier, different failure mode.
+- **Resulting status/gate change:** No gate advanced. The E2E required check remains **Failed**. G2 remains `Self-check passed`; `SAFE TO SWITCH: NO`.
+- **Exact next action:** Unchanged — continue G3-A external controller provisioning per CONTROL-STATE `first_unfinished_action`.
