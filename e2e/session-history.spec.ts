@@ -7,19 +7,16 @@ test("Session History: save, load, delete, restore", async ({ page }) => {
   await page.goto("/");
   await page.waitForLoadState("networkidle");
 
-  // Go to Translate screen and create a session by duplicating
-  const leftNav = page.locator(".leftnav-items");
-  const translateButton = leftNav.locator("text=Translate");
-  await translateButton.click();
-  await page.waitForLoadState("networkidle");
-
-  // Click "Duplicate Session" to create a test session
-  const duplicateButton = page.locator("button:has-text('Duplicate Session')");
-  await duplicateButton.click();
+  // Create work, then use the approved compact Quick Actions flow to save a
+  // duplicate. The old permanent "Duplicate Session" button was removed.
+  await page.getByLabel("What's on your mind?").fill("Session history recovery test");
+  await page.getByRole("button", { name: "Quick Actions", exact: true }).click();
+  await page.getByRole("button", { name: "More", exact: true }).click();
+  await page.getByRole("button", { name: "Duplicate", exact: true }).click();
   await page.waitForTimeout(500);
 
   // Navigate to Sessions screen
-  const sessionsNavItem = leftNav.locator("text=Sessions");
+  const sessionsNavItem = page.locator(".leftnav-content").getByRole("button", { name: "Sessions", exact: true });
   await sessionsNavItem.click();
   await page.waitForLoadState("networkidle");
 

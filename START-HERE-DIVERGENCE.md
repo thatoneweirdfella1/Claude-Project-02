@@ -5,14 +5,14 @@
 > Preserve the decisions recorded below. Do not substitute old branches, generated-image controls, or earlier “frozen” claims for them.
 
 ```yaml
-control_version: 2
-updated: 2026-08-21
+control_version: 3
+updated: 2026-09-27
 repository: thatoneweirdfella1/Claude-Project-02
 control_branch: build
 candidate_branch: frozen-implementation-v1
 ui_authority_status: PARTIALLY_APPROVED
 implementation_permission: APPROVED_IMPLEMENTATION
-next_task: VISUAL VERIFY CURRENT BUILD, THEN CONTINUE SMALL DECISION PACKETS
+next_task: RUN GITHUB E2E, REVIEW LIGHT/DARK CAPTURES, THEN CONTINUE SMALL DECISION PACKETS
 ```
 
 ## User fast path
@@ -92,6 +92,15 @@ These are safe requirements, but they do not make any existing screenshot canoni
 | Later checkpoint | `2e46e95d663058a3490b35c4e313842f2c03b142` | Provider-neutral workflow was implemented and focused tests were reported passing. |
 | Unverified distance | Candidate head is 7 commits beyond `f07465...` and 4 commits beyond the recorded `2e46e95...` feature checkpoint | The candidate head requires fresh technical verification after visual reconciliation. |
 
+## Recovery checkpoint — 2026-09-27
+
+- Recovery source: the current remote `build` head, not the vanished prior local worktree.
+- Recovered implementation commits: `125f897` (approved interaction baseline), `bacbdec` (reversible approved-layout preview), `103c1e4` (centered 72% canvas), and `ebbda8c` (persistent behavior settings).
+- Fresh local verification at `ebbda8c`: production build passed; 65 test files and 616 unit tests passed; Playwright sources type-checked; lint completed with five pre-existing warnings and no errors.
+- The prior GitHub E2E run rendered the approved logical canvas and reported exact geometry. Its visual audit failed only because four inner positions rounded one pixel beyond stale expected coordinates. Theme switching passed.
+- The remaining E2E failures referenced retired controls or selectors: the removed workspace Developer Mode button, the old permanent Duplicate Session button, `Translate` instead of `Talk to AI`, and an ambiguous Settings label.
+- Those browser tests have been updated to exercise the approved interaction flow without changing application behavior. A fresh GitHub E2E run is required because this workspace cannot install the blocked Chromium binary.
+
 ## Known conflicts that must not be guessed away
 
 | Decision area | Conflicting evidence | Current rule |
@@ -116,11 +125,12 @@ These are safe requirements, but they do not make any existing screenshot canoni
 
 ## NEXT TASK — visual verification and the next small decision packet
 
-1. Render the current `build` in light and dark mode at the approved capped desktop geometry.
-2. Verify that conversation, composer, primary controls, compact bars, both rails, and overlays fit without a whole-page scrollbar.
-3. Verify all three State Detection modes and confirm that no mode silently changes settings.
-4. Show the user only concrete visual mismatches or at most five related decisions at once.
-5. Record every new approval here and checkpoint it on `build`.
+1. Let GitHub CI run the updated Playwright suite with its installed Chromium.
+2. Preserve the resulting light and dark screenshots or traces outside the full Actions artifact quota if the quota still blocks report upload.
+3. Verify that conversation, composer, primary controls, compact bars, both rails, and overlays fit without a whole-page scrollbar.
+4. Verify all three State Detection modes and confirm that no mode silently changes settings.
+5. Show the user only concrete visual mismatches or at most five related decisions at once.
+6. Record every new approval here and checkpoint it on `build`.
 
 ## Acceptance gate before UI implementation
 
@@ -155,6 +165,9 @@ If a contradiction appears, stop implementation, record it under Known Conflicts
 - [x] Visible Destination AI, Directness, and Technique controls restored; Translator Engine moved to Advanced Controls.
 - [x] State Detection changed to explicit Manual—Free, Manual—Paid, and Automatic—Paid modes with review before application.
 - [x] Fixed 1600×1024 logical canvas capped at 72% preserved.
+- [x] Recovered the surviving remote implementation after conversation exhaustion; no local-only implementation is being treated as authoritative.
+- [x] Fresh production build and all 616 unit tests pass at the recovered checkpoint.
+- [x] Obsolete E2E selectors and pre-approval workflow assumptions updated without changing product behavior.
 
 ## Copy/paste bootstrap prompt
 

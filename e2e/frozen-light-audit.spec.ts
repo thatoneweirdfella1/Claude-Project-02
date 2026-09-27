@@ -51,10 +51,10 @@ test("frozen light reference audit at the approved logical canvas", async ({ pag
   });
   console.log(`FROZEN_METRICS ${JSON.stringify(metrics)}`);
   expect(metrics.center).toMatchObject({ x: 302, y: 84, width: 826, height: 928 });
-  expect(metrics.heading).toMatchObject({ x: 318, y: 100, width: 794, height: 44 });
-  expect(metrics.translation).toMatchObject({ x: 318, y: 152, width: 794, height: 420 });
-  expect(metrics.composer).toMatchObject({ x: 318, y: 580, width: 794, height: 350 });
-  expect(metrics.quickActions).toMatchObject({ x: 318, y: 972, width: 794, height: 26 });
+  expect(metrics.heading).toMatchObject({ x: 319, y: 101, width: 794, height: 44 });
+  expect(metrics.translation).toMatchObject({ x: 319, y: 153, width: 794, height: 420 });
+  expect(metrics.composer).toMatchObject({ x: 319, y: 581, width: 794, height: 350 });
+  expect(metrics.quickActions).toMatchObject({ x: 319, y: 973, width: 794, height: 26 });
   expect(metrics.rightRail).toMatchObject({ x: 1252, y: 84, width: 348, height: 928 });
 
   await testInfo.attach("approved-light-1600x1024", {

@@ -1,10 +1,10 @@
 import { test, expect } from "@playwright/test";
 import { installModelMocks } from "./mocks";
-import { clickWithCostConfirmation, enableDeveloperMode } from "./credit-helpers";
+import { enableDeveloperMode } from "./credit-helpers";
 
 /* e2e/core-flow.spec.ts (Step 12.2) — SPOT CHECK: the core flow named by this
    step's own text, verbatim: "type a question, hit TRANSLATE & ASK, see
-   pills, get a streamed answer, rate it, confirm autosave restores after
+   paid State Detection review, get a streamed answer, rate it, confirm autosave restores after
    reload." Every model call is mocked at the network boundary (see mocks.ts)
    — this exercises the REAL composer, pipeline orchestrator, streaming
    parser, detection panel, rating store action, and IndexedDB persistence;
@@ -32,10 +32,17 @@ test("core flow: type, translate & ask, pills, streamed answer, rate, autosave r
   await expect(input).toBeVisible();
   await input.fill(QUESTION);
 
-  await clickWithCostConfirmation(
-    page,
-    page.locator(".translate-ask-button"),
-  );
+  // Automatic — Paid must stop for explicit review before sending.
+  await page.locator(".translate-ask-button").click();
+  const stateCost = page.getByRole("dialog", { name: "Confirm AI Cost" });
+  await stateCost.getByRole("button", { name: "Continue", exact: true }).click();
+  const stateReview = page.getByRole("dialog", { name: "State Detection" });
+  await expect(stateReview).toBeVisible();
+  await stateReview.getByRole("button", { name: "Apply & Send", exact: true }).click();
+
+  // The connected translator has a separate, explicit cost confirmation.
+  const translatorCost = page.getByRole("dialog", { name: "Confirm AI Cost" });
+  await translatorCost.getByRole("button", { name: "Continue", exact: true }).click();
 
   // The user's raw message lands in the conversation immediately.
   await expect(page.locator(".message-bubble--user").first()).toContainText(QUESTION);
