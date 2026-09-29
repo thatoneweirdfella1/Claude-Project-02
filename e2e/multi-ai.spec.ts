@@ -26,10 +26,10 @@ const ANSWER_TEXT =
 async function askAndAnswer(page: import("@playwright/test").Page): Promise<void> {
   await enableDeveloperMode(page);
   await page.getByLabel("What's on your mind?").fill(QUESTION);
-  await clickWithCostConfirmation(
-    page,
-    page.locator(".translate-ask-button"),
-  );
+  await page.locator(".translate-ask-button").click();
+  await page.getByRole("dialog", { name: "Confirm AI Cost" }).getByRole("button", { name: "Continue", exact: true }).click();
+  await page.getByRole("dialog", { name: "State Detection" }).getByRole("button", { name: "Apply & Send", exact: true }).click();
+  await page.getByRole("dialog", { name: "Confirm AI Cost" }).getByRole("button", { name: "Continue", exact: true }).click();
   await expect(page.locator(".message-bubble--assistant").first()).toBeVisible({ timeout: 10_000 });
 }
 
