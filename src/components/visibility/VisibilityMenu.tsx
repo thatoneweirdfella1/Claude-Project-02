@@ -3,7 +3,7 @@ import { Settings } from "lucide-react";
 import { GlassButton } from "../primitives";
 import { useDismissableLayer } from "../../keyboard";
 import { DEFAULT_VISIBILITY, useAccountStore } from "../../stores/accountStore";
-import type { LayoutId, ThemePreference, VisibilitySettings } from "../../stores/types";
+import type { ThemePreference, VisibilitySettings } from "../../stores/types";
 
 /* Visibility Toggle (Step 9.4) — CANON Feature 12: the gear dropdown (top
    right) with 7 checkboxes (Recent Sessions/Context Snapshot/Recent
@@ -35,12 +35,7 @@ import type { LayoutId, ThemePreference, VisibilitySettings } from "../../stores
    star picker (the one other place this build needed an exclusive-choice
    button group).
 
-   Design layouts (CLAUDE.md "Design layouts"): a second radiogroup, same
-   pattern as Theme above — layout and theme are independent, so this is
-   its own group, not folded into the Theme one. LAYOUT_OPTIONS is the one
-   place a new operator-uploaded layout gets registered; everything else
-   (tokens.css/marble.css's :root[data-layout="..."] rules, Logo.tsx's
-   asset swap) reads accountStore.layout, not this list directly. */
+   The frozen layout is fixed; this menu controls theme and visibility. */
 
 const VISIBILITY_ROWS: { key: keyof VisibilitySettings; label: string }[] = [
   { key: "recentSessions", label: "Recent Sessions" },
@@ -58,18 +53,11 @@ const THEME_OPTIONS: { key: ThemePreference; label: string }[] = [
   { key: "auto", label: "Auto" },
 ];
 
-const LAYOUT_OPTIONS: { key: LayoutId; label: string }[] = [
-  { key: "original", label: "Original" },
-  { key: "gold", label: "Gold" },
-];
-
 export function VisibilityMenu() {
   const visibility = useAccountStore((s) => s.visibility);
   const setVisibility = useAccountStore((s) => s.setVisibility);
   const theme = useAccountStore((s) => s.theme);
   const setTheme = useAccountStore((s) => s.setTheme);
-  const layout = useAccountStore((s) => s.layout);
-  const setLayout = useAccountStore((s) => s.setLayout);
 
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -131,28 +119,6 @@ export function VisibilityMenu() {
                 aria-label={label}
                 className={`visibility-menu__theme-option ${theme === key ? "visibility-menu__theme-option--active" : ""}`}
                 onClick={() => setTheme(key)}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-
-          <p className="visibility-menu__title">Layout</p>
-          <div
-            className="visibility-menu__theme-row"
-            role="radiogroup"
-            aria-label="Layout"
-            data-testid="layout-toggle"
-          >
-            {LAYOUT_OPTIONS.map(({ key, label }) => (
-              <button
-                key={key}
-                type="button"
-                role="radio"
-                aria-checked={layout === key}
-                aria-label={label}
-                className={`visibility-menu__theme-option ${layout === key ? "visibility-menu__theme-option--active" : ""}`}
-                onClick={() => setLayout(key)}
               >
                 {label}
               </button>
