@@ -1,13 +1,13 @@
 export interface DeploymentIdentity {
   status: "ok";
-  layer: 7;
   commit: string;
+  branch: string;
   environment: string;
-  connectedExecution: true;
 }
 
 export function deploymentHealth(request: Request, env: {
   VERCEL_GIT_COMMIT_SHA?: string;
+  VERCEL_GIT_COMMIT_REF?: string;
   VERCEL_ENV?: string;
 }): Response {
   if (request.method !== "GET") {
@@ -18,10 +18,9 @@ export function deploymentHealth(request: Request, env: {
   }
   const body: DeploymentIdentity = {
     status: "ok",
-    layer: 7,
     commit: env.VERCEL_GIT_COMMIT_SHA ?? "local",
+    branch: env.VERCEL_GIT_COMMIT_REF ?? "local",
     environment: env.VERCEL_ENV ?? "local",
-    connectedExecution: true,
   };
   return new Response(JSON.stringify(body), {
     status: 200,
