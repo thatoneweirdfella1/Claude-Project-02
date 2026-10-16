@@ -1,7 +1,7 @@
 import "./Logo.css";
 
-/* Frozen gold brain mark reused by the composer, assistant avatar, Send
-   button and navigation. Saved layout preferences do not change this asset. */
+/* Always render the frozen gold brain asset, including when saved account
+   data still selects the retired original layout. */
 
 export interface BrainMarkProps {
   /** Pixel height; width follows the asset's own aspect ratio. Default

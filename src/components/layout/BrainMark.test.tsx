@@ -1,11 +1,22 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { afterEach, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, expect, it } from "vitest";
 import { createInitialAccountState, useAccountStore } from "../../stores/accountStore";
 import { BrainMark } from "./BrainMark";
 
 let root: Root | null = null;
 let host: HTMLDivElement | null = null;
+const actEnvironment = globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean };
+const previousActEnvironment = actEnvironment.IS_REACT_ACT_ENVIRONMENT;
+
+beforeAll(() => {
+  actEnvironment.IS_REACT_ACT_ENVIRONMENT = true;
+});
+
+afterAll(() => {
+  if (previousActEnvironment === undefined) delete actEnvironment.IS_REACT_ACT_ENVIRONMENT;
+  else actEnvironment.IS_REACT_ACT_ENVIRONMENT = previousActEnvironment;
+});
 
 afterEach(() => {
   act(() => root?.unmount());
