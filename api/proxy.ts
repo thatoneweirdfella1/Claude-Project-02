@@ -61,5 +61,12 @@ export default function handler(request: Request): Promise<Response> {
     );
   }
 
-  return handleProxyRequest(request, process.env.ANTHROPIC_API_KEY);
+  // Pass environment variables for all provider API keys
+  return handleProxyRequest(request, process.env.ANTHROPIC_API_KEY, fetch, {
+    ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+    GOOGLE_API_KEY: process.env.GOOGLE_API_KEY,
+    XAI_API_KEY: process.env.XAI_API_KEY,
+    DEEPSEEK_API_KEY: process.env.DEEPSEEK_API_KEY,
+  });
 }

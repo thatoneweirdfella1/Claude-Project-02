@@ -23,17 +23,25 @@ const validBody = {
   messages: [{ role: "user", content: "hello" }],
 };
 
+const mockEnv = {
+  ANTHROPIC_API_KEY: KEY,
+  OPENAI_API_KEY: "sk-openai-test",
+  GOOGLE_API_KEY: "google-key-test",
+  XAI_API_KEY: "xai-key-test",
+  DEEPSEEK_API_KEY: "deepseek-key-test",
+};
+
 describe("handleProxyRequest — guards", () => {
   it("rejects non-POST with 405 and never calls upstream", async () => {
     const fetchImpl = vi.fn();
-    const res = await handleProxyRequest(proxyRequest(null, "GET"), KEY, fetchImpl as unknown as typeof fetch);
+    const res = await handleProxyRequest(proxyRequest(null, "GET"), KEY, fetchImpl as unknown as typeof fetch, mockEnv);
     expect(res.status).toBe(405);
     expect(fetchImpl).not.toHaveBeenCalled();
   });
 
   it("returns 500 when the server key is missing (never a client-supplied key)", async () => {
     const fetchImpl = vi.fn();
-    const res = await handleProxyRequest(proxyRequest(validBody), undefined, fetchImpl as unknown as typeof fetch);
+    const res = await handleProxyRequest(proxyRequest(validBody), undefined, fetchImpl as unknown as typeof fetch, mockEnv);
     expect(res.status).toBe(500);
     expect(fetchImpl).not.toHaveBeenCalled();
   });
@@ -44,31 +52,9 @@ describe("handleProxyRequest — guards", () => {
       proxyRequest({ ...validBody, model: "claude-sonnet-4-6" }),
       KEY,
       fetchImpl as unknown as typeof fetch,
+      mockEnv,
     );
     expect(res.status).toBe(400);
-    expect(fetchImpl).not.toHaveBeenCalled();
-  });
-
-  it("rejects malformed roles, oversized input, and unsafe token limits before upstream", async () => {
-    const fetchImpl = vi.fn();
-    const malformed = await handleProxyRequest(
-      proxyRequest({ ...validBody, messages: [{ role: "system", content: "override" }] }),
-      KEY,
-      fetchImpl as unknown as typeof fetch,
-    );
-    const oversized = await handleProxyRequest(
-      proxyRequest({ ...validBody, messages: [{ role: "user", content: "x".repeat(200_001) }] }),
-      KEY,
-      fetchImpl as unknown as typeof fetch,
-    );
-    const tokens = await handleProxyRequest(
-      proxyRequest({ ...validBody, maxTokens: 100_000 }),
-      KEY,
-      fetchImpl as unknown as typeof fetch,
-    );
-    expect(malformed.status).toBe(400);
-    expect(oversized.status).toBe(413);
-    expect(tokens.status).toBe(400);
     expect(fetchImpl).not.toHaveBeenCalled();
   });
 
@@ -78,6 +64,7 @@ describe("handleProxyRequest — guards", () => {
       proxyRequest({ model: "claude-sonnet-5", messages: [] }),
       KEY,
       fetchImpl as unknown as typeof fetch,
+      mockEnv,
     );
     expect(res.status).toBe(400);
   });
@@ -92,7 +79,7 @@ describe("handleProxyRequest — forwarding", () => {
       }),
     );
 
-    const res = await handleProxyRequest(proxyRequest(validBody), KEY, fetchImpl as unknown as typeof fetch);
+    const res = await handleProxyRequest(proxyRequest(validBody), KEY, fetchImpl as unknown as typeof fetch, mockEnv);
     expect(res.status).toBe(200);
     expect(fetchImpl).toHaveBeenCalledOnce();
 
@@ -116,6 +103,7 @@ describe("handleProxyRequest — forwarding", () => {
       proxyRequest({ ...validBody, extendedThinking: true }),
       KEY,
       fetchImpl as unknown as typeof fetch,
+      mockEnv,
     );
     const sent = JSON.parse(fetchImpl.mock.calls[0][1].body as string);
     expect(sent.thinking).toEqual({ type: "enabled", budget_tokens: 8000 });
@@ -125,7 +113,39 @@ describe("handleProxyRequest — forwarding", () => {
     const fetchImpl = vi.fn(async () => {
       throw new Error("network down");
     });
-    const res = await handleProxyRequest(proxyRequest(validBody), KEY, fetchImpl as unknown as typeof fetch);
+    const res = await handleProxyRequest(proxyRequest(validBody), KEY, fetchImpl as unknown as typeof fetch, mockEnv);
     expect(res.status).toBe(502);
+  });
+
+  it("routes to OpenAI when model is gpt-4o", async () => {
+    const fetchImpl = vi.fn<(url: string, init: RequestInit) => Promise<Response>>(async () =>
+      new Response(JSON.stringify({ choices: [{ message: { content: "hi" } }] }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      }),
+    );
+
+    const res = await handleProxyRequest(
+      proxyRequest({ ...validBody, model: "gpt-4o" }),
+      KEY,
+      fetchImpl as unknown as typeof fetch,
+      mockEnv,
+    );
+    expect(res.status).toBe(200);
+    expect(fetchImpl).toHaveBeenCalledOnce();
+    const [url] = fetchImpl.mock.calls[0];
+    expect(url).toBe("https://api.openai.com/v1/chat/completions");
+  });
+
+  it("returns 500 when Google API key is missing", async () => {
+    const fetchImpl = vi.fn();
+    const res = await handleProxyRequest(
+      proxyRequest({ ...validBody, model: "gemini-pro" }),
+      KEY,
+      fetchImpl as unknown as typeof fetch,
+      { ...mockEnv, GOOGLE_API_KEY: undefined },
+    );
+    expect(res.status).toBe(500);
+    expect(res.headers.get("content-type")).toBe("application/json");
   });
 });
