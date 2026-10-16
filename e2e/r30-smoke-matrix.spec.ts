@@ -1,4 +1,4 @@
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect, type Page } from "./fixtures";
 import { allowLocalAccess } from "./credit-helpers";
 
 /* R30: Exact Preview and Production Gate — the browser smoke matrix and

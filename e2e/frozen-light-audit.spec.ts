@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 test("approved frozen conversation-first frame at canonical viewport", async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 1543, height: 1019 });

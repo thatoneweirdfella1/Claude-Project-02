@@ -24,7 +24,7 @@
    AttachContextControls.tsx (the action buttons were also missing their
    intended CSS classes entirely — unstyled native buttons). */
 
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect, type Page } from "./fixtures";
 import { allowLocalAccess } from "./credit-helpers";
 
 async function mockAccountUnconfigured(page: Page): Promise<void> {

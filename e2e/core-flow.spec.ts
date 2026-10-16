@@ -1,4 +1,4 @@
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect, type Page } from "./fixtures";
 import { installModelMocks } from "./mocks";
 
 const QUESTION = "so umm i was wondering, what temperature does water boil at? like at sea level i guess";

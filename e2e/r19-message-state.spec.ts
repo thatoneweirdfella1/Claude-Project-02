@@ -1,6 +1,6 @@
 /* R19 Verification: Message state persistence and user action tracking */
 
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 test.describe("R19: Prepared/Copied/Opened/Sent/Answered message state", () => {
   test.beforeEach(async ({ page }) => {
@@ -18,7 +18,7 @@ test.describe("R19: Prepared/Copied/Opened/Sent/Answered message state", () => {
   });
 
   test("user message persists with messageState after copy action", async ({ page }) => {
-    await page.goto("http://localhost:5174");
+    await page.goto("/");
     await page.waitForLoadState("networkidle");
 
     // Type a message
@@ -64,7 +64,7 @@ test.describe("R19: Prepared/Copied/Opened/Sent/Answered message state", () => {
   });
 
   test("message state persists through page reload", async ({ page }) => {
-    await page.goto("http://localhost:5174");
+    await page.goto("/");
     await page.waitForLoadState("networkidle");
 
     // Type and send a message
@@ -95,7 +95,7 @@ test.describe("R19: Prepared/Copied/Opened/Sent/Answered message state", () => {
   });
 
   test("user actions (copy/open) are independent of message state", async ({ page }) => {
-    await page.goto("http://localhost:5174");
+    await page.goto("/");
     await page.waitForLoadState("networkidle");
 
     // Type a message (will be in "sent" state)
@@ -139,7 +139,7 @@ test.describe("R19: Prepared/Copied/Opened/Sent/Answered message state", () => {
   });
 
   test("conversation preserves all messages with their individual states", async ({ page }) => {
-    await page.goto("http://localhost:5174");
+    await page.goto("/");
     await page.waitForLoadState("networkidle");
 
     // Add multiple messages

@@ -1,4 +1,4 @@
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect, type Page } from "./fixtures";
 import { allowLocalAccess } from "./credit-helpers";
 
 /* AccountGate.tsx calls GET /api/account on mount (services/durableSync.ts).

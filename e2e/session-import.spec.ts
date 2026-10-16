@@ -1,4 +1,4 @@
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect, type Page } from "./fixtures";
 import { allowLocalAccess } from "./credit-helpers";
 
 /* R08 (2nd repair attempt) — Session Import Selector.

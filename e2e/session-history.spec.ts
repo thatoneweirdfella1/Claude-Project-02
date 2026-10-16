@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 import { allowLocalAccess } from "./credit-helpers";
 
 test("Session History: save, load, delete, restore", async ({ page }) => {

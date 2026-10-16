@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 test("the approved frozen layout supersedes every obsolete layout choice", async ({ page }) => {
   await page.route("**/api/verify-access", async (route) => {

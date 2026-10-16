@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 import { clickWithCostConfirmation, enableDeveloperMode } from "./credit-helpers";
 
 /* e2e/access-gate.spec.ts — AppAccessGate (operator-directed, post-12.3).

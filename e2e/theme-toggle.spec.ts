@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 test("the frozen shell switches between its approved light and dark themes", async ({ page }) => {
   await page.route("**/api/verify-access", async (route) => {
