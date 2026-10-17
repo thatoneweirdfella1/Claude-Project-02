@@ -1,13 +1,15 @@
 import { test, expect } from "./fixtures";
-import { handleProxyRequest } from "../src/services/proxyHandler";
 import { resolve } from "node:path";
 
 test("P3: exhausted free requests and retries stay local with paid fallback and paid model overrides", async ({ page }) => {
-  const env = Object.fromEntries(["ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GOOGLE_API_KEY", "GROQ_API_KEY", "OPENROUTER_API_KEY"].map((name) => [name, crypto.randomUUID()]));
+  const handlerUrl = new URL("../src/services/proxyHandler.ts", import.meta.url);
+  handlerUrl.searchParams.set("testScenario", "Q3-all-exhausted");
+  const { handleProxyRequest } = await import(handlerUrl.href) as typeof import("../src/services/proxyHandler");
+  const env = Object.fromEntries(["ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GOOGLE_API_KEY", "GROQ_API_KEY", "OPENROUTER_API_KEY", "XAI_API_KEY", "DEEPSEEK_API_KEY", "HF_TOKEN", "CLOUDFLARE_API_TOKEN", "CLOUDFLARE_ACCOUNT_ID"].map((name) => [name, crypto.randomUUID()]));
   let paidCalls = 0;
   let freeCalls = 0;
   await page.route("**/api/provider-status*", (route) => route.fulfill({ json: {
-    anthropic: true, openai: true, google: true, groq: true, openrouter: true, freePoolAvailable: true,
+    anthropic: true, openai: true, google: true, groq: true, openrouter: true, huggingface: true, cloudflare: true, xai: true, deepseek: true, freePoolAvailable: true,
   } }));
   await page.route("**/api/proxy*", async (route) => {
     if (new URL(route.request().url()).pathname !== "/api/proxy") {
@@ -18,7 +20,7 @@ test("P3: exhausted free requests and retries stay local with paid fallback and 
     const body = { ...route.request().postDataJSON(), model: "claude-opus-4-8", provider: "anthropic", fallbackProvider: "openai", paidFallbackEnabled: true };
     const response = await handleProxyRequest(new Request(route.request().url(), { method: "POST", body: JSON.stringify(body) }), env.ANTHROPIC_API_KEY, async (url) => {
       const host = new URL(String(url)).hostname;
-      if (["api.groq.com", "generativelanguage.googleapis.com", "openrouter.ai"].includes(host)) freeCalls += 1;
+      if (["api.groq.com", "generativelanguage.googleapis.com", "openrouter.ai", "router.huggingface.co", "api.cloudflare.com"].includes(host)) freeCalls += 1;
       else paidCalls += 1;
       return Response.json({ error: "daily quota exhausted" }, { status: 429 });
     }, env);
@@ -37,7 +39,7 @@ test("P3: exhausted free requests and retries stay local with paid fallback and 
     await review.getByRole("button", { name: "Send to AI", exact: true }).click();
     await expect(review.getByRole("button", { name: "Copy only", exact: true })).toBeVisible();
     expect(paidCalls).toBe(0);
-    if (retry === 0) { expect(freeCalls).toBeGreaterThan(0); attemptsAfterExhaustion = freeCalls; }
+    if (retry === 0) { expect(freeCalls).toBe(5); attemptsAfterExhaustion = freeCalls; }
     else expect(freeCalls).toBe(attemptsAfterExhaustion);
     await review.getByRole("button", { name: "Back", exact: true }).click();
   }
