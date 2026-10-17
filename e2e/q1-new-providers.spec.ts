@@ -1,5 +1,4 @@
 import { test, expect } from "./fixtures";
-import { handleProxyRequest } from "../src/services/proxyHandler";
 import { resolve } from "node:path";
 
 const slots = [
@@ -11,6 +10,10 @@ const slots = [
 
 for (const slot of slots) {
   test(`Q1: normal conversation hands off to ${slot.provider} and shows the answering slot`, async ({ page }) => {
+    // Each scenario represents a separate server; do not inherit another file's cooldowns.
+    const handlerUrl = new URL("../src/services/proxyHandler.ts", import.meta.url);
+    handlerUrl.searchParams.set("testScenario", "Q1-" + slot.provider);
+    const { handleProxyRequest } = await import(handlerUrl.href) as typeof import("../src/services/proxyHandler");
     const env = { [slot.variable]: crypto.randomUUID(), [slot.limitedVariable]: crypto.randomUUID(),
       CLOUDFLARE_ACCOUNT_ID: "test-account" };
     const calls: string[] = [];
