@@ -1,3 +1,4 @@
+import { pathToFileURL } from 'node:url'
 import fs from 'node:fs'
 import { at, read, readJson, registryIds, sameSet, uniqueSorted, printResult } from './lib.mjs'
 
@@ -65,7 +66,7 @@ export function verifyObligationMatrix() {
   return errors
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   if (process.argv.includes('--check')) {
     if (!printResult('derive-obligations', verifyObligationMatrix())) process.exit(1)
   } else {

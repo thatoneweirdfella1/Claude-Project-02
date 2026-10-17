@@ -1,3 +1,4 @@
+import { pathToFileURL } from 'node:url'
 import { git, matchesAnyGlob, readJson, printResult } from './lib.mjs'
 
 function lines(value) {
@@ -70,7 +71,7 @@ export function verifyProtectedPaths({ action = 'read-only' } = {}) {
   return errors
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   const action = process.argv.find((value) => value.startsWith('--action='))?.split('=')[1] || 'read-only'
   if (!printResult('verify-protected-paths', verifyProtectedPaths({ action }))) process.exit(1)
 }

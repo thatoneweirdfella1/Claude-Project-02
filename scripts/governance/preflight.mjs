@@ -1,3 +1,4 @@
+import { pathToFileURL } from 'node:url'
 import { spawnSync } from 'node:child_process'
 import { exists, git, matchesAnyGlob, read, readJson, registryIds, sha256 } from './lib.mjs'
 import { verifyLedger } from './verify-ledger.mjs'
@@ -216,7 +217,7 @@ export function runPreflight({ print = true, action = 'read-only' } = {}) {
   return { ok: errors.length === 0, errors, warnings, certificate }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   const actionArg = process.argv.find((value) => value.startsWith('--action='))
   const modeArg = process.argv.find((value) => value.startsWith('--mode='))
   const action = actionArg?.split('=')[1] || modeArg?.split('=')[1] || 'read-only'

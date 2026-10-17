@@ -1,3 +1,4 @@
+import { pathToFileURL } from 'node:url'
 import { parseCsv, read, readJson, registryIds, sameSet, validStatus, printResult } from './lib.mjs'
 import { verifyObligationMatrix } from './derive-obligations.mjs'
 
@@ -97,6 +98,6 @@ export function verifyLedger() {
   return errors
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   if (!printResult('verify-ledger', verifyLedger())) process.exit(1)
 }

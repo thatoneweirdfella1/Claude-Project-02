@@ -1,3 +1,4 @@
+import { pathToFileURL } from 'node:url'
 import fs from 'node:fs'
 import { at, exists, git, parseCsv, read, readJson, registryIds, sha256, uniqueSorted, printResult } from './lib.mjs'
 
@@ -136,6 +137,6 @@ export function verifyEvidence() {
   return errors
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   if (!printResult('verify-evidence', verifyEvidence())) process.exit(1)
 }
