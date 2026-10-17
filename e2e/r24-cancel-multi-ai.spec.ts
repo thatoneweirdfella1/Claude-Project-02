@@ -157,5 +157,7 @@ test("R24: visible cancel aborts debate, consensus, and synthesis and persists t
 
   await page.locator(".leftnav-item").filter({ hasText: "Settings" }).click();
   await page.getByRole("button", { name: "Plan & credits", exact: true }).click();
-  await expect(page.locator(".settings-item__label").filter({ hasText: "released" })).toHaveCount(2);
+  // M2: dispatched cancellations cannot release work whose usage is unknown.
+  await expect(page.locator(".settings-item__label").filter({ hasText: "pending-unknown" })).toHaveCount(3);
+  await expect(page.locator(".settings-item__label").filter({ hasText: "released" })).toHaveCount(0);
 });

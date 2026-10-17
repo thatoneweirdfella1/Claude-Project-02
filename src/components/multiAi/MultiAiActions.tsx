@@ -230,16 +230,15 @@ async function finalizeParticipantAuthorization(
   authorization: CreditAuthorizationResult,
   participants: MultiAiParticipantResult[],
   cancelled: boolean,
+  dispatched: boolean,
 ): Promise<void> {
-  const completed = participants.filter((participant) => participant.status === "ok");
-  if (completed.length === 0) {
-    if (cancelled) await releaseDeferredAuthorization(authorization, "Cancelled before any participant completed.");
-    else await markDeferredAuthorizationUnknown(authorization, "No measured usage was returned for the failed Multi-AI request.");
+  if (!dispatched && participants.length === 0) {
+    await releaseDeferredAuthorization(authorization, "No participant request was dispatched.");
     return;
   }
-  const costs = completed.map((participant) => participant.actualCost);
-  if (costs.some((cost) => cost === null)) {
-    await markDeferredAuthorizationUnknown(authorization, "A completed participant did not return measurable usage; the hold remains pending.");
+  const costs = participants.map((participant) => participant.actualCost);
+  if (costs.length === 0 || costs.some((cost) => typeof cost !== "number" || !Number.isFinite(cost) || cost < 0)) {
+    await markDeferredAuthorizationUnknown(authorization, "Dispatched participant usage is incomplete; the hold remains pending.");
     return;
   }
   await settleDeferredAuthorization(
@@ -254,14 +253,23 @@ async function finalizeStageAuthorization(
   actualCost: number | null,
   stage: "consensus" | "synthesis",
   cancelled: boolean,
+  dispatched: boolean,
 ): Promise<void> {
-  if (cancelled) {
-    await releaseDeferredAuthorization(authorization, `${stage} cancelled before completion.`);
-  } else if (actualCost === null) {
-    await markDeferredAuthorizationUnknown(authorization, `${stage} completed without measurable usage; the hold remains pending.`);
-  } else {
+  if (actualCost !== null && Number.isFinite(actualCost) && actualCost >= 0) {
     await settleDeferredAuthorization(authorization, actualCost, `Measured Multi-AI ${stage} usage`);
+  } else if (dispatched) {
+    await markDeferredAuthorizationUnknown(authorization, `${stage} dispatched without measurable usage; the hold remains pending.`);
+  } else {
+    await releaseDeferredAuthorization(authorization, `${stage} ${cancelled ? "cancelled" : "ended"} before dispatch.`);
   }
+}
+
+/** Mark the handoff to a model client, after the last cancellation check.
+    Once handed off, failure cannot prove that upstream did no billable work. */
+function dispatchTracked<T>(signal: AbortSignal | undefined, mark: () => void, call: () => Promise<T>): Promise<T> {
+  if (signal?.aborted) return Promise.reject(new Error("Cancelled before dispatch"));
+  mark();
+  return call();
 }
 
 function roundCost(value: number): number {
@@ -390,10 +398,11 @@ export function MultiAiActions() {
       });
     }
 
+    let dispatched = false;
     try {
       const result = await runDebate(effectiveQuestion, {
-        claudeClient: withDebateUsage((req) => completeTracked(req)),
-        partnerClient,
+        claudeClient: withDebateUsage((req) => dispatchTracked(req.signal, () => { dispatched = true; }, () => completeTracked(req))),
+        partnerClient: (req) => dispatchTracked(req.signal, () => { dispatched = true; }, () => partnerClient(req)),
         partnerIds: selectedPartnerIds,
         signal: controller.signal,
       });
@@ -404,12 +413,12 @@ export function MultiAiActions() {
           sideToParticipantResult(side, estimateByKey.get(participantKey(side)) ?? null),
         );
         setOutcome(result.status === "empty-question" ? null : result);
-        await finalizeParticipantAuthorization(authorization, participants, true);
+        await finalizeParticipantAuthorization(authorization, participants, true, dispatched);
         await persistRun({
           id: runId,
           status: "cancelled",
           totalEstimatedCost: total,
-          totalActualCost: totalActualCostOf(participants.filter((participant) => participant.status === "ok")),
+          totalActualCost: totalActualCostOf(participants),
           participants,
         });
         return;
@@ -421,7 +430,7 @@ export function MultiAiActions() {
         const participants = result.sides.map((side) =>
           sideToParticipantResult(side, estimateByKey.get(participantKey(side)) ?? null),
         );
-        await finalizeParticipantAuthorization(authorization, participants, false);
+        await finalizeParticipantAuthorization(authorization, participants, false, dispatched);
         await persistRun({
           id: runId,
           status: outcomeToRunStatus(result),
@@ -434,10 +443,10 @@ export function MultiAiActions() {
       if (!controller.signal.aborted) {
         setActionError(safeFailureMessage("Debate failed", error));
         setOutcome({ status: "failed", sides: [] });
-        await markDeferredAuthorizationUnknown(authorization, "The debate ended without measurable usage; the hold remains pending.");
+        await finalizeParticipantAuthorization(authorization, [], false, dispatched);
         await persistRun({ id: runId, status: "failed", participants: [], totalEstimatedCost: total, totalActualCost: null });
       } else {
-        await releaseDeferredAuthorization(authorization, "Debate cancelled before a participant result was returned.");
+        await finalizeParticipantAuthorization(authorization, [], true, dispatched);
         await persistRun({ id: runId, status: "cancelled", totalEstimatedCost: total, totalActualCost: null, participants: [] });
       }
     } finally {
@@ -514,22 +523,23 @@ export function MultiAiActions() {
          first retry's own promise still eventually settles and, without
          this guard, would clear `retrying` out from under the second
          (still in-flight) retry's own busy indicator. */
+      let dispatched = false;
       try {
         const retried = await retryDebateSide(effectiveQuestion, {
-          claudeClient: withDebateUsage((req) => completeTracked(req)),
-          partnerClient,
+          claudeClient: withDebateUsage((req) => dispatchTracked(req.signal, () => { dispatched = true; }, () => completeTracked(req))),
+          partnerClient: (req) => dispatchTracked(req.signal, () => { dispatched = true; }, () => partnerClient(req)),
           stance: target.stance,
           partnerId: targetProviderId,
           signal: controller.signal,
         });
 
         if (controllerRef.current !== controller || controller.signal.aborted) {
-          await releaseDeferredAuthorization(authorization, `Retry of ${target.label} was cancelled before completion.`);
+          await finalizeParticipantAuthorization(authorization, [sideToParticipantResult(retried, estimate)], true, dispatched);
           return;
         }
 
         reportFailedSides([retried]);
-        await finalizeParticipantAuthorization(authorization, [sideToParticipantResult(retried, estimate)], false);
+        await finalizeParticipantAuthorization(authorization, [sideToParticipantResult(retried, estimate)], false, dispatched);
 
         const newSides = [...outcome.sides];
         newSides[sideIndex] = retried;
@@ -580,9 +590,9 @@ export function MultiAiActions() {
         }
       } catch (error) {
         if (controller.signal.aborted) {
-          await releaseDeferredAuthorization(authorization, `Retry of ${target.label} was cancelled before completion.`);
+          await finalizeParticipantAuthorization(authorization, [], true, dispatched);
         } else {
-          await markDeferredAuthorizationUnknown(authorization, `Retry of ${target.label} ended without measurable usage; the hold remains pending.`);
+          await finalizeParticipantAuthorization(authorization, [], false, dispatched);
         }
         if (controllerRef.current === controller && !controller.signal.aborted) {
           setActionError(safeFailureMessage("Retry failed", error));
@@ -624,21 +634,22 @@ export function MultiAiActions() {
     setPhase("consensus");
     setActionError(null);
     let actualCost: number | null = null;
+    let dispatched = false;
     try {
       const result = await runConsensus(transcript, {
-        client: (req) => completeTracked({
+        client: (req) => dispatchTracked(req.signal, () => { dispatched = true; }, () => completeTracked({
           ...req,
           onUsage: (usage) => { actualCost = calculateUsageCost(usage.inputTokens, usage.outputTokens, req.model); },
-        }),
+        })),
         signal: controller.signal,
       });
       if (controller.signal.aborted) {
-        await finalizeStageAuthorization(authorization, actualCost, "consensus", true);
+        await finalizeStageAuthorization(authorization, actualCost, "consensus", true, dispatched);
         setActionError("Consensus was cancelled. No charge beyond what already completed.");
         if (activeRunId) await persistRun({ id: activeRunId, status: "cancelled" });
         return;
       }
-      await finalizeStageAuthorization(authorization, actualCost, "consensus", false);
+      await finalizeStageAuthorization(authorization, actualCost, "consensus", false, dispatched);
       if (result.status === "ok") {
         setConsensus(result.result);
         if (activeRunId) await persistRun({ id: activeRunId, status: "complete", consensus: result.result });
@@ -646,7 +657,7 @@ export function MultiAiActions() {
         setActionError("Consensus couldn't be produced from this debate. You can try again.");
       }
     } catch (error) {
-      await finalizeStageAuthorization(authorization, actualCost, "consensus", controller.signal.aborted);
+      await finalizeStageAuthorization(authorization, actualCost, "consensus", controller.signal.aborted, dispatched);
       if (!controller.signal.aborted) {
         // R11: a transport failure here means Claude's own connection just
         // failed a real call — never keep authorizing further calls on a
@@ -689,21 +700,22 @@ export function MultiAiActions() {
     setPhase("synthesis");
     setActionError(null);
     let actualCost: number | null = null;
+    let dispatched = false;
     try {
       const result = await runSynthesis(transcript, {
-        client: (req) => completeTracked({
+        client: (req) => dispatchTracked(req.signal, () => { dispatched = true; }, () => completeTracked({
           ...req,
           onUsage: (usage) => { actualCost = calculateUsageCost(usage.inputTokens, usage.outputTokens, req.model); },
-        }),
+        })),
         signal: controller.signal,
       });
       if (controller.signal.aborted) {
-        await finalizeStageAuthorization(authorization, actualCost, "synthesis", true);
+        await finalizeStageAuthorization(authorization, actualCost, "synthesis", true, dispatched);
         setActionError("Synthesis was cancelled. No charge beyond what already completed.");
         if (activeRunId) await persistRun({ id: activeRunId, status: "cancelled" });
         return;
       }
-      await finalizeStageAuthorization(authorization, actualCost, "synthesis", false);
+      await finalizeStageAuthorization(authorization, actualCost, "synthesis", false, dispatched);
       if (result.status === "ok") {
         setSynthesis(result.result);
         if (activeRunId) await persistRun({ id: activeRunId, status: "complete", synthesis: result.result });
@@ -711,7 +723,7 @@ export function MultiAiActions() {
         setActionError("Synthesis couldn't be produced from this debate. You can try again.");
       }
     } catch (error) {
-      await finalizeStageAuthorization(authorization, actualCost, "synthesis", controller.signal.aborted);
+      await finalizeStageAuthorization(authorization, actualCost, "synthesis", controller.signal.aborted, dispatched);
       if (!controller.signal.aborted) {
         void reportProviderEvent("error");
         setActionError(safeFailureMessage("Synthesis failed", error));

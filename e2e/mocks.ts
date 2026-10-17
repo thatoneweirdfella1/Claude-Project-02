@@ -114,6 +114,30 @@ const SYNTHESIS_REPLY = {
     route for a URL first, so a test-specific route added after this call
     still wins. */
 export async function installModelMocks(page: Page, answer: MockAnswer): Promise<void> {
+  // Exact verification is a separate R25 contract from configuration. Read
+  // the local test's mocked configuration on demand: this query can precede
+  // the app's own configuration fetch. Specific unhealthy/revoked routes
+  // registered by a test still override this default mock.
+  await page.route("**/api/provider-status?**", async (route) => {
+    const url = new URL(route.request().url());
+    const providerId = url.searchParams.get("provider");
+    const modelId = url.searchParams.get("model");
+    const executionRoute = url.searchParams.get("route");
+    const availability: Record<string, unknown> | null = await page.evaluate(async () => {
+      try { return await (await fetch("/api/provider-status")).json(); }
+      catch { return null; }
+    });
+    const configured = Boolean(providerId && availability?.[providerId] === true);
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ routeStatus: {
+        providerId, modelId, route: executionRoute, configured,
+        authenticated: configured, healthy: configured,
+        verifiedAt: configured ? "2026-09-01T00:00:00Z" : null,
+      } }),
+    });
+  });
   await page.route("**/api/verify-access", async (route: Route) => {
     await route.fulfill({
       status: 200,
