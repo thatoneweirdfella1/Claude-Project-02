@@ -41,6 +41,8 @@ export type DestinationProviderId =
   | "anthropic"
   | "openai"
   | "google"
+  | "groq"
+  | "openrouter"
   | "xai"
   | "perplexity"
   | "deepseek"

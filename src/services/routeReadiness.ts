@@ -40,10 +40,10 @@ export interface RouteReadiness {
 }
 
 const CONNECTED_PROVIDER_IDS: ReadonlySet<string> = new Set<ConnectedProviderId>([
-  "anthropic", "openai", "google", "xai", "deepseek",
+  "anthropic", "openai", "google", "xai", "deepseek", "groq", "openrouter",
 ]);
 
-function isConnectedProviderId(id: DestinationProviderId): id is ConnectedProviderId {
+function isConnectedProviderId(id: DestinationProviderId): id is DestinationProviderId & ConnectedProviderId {
   return CONNECTED_PROVIDER_IDS.has(id);
 }
 
@@ -90,7 +90,8 @@ export async function computeRouteReadiness(
     };
   }
 
-  const route = destination.providerId === "anthropic" ? "/api/proxy" : `/api/proxy-${destination.providerId}`;
+  const route = destination.providerId === "anthropic" || destination.providerId === "groq" || destination.providerId === "openrouter"
+    ? "/api/proxy" : `/api/proxy-${destination.providerId}`;
   const verification = await verifyProviderRoute(destination.providerId, destination.modelId, route);
   if (!verification.configured) {
     return {

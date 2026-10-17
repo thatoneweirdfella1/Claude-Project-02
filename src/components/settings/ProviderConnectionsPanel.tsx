@@ -9,6 +9,7 @@ import {
   type ProviderRouteVerification,
 } from "../../services/providerStatus";
 import { saveNow } from "../../services/persistence";
+import { describeFreePoolResult, getLastFreePoolResult, subscribeFreePoolResult } from "../../services/providerPool";
 
 const PROVIDERS: Array<{ id: ConnectedProviderId; label: string; modelId: string; route: string; keyName: string }> = [
   { id: "anthropic", label: "Anthropic (Claude)", modelId: "claude-sonnet-5", route: "/api/proxy", keyName: "ANTHROPIC_API_KEY" },
@@ -16,6 +17,8 @@ const PROVIDERS: Array<{ id: ConnectedProviderId; label: string; modelId: string
   { id: "google", label: "Google (Gemini)", modelId: "gemini-3.1-pro", route: "/api/proxy-google", keyName: "GOOGLE_API_KEY" },
   { id: "xai", label: "xAI (Grok)", modelId: "grok-4.3", route: "/api/proxy-xai", keyName: "XAI_API_KEY" },
   { id: "deepseek", label: "DeepSeek", modelId: "deepseek-v4-pro", route: "/api/proxy-deepseek", keyName: "DEEPSEEK_API_KEY" },
+  { id: "groq", label: "Groq", modelId: "llama-3.3-70b-versatile", route: "/api/proxy", keyName: "GROQ_API_KEY" },
+  { id: "openrouter", label: "OpenRouter", modelId: "meta-llama/llama-3.3-70b-instruct:free", route: "/api/proxy", keyName: "OPENROUTER_API_KEY" },
 ];
 
 type CheckState = "checking" | "checked";
@@ -30,6 +33,8 @@ export function ProviderConnectionsPanel() {
   const [checkingProvider, setCheckingProvider] = useState<ConnectedProviderId | null>(null);
   const [setupProvider, setSetupProvider] = useState<ConnectedProviderId | null>(null);
   const [operationStatus, setOperationStatus] = useState("");
+  const [poolResult, setPoolResult] = useState(getLastFreePoolResult);
+  useEffect(() => subscribeFreePoolResult(setPoolResult), []);
 
   async function refresh() {
     setCheckState("checking");
@@ -81,6 +86,9 @@ export function ProviderConnectionsPanel() {
 
   return <div className="settings-section" data-testid="provider-connections-panel">
     <h3>AI Connections</h3>
+    <p className="settings-section__note" role="status" data-testid="free-pool-result">
+      {poolResult ? describeFreePoolResult(poolResult) : "Free pool: Groq, Google and OpenRouter. No Divergence credits. No request has been sent in this browser session."}
+    </p>
     <p className="settings-section__note">
       Configuration, authentication, and live route health are separate states. Verification checks the exact model route; it never substitutes a provider or sends a billable prompt. Manual handoff always remains available.
     </p>

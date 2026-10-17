@@ -1,7 +1,7 @@
 import { appAccessHeaders } from "./appAccessClient";
 import type { Provider } from "./modelRegistry";
 
-export type ConnectedProviderId = "anthropic" | "openai" | "google" | "xai" | "deepseek";
+export type ConnectedProviderId = Provider;
 export type ProviderAvailability = Record<Provider, boolean>;
 
 export interface ProviderRouteVerification {

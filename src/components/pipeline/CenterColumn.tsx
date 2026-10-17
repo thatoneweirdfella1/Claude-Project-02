@@ -51,6 +51,7 @@ import { CONNECTED_EXECUTION_AVAILABLE } from "../../services/executionAvailabil
 import type { TechniqueId } from "../../stores/types";
 import { recommendModelAndTechniques } from "../../services/learningEngine";
 import { isExactRouteReady } from "../../services/routeReadiness";
+import { describeFreePoolResult, isFreePoolConfigured, requestFreePool } from "../../services/providerPool";
 
 const client = createProxyClient();
 const STATE_DIMENSIONS = ["emotion", "rsd", "interest", "cognitive"] as const;
@@ -88,7 +89,8 @@ interface PendingPaidReview {
   decisionNote: string;
 }
 
-type PendingReview = PendingHandoffReview | PendingPaidReview;
+type PendingPoolReview = Omit<PendingHandoffReview, "mode"> & { mode: "pool" };
+type PendingReview = PendingHandoffReview | PendingPaidReview | PendingPoolReview;
 
 function newMessageId(): string {
   return typeof crypto !== "undefined" && "randomUUID" in crypto
@@ -127,6 +129,7 @@ export function CenterColumn() {
   const [detection, setDetection] = useState<StateDetectionResult | null>(null);
   const [detectionStatus, setDetectionStatus] = useState<StateDetectionUiStatus>("idle");
   const [workflowMessage, setWorkflowMessage] = useState("");
+  const [freePoolBusy, setFreePoolBusy] = useState(false);
   const runIdRef = useRef(0);
   const controllerRef = useRef<AbortController | null>(null);
   const billingRef = useRef<ReturnType<typeof createAuthorizedClient> | null>(null);
@@ -251,10 +254,70 @@ export function CenterColumn() {
       toneGuidance: recommendationApplied ? recommendation?.toneGuidance : null,
     });
     const readyText = buildAiReadyRequest(packet);
+    if (request.translatorEngine === "auto-free-first") {
+      void offerFreePool(request, readyText, decisionNote);
+      return;
+    }
     setPendingReview({ mode: "handoff", request, text: readyText, decisionNote });
     setWorkflowMessage(request.reviewBeforeSend
       ? "Review request before handoff."
       : "Copy & Open to complete the handoff.");
+  }
+
+  async function offerFreePool(request: TranslateAskRequest, text: string, decisionNote: string) {
+    controllerRef.current?.abort();
+    const controller = new AbortController();
+    controllerRef.current = controller;
+    setFreePoolBusy(true);
+    setWorkflowMessage("Checking the free pool…");
+    try {
+      const configured = await isFreePoolConfigured();
+      if (controller.signal.aborted) return;
+      if (!configured) {
+        setPendingReview({ mode: "handoff", request, text, decisionNote });
+        setWorkflowMessage("No free provider is configured. Use the local no-charge handoff.");
+      } else if (request.reviewBeforeSend) {
+        setPendingReview({ mode: "pool", request, text, decisionNote });
+        setWorkflowMessage("Review before sending to the free pool. No Divergence credits.");
+      } else {
+        await sendToFreePool(request, text, decisionNote);
+      }
+    } finally {
+      if (controllerRef.current === controller) setFreePoolBusy(false);
+    }
+  }
+
+  async function sendToFreePool(request: TranslateAskRequest, text: string, decisionNote: string) {
+    controllerRef.current?.abort();
+    const controller = new AbortController();
+    controllerRef.current = controller;
+    setFreePoolBusy(true);
+    setWorkflowMessage("Sending to the free pool…");
+    try {
+      const result = await requestFreePool(text, {
+        signal: controller.signal,
+        excludedProviders: useAccountStore.getState().disconnectedProviders,
+        onUsage: (usage) => addTokenUsage(usage.inputTokens, usage.outputTokens, usage.model),
+      });
+      if (controller.signal.aborted) return;
+      const status = describeFreePoolResult(result);
+      if (result.status === "answered" && result.text) {
+        addMessage({ id: newMessageId(), role: "user", content: request.rawInput, timestamp: Date.now(), messageState: "sent" });
+        addMessage({ id: newMessageId(), role: "assistant", content: result.text, timestamp: Date.now(),
+          messageState: "answered", messageKind: "answer", sourceLabel: result.provider,
+          notes: [status, decisionNote].filter(Boolean) });
+        lastRawRef.current = request.rawInput;
+        useSessionStore.getState().setDraftInput("");
+        setWorkflowMessage(status);
+        try { await saveNow({ reason: "autosave" }); }
+        catch { setWorkflowMessage(status + " Recovery save failed; your answer is still on screen."); }
+      } else {
+        setPendingReview({ mode: "handoff", request, text, decisionNote: status });
+        setWorkflowMessage(status);
+      }
+    } finally {
+      if (controllerRef.current === controller) setFreePoolBusy(false);
+    }
   }
 
   async function preparePaidReview(
@@ -587,6 +650,10 @@ export function CenterColumn() {
       },
       s.context,
     );
+    if (isFreeTranslator(rerunRequest.translatorEngine)) {
+      queueFreeFlow(rerunRequest);
+      return;
+    }
     if (!CONNECTED_EXECUTION_AVAILABLE) {
       queueFreeFlow({ ...rerunRequest, translatorEngine: "local-rules" });
       return;
@@ -699,13 +766,14 @@ export function CenterColumn() {
     : pendingDetectionFailure
       ? "State Detection could not run. Continue with current settings?"
       : pendingReview
-        ? pendingReview.mode === "send"
+        ? pendingReview.mode === "send" || pendingReview.mode === "pool"
           ? "Review request before sending."
           : pendingReview.request.reviewBeforeSend
             ? "Review request before handoff."
             : "Copy & Open to complete the handoff."
         : displayMessage || workflowMessage;
   const submitDisabled = Boolean(
+    freePoolBusy ||
     pendingStateReview ||
     pendingDetectionFailure ||
     pendingReview ||
@@ -881,6 +949,24 @@ export function CenterColumn() {
               editedTranslation,
               reviewed.translationUsage,
             );
+          }}
+        />
+      )}
+      {pendingReview?.mode === "pool" && (
+        <ReviewReadyRequest
+          mode="send"
+          initialText={pendingReview.text}
+          originalText={pendingReview.request.rawInput}
+          destination={pendingReview.request.destination}
+          onCancel={() => {
+            setPendingReview(null);
+            setWorkflowMessage("Free send cancelled. Your draft is still here.");
+          }}
+          onSend={(text, sendAutomaticallyNextTime) => {
+            const reviewed = pendingReview;
+            if (sendAutomaticallyNextTime) useSessionStore.getState().setReviewBeforeSend(false);
+            setPendingReview(null);
+            void sendToFreePool(reviewed.request, text, reviewed.decisionNote);
           }}
         />
       )}

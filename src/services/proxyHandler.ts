@@ -9,7 +9,8 @@
    platform entry lives in api/proxy.ts. fetchImpl is injectable so this is
    unit-testable without a network (the sandbox has none — see BUILD-LOG.md). */
 
-import { isModelId, getProvider, type Provider } from "./modelRegistry.js";
+import { isModelId, getProvider, type ModelId, type Provider } from "./modelRegistry.js";
+import { createProviderPool } from "./providerPool.js";
 import { buildOpenAiPayload, callOpenAi } from "./providers/openai.js";
 import { buildGooglePayload, callGoogle } from "./providers/google.js";
 import { buildXaiPayload, callXai } from "./providers/xai.js";
@@ -26,6 +27,7 @@ const MAX_MESSAGES = 100;
 const MAX_INPUT_CHARS = 200_000;
 const MAX_SYSTEM_CHARS = 32_000;
 const MAX_OUTPUT_TOKENS = 8_192;
+const freeProviderPool = createProviderPool();
 
 export interface ProxyMessage {
   role: "user" | "assistant";
@@ -34,6 +36,11 @@ export interface ProxyMessage {
 
 export interface ProxyRequestBody {
   model: string;
+  /** Free requests ignore manual model/provider/paid-fallback overrides. */
+  freePool?: boolean;
+  freePoolBudgets?: unknown[];
+  excludedProviders?: unknown[];
+  poolModels?: unknown[];
   system?: string;
   messages: ProxyMessage[];
   stream?: boolean;
@@ -165,7 +172,7 @@ export async function handleProxyRequest(
   if (!body || typeof body !== "object") {
     return jsonResponse({ error: "Invalid request body" }, 400);
   }
-  if (!isModelId(body.model)) {
+  if (body.freePool !== true && !isModelId(body.model)) {
     return jsonResponse({ error: `Unknown model: ${String(body.model)}` }, 400);
   }
   if (!Array.isArray(body.messages) || body.messages.length === 0) {
@@ -188,12 +195,9 @@ export async function handleProxyRequest(
   }
 
   // Determine which provider this model uses
-  const provider = getProvider(body.model as any);
-  const apiKey = getApiKeyForProvider(provider, anthropicKey, env);
-
-  if (!apiKey) {
-    return missingKeyResponse(provider);
-  }
+  const provider = body.freePool === true ? null : getProvider(body.model as ModelId);
+  const apiKey = provider ? getApiKeyForProvider(provider, anthropicKey, env) : undefined;
+  if (provider && !apiKey) return missingKeyResponse(provider);
 
   const timeout = new AbortController();
   const timer = setTimeout(() => timeout.abort(), PROXY_TIMEOUT_MS);
@@ -210,14 +214,36 @@ export async function handleProxyRequest(
   let upstream: Response;
   try {
     if (timeout.signal.aborted) throw new Error("Request aborted");
+    if (body.freePool === true) {
+      const result = await freeProviderPool.run({
+        configured: (id) => Boolean(getApiKeyForProvider(id, anthropicKey, env)),
+        execute: (model) => {
+          const key = getApiKeyForProvider(model.provider, anthropicKey, env);
+          return key ? callProvider(model.provider, { ...body, model: model.id, stream: false, extendedThinking: false }, key, boundedFetch)
+            : Promise.resolve(missingKeyResponse(model.provider));
+        },
+        models: Array.isArray(body.poolModels) ? body.poolModels : undefined,
+        excludedProviders: Array.isArray(body.excludedProviders) ? body.excludedProviders : undefined,
+        budgets: Array.isArray(body.freePoolBudgets) ? body.freePoolBudgets : undefined,
+        signal: timeout.signal,
+      });
+      // Only normalized text and measured counts leave the server. Even an
+      // upstream that echoes authentication material cannot expose a key.
+      if (result.text) {
+        const keys = [anthropicKey, ...Object.values(env),
+          getApiKeyForProvider("groq", anthropicKey, env), getApiKeyForProvider("openrouter", anthropicKey, env)];
+        for (const key of keys) if (key) result.text = result.text.split(key).join("[REDACTED]");
+      }
+      cleanup();
+      return jsonResponse({ freePool: result }, 200);
+    }
+    if (!provider || !apiKey) throw new Error("Missing provider");
     upstream = await callProvider(provider, body, apiKey, boundedFetch);
-  } catch (error) {
+  } catch {
     cleanup();
     return jsonResponse(
       {
-        error: `Upstream request failed: ${
-          error instanceof Error ? error.message : String(error)
-        }`,
+        error: "Upstream request failed",
       },
       502,
     );
