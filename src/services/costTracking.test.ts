@@ -7,10 +7,14 @@ import {
 } from "./costTracking";
 
 describe("cost estimation", () => {
+  it("M5: distinguishes known zero usage from unavailable pricing", () => {
+    expect(calculateUsageCost(0, 0, "claude-sonnet-5")).toMatchObject({ status: "known", amount: 0 });
+    expect(calculateUsageCost(100, 100, "future-model")).toMatchObject({ status: "unknown", amount: null });
+  });
   it("uses model-specific per-million token prices", () => {
-    expect(calculateUsageCost(1_000_000, 1_000_000, "claude-haiku-4-5")).toBe(6);
-    expect(calculateUsageCost(1_000_000, 1_000_000, "claude-sonnet-5")).toBe(18);
-    expect(calculateUsageCost(1_000_000, 1_000_000, "claude-opus-4-8")).toBe(30);
+    expect(calculateUsageCost(1_000_000, 1_000_000, "claude-haiku-4-5").amount).toBe(6);
+    expect(calculateUsageCost(1_000_000, 1_000_000, "claude-sonnet-5").amount).toBe(18);
+    expect(calculateUsageCost(1_000_000, 1_000_000, "claude-opus-4-8").amount).toBe(30);
   });
 
   it("returns a conservative positive estimate before a call", () => {
@@ -48,30 +52,24 @@ describe("R14: Unknown Model Pricing", () => {
     expect(hasPricingFor("grok-4.3")).toBe(true);
     expect(hasPricingFor("deepseek-v4-pro")).toBe(true);
 
-    const claudeOpusCost = calculateUsageCost(1_000_000, 1_000_000, "claude-opus-4-8");
-    expect(calculateUsageCost(1_000_000, 1_000_000, "gpt-5.5")).not.toBe(claudeOpusCost);
-    expect(calculateUsageCost(1_000_000, 1_000_000, "gemini-3.1-pro")).not.toBe(claudeOpusCost);
-    expect(calculateUsageCost(1_000_000, 1_000_000, "grok-4.3")).not.toBe(claudeOpusCost);
-    expect(calculateUsageCost(1_000_000, 1_000_000, "deepseek-v4-pro")).not.toBe(claudeOpusCost);
+    const claudeOpusCost = calculateUsageCost(1_000_000, 1_000_000, "claude-opus-4-8").amount;
+    expect(calculateUsageCost(1_000_000, 1_000_000, "gpt-5.5").amount).not.toBe(claudeOpusCost);
+    expect(calculateUsageCost(1_000_000, 1_000_000, "gemini-3.1-pro").amount).not.toBe(claudeOpusCost);
+    expect(calculateUsageCost(1_000_000, 1_000_000, "grok-4.3").amount).not.toBe(claudeOpusCost);
+    expect(calculateUsageCost(1_000_000, 1_000_000, "deepseek-v4-pro").amount).not.toBe(claudeOpusCost);
   });
 
   it("eliminates fuzzy keyword matching for unknown models", () => {
-    expect(calculateUsageCost(1_000_000, 1_000_000, "claude-opus")).toBe(0);
-    expect(calculateUsageCost(1_000_000, 1_000_000, "my-opus-model")).toBe(0);
-    expect(calculateUsageCost(1_000_000, 1_000_000, "sonnet-custom")).toBe(0);
-    expect(calculateUsageCost(1_000_000, 1_000_000, "haiku-cheap")).toBe(0);
+    expect(calculateUsageCost(1_000_000, 1_000_000, "claude-opus").amount).toBe(null);
+    expect(calculateUsageCost(1_000_000, 1_000_000, "my-opus-model").amount).toBe(null);
+    expect(calculateUsageCost(1_000_000, 1_000_000, "sonnet-custom").amount).toBe(null);
+    expect(calculateUsageCost(1_000_000, 1_000_000, "haiku-cheap").amount).toBe(null);
   });
 
-  it("returns 0 (never a guessed price) for a model with no MODEL_PRICES entry", () => {
-    // Second-pass correction: this test previously claimed to prove the app
-    // "shows cost unavailable" for an unpriced model. It never did — 0 is a
-    // bare number, not a distinguishable "unavailable" state, and nothing in
-    // the UI renders "cost unavailable" text for this case (hasPricingFor is
-    // never called from any real component — see the roster/registry
-    // coverage test below, which is what actually keeps this scenario from
-    // occurring for any model real app code can reach).
-    expect(calculateUsageCost(1_000_000, 1_000_000, "unknown-model")).toBe(0);
-    expect(calculateUsageCost(5_000, 10_000, "future-model")).toBe(0);
+  it("returns unknown (never a guessed price) for a model with no MODEL_PRICES entry", () => {
+    // M5 deliberately replaces ambiguous zero with explicit unknown pricing.
+    expect(calculateUsageCost(1_000_000, 1_000_000, "unknown-model").amount).toBe(null);
+    expect(calculateUsageCost(5_000, 10_000, "future-model").amount).toBe(null);
   });
 
   it("only uses pricing from the explicit MODEL_PRICES registry", () => {
@@ -82,16 +80,19 @@ describe("R14: Unknown Model Pricing", () => {
       "claude-opus-5",
       "claudehaiku4.5",
       "CLAUDE-HAIKU-4-5",
+      "toString",
+      "constructor",
+      "__proto__",
     ];
 
     knownModels.forEach((model) => {
       expect(hasPricingFor(model)).toBe(true);
-      expect(calculateUsageCost(1_000_000, 0, model)).toBeGreaterThan(0);
+      expect(calculateUsageCost(1_000_000, 0, model).amount).toBeGreaterThan(0);
     });
 
     unknownVariants.forEach((model) => {
       expect(hasPricingFor(model)).toBe(false);
-      expect(calculateUsageCost(1_000_000, 0, model)).toBe(0);
+      expect(calculateUsageCost(1_000_000, 0, model).amount).toBe(null);
     });
   });
 

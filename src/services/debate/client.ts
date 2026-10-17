@@ -28,7 +28,7 @@ import type { ParticipantUsage } from "./runDebate";
    column showed "cost unavailable" for every participant, always. */
 function actualCostFor(model: string, inputTokens?: number, outputTokens?: number): number | null {
   if (inputTokens === undefined || outputTokens === undefined) return null;
-  return calculateUsageCost(inputTokens, outputTokens, model);
+  return calculateUsageCost(inputTokens, outputTokens, model).amount;
 }
 
 export interface DebateCompletionRequest {

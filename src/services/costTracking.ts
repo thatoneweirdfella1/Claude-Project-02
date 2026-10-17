@@ -7,6 +7,10 @@ export interface ModelPrice {
   outputPerMillion: number;
 }
 
+export type UsagePrice =
+  | { status: "known"; amount: number; model: string; priceVersion: string }
+  | { status: "unknown"; amount: null; model: string; priceVersion: string };
+
 export const MODEL_PRICE_VERSION = "multi-provider-prices-2026-09-01";
 
 /** First-party Claude API list prices current for the model ids used here.
@@ -53,7 +57,7 @@ function roundDollars(value: number): number {
 }
 
 function priceFor(model: string): ModelPrice | null {
-  return MODEL_PRICES[model] ?? null;
+  return Object.hasOwn(MODEL_PRICES, model) ? MODEL_PRICES[model] : null;
 }
 
 export function hasPricingFor(model: string): boolean {
@@ -69,19 +73,24 @@ export function calculateUsageCost(
   inputTokens: number,
   outputTokens: number,
   model = "claude-haiku-4-5",
-): number {
-  if (inputTokens < 0 || outputTokens < 0) return 0;
+): UsagePrice {
   const price = priceFor(model);
-  if (!price) return 0;
-  return roundDollars(
+  if (!price || !Number.isFinite(inputTokens) || !Number.isFinite(outputTokens) || inputTokens < 0 || outputTokens < 0) {
+    return { status: "unknown", amount: null, model, priceVersion: MODEL_PRICE_VERSION };
+  }
+  const amount = roundDollars(
     (inputTokens / 1_000_000) * price.inputPerMillion +
       (outputTokens / 1_000_000) * price.outputPerMillion,
   );
+  if (!Number.isFinite(amount)) return { status: "unknown", amount: null, model, priceVersion: MODEL_PRICE_VERSION };
+  return { status: "known", amount, model, priceVersion: MODEL_PRICE_VERSION };
 }
 
 /** Conservative pre-call estimate used by the confirmation dialog. */
 export function getEstimatedCostForCall(input: CostEstimateInput): number {
-  return calculateUsageCost(input.inputTokens, input.maxOutputTokens, input.model);
+  const price = calculateUsageCost(input.inputTokens, input.maxOutputTokens, input.model);
+  if (price.status === "unknown") throw new Error(`Pricing unavailable for ${input.model}`);
+  return price.amount;
 }
 
 /** Estimate one complete Translate action: prompt normalization, state
@@ -118,15 +127,15 @@ export function addTokenUsage(
   inputTokens: number,
   outputTokens: number,
   model = "claude-haiku-4-5",
-): number {
+): number | null {
   const callCost = calculateUsageCost(inputTokens, outputTokens, model);
   sessionCost.inputTokens += inputTokens;
   sessionCost.outputTokens += outputTokens;
   sessionCost.totalTokens += inputTokens + outputTokens;
-  sessionCost.estimatedCost = roundDollars(sessionCost.estimatedCost + callCost);
+  if (callCost.status === "known") sessionCost.estimatedCost = roundDollars(sessionCost.estimatedCost + callCost.amount);
 
   window.dispatchEvent(new CustomEvent("costUpdated", { detail: getSessionCost() }));
-  return callCost;
+  return callCost.amount;
 }
 
 export function emitCreditDeducted(amount: number, referenceId?: string): void {

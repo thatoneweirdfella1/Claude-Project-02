@@ -43,7 +43,7 @@ import { QuickActionsRow } from "../session";
 import { ConversationArea, TranslationCard } from "../translation";
 import { StreamingAnswer } from "../streaming";
 import { usePipelineRun, type ActivePipelineRun } from "./usePipelineRun";
-import { authorizeEstimatedCost } from "../../services/creditAuthorization";
+import { authorizeEstimatedCost, createAuthorizedClient } from "../../services/creditAuthorization";
 import { addTokenUsage, getEstimatedCostForPipeline } from "../../services/costTracking";
 import type { PaidRoutePolicy } from "../../services/paidRoutePolicy";
 import { saveNow } from "../../services/persistence";
@@ -129,6 +129,13 @@ export function CenterColumn() {
   const [workflowMessage, setWorkflowMessage] = useState("");
   const runIdRef = useRef(0);
   const controllerRef = useRef<AbortController | null>(null);
+  const billingRef = useRef<ReturnType<typeof createAuthorizedClient> | null>(null);
+  useEffect(() => () => { controllerRef.current?.abort(); void billingRef.current?.finish(); }, []);
+
+  function measuredClient() {
+    if (!billingRef.current) throw new Error("Paid request has no reservation");
+    return billingRef.current.client;
+  }
   const lastRawRef = useRef("");
   const runDecisionNoteRef = useRef("");
   const runHadDetectionRef = useRef(false);
@@ -169,12 +176,14 @@ export function CenterColumn() {
       ) as Partial<Record<TechniqueId, number>>;
       const learnedModel = recommendModelAndTechniques(request.rawInput, learnedPreferences).model;
 
+      const operation = billingRef.current;
+      if (!operation) { setWorkflowMessage("Not sent. No active credit reservation."); return; }
       setWorkflowMessage("Sending…");
       setRun({
         id: runIdRef.current,
-        start: () =>
-          observePipeline(request, {
-            client,
+        start: async function* () {
+          try { yield* observePipeline(request, {
+            client: operation.client,
             plan,
             signal: controller.signal,
             stateTechniques: feeds.techniqueCandidates,
@@ -183,7 +192,11 @@ export function CenterColumn() {
             stateTone: feeds.toneGuidance,
             pretranslated,
             pretranslationUsage,
-          }),
+          }); } finally {
+            await operation.finish();
+            if (billingRef.current === operation) billingRef.current = null;
+          }
+        },
       });
     },
     [plan],
@@ -258,7 +271,7 @@ export function CenterColumn() {
     setPreparationGate(null);
     setWorkflowMessage("Preparing…");
     const outcome = await translate(request.rawInput, {
-      client: (translationRequest) => client.complete({
+      client: (translationRequest) => measuredClient().complete({
         ...translationRequest,
         onUsage: (usage) => {
           translationUsage = usage;
@@ -267,7 +280,7 @@ export function CenterColumn() {
       }),
       signal: controller.signal,
     });
-    if (controller.signal.aborted) return;
+    if (controller.signal.aborted) { await billingRef.current?.finish(); return; }
 
     const gated = gateTranslation(outcome);
     setPreparationGate(gated);
@@ -286,6 +299,8 @@ export function CenterColumn() {
       return;
     }
 
+    await billingRef.current?.finish();
+    billingRef.current = null;
     setWorkflowMessage(gated.kind === "clarify"
       ? "Please confirm what you meant before sending."
       : gated.kind === "too-large"
@@ -439,14 +454,14 @@ export function CenterColumn() {
     const adaptationNote = buildAdaptationNote(useAccountStore.getState().stateCorrections);
     const outcome = await detectState(request.rawInput, {
       client: (req) =>
-        client.complete({
+        measuredClient().complete({
           ...req,
           onUsage: (usage) => addTokenUsage(usage.inputTokens, usage.outputTokens, req.model),
         }),
       signal: controller.signal,
       adaptationNote,
     });
-    if (controller.signal.aborted) return;
+    if (controller.signal.aborted) { await billingRef.current?.finish(); return; }
     if (outcome.status === "ok") {
       resolveDetection(request, outcome.result, { kind: "paid" });
     } else {
@@ -481,6 +496,11 @@ export function CenterColumn() {
       freeAlternativeLabel:
         `Prepare an AI-ready request for ${destinationLabel(request.destination)} without a new charge`,
     };
+  }
+
+  function pipelineModels(selectedModel: string) {
+    return [...new Set(["claude-sonnet-5", "claude-haiku-4-5", "claude-opus-4-8", selectedModel])]
+      .map((model) => ({ provider: "anthropic", model }));
   }
 
   async function handleSubmit(request: TranslateAskRequest): Promise<boolean> {
@@ -531,6 +551,7 @@ export function CenterColumn() {
         selectedModel,
         "This request uses a connected paid AI instead of the no-new-charge handoff.",
       ),
+      { models: pipelineModels(selectedModel) },
     );
     if (!authorization.authorized) {
       if (authorization.reason === "free-route-selected") {
@@ -541,6 +562,7 @@ export function CenterColumn() {
       return false;
     }
 
+    billingRef.current = createAuthorizedClient(authorization, client);
     await queuePaidFlow(paidRequest);
     return true;
   }
@@ -582,12 +604,14 @@ export function CenterColumn() {
         selectedModel,
         "Refining reruns the connected paid AI pipeline.",
       ),
+      { models: pipelineModels(selectedModel) },
     );
     if (!authorization.authorized) {
       if (authorization.reason === "free-route-selected") queueFreeFlow(rerunRequest);
       else setWorkflowMessage("Refine cancelled. Nothing was spent.");
       return;
     }
+    billingRef.current = createAuthorizedClient(authorization, client);
     addMessage({
       id: newMessageId(),
       role: "user",
@@ -777,6 +801,8 @@ export function CenterColumn() {
             else void queuePaidFlow(pending.request);
           }}
           onCancel={() => {
+            void billingRef.current?.finish();
+            billingRef.current = null;
             setPendingDetectionFailure(null);
             setWorkflowMessage("Send cancelled. Your draft and settings are unchanged.");
           }}
@@ -824,6 +850,8 @@ export function CenterColumn() {
           originalText={pendingReview.request.rawInput}
           destination={pendingReview.request.destination}
           onCancel={() => {
+            void billingRef.current?.finish();
+            billingRef.current = null;
             setPendingReview(null);
             setPreparationGate(null);
             setWorkflowMessage("Review cancelled. Your draft and settings are unchanged.");

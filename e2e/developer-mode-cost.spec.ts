@@ -161,7 +161,8 @@ test("Developer Mode: when the money check refuses an approved charge, nothing i
   await page.waitForTimeout(1_000);
   expect(proxyCalls).toHaveLength(0);
   const state = await readPersistedAuthorizationState(page);
-  expect(state.account?.creditBalance).toBe(25);
+  // M5: the authoritative empty balance replaces the stale account mirror.
+  expect(state.account?.creditBalance).toBe(0);
   expect(state.money.balanceCents).toBe(0);
   expect(state.money.reservations).toHaveLength(0);
   expect(state.money.ledger).toHaveLength(0);

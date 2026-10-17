@@ -8,7 +8,7 @@ import { calculateUsageCost } from "../costTracking";
    input/output token counts were already in hand from the call that just
    completed — so the "final cost" MultiAiRunHistory renders was permanently
    "cost unavailable" for every participant, always. Fixed to compute it via
-   the same explicitly-priced calculateUsageCost() R14 already requires. */
+   the same explicitly-priced calculateUsageCost().amount R14 already requires. */
 
 describe("R15: withDebateUsage computes a real actualCost from captured usage", () => {
   it("computes actualCost from the real token counts, matching calculateUsageCost exactly", async () => {
@@ -21,7 +21,7 @@ describe("R15: withDebateUsage computes a real actualCost from captured usage", 
 
     expect(result.usage?.inputTokens).toBe(500);
     expect(result.usage?.outputTokens).toBe(300);
-    expect(result.usage?.actualCost).toBe(calculateUsageCost(500, 300, DEBATE_CLAUDE_MODEL));
+    expect(result.usage?.actualCost).toBe(calculateUsageCost(500, 300, DEBATE_CLAUDE_MODEL).amount);
     expect(result.usage?.actualCost).toBeGreaterThan(0);
   });
 
@@ -46,10 +46,10 @@ describe("R15: createPartnerClient computes a real actualCost from the partner's
 
     expect(result.usage?.inputTokens).toBe(420);
     expect(result.usage?.outputTokens).toBe(310);
-    expect(result.usage?.actualCost).toBe(calculateUsageCost(420, 310, "gpt-5.5"));
+    expect(result.usage?.actualCost).toBe(calculateUsageCost(420, 310, "gpt-5.5").amount);
     expect(result.usage?.actualCost).toBeGreaterThan(0);
     // Distinct partners must never share a price — R14/R27's own rule.
-    expect(result.usage?.actualCost).not.toBe(calculateUsageCost(420, 310, "claude-sonnet-5"));
+    expect(result.usage?.actualCost).not.toBe(calculateUsageCost(420, 310, "claude-sonnet-5").amount);
   });
 
   it("leaves actualCost null when the partner reply carries no usage field", async () => {

@@ -17,6 +17,7 @@ import { useSessionStore } from "../../stores/sessionStore";
 import { destinationLabel } from "../../services/providerNeutral";
 import { computeRouteReadiness, type RouteReadiness } from "../../services/routeReadiness";
 import { VisibilityMenu } from "../visibility/VisibilityMenu";
+import { reconcileCreditAuthorizations } from "../../services/creditAuthorization";
 import { AppErrorBoundary } from "./AppErrorBoundary";
 
 function FrozenReferenceConnectors() {
@@ -47,6 +48,9 @@ function RouteReadinessSummary() {
 }
 
 export function AppShell() {
+  useEffect(() => {
+    void reconcileCreditAuthorizations(true).catch((error) => console.error("[money] settlement recovery failed", error));
+  }, []);
   const currentScreen = useSessionStore((s) => s.currentScreen);
   const quickTools = useAccountStore((s) => s.visibility.quickTools);
   const [showShortcuts, setShowShortcuts] = useState(false);

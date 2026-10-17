@@ -245,6 +245,7 @@ async function finalizeParticipantAuthorization(
     authorization,
     roundCost((costs as number[]).reduce((sum, cost) => sum + cost, 0)),
     cancelled ? "Measured Multi-AI usage completed before cancellation" : "Measured Multi-AI usage",
+    participants.map((participant) => participant.model === "gemini-3.1-pro" ? "gemini-3.1-pro-preview" : participant.model).filter((model): model is string => model !== null),
   );
 }
 
@@ -370,7 +371,7 @@ export function MultiAiActions() {
         `Starting this debate sends one paid request per participant (${perParticipant.map((p) => `${p.label}: $${p.cost.toFixed(4)}`).join(", ")}).`,
         perParticipant.map(estimateLine),
       ),
-      { deferSettlement: true },
+      { deferSettlement: true, models: perParticipant.map(({ provider, model }) => ({ provider, model })) },
     );
     if (!authorization.authorized) return;
 
@@ -395,6 +396,8 @@ export function MultiAiActions() {
         // R28: no more hardcoded $0.01 placeholder — this is the real,
         // already-computed pre-authorization estimate for this exact call.
         estimatedCost: total,
+        authorizationReferenceId: authorization.referenceId,
+        actualCost: null, billedCost: null, billingStatus: "reserved",
       });
     }
 
@@ -501,7 +504,7 @@ export function MultiAiActions() {
           `Retrying sends exactly one new request, to ${target.label} only ($${estimate.toFixed(4)}).`,
           [estimateLine(retryEstimate)],
         ),
-        { deferSettlement: true },
+        { deferSettlement: true, models: [{ provider: retryEstimate.provider, model: retryModel }] },
       );
       if (!authorization.authorized) return;
 
@@ -623,7 +626,7 @@ export function MultiAiActions() {
         "Consensus uses a new paid AI call to compare the completed debate.",
         [estimateLine(consensusEstimate)],
       ),
-      { deferSettlement: true },
+      { deferSettlement: true, models: [{ provider: "anthropic", model: "claude-opus-4-8" }] },
     );
     if (!authorization.authorized) return;
 
@@ -639,7 +642,7 @@ export function MultiAiActions() {
       const result = await runConsensus(transcript, {
         client: (req) => dispatchTracked(req.signal, () => { dispatched = true; }, () => completeTracked({
           ...req,
-          onUsage: (usage) => { actualCost = calculateUsageCost(usage.inputTokens, usage.outputTokens, req.model); },
+          onUsage: (usage) => { actualCost = calculateUsageCost(usage.inputTokens, usage.outputTokens, req.model).amount; },
         })),
         signal: controller.signal,
       });
@@ -689,7 +692,7 @@ export function MultiAiActions() {
         "Synthesis uses a new paid AI call to combine the completed debate.",
         [estimateLine(synthesisEstimate)],
       ),
-      { deferSettlement: true },
+      { deferSettlement: true, models: [{ provider: "anthropic", model: "claude-opus-4-8" }] },
     );
     if (!authorization.authorized) return;
 
@@ -705,7 +708,7 @@ export function MultiAiActions() {
       const result = await runSynthesis(transcript, {
         client: (req) => dispatchTracked(req.signal, () => { dispatched = true; }, () => completeTracked({
           ...req,
-          onUsage: (usage) => { actualCost = calculateUsageCost(usage.inputTokens, usage.outputTokens, req.model); },
+          onUsage: (usage) => { actualCost = calculateUsageCost(usage.inputTokens, usage.outputTokens, req.model).amount; },
         })),
         signal: controller.signal,
       });

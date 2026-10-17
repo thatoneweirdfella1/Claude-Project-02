@@ -619,6 +619,10 @@ export interface AutoSelectUsageLog {
   sessionId: string;
   /** Estimated API cost for this auto-select call */
   estimatedCost: number;
+  authorizationReferenceId?: string;
+  actualCost?: number | null;
+  billedCost?: number | null;
+  billingStatus?: CreditAuthorizationRecord["status"];
   /** User's quality rating (1-5) after seeing the result, or null if not rated */
   resultQuality?: number;
   /** True if user kept/used the auto-selected value, false if they rejected it */
@@ -801,6 +805,28 @@ export interface SessionState {
 }
 
 /** Account store — persists across browser closes (CANON). */
+export interface PricedModel {
+  provider: string;
+  /** Explicit pricing-table id. */
+  model: string;
+}
+
+export interface CreditAuthorizationRecord {
+  referenceId: string;
+  reservationId: string;
+  estimatedCost: number;
+  hardMaximum: number;
+  actualCost: number | null;
+  billedCost: number | null;
+  overageCost: number;
+  models: PricedModel[];
+  /** Upstream ids actually dispatched, kept apart from the authorized set. */
+  actualModels: string[];
+  priceVersion: string;
+  status: "reserved" | "measured" | "settled" | "released" | "pending-unknown";
+  note: string;
+}
+
 export interface AccountState {
   plan: SubscriptionTier;
   /** Dollar-denominated usable API credits. Never allowed below zero. */
@@ -809,6 +835,9 @@ export interface AccountState {
   billingDate: number;
   appMode: AppMode;
   creditLedger: CreditLedgerEntry[];
+  creditAuthorizations: CreditAuthorizationRecord[];
+  /** Durable cursor into the authority's append-only ledger. */
+  moneyMirrorCursor: number;
   manualPaymentRequests: ManualPaymentRequest[];
   optimizationProfile: OptimizationProfile;
   optimizationRuns: OptimizationRun[];

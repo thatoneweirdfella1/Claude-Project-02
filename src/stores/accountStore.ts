@@ -135,6 +135,8 @@ export function createInitialAccountState(): AccountState {
     billingDate: 0,
     appMode: "user",
     creditLedger: [],
+    creditAuthorizations: [],
+    moneyMirrorCursor: 0,
     manualPaymentRequests: [],
     optimizationProfile: {
       enabled: false,
@@ -174,6 +176,8 @@ export const ACCOUNT_PERSISTED_KEYS: (keyof AccountState)[] = [
   "billingDate",
   "appMode",
   "creditLedger",
+  "creditAuthorizations",
+  "moneyMirrorCursor",
   "manualPaymentRequests",
   "optimizationProfile",
   "optimizationRuns",

@@ -36,6 +36,7 @@ function labRequest(idempotencyKey: string): MoneyPreflightRequest {
 
 export function InteractivePlanControls() {
   const persistedPlan = useAccountStore((state) => state.plan);
+  const authorizations = useAccountStore((state) => state.creditAuthorizations);
   const authority = getMoneyAuthority();
   const [snapshot, setSnapshot] = useState(() => authority.snapshot());
   const [pendingCheckout, setPendingCheckout] = useState<SandboxCheckout | null>(null);
@@ -203,7 +204,7 @@ export function InteractivePlanControls() {
         ? <p className="settings-section__note">No sandbox money event yet.</p>
         : <>
           {snapshot.receipts.slice().reverse().slice(0, 5).map((receipt) => <div className="settings-item" key={receipt.id}>
-            <div className="settings-item__label">{receipt.status} · {receipt.provider} · {receipt.model}</div>
+            <div className="settings-item__label">{receipt.status} · {receipt.provider} · {authorizations.find((item) => item.reservationId === receipt.reservationId)?.actualModels.join(" + ") || receipt.model}</div>
             <div className="settings-item__value">actual {receipt.actualCents === null ? "pending" : dollars(receipt.actualCents)} · released {dollars(receipt.releasedCents)} · balance {dollars(receipt.balanceAfterCents)}</div>
           </div>)}
           <p className="settings-section__note">{snapshot.ledger.length} immutable sandbox ledger event{snapshot.ledger.length === 1 ? "" : "s"}. Subscription entitlement and credits are recorded separately.</p>

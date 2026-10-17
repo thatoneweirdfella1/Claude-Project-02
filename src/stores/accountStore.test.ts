@@ -140,6 +140,8 @@ describe("ACCOUNT_PERSISTED_KEYS", () => {
         "billingDate",
         "appMode",
         "creditLedger",
+        "creditAuthorizations",
+        "moneyMirrorCursor",
         "manualPaymentRequests",
         "optimizationProfile",
         "optimizationRuns",
