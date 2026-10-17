@@ -92,6 +92,14 @@ export function runPreflight({ print = true, action = 'read-only' } = {}) {
 
   if (source.repository !== 'thatoneweirdfella1/Claude-Project-02') errors.push('repository identity mismatch')
   const creatingContinuation = action === 'create_continuation_branch'
+  const sourceNumber = /^build-([1-9]\d*)$/.exec(source.source_branch || '')
+  const targetNumber = /^build-([1-9]\d*)$/.exec(source.continuation_branch || '')
+  if (!sourceNumber || !targetNumber || !Number.isSafeInteger(Number(targetNumber[1])) || Number(targetNumber[1]) !== Number(sourceNumber[1]) + 1) {
+    errors.push('source checkpoint must declare consecutive numbered build branches: build-N from build-(N-1)')
+  }
+  const previousTip = git(['rev-parse','--verify',`refs/remotes/origin/${source.source_branch}^{commit}`], { allowFailure:true })
+  if (previousTip.status !== 0) errors.push(`previous build branch is unavailable: origin/${source.source_branch}`)
+  else if (previousTip.stdout !== source.source_commit) errors.push(`source checkpoint differs from origin/${source.source_branch}: ${previousTip.stdout}`)
   if (creatingContinuation) {
     if (branch !== source.source_branch) errors.push(`branch creation must run from completed source branch ${source.source_branch}, not ${branch || '<none>'}`)
     const sourceLease = remoteHead(source.source_branch)
@@ -148,12 +156,12 @@ export function runPreflight({ print = true, action = 'read-only' } = {}) {
     if (allowlisted.has(file)) continue
     let body
     try { body = read(file) } catch { continue }
-    if (body.includes('__REQUIRED_VALUE__')) errors.push(`unresolved template marker in ${file}`)
+    if (body.includes(['__REQUIRED', 'VALUE__'].join('_'))) errors.push(`unresolved template marker in ${file}`)
   }
 
   if (permissions.schema_version !== 2) errors.push('permissions schema is not v2')
   if (permissions.default !== 'deny') errors.push('permissions default is not deny')
-  if (permissions.branch_scope !== source.continuation_branch) errors.push('permission branch scope differs from required next-layer branch')
+  if (permissions.branch_scope !== source.continuation_branch) errors.push('permission branch scope differs from approved build-run branch')
   for (const name of EXTERNAL_EFFECT_PERMISSIONS) if (!Object.hasOwn(permissions.grants || {}, name)) errors.push(`missing explicit external-effect permission: ${name}`)
   if (!baseline.protected_ref) warnings.push(baseline.server_protection)
   const lastMatch = /\*\*Last completed horizontal layer:\*\* `?(L[1-7]|NONE)`?/.exec(statusText)

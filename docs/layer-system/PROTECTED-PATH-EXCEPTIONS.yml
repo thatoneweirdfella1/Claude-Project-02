@@ -1,11 +1,124 @@
 {
   "schema_version": 2,
-  "rule": "Every exception is exact, user-authorized, batch-scoped, and hash-bounded. Wildcard exceptions are forbidden.",
+  "rule": "Every exception is exact, user-authorized, batch-scoped, and hash-bounded. Wildcard exceptions are forbidden. Completed recorded-deletion entries must prove the exact single-parent deletion commit and continued absence; null is an absent tree entry, never a fabricated blob hash. Other exceptions retain their commit expiry.",
   "required_fields": ["path","old_blob_sha","new_blob_sha","affected_permanent_ids","authorization_date","user_attestation","expires_after_commit"],
   "superseded_unbounded_entries": {
     "source_commit":"3871b160b7ab217216e100149061058382c1bf2f",
     "paths":["docs/layer-system/PERMISSIONS.yml","scripts/governance/preflight.mjs","scripts/governance/verify-protected-paths.mjs","docs/layer-system/PROTECTED-PATHS.yml","docs/layer-system/PROTECTED-PATH-EXCEPTIONS.yml","docs/layer-system/RECOVERY.md"],
     "status":"REJECTED AS ACTIVE EXCEPTIONS — authorization prose without old/new blob hashes, affected IDs, batch scope, and expiry cannot bypass protection"
   },
-  "exceptions": []
+  "exceptions": [
+    {
+      "path": "cowork-preview/parts/part-00",
+      "kind": "recorded-deletion",
+      "old_blob_sha": "66dff2d18e82fc60765911386411a6fc12caabf8",
+      "new_blob_sha": null,
+      "affected_permanent_ids": [
+        "SRC-VIS-01"
+      ],
+      "affected_scope": "Deploy-overlay archive retirement; SRC-VIS-01 is the frozen visual-source authority affected by deploying ordinary source instead. This records source representation only, not product completion.",
+      "authorization_date": "2026-10-17",
+      "user_attestation": "DIVERGENCE_BUILD_RUN.md G2 explicitly authorizes recording the completed B1 archive-part deletions; docs/build-runs/OWNER-DECISIONS.md J5 authorizes retiring the deploy overlay as ordinary source.",
+      "deletion_commit": "ea7db7663ba6301a8bba9305ed3a03e8b8c03803",
+      "expires_after_commit": "ea7db7663ba6301a8bba9305ed3a03e8b8c03803"
+    },
+    {
+      "path": "cowork-preview/parts/part-01",
+      "kind": "recorded-deletion",
+      "old_blob_sha": "d81057790d65522f7b2ad0fe970469099f23093c",
+      "new_blob_sha": null,
+      "affected_permanent_ids": [
+        "SRC-VIS-01"
+      ],
+      "affected_scope": "Deploy-overlay archive retirement; SRC-VIS-01 is the frozen visual-source authority affected by deploying ordinary source instead. This records source representation only, not product completion.",
+      "authorization_date": "2026-10-17",
+      "user_attestation": "DIVERGENCE_BUILD_RUN.md G2 explicitly authorizes recording the completed B1 archive-part deletions; docs/build-runs/OWNER-DECISIONS.md J5 authorizes retiring the deploy overlay as ordinary source.",
+      "deletion_commit": "ea7db7663ba6301a8bba9305ed3a03e8b8c03803",
+      "expires_after_commit": "ea7db7663ba6301a8bba9305ed3a03e8b8c03803"
+    },
+    {
+      "path": "cowork-preview/parts/part-02",
+      "kind": "recorded-deletion",
+      "old_blob_sha": "ed08324da42cd9f26ce0014a6b8437d7d8d2675b",
+      "new_blob_sha": null,
+      "affected_permanent_ids": [
+        "SRC-VIS-01"
+      ],
+      "affected_scope": "Deploy-overlay archive retirement; SRC-VIS-01 is the frozen visual-source authority affected by deploying ordinary source instead. This records source representation only, not product completion.",
+      "authorization_date": "2026-10-17",
+      "user_attestation": "DIVERGENCE_BUILD_RUN.md G2 explicitly authorizes recording the completed B1 archive-part deletions; docs/build-runs/OWNER-DECISIONS.md J5 authorizes retiring the deploy overlay as ordinary source.",
+      "deletion_commit": "ea7db7663ba6301a8bba9305ed3a03e8b8c03803",
+      "expires_after_commit": "ea7db7663ba6301a8bba9305ed3a03e8b8c03803"
+    },
+    {
+      "path": "cowork-preview/parts/part-03",
+      "kind": "recorded-deletion",
+      "old_blob_sha": "b8cae65a7913294e5096c503585c183dc321717b",
+      "new_blob_sha": null,
+      "affected_permanent_ids": [
+        "SRC-VIS-01"
+      ],
+      "affected_scope": "Deploy-overlay archive retirement; SRC-VIS-01 is the frozen visual-source authority affected by deploying ordinary source instead. This records source representation only, not product completion.",
+      "authorization_date": "2026-10-17",
+      "user_attestation": "DIVERGENCE_BUILD_RUN.md G2 explicitly authorizes recording the completed B1 archive-part deletions; docs/build-runs/OWNER-DECISIONS.md J5 authorizes retiring the deploy overlay as ordinary source.",
+      "deletion_commit": "ea7db7663ba6301a8bba9305ed3a03e8b8c03803",
+      "expires_after_commit": "ea7db7663ba6301a8bba9305ed3a03e8b8c03803"
+    },
+    {
+      "path": "cowork-preview/parts/part-04",
+      "kind": "recorded-deletion",
+      "old_blob_sha": "a9aea36ac0a9fe7e6480a79622e1ac3e3f341cb6",
+      "new_blob_sha": null,
+      "affected_permanent_ids": [
+        "SRC-VIS-01"
+      ],
+      "affected_scope": "Deploy-overlay archive retirement; SRC-VIS-01 is the frozen visual-source authority affected by deploying ordinary source instead. This records source representation only, not product completion.",
+      "authorization_date": "2026-10-17",
+      "user_attestation": "DIVERGENCE_BUILD_RUN.md G2 explicitly authorizes recording the completed B1 archive-part deletions; docs/build-runs/OWNER-DECISIONS.md J5 authorizes retiring the deploy overlay as ordinary source.",
+      "deletion_commit": "ea7db7663ba6301a8bba9305ed3a03e8b8c03803",
+      "expires_after_commit": "ea7db7663ba6301a8bba9305ed3a03e8b8c03803"
+    },
+    {
+      "path": "cowork-preview/parts/part-05",
+      "kind": "recorded-deletion",
+      "old_blob_sha": "48411d748f6185c1413eae7c63e89b1b2356590c",
+      "new_blob_sha": null,
+      "affected_permanent_ids": [
+        "SRC-VIS-01"
+      ],
+      "affected_scope": "Deploy-overlay archive retirement; SRC-VIS-01 is the frozen visual-source authority affected by deploying ordinary source instead. This records source representation only, not product completion.",
+      "authorization_date": "2026-10-17",
+      "user_attestation": "DIVERGENCE_BUILD_RUN.md G2 explicitly authorizes recording the completed B1 archive-part deletions; docs/build-runs/OWNER-DECISIONS.md J5 authorizes retiring the deploy overlay as ordinary source.",
+      "deletion_commit": "ea7db7663ba6301a8bba9305ed3a03e8b8c03803",
+      "expires_after_commit": "ea7db7663ba6301a8bba9305ed3a03e8b8c03803"
+    },
+    {
+      "path": "cowork-preview/parts/part-06",
+      "kind": "recorded-deletion",
+      "old_blob_sha": "ad922fb840da91c506dcfe647774dd34131b6f10",
+      "new_blob_sha": null,
+      "affected_permanent_ids": [
+        "SRC-VIS-01"
+      ],
+      "affected_scope": "Deploy-overlay archive retirement; SRC-VIS-01 is the frozen visual-source authority affected by deploying ordinary source instead. This records source representation only, not product completion.",
+      "authorization_date": "2026-10-17",
+      "user_attestation": "DIVERGENCE_BUILD_RUN.md G2 explicitly authorizes recording the completed B1 archive-part deletions; docs/build-runs/OWNER-DECISIONS.md J5 authorizes retiring the deploy overlay as ordinary source.",
+      "deletion_commit": "ea7db7663ba6301a8bba9305ed3a03e8b8c03803",
+      "expires_after_commit": "ea7db7663ba6301a8bba9305ed3a03e8b8c03803"
+    },
+    {
+      "path": "cowork-preview/parts/part-07",
+      "kind": "recorded-deletion",
+      "old_blob_sha": "535d2b4579aa2a20557e97b502235007accc8e2f",
+      "new_blob_sha": null,
+      "affected_permanent_ids": [
+        "SRC-VIS-01"
+      ],
+      "affected_scope": "Deploy-overlay archive retirement; SRC-VIS-01 is the frozen visual-source authority affected by deploying ordinary source instead. This records source representation only, not product completion.",
+      "authorization_date": "2026-10-17",
+      "user_attestation": "DIVERGENCE_BUILD_RUN.md G2 explicitly authorizes recording the completed B1 archive-part deletions; docs/build-runs/OWNER-DECISIONS.md J5 authorizes retiring the deploy overlay as ordinary source.",
+      "deletion_commit": "ea7db7663ba6301a8bba9305ed3a03e8b8c03803",
+      "expires_after_commit": "ea7db7663ba6301a8bba9305ed3a03e8b8c03803"
+    }
+  ]
 }

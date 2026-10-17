@@ -2,12 +2,12 @@
   "schema_version": 6,
   "repository": "thatoneweirdfella1/Claude-Project-02",
   "canonical_remote": "https://github.com/thatoneweirdfella1/Claude-Project-02.git",
-  "source_branch": "horizontal-layer-completion-v1",
-  "source_commit": "df90e4bb8dea73d4ff0c7373fa5f9f7c7aea11d6",
+  "source_branch": "build-3",
+  "source_commit": "40cd33dec636e6d8bcee067b84367a303fec8bbd",
   "source_application_checkpoint": "e10ee9f1c64fee5f8faccd1832ef19703bc65f33",
   "clean_governance_branch_point": "c966953bc0377fe978edc630fbdff43965b16e6e",
-  "continuation_branch": "codex-verified/layer-3-v2",
-  "selection": "TRUSTED_BASELINE_WITH_GATED_INDEPENDENT_REIMPLEMENTATION_OR_NARROW_ADOPTION",
+  "continuation_branch": "build-4",
+  "selection": "OWNER_APPROVED_NUMBERED_BUILD_RUN",
   "account2_selection": "DONOR_ONLY_NEVER_MERGE",
   "account2_snapshots": {
     "L3": "archive/account2-layer-3-20260825@4db777514e50e011fb0887bf283a416e1a34f477",
@@ -41,6 +41,6 @@
     "frozen-implementation-v1",
     "backup-reference-do-not-touch"
   ],
-  "selected_by": "User instructed this account to continue the interrupted isolation/audit workflow; recovery preserves every prior candidate while restoring a clean Codex lineage.",
-  "selected_at": "2026-08-26"
+  "selected_by": "Owner-approved DIVERGENCE_BUILD_RUN.md: this governance-only run starts at the tip of origin/build-3 and works only on build-4.",
+  "selected_at": "2026-10-17"
 }

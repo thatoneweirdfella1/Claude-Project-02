@@ -5,15 +5,36 @@ function lines(value) {
   return (value || '').split(/\r?\n/).filter(Boolean)
 }
 
+function blobAt(commit, path, errors) {
+  const result = git(['ls-tree', '-z', commit, '--', path], { allowFailure:true })
+  const match = /^(?:[0-7]+) blob ([0-9a-f]{40})\t/.exec(result.stdout)
+  if (result.status !== 0 || (result.stdout && !match)) errors.push(`protected-path blob inspection failed: ${commit}:${path}`)
+  return match?.[1] || null
+}
+
 function exactException(path, base, exceptions, errors) {
   const match = (exceptions.exceptions || []).find((entry) => entry.path === path)
   if (!match) return false
-  const oldBlob = git(['rev-parse',`${base}:${path}`], { allowFailure:true }).stdout
-  const newBlob = git(['rev-parse',`HEAD:${path}`], { allowFailure:true }).stdout
+  const oldBlob = blobAt(base, path, errors)
+  const newBlob = blobAt('HEAD', path, errors)
   if (oldBlob !== match.old_blob_sha || newBlob !== match.new_blob_sha) errors.push(`protected-path exception blob mismatch: ${path}`)
   if (!Array.isArray(match.affected_permanent_ids) || !match.affected_permanent_ids.length) errors.push(`protected-path exception lacks affected IDs: ${path}`)
   if (!match.authorization_date || !match.user_attestation || !/^[0-9a-f]{40}$/.test(match.expires_after_commit || '')) errors.push(`protected-path exception is incomplete: ${path}`)
-  if (git(['merge-base','--is-ancestor',match.expires_after_commit,'HEAD'], { allowFailure:true }).status === 0 && match.expires_after_commit !== git(['rev-parse','HEAD']).stdout) errors.push(`protected-path exception expired after ${match.expires_after_commit}: ${path}`)
+  if (match.kind === 'recorded-deletion') {
+    // A completed, exact deletion is historical evidence, not an unbounded edit grant.
+    // It remains valid only while the path is absent and the recorded deletion is in HEAD's history.
+    const deletion = match.deletion_commit
+    if (!/^[0-9a-f]{40}$/.test(deletion || '')) errors.push(`protected-path deletion commit is invalid: ${path}`)
+    else {
+      const parents = git(['rev-list','--parents','-n','1',deletion], { allowFailure:true })
+      const parentList = parents.stdout.split(/\s+/)
+      if (parents.status !== 0 || parentList.length !== 2 || parentList[0] !== deletion) errors.push(`protected-path deletion must have one exact parent: ${path}`)
+      else if (blobAt(parentList[1], path, errors) !== match.old_blob_sha) errors.push(`protected-path deletion parent blob mismatch: ${path}`)
+      if (blobAt(deletion, path, errors) !== null || match.new_blob_sha !== null || newBlob !== null) errors.push(`protected-path deletion is not absent: ${path}`)
+      if (git(['merge-base','--is-ancestor',deletion,'HEAD'], { allowFailure:true }).status !== 0) errors.push(`protected-path deletion is not an ancestor of HEAD: ${path}`)
+      if (match.expires_after_commit !== deletion) errors.push(`protected-path deletion boundary differs from its commit: ${path}`)
+    }
+  } else if (git(['merge-base','--is-ancestor',match.expires_after_commit,'HEAD'], { allowFailure:true }).status === 0 && match.expires_after_commit !== git(['rev-parse','HEAD']).stdout) errors.push(`protected-path exception expired after ${match.expires_after_commit}: ${path}`)
   return true
 }
 
