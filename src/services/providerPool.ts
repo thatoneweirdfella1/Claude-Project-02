@@ -2,8 +2,11 @@ import { MODEL_IDS, MODEL_REGISTRY, type ModelId, type ModelInfo, type Provider 
 import { appAccessHeaders } from "./appAccessClient.js";
 
 export const DEFAULT_POOL_COOLDOWN_MS = 86_400_000;
-const ORDER: Record<string, number> = { groq: 0, google: 1, openrouter: 2 };
-const LABEL: Record<string, string> = { groq: "Groq", google: "Google (Gemini)", openrouter: "OpenRouter" };
+// Try the broad request allowances first; preserve OpenRouter's scarce daily requests.
+// HF spends only the included credit on the owner's no-payment-method account.
+export const FREE_PROVIDER_ORDER = { groq: 0, google: 1, cloudflare: 2, huggingface: 3, openrouter: 4 } as const;
+const ORDER: Readonly<Record<string, number>> = FREE_PROVIDER_ORDER;
+const LABEL: Record<string, string> = { groq: "Groq", google: "Google (Gemini)", cloudflare: "Cloudflare Workers AI", huggingface: "Hugging Face", openrouter: "OpenRouter" };
 export interface PoolBudget { provider: Provider; exhaustedAt: number; resetAt: number; }
 export interface PoolUsage { provider: Provider; model: string; inputTokens: number; outputTokens: number; }
 export interface FreePoolResult {
@@ -35,7 +38,8 @@ export function isFreePoolModel(id: unknown): id is ModelId {
   if (typeof id !== "string" || !Object.hasOwn(MODEL_REGISTRY, id)) return false;
   const model = MODEL_REGISTRY[id as ModelId];
   return model.plan === "free" &&
-    (model.provider === "groq" || model.provider === "google" || model.provider === "openrouter") &&
+    (model.provider === "groq" || model.provider === "google" || model.provider === "openrouter" ||
+      model.provider === "huggingface" || model.provider === "cloudflare") &&
     (model.provider !== "openrouter" || id.endsWith(":free"));
 }
 function measured(payload: unknown, model: ModelInfo): PoolUsage | null {
@@ -60,10 +64,10 @@ function answerText(payload: unknown, provider: Provider): string {
   return typeof text === "string" ? text : "";
 }
 function limited(status: number, payload: unknown): boolean {
-  if (status === 429) return true;
+  if (status === 429 || status === 402) return true;
   const data = object(payload);
   const detail = JSON.stringify([data.error, data.message, data.code]);
-  return /quota|rate.?limit|resource.exhausted|daily.*(spent|exhaust|limit|exceed)|allowance.*(spent|exhaust|exceed)/i.test(detail);
+  return /quota|rate.?limit|resource.exhausted|daily.*(spent|exhaust|limit|exceed)|allowance.*(spent|exhaust|exceed)|(?:credit|balance).*(spent|exhaust|insufficient|exceed)|(?:exceed|insufficient|exhaust|spent).*(?:credit|balance)|payment required/i.test(detail);
 }
 function duration(value: string): number | null {
   if (/^\d+(?:\.\d+)?s$/.test(value)) return Number(value.slice(0, -1)) * 1000;

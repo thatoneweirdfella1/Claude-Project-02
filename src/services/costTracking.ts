@@ -24,6 +24,8 @@ export const MODEL_PRICE_VERSION = "multi-provider-prices-2026-09-01";
     R14 already enforces for calculateUsageCost/priceFor. */
 export const MODEL_PRICES: Record<string, ModelPrice> = {
   // Free-pool account/model routes never reserve or deduct paid credits.
+  "meta-llama/Llama-3.3-70B-Instruct": { inputPerMillion: 0, outputPerMillion: 0 },
+  "@cf/meta/llama-3.1-8b-instruct": { inputPerMillion: 0, outputPerMillion: 0 },
   "llama-3.3-70b-versatile": { inputPerMillion: 0, outputPerMillion: 0 },
   "gemini-flash": { inputPerMillion: 0, outputPerMillion: 0 },
   "meta-llama/llama-3.3-70b-instruct:free": { inputPerMillion: 0, outputPerMillion: 0 },

@@ -11,13 +11,13 @@
 import type { ModelId as LegacyModelId, PlanFlag } from "../stores/types.js";
 
 /** Server models also include the free-pool slots; the legacy picker stays separate. */
-export type ModelId = LegacyModelId | "llama-3.3-70b-versatile" | "meta-llama/llama-3.3-70b-instruct:free";
+export type ModelId = LegacyModelId | "llama-3.3-70b-versatile" | "meta-llama/llama-3.3-70b-instruct:free" | "meta-llama/Llama-3.3-70B-Instruct" | "@cf/meta/llama-3.1-8b-instruct";
 
 export type ModelTier = "Fast" | "Balanced" | "Deep";
 /** Semantic key matching routing.js's MODELS keys (haiku/sonnet/opus). */
-export type ModelKey = "haiku" | "sonnet" | "opus" | "gpt-4o" | "gpt-5" | "gemini-flash" | "gemini-pro" | "grok" | "deepseek" | "groq" | "openrouter";
+export type ModelKey = "haiku" | "sonnet" | "opus" | "gpt-4o" | "gpt-5" | "gemini-flash" | "gemini-pro" | "grok" | "deepseek" | "groq" | "openrouter" | "huggingface" | "cloudflare";
 /** Provider type for routing. */
-export type Provider = "anthropic" | "openai" | "google" | "xai" | "deepseek" | "groq" | "openrouter";
+export type Provider = "anthropic" | "openai" | "google" | "xai" | "deepseek" | "groq" | "openrouter" | "huggingface" | "cloudflare";
 
 export interface ModelInfo {
   /** The api string sent to the model — the ModelId value. */
@@ -133,6 +133,22 @@ export const MODEL_REGISTRY: Record<ModelId, ModelInfo> = {
     tier: "Balanced",
     plan: "free",
     provider: "openrouter",
+  },
+  "meta-llama/Llama-3.3-70B-Instruct": {
+    id: "meta-llama/Llama-3.3-70B-Instruct",
+    key: "huggingface",
+    label: "Hugging Face Llama 3.3 70B",
+    tier: "Balanced",
+    plan: "free",
+    provider: "huggingface",
+  },
+  "@cf/meta/llama-3.1-8b-instruct": {
+    id: "@cf/meta/llama-3.1-8b-instruct",
+    key: "cloudflare",
+    label: "Cloudflare Llama 3.1 8B",
+    tier: "Fast",
+    plan: "free",
+    provider: "cloudflare",
   },
 };
 

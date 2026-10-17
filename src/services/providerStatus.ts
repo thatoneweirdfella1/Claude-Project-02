@@ -28,6 +28,8 @@ const NONE: ProviderAvailability = {
   deepseek: false,
   groq: false,
   openrouter: false,
+  huggingface: false,
+  cloudflare: false,
 };
 
 const CACHE_TTL_MS = 60_000; // 1 minute — refresh after that time elapses
@@ -69,6 +71,8 @@ export async function getProviderAvailability(fetchImpl: typeof fetch = fetch): 
         deepseek: body.deepseek === true,
         groq: body.groq === true,
         openrouter: body.openrouter === true,
+        huggingface: body.huggingface === true,
+        cloudflare: body.cloudflare === true,
       };
 
       // Cache the new status with timestamp

@@ -17,6 +17,8 @@ import { buildXaiPayload, callXai } from "./providers/xai.js";
 import { buildDeepseekPayload, callDeepseek } from "./providers/deepseek.js";
 import { callGroq } from "./providers/groq.js";
 import { callOpenrouter } from "./providers/openrouter.js";
+import { callHuggingface } from "./providers/huggingface.js";
+import { callCloudflare } from "./providers/cloudflare.js";
 
 const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
 const ANTHROPIC_VERSION = "2023-06-01";
@@ -80,11 +82,20 @@ function getApiKeyForProvider(
       return env.GROQ_API_KEY ?? runtimeEnv?.GROQ_API_KEY;
     case "openrouter":
       return env.OPENROUTER_API_KEY ?? runtimeEnv?.OPENROUTER_API_KEY;
+    case "huggingface":
+      return env.HF_TOKEN ?? runtimeEnv?.HF_TOKEN;
+    case "cloudflare":
+      return env.CLOUDFLARE_API_TOKEN ?? runtimeEnv?.CLOUDFLARE_API_TOKEN;
   }
 }
 
-/** Build error response when API key is missing for a provider. */
-function missingKeyResponse(provider: Provider): Response {
+function cloudflareAccountId(env: Record<string, string | undefined>): string | undefined {
+  const runtimeEnv = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env;
+  return env.CLOUDFLARE_ACCOUNT_ID ?? runtimeEnv?.CLOUDFLARE_ACCOUNT_ID;
+}
+
+/** Build error response when a required server variable is missing. */
+function missingKeyResponse(provider: Provider, requiredName?: string): Response {
   const keyName = {
     anthropic: "ANTHROPIC_API_KEY",
     openai: "OPENAI_API_KEY",
@@ -93,8 +104,10 @@ function missingKeyResponse(provider: Provider): Response {
     deepseek: "DEEPSEEK_API_KEY",
     groq: "GROQ_API_KEY",
     openrouter: "OPENROUTER_API_KEY",
+    huggingface: "HF_TOKEN",
+    cloudflare: "CLOUDFLARE_API_TOKEN",
   }[provider];
-  return jsonResponse({ error: `Proxy is missing ${keyName}` }, 500);
+  return jsonResponse({ error: `Proxy is missing ${requiredName ?? keyName}` }, 500);
 }
 
 /** Call the upstream provider and return the response. */
@@ -103,6 +116,7 @@ async function callProvider(
   body: ProxyRequestBody,
   apiKey: string,
   fetchImpl: typeof fetch,
+  accountId?: string,
 ): Promise<Response> {
   switch (provider) {
     case "anthropic": {
@@ -146,6 +160,11 @@ async function callProvider(
       return callGroq(body, apiKey, fetchImpl);
     case "openrouter":
       return callOpenrouter(body, apiKey, fetchImpl);
+    case "huggingface":
+      return callHuggingface(body, apiKey, fetchImpl);
+    case "cloudflare":
+      return accountId ? callCloudflare(body, apiKey, accountId, fetchImpl)
+        : missingKeyResponse(provider, "CLOUDFLARE_ACCOUNT_ID");
   }
 }
 
@@ -198,6 +217,8 @@ export async function handleProxyRequest(
   const provider = body.freePool === true ? null : getProvider(body.model as ModelId);
   const apiKey = provider ? getApiKeyForProvider(provider, anthropicKey, env) : undefined;
   if (provider && !apiKey) return missingKeyResponse(provider);
+  const accountId = cloudflareAccountId(env);
+  if (provider === "cloudflare" && !accountId) return missingKeyResponse(provider, "CLOUDFLARE_ACCOUNT_ID");
 
   const timeout = new AbortController();
   const timer = setTimeout(() => timeout.abort(), PROXY_TIMEOUT_MS);
@@ -216,10 +237,10 @@ export async function handleProxyRequest(
     if (timeout.signal.aborted) throw new Error("Request aborted");
     if (body.freePool === true) {
       const result = await freeProviderPool.run({
-        configured: (id) => Boolean(getApiKeyForProvider(id, anthropicKey, env)),
+        configured: (id) => Boolean(getApiKeyForProvider(id, anthropicKey, env)) && (id !== "cloudflare" || Boolean(accountId)),
         execute: (model) => {
           const key = getApiKeyForProvider(model.provider, anthropicKey, env);
-          return key ? callProvider(model.provider, { ...body, model: model.id, stream: false, extendedThinking: false }, key, boundedFetch)
+          return key ? callProvider(model.provider, { ...body, model: model.id, stream: false, extendedThinking: false }, key, boundedFetch, accountId)
             : Promise.resolve(missingKeyResponse(model.provider));
         },
         models: Array.isArray(body.poolModels) ? body.poolModels : undefined,
@@ -231,14 +252,14 @@ export async function handleProxyRequest(
       // upstream that echoes authentication material cannot expose a key.
       if (result.text) {
         const keys = [anthropicKey, ...Object.values(env),
-          getApiKeyForProvider("groq", anthropicKey, env), getApiKeyForProvider("openrouter", anthropicKey, env)];
+          ...(["groq", "openrouter", "huggingface", "cloudflare"] as const).map((id) => getApiKeyForProvider(id, anthropicKey, env))];
         for (const key of keys) if (key) result.text = result.text.split(key).join("[REDACTED]");
       }
       cleanup();
       return jsonResponse({ freePool: result }, 200);
     }
     if (!provider || !apiKey) throw new Error("Missing provider");
-    upstream = await callProvider(provider, body, apiKey, boundedFetch);
+    upstream = await callProvider(provider, body, apiKey, boundedFetch, accountId);
   } catch {
     cleanup();
     return jsonResponse(

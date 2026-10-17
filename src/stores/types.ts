@@ -43,6 +43,8 @@ export type DestinationProviderId =
   | "google"
   | "groq"
   | "openrouter"
+  | "huggingface"
+  | "cloudflare"
   | "xai"
   | "perplexity"
   | "deepseek"

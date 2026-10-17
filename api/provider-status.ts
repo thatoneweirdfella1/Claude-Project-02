@@ -23,6 +23,8 @@ export default function handler(request: Request): Response {
     deepseek: Boolean(process.env.DEEPSEEK_API_KEY),
     groq: Boolean(process.env.GROQ_API_KEY),
     openrouter: Boolean(process.env.OPENROUTER_API_KEY),
+    huggingface: Boolean(process.env.HF_TOKEN),
+    cloudflare: Boolean(process.env.CLOUDFLARE_API_TOKEN && process.env.CLOUDFLARE_ACCOUNT_ID),
   };
   const knownProvider = provider !== null && Object.hasOwn(configured, provider);
   const routeStatus = provider && model && route ? {
@@ -38,7 +40,7 @@ export default function handler(request: Request): Response {
     failureReason: knownProvider && configured[provider as keyof typeof configured] ? "unverified" : "unavailable",
   } : undefined;
   return new Response(JSON.stringify({ ...configured, routeStatus,
-    freePoolAvailable: configured.groq || configured.google || configured.openrouter,
+    freePoolAvailable: configured.groq || configured.google || configured.openrouter || configured.huggingface || configured.cloudflare,
   }), {
     status: 200,
     headers: {
