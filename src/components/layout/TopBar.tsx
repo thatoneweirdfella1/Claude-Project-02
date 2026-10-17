@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Bell,
   ClipboardList,
@@ -11,7 +11,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { GlassButton } from "../primitives";
-import { useDismissableLayer } from "../../keyboard";
+import { closeOpenMenu, useMenuLayer } from "../../keyboard";
 import { useAccountStore } from "../../stores/accountStore";
 import { useSessionStore } from "../../stores/sessionStore";
 import { logOutCurrentAccount } from "../../services/accountSession";
@@ -29,7 +29,6 @@ function QuickReferencePopover({ open, setOpen, rootRef }: PopoverProps) {
   const openReference = () => {
     const next = !open;
     setOpen(next);
-    window.dispatchEvent(new CustomEvent("divergence:right-rail-panel", { detail: next ? "reference" : null }));
   };
   return (
     <div ref={rootRef} className="topbar-popover-wrapper">
@@ -72,7 +71,7 @@ function SearchPopover({ open, setOpen, rootRef }: PopoverProps) {
 
   return (
     <div ref={rootRef} className="topbar-popover-wrapper topbar-search">
-      <GlassButton aria-label="Search" onClick={() => setOpen(!open)}>
+      <GlassButton aria-label="Search" aria-expanded={open} onClick={() => setOpen(!open)}>
         <Search size={20} aria-hidden="true" />
         <span>Search</span>
       </GlassButton>
@@ -127,11 +126,9 @@ function SearchPopover({ open, setOpen, rootRef }: PopoverProps) {
 
 function SimplePopover({ open, setOpen, rootRef, kind }: PopoverProps & { kind: "notifications" | "help" }) {
   const isHelp = kind === "help";
-  const currentScreen = useSessionStore((s) => s.currentScreen);
   const toggle = () => {
     const next = !open;
     setOpen(next);
-    if (isHelp) window.dispatchEvent(new CustomEvent("divergence:right-rail-panel", { detail: next ? `help:${currentScreen}` : null }));
   };
   return (
     <div ref={rootRef} className="topbar-popover-wrapper">
@@ -158,7 +155,7 @@ function UserMenu({ open, setOpen, rootRef }: PopoverProps) {
   }, []);
   return (
     <div ref={rootRef} className="topbar-popover-wrapper topbar-user-menu">
-      <GlassButton className="user-chip" onClick={() => setOpen(!open)}>
+      <GlassButton className="user-chip" aria-expanded={open} onClick={() => setOpen(!open)}>
         <UserRound size={20} aria-hidden="true" />
         <span className="user-chip__label">Profile</span>
         <ChevronDown size={15} aria-hidden="true" />
@@ -182,63 +179,48 @@ export function TopBar() {
   const setScreenLocation = useSessionStore((s) => s.setScreenLocation);
   const currentScreen = useSessionStore((s) => s.currentScreen);
   const currentSection = useSessionStore((s) => s.currentSection);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [referenceOpen, setReferenceOpen] = useState(false);
-  const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [helpOpen, setHelpOpen] = useState(false);
-  const [userOpen, setUserOpen] = useState(false);
-  const searchRef = useRef<HTMLDivElement>(null);
-  const referenceRef = useRef<HTMLDivElement>(null);
-  const notificationsRef = useRef<HTMLDivElement>(null);
-  const helpRef = useRef<HTMLDivElement>(null);
-  const userRef = useRef<HTMLDivElement>(null);
+  const { open: searchOpen, setOpen: setSearchOpen, rootRef: searchRef } = useMenuLayer<HTMLDivElement>();
+  const { open: referenceOpen, setOpen: setReferenceOpen, rootRef: referenceRef } = useMenuLayer<HTMLDivElement>(() => [document.querySelector(".right-rail-reference")]);
+  const { open: notificationsOpen, setOpen: setNotificationsOpen, rootRef: notificationsRef } = useMenuLayer<HTMLDivElement>();
+  const { open: helpOpen, setOpen: setHelpOpen, rootRef: helpRef } = useMenuLayer<HTMLDivElement>(() => [document.querySelector(".right-rail-reference")]);
+  const { open: userOpen, setOpen: setUserOpen, rootRef: userRef } = useMenuLayer<HTMLDivElement>();
 
   useEffect(() => {
-    setSearchOpen(false);
-    setReferenceOpen(false);
-    setNotificationsOpen(false);
-    setHelpOpen(false);
-    setUserOpen(false);
-    window.dispatchEvent(new CustomEvent("divergence:right-rail-panel", { detail: null }));
+    closeOpenMenu();
   }, [currentScreen, currentSection]);
 
-  useDismissableLayer(searchOpen, () => setSearchOpen(false));
-  useDismissableLayer(referenceOpen, () => { setReferenceOpen(false); window.dispatchEvent(new CustomEvent("divergence:right-rail-panel", { detail: null })); });
-  useDismissableLayer(notificationsOpen, () => setNotificationsOpen(false));
-  useDismissableLayer(helpOpen, () => { setHelpOpen(false); window.dispatchEvent(new CustomEvent("divergence:right-rail-panel", { detail: null })); });
-  useDismissableLayer(userOpen, () => setUserOpen(false));
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent("divergence:right-rail-panel", {
+      detail: referenceOpen ? "reference" : helpOpen ? `help:${currentScreen}` : null,
+    }));
+  }, [referenceOpen, helpOpen, currentScreen]);
+
   useEffect(() => {
     const openSearch = () => setSearchOpen(true);
-    const openReference = () => { setReferenceOpen(true); window.dispatchEvent(new CustomEvent("divergence:right-rail-panel", { detail: "reference" })); };
+    const openReference = () => setReferenceOpen(true);
     window.addEventListener("divergence:open-search", openSearch);
     window.addEventListener("divergence:open-reference", openReference);
     return () => {
       window.removeEventListener("divergence:open-search", openSearch);
       window.removeEventListener("divergence:open-reference", openReference);
     };
-  }, []);
-
-  const setOnlySearch = (value: boolean) => { setSearchOpen(value); if (value) { setReferenceOpen(false); setNotificationsOpen(false); setHelpOpen(false); setUserOpen(false); window.dispatchEvent(new CustomEvent("divergence:right-rail-panel", { detail: null })); } };
-  const setOnlyReference = (value: boolean) => { setReferenceOpen(value); if (value) { setSearchOpen(false); setNotificationsOpen(false); setHelpOpen(false); setUserOpen(false); } };
-  const setOnlyNotifications = (value: boolean) => { setNotificationsOpen(value); if (value) { setSearchOpen(false); setReferenceOpen(false); setHelpOpen(false); setUserOpen(false); window.dispatchEvent(new CustomEvent("divergence:right-rail-panel", { detail: null })); } };
-  const setOnlyHelp = (value: boolean) => { setHelpOpen(value); if (value) { setSearchOpen(false); setReferenceOpen(false); setNotificationsOpen(false); setUserOpen(false); } };
-  const setOnlyUser = (value: boolean) => { setUserOpen(value); if (value) { setSearchOpen(false); setReferenceOpen(false); setNotificationsOpen(false); setHelpOpen(false); window.dispatchEvent(new CustomEvent("divergence:right-rail-panel", { detail: null })); } };
+  }, [setSearchOpen, setReferenceOpen]);
 
   return (
     <div className="topbar-content">
       <button type="button" className="topbar-logo" data-testid="logo-slot" aria-label="Go to Talk to AI" onClick={() => setScreenLocation("translate")} style={{ border: 0, background: "transparent", padding: 0 }}><Logo /></button>
       <div className="topbar-center">
-        <QuickReferencePopover open={referenceOpen} setOpen={setOnlyReference} rootRef={referenceRef} />
-        <SearchPopover open={searchOpen} setOpen={setOnlySearch} rootRef={searchRef} />
+        <QuickReferencePopover open={referenceOpen} setOpen={setReferenceOpen} rootRef={referenceRef} />
+        <SearchPopover open={searchOpen} setOpen={setSearchOpen} rootRef={searchRef} />
         <GlassButton onClick={() => setScreenLocation("saved-tools", "templates")}><ClipboardList size={20} /> Templates</GlassButton>
       </div>
       <div className="topbar-right">
-        <SimplePopover kind="notifications" open={notificationsOpen} setOpen={setOnlyNotifications} rootRef={notificationsRef} />
-        <SimplePopover kind="help" open={helpOpen} setOpen={setOnlyHelp} rootRef={helpRef} />
+        <SimplePopover kind="notifications" open={notificationsOpen} setOpen={setNotificationsOpen} rootRef={notificationsRef} />
+        <SimplePopover kind="help" open={helpOpen} setOpen={setHelpOpen} rootRef={helpRef} />
         <GlassButton aria-label="Settings" onClick={() => setScreenLocation("settings")}>
           <Settings size={20} /> Settings
         </GlassButton>
-        <UserMenu open={userOpen} setOpen={setOnlyUser} rootRef={userRef} />
+        <UserMenu open={userOpen} setOpen={setUserOpen} rootRef={userRef} />
       </div>
     </div>
   );

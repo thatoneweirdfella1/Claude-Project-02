@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useMenuLayer } from "../../keyboard";
 import {
   Archive, BarChart3, Boxes, FolderKanban, Library, MessageCircle, Pin,
   PinOff, Settings, Trash2, Wrench, X, type LucideIcon,
@@ -20,7 +21,7 @@ export function LeftNav() {
   const currentScreen = useSessionStore((s) => s.currentScreen);
   const currentSection = useSessionStore((s) => s.currentSection);
   const setScreenLocation = useSessionStore((s) => s.setScreenLocation);
-  const [toolsOpen, setToolsOpen] = useState(false);
+  const { open: toolsOpen, setOpen: setToolsOpen, rootRef: toolsRef } = useMenuLayer<HTMLDivElement>();
   const [toolQuery, setToolQuery] = useState("");
   const pinnedIds = useSessionStore((s) => s.sidebarPinnedTools);
   const hiddenPrimary = useSessionStore((s) => s.sidebarHiddenPrimary);
@@ -38,7 +39,7 @@ export function LeftNav() {
       setPinnedIds(pinnedIds.includes(tool.id) ? pinnedIds.filter((id) => id !== tool.id) : [...pinnedIds, tool.id]);
     }
   };
-  const [statusOpen, setStatusOpen] = useState(false);
+  const { open: statusOpen, setOpen: setStatusOpen, rootRef: statusRef } = useMenuLayer<HTMLDivElement>();
   const visibleTools = [...TOOL_NAVIGATION, ...PRIMARY_NAVIGATION.filter((tool) => !protectedIds.includes(tool.id))].filter((tool) => tool.label.toLowerCase().includes(toolQuery.toLowerCase()));
 
   function navigate(screen: ScreenId, section?: ScreenSectionId) {
@@ -58,8 +59,8 @@ export function LeftNav() {
             {!protectedIds.includes(id) && <button type="button" className="leftnav-remove" aria-label={`Remove ${label}`} title={`Remove ${label}`} onClick={() => removePrimary(id)}><PinOff size={15} /></button>}
           </div>;
         })}
-        <div className="leftnav-tools">
-          <button type="button" className="leftnav-item" aria-haspopup="dialog" aria-expanded={toolsOpen} onClick={() => { setToolsOpen((value) => !value); setStatusOpen(false); }}>
+        <div ref={toolsRef} className="leftnav-tools">
+          <button type="button" className="leftnav-item" aria-haspopup="dialog" aria-expanded={toolsOpen} onClick={() => setToolsOpen(!toolsOpen)}>
             <Boxes size={23} strokeWidth={1.8} aria-hidden="true" /><span>All Tools</span>
           </button>
           {toolsOpen && (
@@ -91,8 +92,8 @@ export function LeftNav() {
         <button type="button" className={"leftnav-item leftnav-trash " + (currentScreen === "trash" ? "leftnav-item--active" : "")} onClick={() => navigate("trash")}>
           <Trash2 size={23} strokeWidth={1.8} aria-hidden="true" /><span>Trash</span>
         </button>
-        <div className="system-status-wrapper">
-          <button type="button" className="system-status system-status--interactive" data-testid="system-status" aria-expanded={statusOpen} onClick={() => { setStatusOpen((open) => !open); setToolsOpen(false); }}>
+        <div ref={statusRef} className="system-status-wrapper">
+          <button type="button" className="system-status system-status--interactive" data-testid="system-status" aria-expanded={statusOpen} onClick={() => setStatusOpen(!statusOpen)}>
             <span className="system-status-heading"><i aria-hidden="true" /> System Status</span>
             <span className="system-status-message">Local systems ready · providers unconfigured</span>
           </button>

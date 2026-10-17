@@ -47,7 +47,15 @@ test("Export both downloads the conversation and ordered attributed debate", asy
   await fixture(page);
   await page.getByRole("button", { name: "Export", exact: true }).click();
   const modal = page.getByRole("dialog", { name: "Download and export" });
+  await expect(modal).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(modal).toBeHidden();
+  await page.getByRole("button", { name: "Export", exact: true }).click();
+  await page.mouse.click(10, 10);
+  await expect(modal).toBeHidden();
+  await page.getByRole("button", { name: "Export", exact: true }).click();
   await modal.getByRole("radio", { name: "Both", exact: true }).check();
+  await expect(modal).toBeVisible();
   // The conversation panel clips descendants: the chooser's title and
   // actions must be fully visible without scrolling that panel.
   for (const control of [modal.locator(".download-modal__title"),
@@ -78,6 +86,13 @@ test("debate popup carries a Markdown attachment into the conversation and survi
   await page.getByTestId("multi-ai-run").locator("summary").click();
   await page.getByRole("button", { name: "Open debate", exact: true }).click();
   const dialog = page.getByRole("dialog", { name: "Debate transcript", exact: true });
+  await expect(dialog).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+  await page.getByRole("button", { name: "Open debate", exact: true }).click();
+  await page.mouse.click(10, 10);
+  await expect(dialog).toBeHidden();
+  await page.getByRole("button", { name: "Open debate", exact: true }).click();
   await dialog.getByRole("button", { name: "Carry debate into conversation", exact: true }).click();
   await expect(dialog.getByRole("status")).toHaveText("Debate attached as Markdown.");
   await dialog.getByRole("button", { name: "Close debate", exact: true }).click();

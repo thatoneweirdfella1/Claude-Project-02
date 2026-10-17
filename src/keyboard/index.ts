@@ -35,6 +35,8 @@ export {
 } from "./confirmable";
 export {
   useDismissableLayer,
+  useMenuLayer,
+  closeOpenMenu,
   useGlobalShortcut,
   useFocusTrap,
   useConfirmable,

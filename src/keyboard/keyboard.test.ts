@@ -42,6 +42,53 @@ describe("isTypingTarget (the Critical typing-isolation predicate)", () => {
 });
 
 describe("dismissLayers (Escape closes the topmost)", () => {
+  it("keeps inside pointers and dismisses only the topmost rooted layer outside", () => {
+    const outer = document.createElement("div");
+    const inner = document.createElement("div");
+    const control = document.createElement("button");
+    inner.append(control);
+    document.body.append(outer, inner);
+    const order: string[] = [];
+    const popOuter = pushDismissLayer(() => order.push("outer"), () => [outer]);
+    const popInner = pushDismissLayer(() => order.push("inner"), () => [inner]);
+    try {
+      control.dispatchEvent(new Event("pointerdown", { bubbles: true, composed: true }));
+      expect(order).toEqual([]);
+      outer.dispatchEvent(new Event("pointerdown", { bubbles: true, composed: true }));
+      expect(order).toEqual(["inner"]);
+      popInner();
+      document.body.dispatchEvent(new Event("pointerdown", { bubbles: true, composed: true }));
+      expect(order).toEqual(["inner", "outer"]);
+    } finally {
+      popInner();
+      popOuter();
+    }
+    expect(activeDismissLayerCount()).toBe(0);
+  });
+
+  it("lets an existing dialog shield menus below it from pointer dismissal", () => {
+    const root = document.createElement("div");
+    document.body.append(root);
+    const menu = vi.fn();
+    const dialog = vi.fn();
+    const popMenu = pushDismissLayer(menu, () => [root]);
+    const popDialog = pushDismissLayer(dialog);
+    try {
+      document.body.dispatchEvent(new Event("pointerdown", { bubbles: true, composed: true }));
+      expect(menu).not.toHaveBeenCalled();
+      expect(dialog).not.toHaveBeenCalled();
+      pressKey({ key: "Escape" });
+      expect(dialog).toHaveBeenCalledTimes(1);
+      expect(menu).not.toHaveBeenCalled();
+      popDialog();
+      document.body.dispatchEvent(new Event("pointerdown", { bubbles: true, composed: true }));
+      expect(menu).toHaveBeenCalledTimes(1);
+    } finally {
+      popDialog();
+      popMenu();
+    }
+  });
+
   it("dismisses only the topmost layer, LIFO", () => {
     const order: string[] = [];
     const popOuter = pushDismissLayer(() => order.push("outer"));

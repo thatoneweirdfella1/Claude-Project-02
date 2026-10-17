@@ -8,6 +8,7 @@ import { useDesignLayoutEffect } from "./useDesignLayoutEffect";
 import { ScreenRouter } from "./ScreenRouter";
 import { ApprovedKeyboardShortcutsModal } from "../ApprovedKeyboardShortcutsModal";
 import { useApprovedKeyboardShortcuts } from "../../keyboard/useApprovedKeyboardShortcuts";
+import { closeOpenMenu } from "../../keyboard";
 import { CostConfirm } from "../credits";
 import { OperatorWorkspaceBar } from "../credits/OperatorWorkspaceBar";
 import { DevAdminPanel } from "../settings/DevAdminPanel";
@@ -89,7 +90,7 @@ export function AppShell() {
       <main className="col-center" data-testid="col-center"><div className="frozen-center-stack"><OperatorWorkspaceBar /><AppErrorBoundary resetKey={currentScreen}><ScreenRouter /></AppErrorBoundary><LocalDryRunPanel /><DevAdminPanel /></div></main>
       <aside className="col-right" aria-label="Sidebar panels" data-testid="col-right">
         {rightRailPanel && <section className="right-rail-reference surface-smoked-glass" aria-label={rightRailPanel.startsWith("help:") ? "Help" : "Quick Reference"}>
-          <header><strong>{rightRailPanel.startsWith("help:") ? "Help" : "Quick Reference"}</strong><button type="button" aria-label="Close reference" onClick={() => setRightRailPanel(null)}>×</button></header>
+          <header><strong>{rightRailPanel.startsWith("help:") ? "Help" : "Quick Reference"}</strong><button type="button" aria-label="Close reference" onClick={() => { closeOpenMenu(); setRightRailPanel(null); }}>×</button></header>
           <p>{currentScreen === "translate" ? "Write naturally, then use Send. Ctrl/Cmd + Enter uses the same Send action. Add Context keeps source material attached to the request." : `You are in ${currentScreen.replaceAll("-", " ")}. Use the visible tabs and controls; unavailable external actions say so before doing anything.`}</p>
           <small>Ctrl/Cmd + K opens Search. Press ? outside a text field to reopen this reference.</small>
         </section>}

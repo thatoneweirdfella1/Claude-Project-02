@@ -5,7 +5,7 @@
    framework-agnostic and independently testable; these adapt them to
    component lifetimes. Grouped in one file because each is a few lines. */
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createConfirmable, type ConfirmableOptions } from "./confirmable";
 import { pushDismissLayer } from "./dismissLayers";
 import { createFocusTrap } from "./focusTrap";
@@ -15,20 +15,59 @@ import {
   type ShortcutOptions,
 } from "./shortcutRegistry";
 
-/** Register this component as the topmost Escape-dismissable layer while
-    `active` is true. onDismiss fires on Escape (topmost layer only). */
+/** Register the topmost Escape layer. Supplying roots also dismisses on
+    outside pointers; include the trigger so its click can toggle normally. */
 export function useDismissableLayer(
   active: boolean,
   onDismiss: () => void,
+  roots?: () => readonly (Node | null)[],
 ): void {
   // Keep the latest onDismiss without re-subscribing the layer each render.
   const handlerRef = useRef(onDismiss);
   handlerRef.current = onDismiss;
+  const rootsRef = useRef(roots);
+  rootsRef.current = roots;
 
   useEffect(() => {
     if (!active) return;
-    return pushDismissLayer(() => handlerRef.current());
+    return pushDismissLayer(() => handlerRef.current(), () => rootsRef.current?.());
   }, [active]);
+}
+
+// One active menu across component boundaries. Subscribe to a boolean so
+// only the menu being closed and the menu being opened need to render.
+let activeMenu: symbol | null = null;
+const menuListeners = new Set<() => void>();
+function subscribeMenus(listener: () => void): () => void {
+  menuListeners.add(listener);
+  return () => { menuListeners.delete(listener); };
+}
+function selectMenu(id: symbol | null): void {
+  if (activeMenu === id) return;
+  activeMenu = id;
+  for (const listener of menuListeners) listener();
+}
+export function closeOpenMenu(): void {
+  selectMenu(null);
+}
+
+/** Use this for shell menus instead of independent booleans. Attach rootRef
+    to the wrapper containing the trigger and menu. Mutual exclusion, outside
+    pointers, Escape and unmount cleanup are automatic; extraRoots is only
+    needed for content rendered elsewhere (for example the right rail). */
+export function useMenuLayer<T extends HTMLElement>(
+  extraRoots?: () => readonly (Node | null)[],
+) {
+  const [id] = useState(() => Symbol("menu"));
+  const rootRef = useRef<T>(null);
+  const open = useSyncExternalStore(subscribeMenus, () => activeMenu === id, () => false);
+  const setOpen = useCallback((value: boolean) => {
+    if (value) selectMenu(id);
+    else if (activeMenu === id) selectMenu(null);
+  }, [id]);
+  useDismissableLayer(open, () => setOpen(false), () => [rootRef.current, ...(extraRoots?.() ?? [])]);
+  useEffect(() => () => setOpen(false), [setOpen]);
+  return { open, setOpen, rootRef };
 }
 
 /** Register a global keyboard shortcut for this component's lifetime.
