@@ -60,6 +60,8 @@
 .tier-card button:disabled { opacity: .55; cursor: default; }
 .top-up-panel { margin-top: 12px; padding: 14px; border: 1px solid var(--surface-smoked-glass-border); border-radius: 8px; }
 .top-up-panel > div:first-child { display: flex; align-items: center; gap: 7px; color: var(--accent-gold, #e6bf68); }
+/* Keep the section icon gold while the heading words use the reading palette. */
+.top-up-panel > div:first-child strong { color: var(--frozen-text); }
 .top-up-panel:has(.top-up-panel__buttons small) > div:first-child { color: var(--frozen-text); }
 .top-up-panel__buttons { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-top: 10px; }
 .top-up-panel__buttons button { padding: 8px; border: 1px solid var(--surface-smoked-glass-border); border-radius: 5px; background: transparent; color: var(--text-primary); cursor: pointer; }

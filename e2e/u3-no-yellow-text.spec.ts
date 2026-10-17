@@ -37,7 +37,9 @@ for (const theme of ["light", "dark"] as const) {
     const plan = await page.locator(".subscription-ui").evaluate((el) => ({
       ordinary: getComputedStyle(el.querySelector("h3")!).color,
       target: getComputedStyle([...el.querySelectorAll(".top-up-panel > div:first-child")].find((node) => node.textContent?.includes("One-time sandbox credits"))!).color,
-      paidControls: getComputedStyle([...el.querySelectorAll(".top-up-panel > div:first-child")].find((node) => node.textContent?.includes("Paid-route controls"))!).color,
+      paidControls: getComputedStyle([...el.querySelectorAll(".top-up-panel > div:first-child")].find((node) => node.textContent?.includes("Paid-route controls"))!.querySelector("strong")!).color,
+      paidControlsIcon: getComputedStyle([...el.querySelectorAll(".top-up-panel > div:first-child")].find((node) => node.textContent?.includes("Paid-route controls"))!.querySelector("svg")!).color,
+      paidControlsWrapper: getComputedStyle([...el.querySelectorAll(".top-up-panel > div:first-child")].find((node) => node.textContent?.includes("Paid-route controls"))!).color,
       prices: [...el.querySelectorAll(".tier-card__price")].map((node) => ({ text: node.textContent, color: getComputedStyle(node).color })),
       current: getComputedStyle(el.querySelector(".subscription-ui__current")!).color,
     }));
@@ -68,7 +70,9 @@ for (const theme of ["light", "dark"] as const) {
     expect.soft(plan.target).not.toBe(gold);
     expect.soft(plan.target).toBe(plan.ordinary);
     expect.soft(plan.ordinary).toBe(ordinary);
-    expect.soft(plan.paidControls).toBe(gold);
+    expect.soft(plan.paidControls).toBe(ordinary);
+    expect.soft(plan.paidControlsIcon).toBe(gold);
+    expect.soft(plan.paidControlsWrapper).toBe(gold);
     expect.soft(plan.current).toBe(gold);
     expect(plan.prices.length).toBeGreaterThan(0);
     for (const price of plan.prices) expect.soft(price.color, price.text ?? "price").toBe(gold);

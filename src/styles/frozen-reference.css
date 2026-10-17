@@ -290,7 +290,10 @@ body {
 .topbar-user-menu .primitive-glass-button { padding-inline: 17px; }
 .user-chip__label { max-width: none; overflow: visible; }
 
-:root[data-theme="dark"] .topbar-content .primitive-glass-button,
+:root[data-theme="dark"] .topbar-content .primitive-glass-button {
+  color: var(--frozen-text);
+}
+
 :root[data-theme="dark"] .topbar-content .primitive-glass-button svg {
   color: var(--frozen-gold-bright);
 }
@@ -495,7 +498,7 @@ body {
 :root[data-theme="dark"] .frozen-composer__heading h2,
 :root[data-theme="dark"] .quick-actions__header,
 :root[data-theme="dark"] .conversation-area__heading h2,
-:root[data-theme="dark"] .reference-quality h4 { color: var(--frozen-gold-bright); }
+:root[data-theme="dark"] .reference-quality h4 { color: var(--frozen-text); }
 
 .frozen-composer__heading-actions { display: flex; align-items: center; gap: 8px; }
 .frozen-composer__heading-actions .attach-context-controls { display: flex; gap: 0; }
@@ -594,9 +597,11 @@ body {
 :root[data-theme="dark"] .translate-ask-button {
   border-color: rgb(224 174 67 / 0.52);
   background: radial-gradient(circle at 50% 40%, rgb(214 154 45 / 0.27), rgb(7 8 9 / 0.88) 72%);
-  color: var(--frozen-gold-bright);
+  color: var(--frozen-text);
   box-shadow: 0 0 18px rgb(206 146 40 / 0.26), inset 0 1px 0 rgb(255 224 155 / 0.1);
 }
+
+:root[data-theme="dark"] .translate-ask-button svg { color: var(--frozen-gold-bright); }
 
 .frozen-composer .state-detection-panel__detecting,
 .frozen-composer .state-detection-panel { position: absolute; z-index: 20; top: calc(100% + 8px); left: 0; right: 0; }
@@ -756,7 +761,7 @@ body {
 
 .quick-tools { display: flex; flex: 0 0 231px; flex-direction: column; gap: 10px; padding-right: 0; }
 .quick-tools__header { display: flex; align-items: center; gap: 9px; min-height: 29px; color: var(--frozen-text); }
-.quick-tools__header-label { margin: 0; color: inherit; font: 500 14px/1 var(--font-family-base); text-transform: uppercase; }
+.quick-tools__header-label { margin: 0; color: var(--frozen-text); font: 500 14px/1 var(--font-family-base); text-transform: uppercase; }
 :root[data-theme="dark"] .quick-tools__header { color: var(--frozen-gold-bright); }
 .quick-tools-grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 86px); gap: 9px; }
 .quick-tools-tile__button {
