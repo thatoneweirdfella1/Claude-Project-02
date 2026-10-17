@@ -7,6 +7,7 @@ import {
   TIER_OFFERS,
   TOP_UP_AMOUNTS,
   usableCreditsForPayment,
+  paymentExchangeLabel,
 } from "../../services/payment";
 
 export function SubscriptionUI() {
@@ -48,7 +49,7 @@ export function SubscriptionUI() {
                 {active && <span><Check size={13} /> Current</span>}
               </div>
               <p className="tier-card__price">${offer.monthlyPrice}<small>/month</small></p>
-              <p>${offer.usableCredits.toFixed(2)} usable credits</p>
+              <p>{offer.monthlyPrice > 0 ? paymentExchangeLabel(offer.monthlyPrice, offer.usableCredits) : "$0.00 usable credits"}</p>
               <small>{offer.description}</small>
               {offer.monthlyPrice > 0 && (
                 <button type="button" disabled={active} onClick={() => void requestTier(offer.id)}>
@@ -71,7 +72,7 @@ export function SubscriptionUI() {
               title={plan === "free" ? "Choose Plus, Pro, or Insane before adding API credits." : undefined}
               onClick={() => void requestTopUp(amount)}
             >
-              Pay ${amount} <small>Get ${usableCreditsForPayment(amount).toFixed(2)}</small>
+              {paymentExchangeLabel(amount, usableCreditsForPayment(amount))}
             </button>
           ))}
         </div>

@@ -41,7 +41,7 @@ describe("Layer 2 safe interaction surfaces", () => {
     await act(async () => button("Apply verified sandbox callback").click());
     expect(host?.querySelector('[role="dialog"]')).toBeNull();
     expect(useAccountStore.getState().plan).toBe("plus");
-    expect(useAccountStore.getState().creditBalance).toBe(15);
+    expect(useAccountStore.getState().creditBalance).toBe(10.5);
     expect(useAccountStore.getState().creditLedger).toHaveLength(1);
     expect(useAccountStore.getState().creditLedger[0].referenceId).toMatch(/^sandbox-checkout:/);
     expect(useAccountStore.getState().manualPaymentRequests).toHaveLength(0);

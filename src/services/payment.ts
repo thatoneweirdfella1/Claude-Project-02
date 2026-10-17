@@ -14,15 +14,21 @@ export interface TierOffer {
 
 export const TIER_OFFERS: TierOffer[] = [
   { id: "free", name: "Free", monthlyPrice: 0, usableCredits: 0, description: "Interface and local tools; no paid AI calls." },
-  { id: "plus", name: "Plus", monthlyPrice: 15, usableCredits: 15, description: "Subscription features and $15 explicit managed credits." },
-  { id: "pro", name: "Pro", monthlyPrice: 75, usableCredits: 75, description: "Subscription features and $75 explicit managed credits." },
-  { id: "insane", name: "Insane", monthlyPrice: 200, usableCredits: 200, description: "Subscription features and $200 explicit managed credits." },
+  { id: "plus", name: "Plus", monthlyPrice: 15, usableCredits: 10.5, description: "Subscription features and $10.50 usable credits (30% markup)." },
+  { id: "pro", name: "Pro", monthlyPrice: 75, usableCredits: 52.5, description: "Subscription features and $52.50 usable credits (30% markup)." },
+  { id: "insane", name: "Insane", monthlyPrice: 200, usableCredits: 140, description: "Subscription features and $140 usable credits (30% markup)." },
 ];
 
 export const TOP_UP_AMOUNTS = [5, 10, 25, 50] as const;
 
 export function usableCreditsForPayment(paidAmount: number): number {
-  return Math.round(paidAmount * 100) / 100;
+  if (!Number.isFinite(paidAmount) || paidAmount <= 0) return 0;
+  const credits = Math.round(paidAmount * 70) / 100;
+  return Number.isFinite(credits) ? Math.min(credits, Math.floor(paidAmount * 100) / 100) : 0;
+}
+
+export function paymentExchangeLabel(paidAmount: number, credits = usableCreditsForPayment(paidAmount)): string {
+  return `You pay $${paidAmount}, receive $${credits.toFixed(2)} after 30% markup`;
 }
 
 /** Legacy durable request interface retained for compatibility. Layer 5's

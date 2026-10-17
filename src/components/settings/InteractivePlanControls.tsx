@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Check, Coins, Crown, ReceiptText, ShieldCheck } from "lucide-react";
-import { TIER_OFFERS, TOP_UP_AMOUNTS, usableCreditsForPayment } from "../../services/payment";
+import { TIER_OFFERS, TOP_UP_AMOUNTS, usableCreditsForPayment, paymentExchangeLabel } from "../../services/payment";
 import {
   type MoneyPreflightRequest,
   type SandboxCheckout,
@@ -172,7 +172,7 @@ export function InteractivePlanControls() {
         return <article key={offer.id} className={`tier-card ${active ? "tier-card--active" : ""}`}>
           <div className="tier-card__title"><strong>{offer.name}</strong>{active && <span><Check size={13} /> Current</span>}</div>
           <p className="tier-card__price">${offer.monthlyPrice}<small>/month</small></p>
-          <p>{dollars(Math.round(offer.usableCredits * 100))} explicit managed credits</p>
+          <p>{offer.monthlyPrice > 0 ? paymentExchangeLabel(offer.monthlyPrice, offer.usableCredits) : "$0.00 explicit managed credits"}</p>
           <small>{offer.description}</small>
           {offer.monthlyPrice > 0 && <button type="button" onClick={() => createCheckout({
             kind: "subscription",
@@ -185,13 +185,13 @@ export function InteractivePlanControls() {
     </div>
 
     <div className="top-up-panel">
-      <div><Coins size={17} /><strong>One-time sandbox credits · $1 paid = $1 credit</strong></div>
+      <div><Coins size={17} /><strong>One-time sandbox credits · 30% markup</strong></div>
       <div className="top-up-panel__buttons">
         {TOP_UP_AMOUNTS.map((amount) => <button key={amount} type="button" onClick={() => createCheckout({
           kind: "credit-top-up",
           paidAmountCents: amount * 100,
           creditAmountCents: Math.round(usableCreditsForPayment(amount) * 100),
-        })}>Add ${amount} in sandbox</button>)}
+        })}>Add ${amount} in sandbox <small>{paymentExchangeLabel(amount)}</small></button>)}
       </div>
     </div>
 
@@ -214,7 +214,7 @@ export function InteractivePlanControls() {
       <div className="workflow-dialog__card surface-smoked-glass">
         <header>
           <h2 id="payment-preview-title">Sandbox checkout pending</h2>
-          <p>{pendingCheckout.kind === "subscription" ? `${pendingCheckout.tier} plan` : "credit top-up"} · {dollars(pendingCheckout.paidAmountCents)} simulated payment · {dollars(pendingCheckout.creditAmountCents)} credits</p>
+          <p>Sandbox {pendingCheckout.kind === "subscription" ? `${pendingCheckout.tier} plan` : "credit top-up"} · {paymentExchangeLabel(pendingCheckout.paidAmountCents / 100, pendingCheckout.creditAmountCents / 100)}</p>
           <p>No balance or entitlement changes until the verified sandbox callback below. No real payment can occur.</p>
         </header>
         <footer className="workflow-dialog__actions">

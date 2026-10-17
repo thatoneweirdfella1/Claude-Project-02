@@ -149,3 +149,22 @@ test("L2: Developer Mode exposes its testing controls and opens the lab", async 
     await expect(developerMode).toHaveAttribute("title", "Developer Mode is operator-only");
   }
 });
+
+test("M4: Plan and credits shows the owner's exact prices and markup wording", async ({ page }, testInfo) => {
+  await openApp(page);
+  await page.getByTestId("col-left").getByRole("button", { name: "Settings", exact: true }).click();
+  await page.getByRole("button", { name: "Plan & credits", exact: true }).click();
+  const plan = page.locator(".subscription-ui");
+  await expect(plan).toBeVisible();
+  for (const [name, paid, credits] of [["Plus", 15, "10.50"], ["Pro", 75, "52.50"], ["Insane", 200, "140.00"]] as const) {
+    const tier = plan.locator(".tier-card").filter({ has: page.locator(".tier-card__title strong", { hasText: new RegExp(`^${name}$`) }) });
+    await expect(tier).toContainText(`You pay $${paid}, receive $${credits} after 30% markup`);
+  }
+  for (const [paid, credits] of [[5, "3.50"], [10, "7.00"], [25, "17.50"], [50, "35.00"]] as const) {
+    await expect(plan.getByText(`You pay $${paid}, receive $${credits} after 30% markup`, { exact: true })).toBeVisible();
+  }
+  await expect(plan).not.toContainText("$1 paid = $1 credit");
+  await plan.locator(".tier-grid").screenshot({ path: testInfo.outputPath("M4-tiers.png"), animations: "disabled" });
+  await plan.locator(".top-up-panel").filter({ hasText: "One-time sandbox credits" }).screenshot({ path: testInfo.outputPath("M4-topups.png"), animations: "disabled" });
+  await page.screenshot({ path: testInfo.outputPath("M4-plan-credits.png"), fullPage: true, animations: "disabled" });
+});
