@@ -4,10 +4,15 @@ let handle: typeof import("./proxyHandler").handleProxyRequest;
 const keyNames = ["GROQ_API_KEY", "GOOGLE_API_KEY", "OPENROUTER_API_KEY", "OPENAI_API_KEY", "XAI_API_KEY", "DEEPSEEK_API_KEY"];
 
 beforeEach(async () => {
+  // Only the explicit environment() fixture configures this scenario's providers.
+  // Deployment credentials must not enable additional runtime fallback slots.
+  for (const name of [...keyNames, "ANTHROPIC_API_KEY", "HF_TOKEN", "CLOUDFLARE_API_TOKEN", "CLOUDFLARE_ACCOUNT_ID"]) {
+    vi.stubEnv(name, "");
+  }
   vi.resetModules();
   handle = (await import("./proxyHandler")).handleProxyRequest;
 });
-afterEach(() => vi.useRealTimers());
+afterEach(() => { vi.useRealTimers(); vi.unstubAllEnvs(); });
 
 function provider(url: RequestInfo | URL): string {
   const host = new URL(String(url)).hostname;
