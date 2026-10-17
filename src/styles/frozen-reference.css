@@ -1336,3 +1336,9 @@ input:focus-visible {
 :root[data-layout="gold"] .col-left { z-index: 70; }
 :root[data-layout="gold"] .leftnav-tools { z-index: 80; }
 :root[data-layout="gold"] .leftnav-tools__popup { z-index: 81; }
+
+/* Menu text uses the same readable palette as its frozen overlay surface. */
+:root[data-layout="gold"] .topbar-content .topbar-popover {
+  --text-primary: var(--frozen-text);
+  --text-secondary: var(--frozen-muted);
+}
