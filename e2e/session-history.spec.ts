@@ -32,6 +32,7 @@ test("Session History: save, load, delete, restore", async ({ page }) => {
   const firstSession = sessionItems.first();
   const sessionTitle = firstSession.locator("h3").first();
   await expect(sessionTitle).toBeVisible();
+  const originalTitle = await sessionTitle.innerText();
 
   // Test Load button
   const loadButton = firstSession.locator("button:has-text('Load')");
@@ -57,8 +58,8 @@ test("Session History: save, load, delete, restore", async ({ page }) => {
   const countAfterDelete = await sessionItemsAfterDelete.count();
   expect(countAfterDelete).toBeLessThan(itemCount);
 
-  // Navigate to Trash screen
-  const trashNavItem = page.getByRole("button", { name: "Trash", exact: true });
+  // Open the Sessions Trash tab, not the separate left navigation button.
+  const trashNavItem = centerColumn.getByRole("button", { name: "Trash", exact: true });
   await trashNavItem.click();
   await page.waitForLoadState("networkidle");
 
@@ -72,6 +73,7 @@ test("Session History: save, load, delete, restore", async ({ page }) => {
 
   // Test Restore button
   const firstTrashedSession = trashedItems.first();
+  await expect(firstTrashedSession.locator("h3")).toHaveText(originalTitle);
   const restoreButton = firstTrashedSession.locator("button:has-text('Restore')");
   await restoreButton.click();
   await page.waitForTimeout(500);
@@ -88,4 +90,5 @@ test("Session History: save, load, delete, restore", async ({ page }) => {
   const sessionItemsAfterRestore = page.locator(".session-item");
   const countAfterRestore = await sessionItemsAfterRestore.count();
   expect(countAfterRestore).toBeGreaterThan(countAfterDelete);
+  await expect(sessionItemsAfterRestore.getByRole("heading", { name: originalTitle, exact: true })).toBeVisible();
 });

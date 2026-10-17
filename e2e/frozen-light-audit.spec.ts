@@ -6,7 +6,7 @@ test("approved frozen conversation-first frame at canonical viewport", async ({ 
   await page.goto("/");
 
   await expect(page.locator("html")).toHaveAttribute("data-layout", "gold");
-  await expect(page.locator(".app-shell")).toHaveAttribute("data-layout-authority", "frozen-reference-2026-08-10");
+  await expect(page.locator(".app-shell")).toHaveAttribute("data-layout-authority", "frozen-reference-1600x1024");
   await expect(page.locator("[data-screen='translate']")).toHaveClass(/leftnav-item--active/);
   await expect(page.locator(".quick-tools-tile__button")).toHaveCount(0);
   await expect(page.locator(".accordion-panel.is-open")).toHaveCount(0);
@@ -26,10 +26,13 @@ test("approved frozen conversation-first frame at canonical viewport", async ({ 
       quickActions: box(".quick-actions"), rightRail: box(".col-right"), firstAccordion: box(".accordion-panel"),
     };
   });
-  expect(metrics.center).toMatchObject({ x: 238, y: 60, width: 987, height: 959 });
-  expect(metrics.rightRail).toMatchObject({ x: 1243, y: 60, width: 300, height: 959 });
-  expect(metrics.quickActions?.height).toBe(26);
-  expect(metrics.firstAccordion?.height).toBe(26);
+  console.log("Frozen frame metrics:", JSON.stringify(metrics));
+  // Commit 90b4cdd deliberately caps the frozen canvas at 0.72 scale.
+  // These exact boxes match both the Linux reference and the Windows measurement.
+  expect(metrics.center).toMatchObject({ x: 451, y: 253, width: 734, height: 664 });
+  expect(metrics.rightRail).toMatchObject({ x: 1209, y: 253, width: 202, height: 664 });
+  expect(metrics.quickActions?.height).toBe(19);
+  expect(metrics.firstAccordion?.height).toBe(19);
   expect(metrics.conversation!.y).toBeLessThan(metrics.composer!.y);
 
   await testInfo.attach("frozen-light-1543x1019", { body: await page.screenshot({ animations: "disabled" }), contentType: "image/png" });

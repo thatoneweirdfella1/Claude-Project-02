@@ -25,7 +25,7 @@ test("Sessions screen displays and loads", async ({ page }) => {
   await expect(header).toHaveText("Sessions");
 
   // Verify either the empty state or the session list exists
-  const emptyState = sessionsScreen.locator("text=No saved sessions yet");
+  const emptyState = sessionsScreen.getByText("No active sessions yet.", { exact: true });
   const sessionList = sessionsScreen.locator(".session-list");
 
   const emptyStateVisible = await emptyState.isVisible().catch(() => false);
