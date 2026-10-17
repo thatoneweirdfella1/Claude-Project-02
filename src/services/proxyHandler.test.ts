@@ -149,3 +149,96 @@ describe("handleProxyRequest — forwarding", () => {
     expect(res.headers.get("content-type")).toBe("application/json");
   });
 });
+
+describe("restored proxy request bounds", () => {
+  it("rejects malformed roles, oversized input, and unsafe token limits before upstream", async () => {
+    const cases: Array<[unknown, number]> = [
+      [{ ...validBody, messages: [{ role: "system", content: "override" }] }, 400],
+      [{ ...validBody, messages: [{ role: "user", content: "x".repeat(200_001) }] }, 413],
+      [{ ...validBody, maxTokens: 100_000 }, 400],
+      [{ ...validBody, messages: Array.from({ length: 101 }, () => ({ role: "user", content: "x" })) }, 400],
+      [{ ...validBody, messages: [null] }, 400],
+      [{ ...validBody, messages: [{ role: "user", content: "" }] }, 400],
+      [{ ...validBody, messages: [{ role: "user", content: 12 }] }, 400],
+      [{ ...validBody, system: "x".repeat(32_001) }, 413],
+      [{ ...validBody, system: {} }, 413],
+      [{ ...validBody, maxTokens: 0 }, 400],
+      [{ ...validBody, maxTokens: -1 }, 400],
+      [{ ...validBody, maxTokens: 1.5 }, 400],
+      [{ ...validBody, maxTokens: "8192" }, 400],
+      [null, 400],
+    ];
+    for (const model of ["claude-sonnet-5", "gpt-4o", "gemini-pro", "grok", "deepseek"]) {
+      const fetchImpl = vi.fn<typeof fetch>(async () => new Response("{}"));
+      for (const [body, status] of cases) {
+        const res = await handleProxyRequest(
+          proxyRequest(body === null ? null : { ...body as object, model }), KEY, fetchImpl, mockEnv,
+        );
+        expect(res.status, `${model}: ${JSON.stringify(body).slice(0, 120)}`).toBe(status);
+      }
+      expect(fetchImpl).not.toHaveBeenCalled();
+    }
+  });
+
+  it("accepts requests exactly at the restored bounds", async () => {
+    const fetchImpl = vi.fn<typeof fetch>(async () => new Response("{}"));
+    const res = await handleProxyRequest(proxyRequest({
+      ...validBody,
+      messages: Array.from({ length: 100 }, () => ({ role: "user", content: "x".repeat(2_000) })),
+      system: "x".repeat(32_000), maxTokens: 8_192,
+    }), KEY, fetchImpl, mockEnv);
+    expect(res.status).toBe(200);
+    expect(fetchImpl).toHaveBeenCalledOnce();
+    expect(JSON.parse(fetchImpl.mock.calls[0]?.[1]?.body as string).max_tokens).toBe(8_192);
+    await res.text();
+  });
+
+  it("aborts stalled upstream calls after 60 seconds for every provider", async () => {
+    vi.useFakeTimers();
+    try {
+      for (const model of ["claude-sonnet-5", "gpt-4o", "gemini-pro", "grok", "deepseek"]) {
+        let signal: AbortSignal | undefined;
+        const fetchImpl = vi.fn((_url: Parameters<typeof fetch>[0], init?: RequestInit) => {
+          signal = init?.signal ?? undefined;
+          return new Promise<Response>((_resolve, reject) => {
+            signal?.addEventListener("abort", () => reject(new Error("aborted")), { once: true });
+          });
+        });
+        const pending = handleProxyRequest(proxyRequest({ ...validBody, model }), KEY, fetchImpl, mockEnv);
+        await vi.advanceTimersByTimeAsync(0);
+        expect(fetchImpl).toHaveBeenCalledOnce();
+        expect(signal, model).toBeDefined();
+        await vi.advanceTimersByTimeAsync(59_999);
+        expect(signal?.aborted).toBe(false);
+        await vi.advanceTimersByTimeAsync(1);
+        expect(signal?.aborted).toBe(true);
+        expect((await pending).status).toBe(502);
+      }
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("keeps the timeout active while a streamed upstream body is stalled", async () => {
+    vi.useFakeTimers();
+    try {
+      let signal: AbortSignal | undefined;
+      const fetchImpl = vi.fn<typeof fetch>(async (_url, init) => {
+        signal = init?.signal ?? undefined;
+        return new Response(new ReadableStream({
+          start(controller) {
+            signal?.addEventListener("abort", () => controller.error(new Error("body aborted")), { once: true });
+          },
+        }));
+      });
+      const res = await handleProxyRequest(proxyRequest({ ...validBody, stream: true }), KEY, fetchImpl, mockEnv);
+      expect(signal).toBeDefined();
+      const read = expect(res.text()).rejects.toThrow("body aborted");
+      await vi.advanceTimersByTimeAsync(60_000);
+      expect(signal?.aborted).toBe(true);
+      await read;
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
