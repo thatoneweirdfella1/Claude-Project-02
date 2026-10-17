@@ -10,6 +10,34 @@
    shape and has its own adapter in googleHandler.ts. */
 
 import type { PartnerAdapter, PartnerProxyRequestBody } from "./partnerProxy.js";
+import type { ProxyRequestBody } from "../proxyHandler.js";
+
+interface ChatMessage {
+  role: "system" | "user" | "assistant";
+  content: string;
+}
+
+function completionBody(model: string, messages: ChatMessage[], maxTokens: number, stream?: boolean) {
+  return { model, max_tokens: maxTokens, messages, ...(stream === undefined ? {} : { stream }) };
+}
+
+/** Shared HTTP transport for additional OpenAI-compatible provider slots. */
+export function callChatCompletions(
+  body: ProxyRequestBody,
+  url: string,
+  apiKey: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<Response> {
+  const messages: ChatMessage[] = [
+    ...(body.system ? [{ role: "system" as const, content: body.system }] : []),
+    ...body.messages,
+  ];
+  return fetchImpl(url, {
+    method: "POST",
+    headers: { "content-type": "application/json", authorization: "Bearer " + apiKey },
+    body: JSON.stringify(completionBody(body.model, messages, body.maxTokens ?? 4096, body.stream === true)),
+  });
+}
 
 interface ChatCompletionsConfig {
   modelId: string;
@@ -33,14 +61,12 @@ export function chatCompletionsAdapter(config: ChatCompletionsConfig): PartnerAd
     keyEnvVar: config.keyEnvVar,
     url: () => config.url,
     headers: (apiKey) => ({ authorization: `Bearer ${apiKey}` }),
-    body: (body: PartnerProxyRequestBody, maxTokens: number) => ({
-      model: config.modelId,
-      max_tokens: maxTokens,
-      messages: [
+    body: (body: PartnerProxyRequestBody, maxTokens: number) => completionBody(
+      config.modelId, [
         { role: "system", content: body.system },
         { role: "user", content: body.input },
-      ],
-    }),
+      ], maxTokens,
+    ),
     extractText: (payload: unknown) => {
       const content = (payload as ChatCompletionsResponse)?.choices?.[0]?.message?.content;
       return typeof content === "string" ? content : null;

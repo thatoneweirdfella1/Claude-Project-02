@@ -21,6 +21,8 @@ export default function handler(request: Request): Response {
     google: Boolean(process.env.GOOGLE_API_KEY),
     xai: Boolean(process.env.XAI_API_KEY),
     deepseek: Boolean(process.env.DEEPSEEK_API_KEY),
+    groq: Boolean(process.env.GROQ_API_KEY),
+    openrouter: Boolean(process.env.OPENROUTER_API_KEY),
   };
   const knownProvider = provider !== null && Object.hasOwn(configured, provider);
   const routeStatus = provider && model && route ? {

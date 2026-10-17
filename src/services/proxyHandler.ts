@@ -14,6 +14,8 @@ import { buildOpenAiPayload, callOpenAi } from "./providers/openai.js";
 import { buildGooglePayload, callGoogle } from "./providers/google.js";
 import { buildXaiPayload, callXai } from "./providers/xai.js";
 import { buildDeepseekPayload, callDeepseek } from "./providers/deepseek.js";
+import { callGroq } from "./providers/groq.js";
+import { callOpenrouter } from "./providers/openrouter.js";
 
 const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
 const ANTHROPIC_VERSION = "2023-06-01";
@@ -53,6 +55,9 @@ function getApiKeyForProvider(
   anthropicKey: string | undefined,
   env: Record<string, string | undefined>,
 ): string | undefined {
+  // The existing platform entry supplies the original slots explicitly.
+  // Read new slots at call time here so no new route or wrapper edit is needed.
+  const runtimeEnv = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env;
   switch (provider) {
     case "anthropic":
       return anthropicKey;
@@ -64,6 +69,10 @@ function getApiKeyForProvider(
       return env.XAI_API_KEY;
     case "deepseek":
       return env.DEEPSEEK_API_KEY;
+    case "groq":
+      return env.GROQ_API_KEY ?? runtimeEnv?.GROQ_API_KEY;
+    case "openrouter":
+      return env.OPENROUTER_API_KEY ?? runtimeEnv?.OPENROUTER_API_KEY;
   }
 }
 
@@ -75,6 +84,8 @@ function missingKeyResponse(provider: Provider): Response {
     google: "GOOGLE_API_KEY",
     xai: "XAI_API_KEY",
     deepseek: "DEEPSEEK_API_KEY",
+    groq: "GROQ_API_KEY",
+    openrouter: "OPENROUTER_API_KEY",
   }[provider];
   return jsonResponse({ error: `Proxy is missing ${keyName}` }, 500);
 }
@@ -124,6 +135,10 @@ async function callProvider(
       const payload = buildDeepseekPayload(body);
       return callDeepseek(payload, apiKey, fetchImpl);
     }
+    case "groq":
+      return callGroq(body, apiKey, fetchImpl);
+    case "openrouter":
+      return callOpenrouter(body, apiKey, fetchImpl);
   }
 }
 

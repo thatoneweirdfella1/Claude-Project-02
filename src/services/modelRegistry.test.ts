@@ -24,6 +24,8 @@ describe("model registry", () => {
       "grok",
       "deepseek",
       "deepseek-reasoner",
+      "llama-3.3-70b-versatile",
+      "meta-llama/llama-3.3-70b-instruct:free",
     ]);
     // Explicitly not the retired string.
     expect(MODEL_IDS).not.toContain("claude-sonnet-4-6");

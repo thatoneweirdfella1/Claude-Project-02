@@ -1,7 +1,8 @@
 import { appAccessHeaders } from "./appAccessClient";
+import type { Provider } from "./modelRegistry";
 
 export type ConnectedProviderId = "anthropic" | "openai" | "google" | "xai" | "deepseek";
-export type ProviderAvailability = Record<ConnectedProviderId, boolean>;
+export type ProviderAvailability = Record<Provider, boolean>;
 
 export interface ProviderRouteVerification {
   providerId: ConnectedProviderId;
@@ -25,6 +26,8 @@ const NONE: ProviderAvailability = {
   google: false,
   xai: false,
   deepseek: false,
+  groq: false,
+  openrouter: false,
 };
 
 const CACHE_TTL_MS = 60_000; // 1 minute — refresh after that time elapses
@@ -64,6 +67,8 @@ export async function getProviderAvailability(fetchImpl: typeof fetch = fetch): 
         google: body.google === true,
         xai: body.xai === true,
         deepseek: body.deepseek === true,
+        groq: body.groq === true,
+        openrouter: body.openrouter === true,
       };
 
       // Cache the new status with timestamp

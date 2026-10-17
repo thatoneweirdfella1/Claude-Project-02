@@ -27,6 +27,8 @@ describe("provider availability preflight", () => {
       google: false,
       xai: true,
       deepseek: false,
+      groq: false,
+      openrouter: false,
     });
     expect(JSON.stringify(status)).not.toContain("key");
   });

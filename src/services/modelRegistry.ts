@@ -8,15 +8,16 @@
    ModelCallOptions.extendedThinking, applied to a call to any paid-tier model —
    never a fourth registry entry. */
 
-import type { ModelId, PlanFlag } from "../stores/types.js";
+import type { ModelId as LegacyModelId, PlanFlag } from "../stores/types.js";
 
-export type { ModelId } from "../stores/types.js";
+/** Server models also include the free-pool slots; the legacy picker stays separate. */
+export type ModelId = LegacyModelId | "llama-3.3-70b-versatile" | "meta-llama/llama-3.3-70b-instruct:free";
 
 export type ModelTier = "Fast" | "Balanced" | "Deep";
 /** Semantic key matching routing.js's MODELS keys (haiku/sonnet/opus). */
-export type ModelKey = "haiku" | "sonnet" | "opus" | "gpt-4o" | "gpt-5" | "gemini-flash" | "gemini-pro" | "grok" | "deepseek";
+export type ModelKey = "haiku" | "sonnet" | "opus" | "gpt-4o" | "gpt-5" | "gemini-flash" | "gemini-pro" | "grok" | "deepseek" | "groq" | "openrouter";
 /** Provider type for routing. */
-export type Provider = "anthropic" | "openai" | "google" | "xai" | "deepseek";
+export type Provider = "anthropic" | "openai" | "google" | "xai" | "deepseek" | "groq" | "openrouter";
 
 export interface ModelInfo {
   /** The api string sent to the model — the ModelId value. */
@@ -116,6 +117,22 @@ export const MODEL_REGISTRY: Record<ModelId, ModelInfo> = {
     tier: "Deep",
     plan: "paid",
     provider: "deepseek",
+  },
+  "llama-3.3-70b-versatile": {
+    id: "llama-3.3-70b-versatile",
+    key: "groq",
+    label: "Groq Llama 3.3 70B",
+    tier: "Balanced",
+    plan: "free",
+    provider: "groq",
+  },
+  "meta-llama/llama-3.3-70b-instruct:free": {
+    id: "meta-llama/llama-3.3-70b-instruct:free",
+    key: "openrouter",
+    label: "OpenRouter Llama 3.3 70B (free)",
+    tier: "Balanced",
+    plan: "free",
+    provider: "openrouter",
   },
 };
 
