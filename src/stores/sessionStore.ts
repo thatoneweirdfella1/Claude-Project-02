@@ -55,6 +55,8 @@ export function createInitialSessionState(): SessionState {
     variables: {},
     currentScreen: "translate",
     currentSection: null,
+    sidebarPinnedTools: [],
+    sidebarHiddenPrimary: [],
     methodology: defaults.methodology,
     methodologyPhase: "define",
     lockedProblemStatement: "",
@@ -68,10 +70,12 @@ export const SESSION_PERSISTED_KEYS: (keyof SessionState)[] = [
   "destination", "translatorEngine", "reviewBeforeSend", "paidFallbackEnabled",
   "maxRequestCost", "directness", "techniques", "context", "conversation",
   "statePills", "variables", "currentScreen", "currentSection", "methodology", "methodologyPhase",
-  "lockedProblemStatement", "multiAiRuns",
+  "lockedProblemStatement", "multiAiRuns", "sidebarPinnedTools", "sidebarHiddenPrimary",
 ];
 
 interface SessionActions {
+  setSidebarPinnedTools: (ids: string[]) => void;
+  setSidebarHiddenPrimary: (ids: string[]) => void;
   setDraftInput: (draftInput: string) => void;
   setDraftSelection: (start: number, end: number) => void;
   setConversationScrollTop: (scrollTop: number) => void;
@@ -139,6 +143,8 @@ function resolvePersistedLocation(value: unknown): { currentScreen: ScreenId; cu
 
 export const useSessionStore = create<SessionStore>((set) => ({
   ...createInitialSessionState(),
+  setSidebarPinnedTools: (ids) => set({ sidebarPinnedTools: [...new Set(ids)] }),
+  setSidebarHiddenPrimary: (ids) => set({ sidebarHiddenPrimary: [...new Set(ids)].filter((id) => id !== "talk-to-ai" && id !== "settings") }),
   setDraftInput: (draftInput) => set({
     draftInput,
     draftSelectionStart: draftInput.length,
@@ -303,6 +309,12 @@ export const useSessionStore = create<SessionStore>((set) => ({
   setLockedProblemStatement: (lockedProblemStatement) => set({ lockedProblemStatement }),
   hydrate: (state) => set((current) => ({
     ...state,
+    sidebarPinnedTools: Array.isArray(state.sidebarPinnedTools)
+      ? [...new Set(state.sidebarPinnedTools.filter((id) => typeof id === "string"))]
+      : current.sidebarPinnedTools,
+    sidebarHiddenPrimary: Array.isArray(state.sidebarHiddenPrimary)
+      ? [...new Set(state.sidebarHiddenPrimary.filter((id) => typeof id === "string" && id !== "talk-to-ai" && id !== "settings"))]
+      : current.sidebarHiddenPrimary,
     ...(state.sessionId !== undefined
       ? { sessionId: typeof state.sessionId === "string" && state.sessionId ? state.sessionId : current.sessionId }
       : {}),

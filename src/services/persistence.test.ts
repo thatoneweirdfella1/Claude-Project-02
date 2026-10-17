@@ -171,7 +171,18 @@ describe("persistence: kill and reload", () => {
     const hasFunction = Object.values(raw).some((v) => typeof v === "function");
     expect(hasFunction).toBe(false);
     expect(Object.keys(raw).sort()).toEqual(
-      ["sessionId", "sessionCreatedAt", "sessionTitle", "draftInput", "draftSelectionStart", "draftSelectionEnd", "conversationScrollTop", "context", "conversation", "currentScreen", "currentSection", "destination", "directness", "lockedProblemStatement", "maxRequestCost", "methodology", "methodologyPhase", "model", "multiAiRuns", "paidFallbackEnabled", "reviewBeforeSend", "statePills", "techniques", "translatorEngine", "variables"].sort(),
+      ["sessionId", "sessionCreatedAt", "sessionTitle", "draftInput", "draftSelectionStart", "draftSelectionEnd", "conversationScrollTop", "context", "conversation", "currentScreen", "currentSection", "destination", "directness", "lockedProblemStatement", "maxRequestCost", "methodology", "methodologyPhase", "model", "multiAiRuns", "paidFallbackEnabled", "reviewBeforeSend", "sidebarPinnedTools", "sidebarHiddenPrimary", "statePills", "techniques", "translatorEngine", "variables"].sort(),
     );
   });
+});
+
+it("restores sidebar pins in order and primary removals through the existing IndexedDB autosave", async () => {
+  useSessionStore.getState().setSidebarPinnedTools(["variables", "templates", "techniques"]);
+  useSessionStore.getState().setSidebarHiddenPrimary(["projects", "insights"]);
+  await saveNow();
+  coldStartStores();
+  _resetDbHandleForTests();
+  await loadPersistedState();
+  expect(useSessionStore.getState().sidebarPinnedTools).toEqual(["variables", "templates", "techniques"]);
+  expect(useSessionStore.getState().sidebarHiddenPrimary).toEqual(["projects", "insights"]);
 });

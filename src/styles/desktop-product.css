@@ -156,3 +156,11 @@
   .cost-confirm__actions { flex-direction: column; }
   .cost-confirm__actions button { width: 100%; }
 }
+
+/* Sidebar controls do not change the frozen navigation rows or frame. */
+.leftnav-primary, .leftnav-pinned { position: relative; }
+.leftnav-remove { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); display: grid; place-items: center; padding: 3px; border: 0; background: transparent; color: var(--frozen-muted); cursor: pointer; }
+.leftnav-pins { max-height: 308px; overflow-y: auto; }
+.leftnav-tools__row { display: flex; align-items: center; min-height: 32px; }
+.leftnav-tools__row button { display: flex; align-items: center; gap: 7px; border: 0; background: transparent; color: var(--frozen-text); cursor: pointer; padding: 7px; }
+.leftnav-tools__row button:first-child { flex: 1; text-align: left; }

@@ -792,6 +792,9 @@ export interface SessionState {
       (the composer view). */
   currentScreen: ScreenId;
   currentSection: ScreenSectionId | null;
+  /** Sidebar preferences use the existing session autosave and restore. */
+  sidebarPinnedTools: string[];
+  sidebarHiddenPrimary: string[];
   /** 3-State Methodology selection. Defaults to "standard". */
   methodology: MethodologyType;
   /** Current phase in 3-State Methodology (if active). */

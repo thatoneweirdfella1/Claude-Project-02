@@ -22,9 +22,24 @@ export function LeftNav() {
   const setScreenLocation = useSessionStore((s) => s.setScreenLocation);
   const [toolsOpen, setToolsOpen] = useState(false);
   const [toolQuery, setToolQuery] = useState("");
-  const [pinnedTool, setPinnedTool] = useState<NavigationEntry | null>(null);
+  const pinnedIds = useSessionStore((s) => s.sidebarPinnedTools);
+  const hiddenPrimary = useSessionStore((s) => s.sidebarHiddenPrimary);
+  const setPinnedIds = useSessionStore((s) => s.setSidebarPinnedTools);
+  const setHiddenPrimary = useSessionStore((s) => s.setSidebarHiddenPrimary);
+  // Conversation and Settings remain permanent, as required by the owner.
+  const protectedIds = ["talk-to-ai", "settings"];
+  const pinnedTools = pinnedIds.flatMap((id) => TOOL_NAVIGATION.find((tool) => tool.id === id) ?? []);
+  const primaryIsVisible = (id: string) => protectedIds.includes(id) || !hiddenPrimary.includes(id);
+  const removePrimary = (id: string) => setHiddenPrimary([...hiddenPrimary, id]);
+  const toggleTool = (tool: NavigationEntry) => {
+    if (PRIMARY_NAVIGATION.some((entry) => entry.id === tool.id)) {
+      setHiddenPrimary(primaryIsVisible(tool.id) ? [...hiddenPrimary, tool.id] : hiddenPrimary.filter((id) => id !== tool.id));
+    } else {
+      setPinnedIds(pinnedIds.includes(tool.id) ? pinnedIds.filter((id) => id !== tool.id) : [...pinnedIds, tool.id]);
+    }
+  };
   const [statusOpen, setStatusOpen] = useState(false);
-  const visibleTools = TOOL_NAVIGATION.filter((tool) => tool.label.toLowerCase().includes(toolQuery.toLowerCase()));
+  const visibleTools = [...TOOL_NAVIGATION, ...PRIMARY_NAVIGATION.filter((tool) => !protectedIds.includes(tool.id))].filter((tool) => tool.label.toLowerCase().includes(toolQuery.toLowerCase()));
 
   function navigate(screen: ScreenId, section?: ScreenSectionId) {
     setScreenLocation(screen, section);
@@ -35,16 +50,14 @@ export function LeftNav() {
   return (
     <div className="leftnav-content">
       <div className="leftnav-items">
-        {PRIMARY_NAVIGATION.map(({ id, label, screen, section }) => {
+        {PRIMARY_NAVIGATION.filter((tool) => primaryIsVisible(tool.id)).map(({ id, label, screen, section }) => {
           const Icon = ICONS[id];
-          return <button type="button" key={id} data-screen={screen} data-section={section} className={"leftnav-item " + (isSameLocation(currentScreen, currentSection, { screen, section }) ? "leftnav-item--active" : "")} onClick={() => navigate(screen, section)}>
+          return <div className="leftnav-primary" key={id}><button type="button" data-screen={screen} data-section={section} className={"leftnav-item " + (isSameLocation(currentScreen, currentSection, { screen, section }) ? "leftnav-item--active" : "")} onClick={() => navigate(screen, section)}>
             <Icon size={23} strokeWidth={1.8} aria-hidden="true" /><span>{label}</span>
-          </button>;
+          </button>
+            {!protectedIds.includes(id) && <button type="button" className="leftnav-remove" aria-label={`Remove ${label}`} title={`Remove ${label}`} onClick={() => removePrimary(id)}><PinOff size={15} /></button>}
+          </div>;
         })}
-        {pinnedTool && <div className="leftnav-pinned">
-          <button type="button" className={"leftnav-item " + (isSameLocation(currentScreen, currentSection, pinnedTool) ? "leftnav-item--active" : "")} onClick={() => navigate(pinnedTool.screen, pinnedTool.section)}><Pin size={20} /><span>{pinnedTool.label}</span></button>
-          <button type="button" aria-label={`Unpin ${pinnedTool.label}`} title={`Unpin ${pinnedTool.label}`} onClick={() => setPinnedTool(null)}><PinOff size={15} /></button>
-        </div>}
         <div className="leftnav-tools">
           <button type="button" className="leftnav-item" aria-haspopup="dialog" aria-expanded={toolsOpen} onClick={() => { setToolsOpen((value) => !value); setStatusOpen(false); }}>
             <Boxes size={23} strokeWidth={1.8} aria-hidden="true" /><span>All Tools</span>
@@ -61,11 +74,17 @@ export function LeftNav() {
               />
               {visibleTools.map((tool) => <div className="leftnav-tools__row" key={tool.id}>
                 <button type="button" onClick={() => navigate(tool.screen, tool.section)}><Wrench size={15} />{tool.label}</button>
-                <button type="button" aria-label={`Pin ${tool.label}`} title={`Pin ${tool.label}`} onClick={() => setPinnedTool(tool)}><Pin size={14} /></button>
+                <button type="button" aria-label={`${PRIMARY_NAVIGATION.some((entry) => entry.id === tool.id) ? (primaryIsVisible(tool.id) ? "Remove" : "Pin") : (pinnedIds.includes(tool.id) ? "Unpin" : "Pin")} ${tool.label}`} onClick={() => toggleTool(tool)}><Pin size={14} /></button>
               </div>)}
               {visibleTools.length === 0 && <p>No matching tools.</p>}
             </div>
           )}
+        </div>
+        <div className="leftnav-pins">
+          {pinnedTools.map((tool) => <div className="leftnav-pinned" key={tool.id}>
+            <button type="button" className={"leftnav-item " + (isSameLocation(currentScreen, currentSection, tool) ? "leftnav-item--active" : "")} onClick={() => navigate(tool.screen, tool.section)}><Pin size={20} /><span>{tool.label}</span></button>
+            <button type="button" className="leftnav-remove" aria-label={`Unpin ${tool.label}`} title={`Unpin ${tool.label}`} onClick={() => setPinnedIds(pinnedIds.filter((id) => id !== tool.id))}><PinOff size={15} /></button>
+          </div>)}
         </div>
       </div>
       <div className="leftnav-bottom">

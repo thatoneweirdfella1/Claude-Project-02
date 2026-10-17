@@ -118,6 +118,8 @@ describe("SESSION_PERSISTED_KEYS", () => {
         "maxRequestCost",
         "paidFallbackEnabled",
         "multiAiRuns",
+        "sidebarPinnedTools",
+        "sidebarHiddenPrimary",
       ].sort(),
     );
   });
@@ -367,5 +369,27 @@ describe("hydrate", () => {
     expect(s.directness).toBe(1);
     expect(s.draftInput).toBe("restored");
     expect(s.model).toBe("claude-opus-4-8"); // untouched by this hydrate call
+  });
+});
+
+describe("sidebar preferences", () => {
+  it("keeps ordered unique pins and removals when starting another conversation", () => {
+    const store = useSessionStore.getState();
+    store.setSidebarPinnedTools(["variables", "templates", "techniques", "variables"]);
+    store.setSidebarHiddenPrimary(["projects", "settings", "talk-to-ai", "projects"]);
+    store.newSession();
+    expect(useSessionStore.getState().sidebarPinnedTools).toEqual(["variables", "templates", "techniques"]);
+    expect(useSessionStore.getState().sidebarHiddenPrimary).toEqual(["projects"]);
+  });
+
+  it("accepts old saves and rejects malformed sidebar collections and protected removals", () => {
+    useSessionStore.getState().hydrate({ draftInput: "old save" });
+    expect(useSessionStore.getState().sidebarPinnedTools).toEqual([]);
+    useSessionStore.getState().hydrate({ sidebarPinnedTools: null, sidebarHiddenPrimary: "broken" } as never);
+    expect(useSessionStore.getState().sidebarPinnedTools).toEqual([]);
+    expect(useSessionStore.getState().sidebarHiddenPrimary).toEqual([]);
+    useSessionStore.getState().hydrate({ sidebarPinnedTools: ["variables", "variables", 7], sidebarHiddenPrimary: ["settings", "talk-to-ai", "projects"] } as never);
+    expect(useSessionStore.getState().sidebarPinnedTools).toEqual(["variables"]);
+    expect(useSessionStore.getState().sidebarHiddenPrimary).toEqual(["projects"]);
   });
 });
