@@ -106,8 +106,11 @@ export function createProviderPool(now: () => number = () => Date.now()) {
   const out = new Map<Provider, PoolBudget>();
   return {
     async run(options: PoolOptions): Promise<FreePoolResult> {
+      // Client metadata may defer its own request, but only a server-observed
+      // quota response may exhaust a provider for unrelated requests.
+      const carried = new Map<Provider, PoolBudget>();
       for (const value of options.budgets ?? []) {
-        if (validBudget(value, now()) && (out.get(value.provider)?.resetAt ?? 0) < value.resetAt) out.set(value.provider, { ...value });
+        if (validBudget(value, now()) && (carried.get(value.provider)?.resetAt ?? 0) < value.resetAt) carried.set(value.provider, { ...value });
       }
       for (const [provider, state] of out) if (state.resetAt <= now()) out.delete(provider);
       const usage: PoolUsage[] = [];
@@ -118,13 +121,20 @@ export function createProviderPool(now: () => number = () => Date.now()) {
         .filter(isFreePoolModel)
         .map((id) => MODEL_REGISTRY[id])
         .sort((left, right) => (ORDER[left.provider] ?? 9999) - (ORDER[right.provider] ?? 9999));
-      const snapshot = () => [...out.values()].map((value) => ({ ...value }));
+      const snapshot = () => {
+        const combined = new Map(out);
+        for (const [provider, budget] of carried) {
+          if ((combined.get(provider)?.resetAt ?? 0) < budget.resetAt) combined.set(provider, budget);
+        }
+        return [...combined.values()].map((value) => ({ ...value }));
+      };
       for (const model of candidates) {
         // Recheck at the dispatch boundary; caller-supplied plan/provider fields never authorize a call.
         if (!isFreePoolModel(model.id) || seen.has(model.provider)) continue;
         seen.add(model.provider);
         if (options.signal?.aborted) break;
-        if (out.has(model.provider) || options.excludedProviders?.includes(model.provider) || !options.configured(model.provider)) continue;
+        if ((out.get(model.provider)?.resetAt ?? 0) > now() || (carried.get(model.provider)?.resetAt ?? 0) > now() ||
+            options.excludedProviders?.includes(model.provider) || !options.configured(model.provider)) continue;
         attempts.push(model.provider);
         try {
           const response = await options.execute(model);
@@ -218,4 +228,3 @@ export async function requestFreePool(text: string, options: {
   listeners.forEach((listener) => listener(result));
   return result;
 }
-

@@ -30,6 +30,24 @@ async function run(upstream: typeof fetch) {
 }
 
 describe("P2 free pool through the deployed proxy handler", () => {
+  it("keeps untrusted carried cooldowns local to their request without poisoning another caller's budget", async () => {
+    const { createProviderPool } = await import("./providerPool");
+    const pool = createProviderPool(() => 1000);
+    let calls = 0;
+    const options = {
+      models: ["llama-3.3-70b-versatile"], configured: () => true,
+      execute: async () => { calls += 1; return answer("groq"); },
+    };
+    const carried = await pool.run({ ...options, budgets: [
+      { provider: "groq", exhaustedAt: 1000, resetAt: Number.MAX_SAFE_INTEGER },
+    ] });
+    expect(carried.status).toBe("refused");
+    const independent = await pool.run(options);
+    expect(independent.status).toBe("answered");
+    expect(independent.provider).toBe("groq");
+    expect(calls).toBe(1);
+  });
+
   it("hands a 429 to the next free provider and returns its answer", async () => {
     const calls: string[] = [];
     const result = await run(async (url) => {
