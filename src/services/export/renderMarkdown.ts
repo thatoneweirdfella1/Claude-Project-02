@@ -1,4 +1,32 @@
 import type { ExportData } from "./types";
+import type { ConversationMessage, MultiAiRunRecord } from "../../stores/types";
+import { buildTranscriptInput, transcriptFromRun } from "../multiAi/transcript";
+
+export type ConversationExportScope = "conversation" | "debate" | "both";
+
+/** Conversation turns and persisted runs retain their original order.
+ * Delegate the AI exchange to the shared transcript formatter. */
+export function renderConversationMarkdown(
+  conversation: ConversationMessage[],
+  runs: MultiAiRunRecord[],
+  scope: ConversationExportScope,
+): string {
+  const sections = ["# Divergence.AI Export"];
+  if (scope !== "debate") {
+    sections.push("## Conversation");
+    for (const message of conversation) {
+      sections.push(`### ${message.role === "user" ? "User" : "Assistant"}\n\n${message.content}`);
+    }
+  }
+  if (scope !== "conversation") {
+    for (const run of runs) {
+      const transcript = transcriptFromRun(run);
+      if (!transcript) continue;
+      sections.push(`## Debate\n\nRun: ${run.id}\nStatus: ${run.status}\n\n${buildTranscriptInput(transcript)}`);
+    }
+  }
+  return sections.join("\n\n") + "\n";
+}
 
 function capitalize(value: string): string {
   return value.length > 0 ? value.charAt(0).toUpperCase() + value.slice(1) : value;

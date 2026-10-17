@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { BlueMarbleButton, GlassCard, GlassButton } from "../primitives";
 import { useDismissableLayer, useFocusTrap } from "../../keyboard";
 import {
@@ -8,12 +9,16 @@ import {
   renderHtml,
   renderJson,
   renderMarkdown,
+  renderConversationMarkdown,
   renderPdf,
   type ExportContentSelection,
   type ExportFormat,
+  type ConversationExportScope,
 } from "../../services/export";
 import type { TelemetryEntry } from "../../services/telemetry";
 import type { ConversationMessage } from "../../stores/types";
+import { useSessionStore } from "../../stores/sessionStore";
+import { transcriptFromRun } from "../../services/multiAi/transcript";
 
 /* Download modal (Step 8.5) — CANON Feature 10: "Download modal: pick
    content (answer text, confidence, rating, transparency, state pills) and
@@ -73,6 +78,9 @@ function triggerDownload(filename: string, blob: Blob): void {
 }
 
 export function DownloadModal({ message, telemetryEntry, onClose }: DownloadModalProps) {
+  const conversation = useSessionStore((s) => s.conversation);
+  const runs = useSessionStore((s) => s.multiAiRuns);
+  const hasDebate = runs.some((run) => transcriptFromRun(run) !== null);
   const availability: ExportContentSelection = {
     answerText: true,
     confidence: typeof message.confidence === "number",
@@ -82,7 +90,9 @@ export function DownloadModal({ message, telemetryEntry, onClose }: DownloadModa
   };
 
   const [selection, setSelection] = useState<ExportContentSelection>(availability);
-  const [format, setFormat] = useState<ExportFormat>(DEFAULT_EXPORT_FORMAT);
+  const [answerFormat, setFormat] = useState<ExportFormat>(DEFAULT_EXPORT_FORMAT);
+  const [scope, setScope] = useState<"answer" | ConversationExportScope>("answer");
+  const format = scope === "answer" ? answerFormat : "markdown";
   const [status, setStatus] = useState<string | null>(null);
 
   const trapRef = useFocusTrap<HTMLDivElement>(true);
@@ -94,6 +104,7 @@ export function DownloadModal({ message, telemetryEntry, onClose }: DownloadModa
   }
 
   function renderText(): string {
+    if (scope !== "answer") return renderConversationMarkdown(conversation, runs, scope);
     const data = buildExportData(message, selection, telemetryEntry);
     if (format === "html") return renderHtml(data);
     if (format === "json") return renderJson(data);
@@ -101,7 +112,9 @@ export function DownloadModal({ message, telemetryEntry, onClose }: DownloadModa
   }
 
   function handleDownload(): void {
-    const filename = `divergence-export.${EXTENSIONS[format]}`;
+    const filename = scope === "answer"
+      ? `divergence-export.${EXTENSIONS[format]}`
+      : `divergence-${scope}.md`;
     if (format === "pdf") {
       const data = buildExportData(message, selection, telemetryEntry);
       triggerDownload(filename, new Blob([renderPdf(data)], { type: MIME_TYPES.pdf }));
@@ -128,7 +141,7 @@ export function DownloadModal({ message, telemetryEntry, onClose }: DownloadModa
     { key: "statePills", label: "State pills" },
   ];
 
-  return (
+  return createPortal(
     <div
       className="download-modal-overlay"
       data-testid="download-modal-overlay"
@@ -157,6 +170,25 @@ export function DownloadModal({ message, telemetryEntry, onClose }: DownloadModa
           </div>
 
           <fieldset className="download-modal__section">
+            <legend>Download what?</legend>
+            {([
+              ["answer", "This answer"],
+              ["conversation", "Just the conversation"],
+              ["debate", "Just the debate"],
+              ["both", "Both"],
+            ] as const).map(([value, label]) => (
+              <label key={value} className="download-modal__row">
+                <input type="radio" name="export-scope" checked={scope === value}
+                  disabled={(value === "debate" || value === "both") && !hasDebate}
+                  aria-describedby={(value === "debate" || value === "both") && !hasDebate ? "export-no-debate" : undefined}
+                  onChange={() => { setScope(value); setStatus(null); }} />
+                {label}
+              </label>
+            ))}
+            {!hasDebate && <p id="export-no-debate">No debate in this conversation yet.</p>}
+          </fieldset>
+
+          {scope === "answer" && <fieldset className="download-modal__section">
             <legend>Content</legend>
             {CONTENT_ITEMS.map((item) => (
               <label key={item.key} className="download-modal__row">
@@ -172,7 +204,7 @@ export function DownloadModal({ message, telemetryEntry, onClose }: DownloadModa
                 )}
               </label>
             ))}
-          </fieldset>
+          </fieldset>}
 
           <fieldset className="download-modal__section">
             <legend>Format</legend>
@@ -182,12 +214,14 @@ export function DownloadModal({ message, telemetryEntry, onClose }: DownloadModa
                   type="radio"
                   name="export-format"
                   checked={format === f}
+                  disabled={scope !== "answer" && f !== "markdown"}
                   onChange={() => setFormat(f)}
                 />
                 {FORMAT_LABELS[f]}
               </label>
             ))}
           </fieldset>
+          {scope !== "answer" && <p>Conversation and debate downloads use Markdown.</p>}
 
           {status && <p className="download-modal__status">{status}</p>}
 
@@ -199,6 +233,6 @@ export function DownloadModal({ message, telemetryEntry, onClose }: DownloadModa
           </div>
         </GlassCard>
       </div>
-    </div>
+    </div>, document.body,
   );
 }

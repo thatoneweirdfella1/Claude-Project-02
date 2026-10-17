@@ -293,6 +293,7 @@ type Phase = "idle" | "debating" | "consensus" | "synthesis";
 
 export function MultiAiActions() {
   const conversation = useSessionStore((s) => s.conversation);
+  const runs = useSessionStore((s) => s.multiAiRuns);
   const upsertMultiAiRun = useSessionStore((s) => s.upsertMultiAiRun);
   const logAutoSelectUsage = useAccountStore((s) => s.logAutoSelectUsage);
   const paidAiEnabled = useAccountStore((s) => s.plan !== "free" || s.appMode === "developer");
@@ -824,6 +825,7 @@ export function MultiAiActions() {
               {outcome && outcome.status !== "empty-question" && (
                 <DebateView
                   sides={outcome.sides}
+                  run={runs.find((run) => run.id === activeRunId)}
                   onRetrySide={(index) => void retrySide(index)}
                   retrying={retrying}
                 />

@@ -8,6 +8,8 @@
    `runDebate` returned them in, so 2-, 3-, and 4-participant transcripts all
    feed the runtime model every voice exactly once. */
 
+import type { MultiAiRunRecord } from "../../stores/types";
+
 export interface TranscriptParticipant {
   /** Display name — "Claude" or the roster label, e.g. "GPT-5.5". */
   label: string;
@@ -37,6 +39,24 @@ export function buildTranscriptInput(transcript: DebateTranscript): string {
       (p) => `${p.label.trim().toUpperCase()} [${p.provider.trim()} · ${p.model.trim()}]'S ANSWER:\n${p.text.trim()}`,
     ),
   ].join("\n\n");
+}
+
+/** Saved debate export uses the same attribution and ordering as live
+ * adjudication. A prepared source bundle alone is not an AI exchange. */
+export function transcriptFromRun(run: MultiAiRunRecord): DebateTranscript | null {
+  if (run.workflowStage === "local-preparation"
+    || !run.participants.some((p) => p.status === "ok" && p.text?.trim())) return null;
+  return {
+    question: run.question,
+    participants: run.participants.map((p) => ({
+      label: p.label,
+      provider: p.provider || "provider unavailable",
+      model: p.model || "model unavailable",
+      text: p.status === "ok" && p.text?.trim()
+        ? p.text
+        : `[No answer: ${p.message || "This side did not return text."}]`,
+    })),
+  };
 }
 
 /** True only when every side has real text — a malformed/incomplete

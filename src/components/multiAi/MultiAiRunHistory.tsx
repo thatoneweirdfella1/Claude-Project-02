@@ -1,6 +1,7 @@
 import { useSessionStore } from "../../stores/sessionStore";
 import type { MultiAiRunRecord } from "../../stores/types";
 import { WORKFLOW_STAGE_LABEL } from "../../services/workflowVocabulary";
+import { DebateTranscriptControl } from "./DebateView";
 
 /* R21: Persist Multi-AI Results — every finished/partial/failed/cancelled
    Multi-AI run is kept in session.multiAiRuns (persisted through autosave,
@@ -65,6 +66,7 @@ export function MultiAiRunHistory({ sourceMessageIds, anchorMessageId }: MultiAi
             </div>
           )}
 
+          <DebateTranscriptControl run={run} />
           <ul className="multi-ai-run-history__participants">
             {run.participants.map((p) => (
               <li key={`${run.id}-${p.label}`} className={`multi-ai-run-history__participant multi-ai-run-history__participant--${p.status}`}>
