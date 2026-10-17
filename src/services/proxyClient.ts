@@ -83,9 +83,11 @@ function reportUsage(
   onUsage: ((usage: TokenUsage) => void) | undefined,
   raw: { input_tokens?: number; output_tokens?: number } | undefined,
 ): void {
-  if (!onUsage || !raw) return;
-  const inputTokens = raw.input_tokens ?? 0;
-  const outputTokens = raw.output_tokens ?? 0;
+  const inputTokens = raw?.input_tokens;
+  const outputTokens = raw?.output_tokens;
+  // A missing count is unknown, never a measured zero.
+  if (!onUsage || typeof inputTokens !== "number" || typeof outputTokens !== "number" ||
+      !Number.isSafeInteger(inputTokens) || !Number.isSafeInteger(outputTokens) || inputTokens < 0 || outputTokens < 0) return;
   onUsage({ inputTokens, outputTokens });
 }
 
@@ -130,7 +132,7 @@ export function createProxyClient(config: ProxyClientConfig = {}): ProxyClient {
         system: req.system,
         messages: buildMessages(req),
       });
-      req.onUsage?.(result.usage);
+      reportUsage(req.onUsage, { input_tokens: result.usage?.inputTokens, output_tokens: result.usage?.outputTokens });
       return result.text;
     }
     const res = await post(req, false);
@@ -152,7 +154,7 @@ export function createProxyClient(config: ProxyClientConfig = {}): ProxyClient {
         system: req.system,
         messages: buildMessages(req),
       });
-      req.onUsage?.(result.usage);
+      reportUsage(req.onUsage, { input_tokens: result.usage?.inputTokens, output_tokens: result.usage?.outputTokens });
       // IPC returns one complete response. Yield natural text chunks so the
       // existing progressive-answer UI still behaves consistently.
       for (const chunk of result.text.match(/\S+\s*/g) ?? []) yield chunk;
@@ -169,42 +171,45 @@ export function createProxyClient(config: ProxyClientConfig = {}): ProxyClient {
     // separately from the yielded token stream and reported once at the end.
     let inputTokens: number | undefined;
     let outputTokens: number | undefined;
-    for (;;) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split("\n");
-      buffer = lines.pop() ?? ""; // keep the last, possibly-partial line
-      for (const line of lines) {
-        const trimmed = line.trim();
-        if (!trimmed.startsWith("data:")) continue;
-        const data = trimmed.slice(5).trim();
-        if (data === "" || data === "[DONE]") continue;
-        try {
-          const event = JSON.parse(data) as {
-            type?: string;
-            delta?: { type?: string; text?: string };
-            message?: { usage?: { input_tokens?: number; output_tokens?: number } };
-            usage?: { input_tokens?: number; output_tokens?: number };
-          };
-          if (
-            event.type === "content_block_delta" &&
-            event.delta?.type === "text_delta" &&
-            event.delta.text
-          ) {
-            yield event.delta.text;
-          } else if (event.type === "message_start" && event.message?.usage) {
-            inputTokens = event.message.usage.input_tokens ?? inputTokens;
-            outputTokens = event.message.usage.output_tokens ?? outputTokens;
-          } else if (event.type === "message_delta" && event.usage) {
-            outputTokens = event.usage.output_tokens ?? outputTokens;
+    try {
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? ""; // keep the last, possibly-partial line
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed.startsWith("data:")) continue;
+          const data = trimmed.slice(5).trim();
+          if (data === "" || data === "[DONE]") continue;
+          try {
+            const event = JSON.parse(data) as {
+              type?: string;
+              delta?: { type?: string; text?: string };
+              message?: { usage?: { input_tokens?: number; output_tokens?: number } };
+              usage?: { input_tokens?: number; output_tokens?: number };
+            };
+            if (
+              event.type === "content_block_delta" &&
+              event.delta?.type === "text_delta" &&
+              event.delta.text
+            ) {
+              yield event.delta.text;
+            } else if (event.type === "message_start" && event.message?.usage) {
+              inputTokens = event.message.usage.input_tokens ?? inputTokens;
+              // message_start output is preliminary; wait for final message_delta usage.
+            } else if (event.type === "message_delta" && event.usage) {
+              outputTokens = event.usage.output_tokens ?? outputTokens;
+            }
+          } catch {
+            // Ignore keep-alive pings and any non-JSON lines.
           }
-        } catch {
-          // Ignore keep-alive pings and any non-JSON lines.
         }
       }
-    }
-    if (inputTokens !== undefined || outputTokens !== undefined) {
+    } finally {
+      // Preserve final measured usage even when a subsequent read is aborted.
+      // Without both initial input and final output counts, leave it unknown.
       reportUsage(req.onUsage, { input_tokens: inputTokens, output_tokens: outputTokens });
     }
   }

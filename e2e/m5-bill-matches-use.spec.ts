@@ -72,7 +72,7 @@ test("M5: a complete debate bills measured use, displays it, and survives reload
   expect(usage[0]).toMatchObject({ estimatedCost: records[0].estimatedCost, actualCost: 0.03, billedCost: 0.03 });
   await plan(page);
   await expect(page.locator(".settings-item").filter({ hasText: "settled" })).toContainText("actual $0.03");
-  await page.screenshot({ path: testInfo.outputPath("M5-measured-receipt.png"), fullPage: true });
+  await page.locator(".settings-item").filter({ hasText: "settled" }).screenshot({ path: testInfo.outputPath("M5-measured-receipt.png") });
   // Simulate losing the account projection after the authoritative charge
   // was committed. Startup must repair it without dispatching again.
   await page.evaluate(async () => {

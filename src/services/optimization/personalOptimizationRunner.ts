@@ -1,4 +1,4 @@
-import { authorizeEstimatedCost } from "../creditAuthorization";
+import { authorizeEstimatedCost, createAuthorizedClient } from "../creditAuthorization";
 import { addTokenUsage, getEstimatedCostForCall } from "../costTracking";
 import { createProxyClient, type ProxyCompletionRequest } from "../proxyClient";
 import { useAccountStore } from "../../stores/accountStore";
@@ -109,19 +109,26 @@ export async function runPersonalOptimizationWithAi(
     inputTokens: Math.ceil(prompt.length / 4) + 300,
     maxOutputTokens: 900,
   });
-  const authorization = deps.authorize
-    ? await deps.authorize(estimate, "Validate personal optimization evidence")
-    : await authorizeEstimatedCost(
-        estimate,
-        "Validate personal optimization evidence",
-        optimizationPaidPolicy(),
-      );
-  if (!authorization.authorized) {
-    return authorization.reason === "free-route-selected" ? base : null;
+  let complete = deps.complete ?? client.complete;
+  let finish: (() => Promise<boolean>) | undefined;
+  if (deps.authorize) {
+    // The existing simulated authorization seam may only drive an injected
+    // client. It cannot authorize the production network client.
+    if (!deps.complete) return null;
+    const simulated = await deps.authorize(estimate, "Validate personal optimization evidence");
+    if (!simulated.authorized) return simulated.reason === "free-route-selected" ? base : null;
+  } else {
+    const authorization = await authorizeEstimatedCost(
+      estimate, "Validate personal optimization evidence", optimizationPaidPolicy(),
+      { models: [{ provider: "anthropic", model: MODEL }] },
+    );
+    if (!authorization.authorized) return authorization.reason === "free-route-selected" ? base : null;
+    const measured = createAuthorizedClient(authorization, { ...client, complete });
+    complete = measured.client.complete;
+    finish = measured.finish;
   }
 
   try {
-    const complete = deps.complete ?? ((request) => client.complete(request));
     const response = await complete({
       model: MODEL,
       system: "You are a strict evidence validator. Preserve the requested objective and return only the required JSON.",
@@ -163,5 +170,7 @@ export async function runPersonalOptimizationWithAi(
       afterPreferences: base.beforePreferences,
       summary: `Validation failed without changing the profile: ${error instanceof Error ? error.message : String(error)}`,
     };
+  } finally {
+    await finish?.();
   }
 }

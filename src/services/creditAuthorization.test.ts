@@ -5,6 +5,9 @@ import { _resetLayer4DatabaseForTests } from "./durableLayer4";
 import * as runtime from "./moneyRuntime";
 import { authorizeEstimatedCost, createAuthorizedClient, markDeferredAuthorizationUnknown, reconcileCreditAuthorizations, settleDeferredAuthorization } from "./creditAuthorization";
 import { MODEL_PRICE_VERSION } from "./costTracking";
+import { createProxyClient } from "./proxyClient";
+import { useSessionStore } from "../stores/sessionStore";
+import { runPersonalOptimizationWithAi } from "./optimization/personalOptimizationRunner";
 
 vi.mock("./persistence", () => ({ saveNow: vi.fn(async () => {}) }));
 const policy = { maximum: 0.25, paidFallbackEnabled: true, requiresPaidFallback: false,
@@ -21,6 +24,61 @@ beforeEach(async () => {
 });
 
 describe("M5: measured billing", () => {
+  it("keeps partial completion usage unknown instead of inventing a zero token count", async () => {
+    for (const usage of [{ input_tokens: 42 }, { output_tokens: 7 }, { input_tokens: -1, output_tokens: 7 }]) {
+      const auth = await authorizeEstimatedCost(0.04, "Answer", policy, options);
+      const raw = createProxyClient({ fetchImpl: vi.fn(async () => new Response(JSON.stringify({ content: [{ type: "text", text: "answer" }], usage }))) });
+      const measured = createAuthorizedClient(auth, raw);
+      await measured.client.complete({ model: "claude-sonnet-5" });
+      await measured.finish();
+      expect(runtime.getMoneyAuthority().snapshot().reservations.find((item) => item.id === auth.reservationId)?.status).toBe("pending-unknown");
+    }
+    expect(useAccountStore.getState().creditBalance).toBe(100);
+  });
+
+  it("does not treat message_start's initial output zero as final stream usage", async () => {
+    const auth = await authorizeEstimatedCost(0.04, "Answer", policy, options);
+    const sse = 'data: {"type":"message_start","message":{"usage":{"input_tokens":42,"output_tokens":0}}}\n\ndata: {"type":"content_block_delta","delta":{"type":"text_delta","text":"answer"}}\n\ndata: [DONE]\n\n';
+    const raw = createProxyClient({ fetchImpl: vi.fn(async () => new Response(sse)) });
+    const measured = createAuthorizedClient(auth, raw);
+    for await (const text of measured.client.stream({ model: "claude-sonnet-5" })) expect(text).toBe("answer");
+    await measured.finish();
+    expect(runtime.getMoneyAuthority().snapshot().reservations[0].status).toBe("pending-unknown");
+    expect(useAccountStore.getState().creditBalance).toBe(100);
+  });
+
+  it("retains final measured stream usage when transport fails afterwards", async () => {
+    const auth = await authorizeEstimatedCost(0.04, "Answer", policy, options);
+    let sent = false;
+    const body = new ReadableStream<Uint8Array>({ pull(controller) {
+      if (sent) { controller.error(new Error("stream ended after final usage")); return; }
+      sent = true;
+      controller.enqueue(new TextEncoder().encode('data: {"type":"message_start","message":{"usage":{"input_tokens":42,"output_tokens":0}}}\n\ndata: {"type":"message_delta","usage":{"output_tokens":7}}\n\n'));
+    } });
+    const raw = createProxyClient({ fetchImpl: vi.fn(async () => new Response(body)) });
+    const measured = createAuthorizedClient(auth, raw);
+    await expect(async () => { for await (const text of measured.client.stream({ model: "claude-sonnet-5" })) void text; }).rejects.toThrow("after final usage");
+    await measured.finish();
+    expect(useAccountStore.getState().creditAuthorizations[0]).toMatchObject({ status: "settled", actualCost: 0.000231, billedCost: 0.01 });
+  });
+
+  it("uses the same reservation and measured settlement for personal optimization", async () => {
+    useSessionStore.setState({ paidFallbackEnabled: true, maxRequestCost: 0.25 });
+    const result = await runPersonalOptimizationWithAi({ sessions: [{ id: "s1", createdAt: 1, archived: true, model: "auto", directness: 2, techniques: ["auto-detect"], context: [], variables: {},
+      conversation: ["This is too much", "I am overwhelmed", "Please simplify this"].map((content, index) => ({ id: `m${index}`, role: "user" as const, content, timestamp: index + 1 })),
+    }], goals: ["reduce-overwhelm"], currentPreferences: { routing: {}, technique: {} }, minimumEvidence: 3, apply: true, now: 100 }, {
+      complete: async (request) => {
+        expect(useAccountStore.getState().creditBalance).toBe(100);
+        expect(runtime.getMoneyAuthority().snapshot().reservations[0]).toMatchObject({ status: "reserved", model: "claude-haiku-4-5" });
+        request.onUsage?.({ inputTokens: 400, outputTokens: 100 });
+        return JSON.stringify({ decisions: [{ target: "simplify", accept: true, confidence: 0.9, reason: "Three distinct overload signals." }] });
+      },
+    });
+    expect(result?.status).toBe("applied");
+    expect(useAccountStore.getState().creditAuthorizations[0]).toMatchObject({ status: "settled", actualCost: 0.0009, billedCost: 0.01 });
+    expect(useAccountStore.getState().creditBalance).toBe(99.99);
+  });
+
   it("settles known zero usage as zero and releases the unused hold", async () => {
     const auth = await authorizeEstimatedCost(0.04, "Answer", policy, options);
     expect(await settleDeferredAuthorization(auth, 0, "Measured zero")).toBe(true);
