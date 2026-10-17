@@ -1,5 +1,6 @@
 import { MODEL_IDS, MODEL_REGISTRY, type ModelId, type ModelInfo, type Provider } from "./modelRegistry.js";
 import { appAccessHeaders } from "./appAccessClient.js";
+import { getModelPrice } from "./costTracking.js";
 
 export const DEFAULT_POOL_COOLDOWN_MS = 86_400_000;
 // Try the broad request allowances first; preserve OpenRouter's scarce daily requests.
@@ -7,7 +8,7 @@ export const DEFAULT_POOL_COOLDOWN_MS = 86_400_000;
 export const FREE_PROVIDER_ORDER = { groq: 0, google: 1, cloudflare: 2, huggingface: 3, openrouter: 4 } as const;
 const ORDER: Readonly<Record<string, number>> = FREE_PROVIDER_ORDER;
 const LABEL: Record<string, string> = { groq: "Groq", google: "Google (Gemini)", cloudflare: "Cloudflare Workers AI", huggingface: "Hugging Face", openrouter: "OpenRouter" };
-export interface PoolBudget { provider: Provider; exhaustedAt: number; resetAt: number; }
+export interface PoolBudget { provider: Provider; model?: string; exhaustedAt: number; resetAt: number; }
 export interface PoolUsage { provider: Provider; model: string; inputTokens: number; outputTokens: number; }
 export interface FreePoolResult {
   status: "answered" | "refused";
@@ -37,7 +38,8 @@ function object(value: unknown): Record<string, unknown> {
 export function isFreePoolModel(id: unknown): id is ModelId {
   if (typeof id !== "string" || !Object.hasOwn(MODEL_REGISTRY, id)) return false;
   const model = MODEL_REGISTRY[id as ModelId];
-  return model.plan === "free" &&
+  const price = getModelPrice(id);
+  return price?.inputPerMillion === 0 && price.outputPerMillion === 0 && model.plan === "free" &&
     (model.provider === "groq" || model.provider === "google" || model.provider === "openrouter" ||
       model.provider === "huggingface" || model.provider === "cloudflare") &&
     (model.provider !== "openrouter" || id.endsWith(":free"));
@@ -69,6 +71,27 @@ function limited(status: number, payload: unknown): boolean {
   const detail = JSON.stringify([data.error, data.message, data.code]);
   return /quota|rate.?limit|resource.exhausted|daily.*(spent|exhaust|limit|exceed)|allowance.*(spent|exhaust|exceed)|(?:credit|balance).*(spent|exhaust|insufficient|exceed)|(?:exceed|insufficient|exhaust|spent).*(?:credit|balance)|payment required/i.test(detail);
 }
+/** Account credit/payment failures stop the whole provider. Explicit model
+ * quotas may try another model; ambiguous limits conservatively stop the provider. */
+function limitScope(status: number, payload: unknown): "model" | "provider" | null {
+  if (!limited(status, payload)) return null;
+  const data = object(payload);
+  const error = object(data.error);
+  const metadata = object(error.metadata);
+  const detail = JSON.stringify([data.error, data.message, data.code]);
+  if (status === 402 || /payment required|insufficient.*(?:credit|balance|fund)|(?:account|monthly).*credit|credit.*(?:exhaust|exceed)/i.test(detail)) return "provider";
+  const scope = error.scope ?? data.scope ?? metadata.scope;
+  if (scope === "provider" || scope === "account" || scope === "organization") return "provider";
+  if (scope === "model" || /model[_-](?:rate[_-]limit|quota)/i.test(String(error.code ?? data.code)) ||
+      /rate.?limit.*(?:for|on) model|model.*(?:rate.?limit|quota.*exhaust)|temporarily rate.limited upstream/i.test(detail)) return "model";
+  if (Array.isArray(error.details) && error.details.some((item) => {
+    const violations = object(item).violations;
+    return Array.isArray(violations) && violations.some((violation) =>
+      typeof object(object(violation).quotaDimensions).model === "string");
+  })) return "model";
+  return "provider";
+}
+
 function duration(value: string): number | null {
   if (/^\d+(?:\.\d+)?s$/.test(value)) return Number(value.slice(0, -1)) * 1000;
   const groups = [...value.matchAll(/(\d+(?:\.\d+)?)(ms|s|m|h|d)/g)];
@@ -102,24 +125,33 @@ function resetTime(response: Response, payload: unknown, now: number): number {
 function validBudget(value: unknown, now: number): value is PoolBudget {
   const item = object(value);
   return typeof item.provider === "string" && Object.hasOwn(ORDER, item.provider) &&
+    (item.model === undefined || (isFreePoolModel(item.model) && MODEL_REGISTRY[item.model].provider === item.provider)) &&
     typeof item.exhaustedAt === "number" && Number.isFinite(item.exhaustedAt) && item.exhaustedAt <= now &&
     typeof item.resetAt === "number" && Number.isFinite(item.resetAt) && item.resetAt > now;
 }
-/** One sequential attempt per eligible provider; never dispatches a paid model. */
+function budgetKey(value: Pick<PoolBudget, "provider" | "model">): string {
+  return value.model ? value.provider + ":" + value.model : value.provider;
+}
+function copyBudget(value: PoolBudget): PoolBudget {
+  return { provider: value.provider, ...(value.model ? { model: value.model } : {}),
+    exhaustedAt: value.exhaustedAt, resetAt: value.resetAt };
+}
+/** One attempt per eligible model; provider-wide failures skip its remaining models. */
 export function createProviderPool(now: () => number = () => Date.now()) {
-  const out = new Map<Provider, PoolBudget>();
+  const out = new Map<string, PoolBudget>();
   return {
     async run(options: PoolOptions): Promise<FreePoolResult> {
       // Client metadata may defer its own request, but only a server-observed
       // quota response may exhaust a provider for unrelated requests.
-      const carried = new Map<Provider, PoolBudget>();
+      const carried = new Map<string, PoolBudget>();
       for (const value of options.budgets ?? []) {
-        if (validBudget(value, now()) && (carried.get(value.provider)?.resetAt ?? 0) < value.resetAt) carried.set(value.provider, { ...value });
+        if (validBudget(value, now()) && (carried.get(budgetKey(value))?.resetAt ?? 0) < value.resetAt) carried.set(budgetKey(value), copyBudget(value));
       }
       for (const [provider, state] of out) if (state.resetAt <= now()) out.delete(provider);
       const usage: PoolUsage[] = [];
       const attempts: Provider[] = [];
-      const seen = new Set<Provider>();
+      const seen = new Set<ModelId>();
+      const unavailable = new Set<Provider>();
       const candidates = (options.models ?? MODEL_IDS)
         .map((value) => typeof value === "string" ? value : object(value).id)
         .filter(isFreePoolModel)
@@ -130,14 +162,17 @@ export function createProviderPool(now: () => number = () => Date.now()) {
         for (const [provider, budget] of carried) {
           if ((combined.get(provider)?.resetAt ?? 0) < budget.resetAt) combined.set(provider, budget);
         }
-        return [...combined.values()].map((value) => ({ ...value }));
+        return [...combined.values()].map(copyBudget);
       };
       for (const model of candidates) {
         // Recheck at the dispatch boundary; caller-supplied plan/provider fields never authorize a call.
-        if (!isFreePoolModel(model.id) || seen.has(model.provider)) continue;
-        seen.add(model.provider);
+        if (!isFreePoolModel(model.id) || seen.has(model.id)) continue;
+        seen.add(model.id);
         if (options.signal?.aborted) break;
+        const modelBudgetKey = budgetKey({ provider: model.provider, model: model.id });
         if ((out.get(model.provider)?.resetAt ?? 0) > now() || (carried.get(model.provider)?.resetAt ?? 0) > now() ||
+            (out.get(modelBudgetKey)?.resetAt ?? 0) > now() || (carried.get(modelBudgetKey)?.resetAt ?? 0) > now() ||
+            unavailable.has(model.provider) ||
             options.excludedProviders?.includes(model.provider) || !options.configured(model.provider)) continue;
         attempts.push(model.provider);
         try {
@@ -145,16 +180,21 @@ export function createProviderPool(now: () => number = () => Date.now()) {
           const payload: unknown = await response.json().catch(() => null);
           const actual = measured(payload, model);
           if (actual) usage.push(actual);
-          if (limited(response.status, payload)) {
+          const scope = limitScope(response.status, payload);
+          if (scope) {
             const exhaustedAt = now();
-            out.set(model.provider, { provider: model.provider, exhaustedAt, resetAt: resetTime(response, payload, exhaustedAt) });
+            const budget: PoolBudget = { provider: model.provider, ...(scope === "model" ? { model: model.id } : {}),
+              exhaustedAt, resetAt: resetTime(response, payload, exhaustedAt) };
+            out.set(budgetKey(budget), budget);
             continue;
           }
           const text = response.ok ? answerText(payload, model.provider) : "";
           if (text.trim() && !options.signal?.aborted) {
             return { status: "answered", provider: model.provider, model: model.id, text, handedOff: attempts.length > 1, attempts, budgets: snapshot(), usage };
           }
+          unavailable.add(model.provider);
         } catch {
+          unavailable.add(model.provider);
           // Never echo upstream errors: they can contain a URL or authentication material.
           // Unmeasured failures do not become invented usage or a credit charge.
         }
@@ -224,7 +264,7 @@ export async function requestFreePool(text: string, options: {
     if (!reported.has(identity)) { reported.add(identity); options.onUsage?.(entry); }
   }
   // Persist only exhaustion metadata; never prompts, answers, or credentials.
-  const budgets = result.budgets.filter((entry) => validBudget(entry, Date.now()));
+  const budgets = result.budgets.filter((entry) => validBudget(entry, Date.now())).map(copyBudget);
   if (budgets.length || result.status === "answered") {
     try { localStorage.setItem(BUDGET_STORAGE, JSON.stringify(budgets)); } catch { /* Memory still holds this result. */ }
   }

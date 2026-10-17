@@ -154,3 +154,171 @@ describe("P2 free pool through the deployed proxy handler", () => {
     expect(result.freePool?.budgets).toContainEqual({ provider: "groq", exhaustedAt: Date.now(), resetAt: Date.now() + 60_000 });
   });
 });
+
+describe("Q2 model and provider exhaustion are separate budgets", () => {
+  it("normalizes carried cooldowns without echoing extra caller data", async () => {
+    const { createProviderPool } = await import("./providerPool");
+    const credential = crypto.randomUUID();
+    const result = await createProviderPool(() => 1000).run({ models: ["llama-3.3-70b-versatile"],
+      configured: () => true, execute: async () => answer("groq"),
+      budgets: [{ provider: "groq", exhaustedAt: 1000, resetAt: 60_000, unexpected: credential }] });
+    expect(JSON.stringify(result).includes(credential)).toBe(false);
+    expect(Object.keys(result.budgets[0]).sort()).toEqual(["exhaustedAt", "provider", "resetAt"]);
+  });
+
+  async function alternatives(provider: "groq" | "google" = "groq") {
+    const registry = await import("./modelRegistry");
+    const pricing = await import("./costTracking");
+    const { createProviderPool, isFreePoolModel } = await import("./providerPool");
+    const first = provider === "groq" ? "llama-3.3-70b-versatile" : "gemini-flash";
+    const second = "test-only-" + provider + "-alternative";
+    const models = registry.MODEL_REGISTRY as Record<string, import("./modelRegistry").ModelInfo>;
+    models[second] = { ...models[first], id: second as import("./modelRegistry").ModelId };
+    pricing.MODEL_PRICES[second] = { inputPerMillion: 0, outputPerMillion: 0 };
+    return { first, second, models, pricing, createProviderPool, isFreePoolModel,
+      cleanup() { delete models[second]; delete pricing.MODEL_PRICES[second]; } };
+  }
+
+  it("tries the next model on the same provider when only that model is rate-limited", async () => {
+    const fixture = await alternatives();
+    const calls: string[] = [];
+    try {
+      const result = await fixture.createProviderPool(() => 1000).run({
+        models: [fixture.first, fixture.second], configured: () => true,
+        execute: async (model) => {
+          calls.push(model.id);
+          return model.id === fixture.first
+            ? Response.json({ error: { scope: "model", code: "model_rate_limit", message: "Per-model requests exhausted" } },
+              { status: 429, headers: { "retry-after": "60" } }) : answer("groq");
+        },
+      });
+      expect(result).toMatchObject({ status: "answered", provider: "groq", model: fixture.second, handedOff: true });
+      expect(calls).toEqual([fixture.first, fixture.second]);
+      expect(result.budgets).toEqual([{ provider: "groq", model: fixture.first, exhaustedAt: 1000, resetAt: 61_000 }]);
+    } finally { fixture.cleanup(); }
+  });
+
+  it("skips every remaining model when the whole provider is exhausted", async () => {
+    const fixture = await alternatives();
+    const calls: string[] = [];
+    try {
+      const result = await fixture.createProviderPool().run({ models: [fixture.first, fixture.second, "gemini-flash"],
+        configured: () => true, execute: async (model) => {
+          calls.push(model.id);
+          return model.provider === "groq" ? Response.json({ error: { scope: "provider", message: "Account quota exhausted" } }, { status: 429 })
+            : answer("google");
+        } });
+      expect(result).toMatchObject({ status: "answered", provider: "google" });
+      expect(calls).toEqual([fixture.first, "gemini-flash"]);
+    } finally { fixture.cleanup(); }
+  });
+
+  it("persists a model cooldown without disabling its provider, including across a cold pool", async () => {
+    const fixture = await alternatives();
+    const localPool = fixture.createProviderPool(() => 1000);
+    const calls: string[] = [];
+    const options = { models: [fixture.first, fixture.second], configured: () => true,
+      execute: async (model: import("./modelRegistry").ModelInfo) => {
+        calls.push(model.id);
+        return model.id === fixture.first ? Response.json({ error: { scope: "model", message: "quota exhausted" } }, { status: 429 })
+          : answer("groq");
+      } };
+    try {
+      const initial = await localPool.run(options);
+      expect(initial.status).toBe("answered");
+      expect((await localPool.run(options)).model).toBe(fixture.second);
+      expect((await fixture.createProviderPool(() => 1000).run({ ...options, budgets: initial.budgets })).model).toBe(fixture.second);
+      expect(calls).toEqual([fixture.first, fixture.second, fixture.second, fixture.second]);
+    } finally { fixture.cleanup(); }
+  });
+
+  it("honors structured Google model quota dimensions", async () => {
+    const fixture = await alternatives("google");
+    try {
+      const result = await fixture.createProviderPool().run({ models: [fixture.first, fixture.second], configured: () => true,
+        execute: async (model) => model.id === fixture.first ? Response.json({ error: { status: "RESOURCE_EXHAUSTED",
+          details: [{ violations: [{ quotaDimensions: { model: "gemini-1.5-flash" } }] }] } }, { status: 429 }) : answer("google") });
+      expect(result).toMatchObject({ status: "answered", provider: "google", model: fixture.second });
+      expect(result.budgets[0]).toMatchObject({ provider: "google", model: fixture.first });
+    } finally { fixture.cleanup(); }
+  });
+
+  it("recognizes Groq's model-specific rate-limit message", async () => {
+    const fixture = await alternatives();
+    try {
+      const result = await fixture.createProviderPool().run({ models: [fixture.first, fixture.second], configured: () => true,
+        execute: async (model) => model.id === fixture.first ? Response.json({ error: {
+          message: "Rate limit reached for model llama-3.3-70b-versatile in organization on tokens per minute" } }, { status: 429 }) : answer("groq") });
+      expect(result.model).toBe(fixture.second);
+    } finally { fixture.cleanup(); }
+  });
+
+  it("treats insufficient account credit as provider-wide even with a misleading model scope", async () => {
+    const fixture = await alternatives();
+    const calls: string[] = [];
+    try {
+      const result = await fixture.createProviderPool().run({ models: [fixture.first, fixture.second, "gemini-flash"], configured: () => true,
+        execute: async (model) => {
+          calls.push(model.id);
+          return model.provider === "groq" ? Response.json({ error: { scope: "model", message: "Insufficient account credits" } }, { status: 402 })
+            : answer("google");
+        } });
+      expect(result.provider).toBe("google");
+      expect(calls).toEqual([fixture.first, "gemini-flash"]);
+      expect(result.budgets[0]).not.toHaveProperty("model");
+    } finally { fixture.cleanup(); }
+  });
+
+  it("admits only priced zero-cost models from the five free providers", async () => {
+    const { MODEL_IDS, MODEL_REGISTRY } = await import("./modelRegistry");
+    const { getModelPrice } = await import("./costTracking");
+    const { isFreePoolModel } = await import("./providerPool");
+    const free = MODEL_IDS.filter(isFreePoolModel);
+    expect(new Set(free.map((id) => MODEL_REGISTRY[id].provider))).toEqual(new Set(["groq", "google", "huggingface", "cloudflare", "openrouter"]));
+    for (const id of free) {
+      expect(MODEL_REGISTRY[id].plan).toBe("free");
+      expect(["anthropic", "openai", "xai", "deepseek"]).not.toContain(MODEL_REGISTRY[id].provider);
+      expect(getModelPrice(id)).toEqual({ inputPerMillion: 0, outputPerMillion: 0 });
+    }
+  });
+
+  it("refuses unpriced or billable models even if a free provider registry entry says free", async () => {
+    const fixture = await alternatives();
+    try {
+      delete fixture.pricing.MODEL_PRICES[fixture.second];
+      expect(fixture.isFreePoolModel(fixture.second)).toBe(false);
+      fixture.pricing.MODEL_PRICES[fixture.second] = { inputPerMillion: 1, outputPerMillion: 0 };
+      expect(fixture.isFreePoolModel(fixture.second)).toBe(false);
+      let calls = 0;
+      const result = await fixture.createProviderPool().run({ models: [fixture.second], configured: () => true,
+        execute: async () => { calls += 1; return answer("groq"); } });
+      expect(calls).toBe(0);
+      expect(result.status).toBe("refused");
+    } finally { fixture.cleanup(); }
+  });
+
+  it("ignores a forged model budget belonging to the wrong provider", async () => {
+    const fixture = await alternatives();
+    try {
+      const result = await fixture.createProviderPool(() => 1000).run({ models: [fixture.first], configured: () => true,
+        budgets: [{ provider: "google", model: fixture.first, exhaustedAt: 1000, resetAt: 60_000 }],
+        execute: async () => answer("groq") });
+      expect(result.model).toBe(fixture.first);
+      expect(result.budgets).toEqual([]);
+    } finally { fixture.cleanup(); }
+  });
+
+  it("does not dispatch duplicate model ids while trying alternatives", async () => {
+    const fixture = await alternatives();
+    const calls: string[] = [];
+    try {
+      const result = await fixture.createProviderPool().run({ models: [fixture.first, fixture.first, fixture.second], configured: () => true,
+        execute: async (model) => {
+          calls.push(model.id);
+          return model.id === fixture.first ? Response.json({ error: { scope: "model", message: "quota exhausted" } }, { status: 429 }) : answer("groq");
+        } });
+      expect(result.model).toBe(fixture.second);
+      expect(calls).toEqual([fixture.first, fixture.second]);
+    } finally { fixture.cleanup(); }
+  });
+});
