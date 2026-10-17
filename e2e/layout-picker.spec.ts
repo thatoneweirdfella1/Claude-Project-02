@@ -1,5 +1,43 @@
-import { test, expect } from "./fixtures";
+import { test, expect, type Page } from "./fixtures";
 import { installModelMocks } from "./mocks";
+
+async function saveLegacyOriginalLayout(page: Page) {
+  await page.evaluate(async () => {
+    const open = indexedDB.open("divergence-ai", 1);
+    const db = await new Promise<IDBDatabase>((resolve, reject) => {
+      open.onsuccess = () => resolve(open.result);
+      open.onerror = () => reject(open.error ?? new Error("Account store open failed"));
+    });
+    await new Promise<void>((resolve, reject) => {
+      const transaction = db.transaction("state", "readwrite");
+      const store = transaction.objectStore("state");
+      const read = store.get("account");
+      read.onsuccess = () => store.put({ ...(read.result ?? {}), layout: "original" }, "account");
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error ?? new Error("Legacy layout seed failed"));
+      transaction.onabort = () => reject(transaction.error ?? new Error("Legacy layout seed aborted"));
+    });
+    db.close();
+  });
+}
+
+async function readSavedLayout(page: Page): Promise<string | undefined> {
+  return page.evaluate(async () => {
+    const open = indexedDB.open("divergence-ai", 1);
+    const db = await new Promise<IDBDatabase>((resolve, reject) => {
+      open.onsuccess = () => resolve(open.result);
+      open.onerror = () => reject(open.error ?? new Error("Account store read failed"));
+    });
+    const layout = await new Promise<string | undefined>((resolve, reject) => {
+      const transaction = db.transaction("state", "readonly");
+      const request = transaction.objectStore("state").get("account");
+      request.onsuccess = () => resolve(request.result?.layout);
+      request.onerror = () => reject(request.error ?? new Error("Legacy layout read failed"));
+    });
+    db.close();
+    return layout;
+  });
+}
 
 test("the approved frozen layout supersedes every obsolete layout choice", async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 1543, height: 1019 });
@@ -46,7 +84,18 @@ test("the approved frozen layout supersedes every obsolete layout choice", async
   }
   await page.screenshot({ path: testInfo.outputPath("gear-menu-open.png") });
 
+  await saveLegacyOriginalLayout(page);
   await page.reload();
   await page.getByRole("button", { name: "Restore last work", exact: true }).click();
+  await expect.poll(() => readSavedLayout(page)).toBe("original");
   await expect(page.locator("html")).toHaveAttribute("data-layout", "gold");
+  await expect(page.locator(".app-shell")).toHaveAttribute(
+    "data-layout-authority",
+    "frozen-reference-1600x1024",
+  );
+  const restoredMarks = page.locator("img.brain-mark");
+  expect(await restoredMarks.count()).toBeGreaterThan(0);
+  for (const mark of await restoredMarks.all()) {
+    await expect(mark).toHaveAttribute("src", "/logo-mark-gold.png");
+  }
 });
