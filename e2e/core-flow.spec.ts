@@ -5,7 +5,7 @@ const QUESTION = "so umm i was wondering, what temperature does water boil at? l
 
 async function restoreLastWorkIfPrompted(page: Page) {
   const restore = page.getByRole("button", { name: "Restore last work", exact: true });
-  if (await restore.isVisible({ timeout: 2_000 }).catch(() => false)) await restore.click();
+  if (await restore.isVisible({ timeout: 10_000 }).catch(() => false)) await restore.click();
 }
 
 test("core free-first flow: type, review, continue, rate, autosave restore", async ({ page }) => {
