@@ -3,22 +3,12 @@ import type { SessionRecord } from "../../stores/types";
 import type { ProxyCompletionRequest } from "../proxyClient";
 import { runPersonalOptimizationWithAi } from "./personalOptimizationRunner";
 
-const sessions: SessionRecord[] = [{
-  id: "s1",
-  createdAt: 1,
-  archived: true,
-  model: "auto",
-  directness: 2,
-  techniques: ["auto-detect"],
-  context: [],
-  variables: {},
-  conversation: ["This is too much", "I am overwhelmed", "Please simplify this"].map((content, index) => ({
-    id: `m${index}`,
-    role: "user" as const,
-    content,
-    timestamp: index + 1,
-  })),
-}];
+// Independent synthetic sessions exercise the evidence rule; the provider is injected.
+const sessions: SessionRecord[] = Array.from({ length: 3 }, (_, index) => ({
+  id: `synthetic-session-${index}`, createdAt: index, archived: true,
+  model: "auto", directness: 2, techniques: ["auto-detect"], context: [], variables: {},
+  conversation: [{ id: `synthetic-message-${index}`, role: "user", content: "overwhelm", timestamp: index }],
+}));
 
 describe("AI-validated personal optimization", () => {
   it("sends only compact evidence and applies only AI-accepted targets", async () => {

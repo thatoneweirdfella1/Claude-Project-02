@@ -72,15 +72,18 @@ function collectEvidence(
 ): OptimizationEvidenceRef[] {
   const rule = GOAL_RULES[goal];
   const found: OptimizationEvidenceRef[] = [];
+  const seen = new Set<string>();
   for (const session of sessions) {
     for (const message of session.conversation) {
       if (message.role !== "user") continue;
       if (!rule.patterns.some((pattern) => pattern.test(message.content))) continue;
+      const key = JSON.stringify([session.id, message.id]);
+      if (seen.has(key)) continue;
+      seen.add(key);
       found.push({
         sessionId: session.id,
         messageId: message.id,
         timestamp: message.timestamp,
-        excerpt: message.content.replace(/\s+/g, " ").trim().slice(0, 180),
         signal: rule.signal,
       });
     }
@@ -100,7 +103,9 @@ export interface PersonalOptimizationInput {
 export function runPersonalOptimization(input: PersonalOptimizationInput): OptimizationRun {
   const beforePreferences = clonePreferences(input.currentPreferences);
   const afterPreferences = clonePreferences(input.currentPreferences);
-  const minimumEvidence = Math.max(1, input.minimumEvidence ?? 3);
+  const minimumEvidence = Number.isFinite(input.minimumEvidence)
+    ? Math.max(3, input.minimumEvidence ?? 3)
+    : 3;
   const evidence: OptimizationEvidenceRef[] = [];
   const changes: OptimizationChange[] = [];
   const now = input.now ?? Date.now();
@@ -108,7 +113,7 @@ export function runPersonalOptimization(input: PersonalOptimizationInput): Optim
   for (const goal of [...new Set(input.goals)]) {
     const goalEvidence = collectEvidence(input.sessions, goal);
     evidence.push(...goalEvidence);
-    if (goalEvidence.length < minimumEvidence) continue;
+    if (goalEvidence.length < minimumEvidence || new Set(goalEvidence.map((item) => item.sessionId)).size < 2) continue;
 
     for (const adjustment of GOAL_RULES[goal].adjustments) {
       const current = afterPreferences.technique[adjustment.technique] ?? {

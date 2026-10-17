@@ -149,7 +149,6 @@ export interface OptimizationEvidenceRef {
   sessionId: string;
   messageId: string;
   timestamp: number;
-  excerpt: string;
   signal: string;
 }
 

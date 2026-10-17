@@ -64,9 +64,9 @@ describe("M5: measured billing", () => {
 
   it("uses the same reservation and measured settlement for personal optimization", async () => {
     useSessionStore.setState({ paidFallbackEnabled: true, maxRequestCost: 0.25 });
-    const result = await runPersonalOptimizationWithAi({ sessions: [{ id: "s1", createdAt: 1, archived: true, model: "auto", directness: 2, techniques: ["auto-detect"], context: [], variables: {},
-      conversation: ["This is too much", "I am overwhelmed", "Please simplify this"].map((content, index) => ({ id: `m${index}`, role: "user" as const, content, timestamp: index + 1 })),
-    }], goals: ["reduce-overwhelm"], currentPreferences: { routing: {}, technique: {} }, minimumEvidence: 3, apply: true, now: 100 }, {
+    const result = await runPersonalOptimizationWithAi({ sessions: Array.from({ length: 3 }, (_, index) => ({ id: `synthetic-session-${index}`, createdAt: index, archived: true, model: "auto" as const, directness: 2 as const, techniques: ["auto-detect" as const], context: [], variables: {},
+      conversation: [{ id: `synthetic-message-${index}`, role: "user" as const, content: "overwhelm", timestamp: index }],
+    })), goals: ["reduce-overwhelm"], currentPreferences: { routing: {}, technique: {} }, minimumEvidence: 3, apply: true, now: 100 }, {
       complete: async (request) => {
         expect(useAccountStore.getState().creditBalance).toBe(100);
         expect(runtime.getMoneyAuthority().snapshot().reservations[0]).toMatchObject({ status: "reserved", model: "claude-haiku-4-5" });

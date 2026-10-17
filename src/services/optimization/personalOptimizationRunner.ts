@@ -32,7 +32,6 @@ function promptFor(run: OptimizationRun, minimumEvidence: number): string {
     messageId: item.messageId,
     sessionId: item.sessionId,
     signal: item.signal,
-    excerpt: item.excerpt,
   }));
   const candidates = run.changes.map((change) => ({
     target: change.target,
