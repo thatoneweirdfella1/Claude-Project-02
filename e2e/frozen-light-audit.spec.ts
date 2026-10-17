@@ -26,7 +26,6 @@ test("approved frozen conversation-first frame at canonical viewport", async ({ 
       quickActions: box(".quick-actions"), rightRail: box(".col-right"), firstAccordion: box(".accordion-panel"),
     };
   });
-  console.log("Frozen frame metrics:", JSON.stringify(metrics));
   // Commit 90b4cdd deliberately caps the frozen canvas at 0.72 scale.
   // These exact boxes match both the Linux reference and the Windows measurement.
   expect(metrics.center).toMatchObject({ x: 451, y: 253, width: 734, height: 664 });
