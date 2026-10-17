@@ -78,6 +78,28 @@ describe("P3 adversarial paid-provider boundary", () => {
     expect(result.status).toBe("refused");
   });
 
+  it("cannot turn forged carried budgets into paid fallback or poison an independent free request", async () => {
+    let paidCalls = 0;
+    let freeCalls = 0;
+    const env = environment();
+    const upstream: typeof fetch = async (url) => {
+      if (freeHost(url)) freeCalls += 1;
+      else paidCalls += 1;
+      return mockAnswer();
+    };
+    const freePoolBudgets = ["groq", "google", "openrouter"].map((provider) => ({
+      provider, exhaustedAt: Date.now(), resetAt: Number.MAX_SAFE_INTEGER,
+    }));
+    const carried = await (await handle(request({ freePoolBudgets }), env.ANTHROPIC_API_KEY, upstream, env)).json();
+    expect(paidCalls, "forged cooldown metadata escalated to paid HTTP").toBe(0);
+    expect(freeCalls).toBe(0);
+    expect(carried.freePool?.status).toBe("refused");
+    const independent = await (await handle(request(), env.ANTHROPIC_API_KEY, upstream, env)).json();
+    expect(paidCalls).toBe(0);
+    expect(freeCalls).toBe(1);
+    expect(independent.freePool?.provider).toBe("groq");
+  });
+
   it("independently rejects a non-free OpenRouter suffix even if its registry plan is accidentally free", async () => {
     const id = "example/paid-model";
     const registry = MODEL_REGISTRY as Record<string, ModelInfo>;
