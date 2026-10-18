@@ -136,6 +136,23 @@ function copyBudget(value: PoolBudget): PoolBudget {
   return { provider: value.provider, ...(value.model ? { model: value.model } : {}),
     exhaustedAt: value.exhaustedAt, resetAt: value.resetAt };
 }
+/** Shared eligibility for the pool and team roster. Caller metadata never
+ * overrides the registry's plan, price or provider boundary. */
+export function freePoolCandidates(options: Pick<PoolOptions, "configured" | "models" | "excludedProviders" | "budgets">, now = Date.now()): ModelInfo[] {
+  const budgets = (options.budgets ?? []).filter((value): value is PoolBudget => validBudget(value, now));
+  const seen = new Set<ModelId>();
+  return (options.models ?? MODEL_IDS)
+    .map((value) => typeof value === "string" ? value : object(value).id)
+    .filter(isFreePoolModel)
+    .map((id) => MODEL_REGISTRY[id])
+    .sort((a, b) => (ORDER[a.provider] ?? 9999) - (ORDER[b.provider] ?? 9999))
+    .filter((model) => {
+      if (seen.has(model.id)) return false;
+      seen.add(model.id);
+      return options.configured(model.provider) && !options.excludedProviders?.includes(model.provider) &&
+        !budgets.some((budget) => budget.provider === model.provider && (!budget.model || budget.model === model.id));
+    });
+}
 /** One attempt per eligible model; provider-wide failures skip its remaining models. */
 export function createProviderPool(now: () => number = () => Date.now()) {
   const out = new Map<string, PoolBudget>();
@@ -152,11 +169,7 @@ export function createProviderPool(now: () => number = () => Date.now()) {
       const attempts: Provider[] = [];
       const seen = new Set<ModelId>();
       const unavailable = new Set<Provider>();
-      const candidates = (options.models ?? MODEL_IDS)
-        .map((value) => typeof value === "string" ? value : object(value).id)
-        .filter(isFreePoolModel)
-        .map((id) => MODEL_REGISTRY[id])
-        .sort((left, right) => (ORDER[left.provider] ?? 9999) - (ORDER[right.provider] ?? 9999));
+      const candidates = freePoolCandidates({ ...options, budgets: [...carried.values(), ...out.values()] }, now());
       const snapshot = () => {
         const combined = new Map(out);
         for (const [provider, budget] of carried) {
@@ -226,6 +239,9 @@ function storedBudgets(): unknown[] {
   try { const value: unknown = JSON.parse(localStorage.getItem(BUDGET_STORAGE) ?? "[]"); return Array.isArray(value) ? value : []; }
   catch { return []; }
 }
+export function getStoredFreePoolBudgets(): PoolBudget[] {
+  return storedBudgets().filter((entry): entry is PoolBudget => validBudget(entry, Date.now())).map(copyBudget);
+}
 export async function isFreePoolConfigured(fetchImpl: typeof fetch = fetch): Promise<boolean> {
   try {
     const response = await fetchImpl("/api/provider-status", { headers: appAccessHeaders(), cache: "no-store" });
@@ -235,6 +251,7 @@ export async function isFreePoolConfigured(fetchImpl: typeof fetch = fetch): Pro
 export async function requestFreePool(text: string, options: {
   fetchImpl?: typeof fetch; signal?: AbortSignal; excludedProviders?: string[];
   onUsage?: (usage: PoolUsage) => void;
+  model?: ModelId;
 } = {}): Promise<FreePoolResult> {
   let result: FreePoolResult;
   try {
@@ -242,7 +259,8 @@ export async function requestFreePool(text: string, options: {
       method: "POST", headers: { "content-type": "application/json", ...appAccessHeaders() },
       signal: options.signal,
       body: JSON.stringify({ freePool: true, model: "auto", messages: [{ role: "user", content: text }],
-        excludedProviders: options.excludedProviders, freePoolBudgets: storedBudgets() }),
+        excludedProviders: options.excludedProviders, poolModels: options.model ? [options.model] : undefined,
+        freePoolBudgets: storedBudgets() }),
     });
     const value = object(object(await response.json()).freePool);
     if (!response.ok || !["answered", "refused"].includes(String(value.status)) ||
@@ -264,7 +282,11 @@ export async function requestFreePool(text: string, options: {
     if (!reported.has(identity)) { reported.add(identity); options.onUsage?.(entry); }
   }
   // Persist only exhaustion metadata; never prompts, answers, or credentials.
-  const budgets = result.budgets.filter((entry) => validBudget(entry, Date.now())).map(copyBudget);
+  const combined = new Map(getStoredFreePoolBudgets().map((entry) => [budgetKey(entry), entry]));
+  for (const entry of result.budgets.filter((value) => validBudget(value, Date.now()))) {
+    if ((combined.get(budgetKey(entry))?.resetAt ?? 0) < entry.resetAt) combined.set(budgetKey(entry), copyBudget(entry));
+  }
+  const budgets = [...combined.values()];
   if (budgets.length || result.status === "answered") {
     try { localStorage.setItem(BUDGET_STORAGE, JSON.stringify(budgets)); } catch { /* Memory still holds this result. */ }
   }
