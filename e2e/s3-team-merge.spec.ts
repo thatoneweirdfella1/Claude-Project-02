@@ -1,8 +1,11 @@
 import { test, expect } from "./fixtures";
-import { handleProxyRequest } from "../src/services/proxyHandler";
 import { resolve } from "node:path";
 
 test("S3 mocked free team exposes shared text, both conflicting claims and changes", async ({ page }) => {
+  // A fresh handler owns this test's cooldown state, as in Q1/Q3/P3 fixtures.
+  const handlerUrl = new URL("../src/services/proxyHandler.ts", import.meta.url);
+  handlerUrl.searchParams.set("testScenario", "S3-team-merge-" + crypto.randomUUID());
+  const { handleProxyRequest } = await import(handlerUrl.href) as typeof import("../src/services/proxyHandler");
   // Explicit fixture environment; machine/deployment keys cannot affect this mock.
   const names = ["ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GOOGLE_API_KEY", "XAI_API_KEY", "DEEPSEEK_API_KEY", "GROQ_API_KEY", "OPENROUTER_API_KEY", "HF_TOKEN", "CLOUDFLARE_API_TOKEN", "CLOUDFLARE_ACCOUNT_ID", "NVIDIA_API_KEY"];
   const env = Object.fromEntries(names.map((name) => [name, ""]));
