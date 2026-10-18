@@ -17,6 +17,7 @@ export function InteractivePersonalOptimization() {
   const profile = useAccountStore((state) => state.optimizationProfile);
   const sessions = useAccountStore((state) => state.sessions);
   const learnedPreferences = useAccountStore((state) => state.learnedPreferences);
+  const runs = useAccountStore((state) => state.optimizationRuns);
   const setEnabled = useAccountStore((state) => state.setOptimizationEnabled);
   const setGoals = useAccountStore((state) => state.setOptimizationGoals);
   const [preview, setPreview] = useState<OptimizationRun | null>(null);
@@ -52,7 +53,7 @@ export function InteractivePersonalOptimization() {
     if (refreshed.changes.length === 0) return;
     const applied: OptimizationRun = { ...refreshed, status: "applied" };
     current.recordOptimizationRun(applied);
-    setPreview(applied);
+    setPreview(null);
     setSaving(true);
     try {
       await saveNow();
@@ -64,10 +65,28 @@ export function InteractivePersonalOptimization() {
 
   async function retrySave() {
     setSaving(true);
-    try { await saveNow(); setStatus("Applied changes saved on this device."); }
+    try { await saveNow(); setStatus("Preference changes saved on this device."); }
     catch { setStatus("Changes are applied on screen, but saving failed. Keep this page open and retry saving."); }
     finally { setSaving(false); }
   }
+
+  async function undoChange(runId: string, changeIndex: number, target: string) {
+    if (saving) return;
+    if (!useAccountStore.getState().rollbackOptimizationRun(runId, changeIndex)) {
+      setStatus("This change is already undone or unavailable.");
+      return;
+    }
+    setPreview(null);
+    setSaving(true);
+    try { await saveNow(); setStatus(`Undid ${target} and saved the restored preference on this device.`); }
+    catch { setStatus("Undo is on screen, but saving failed. Keep this page open and retry saving."); }
+    finally { setSaving(false); }
+  }
+
+  const history = [...runs].reverse()
+    .filter((run) => run.status === "applied" || run.status === "rolled-back" || run.appliedAt !== undefined)
+    .sort((a, b) => b.timestamp - a.timestamp)
+    .flatMap((run) => run.changes.map((change, index) => ({ run, change, index })).reverse());
 
   return <section className="settings-section optimization-panel" aria-labelledby="interactive-optimization-title">
     <div className="optimization-panel__heading"><div className="optimization-panel__title"><BrainCircuit size={21} /><div><h3 id="interactive-optimization-title">Personal Optimization</h3><p className="settings-section__note">Preview patterns in your saved sessions on this device. Review the proposed changes, then apply them with a separate click.</p></div></div><label className="optimization-switch"><input type="checkbox" checked={profile.enabled} onChange={(event) => { setEnabled(event.target.checked); clearPreview(); }} /><span>{profile.enabled ? "On" : "Off"}</span></label></div>
@@ -92,5 +111,22 @@ export function InteractivePersonalOptimization() {
     </div>}
     {status && <p role="status">{status}</p>}
     {status.includes("saving failed") && <button type="button" disabled={saving} onClick={() => void retrySave()}>Retry saving changes</button>}
+    <section className="optimization-history" aria-label="Applied optimization changes">
+      <h4>Applied changes</h4>
+      <p>Newest first. Undo restores only that setting to its value before the selected change.</p>
+      {history.length === 0 ? <p>No preference changes have been applied yet.</p> : <ol>
+        {history.map(({ run, change, index }) => {
+          const undone = change.undoneAt !== undefined || run.status === "rolled-back";
+          return <li key={`${run.id}-${index}`} data-optimization-target={change.target}>
+            <header><strong>{change.target}</strong><time dateTime={new Date(run.appliedAt ?? run.timestamp).toISOString()}>{new Date(run.appliedAt ?? run.timestamp).toLocaleString()}</time></header>
+            <p className="optimization-history__value">{change.before} → {change.after}</p>
+            <p>{change.reason}</p>
+            <p>{change.evidenceCount} examples. Current weight: {learnedPreferences.technique[change.target]?.weight ?? 0}</p>
+            {undone ? <p className="optimization-history__undone">Undone{change.undoneAt !== undefined ? ` · ${new Date(change.undoneAt).toLocaleString()}` : " (whole-run rollback)"}</p>
+              : <button type="button" disabled={saving} onClick={() => void undoChange(run.id, index, change.target)}>Undo {change.target}</button>}
+          </li>;
+        })}
+      </ol>}
+    </section>
   </section>;
 }

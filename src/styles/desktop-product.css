@@ -78,9 +78,9 @@
 .optimization-goal span { display: flex; flex-direction: column; gap: 4px; }
 .optimization-goal small { color: var(--text-secondary); line-height: 1.35; }
 .optimization-panel__actions { display: flex; gap: 9px; margin-top: 12px; }
-.optimization-panel__actions button, .optimization-diagnostics button { display: inline-flex; align-items: center; gap: 6px; padding: 9px 13px; border: 1px solid var(--accent-cyan); border-radius: 6px; background: var(--accent-cyan-tint-06); color: var(--text-primary); cursor: pointer; }
+.optimization-panel__actions button, .optimization-diagnostics button, .optimization-history button, .optimization-panel__status > button { display: inline-flex; align-items: center; gap: 6px; padding: 9px 13px; border: 1px solid var(--accent-cyan); border-radius: 6px; background: var(--accent-cyan-tint-06); color: var(--text-primary); cursor: pointer; }
 .optimization-panel__actions button.secondary { border-color: var(--surface-smoked-glass-border); background: transparent; }
-.optimization-panel__actions button:disabled { opacity: .45; cursor: default; }
+.optimization-panel__actions button:disabled, .optimization-history button:disabled, .optimization-panel__status > button:disabled { opacity: .45; cursor: default; }
 .optimization-diagnostics { margin-top: 12px; color: var(--text-secondary); }
 .optimization-diagnostics article { margin-top: 8px; padding: 10px; border: 1px solid var(--surface-smoked-glass-border); border-radius: 6px; }
 .optimization-diagnostics article > div:first-child { display: flex; justify-content: space-between; gap: 10px; }
@@ -167,3 +167,15 @@
 .leftnav-tools__row { display: flex; align-items: center; min-height: 32px; }
 .leftnav-tools__row button { display: flex; align-items: center; gap: 7px; border: 0; background: transparent; color: var(--frozen-text); cursor: pointer; padding: 7px; }
 .leftnav-tools__row button:first-child { flex: 1; text-align: left; }
+
+/* Personal Optimization history stays within its existing Settings panel. */
+.optimization-history { margin-top: 20px; }
+.optimization-history > p { color: var(--text-secondary); line-height: 1.5; }
+.optimization-history ol, .optimization-changes { list-style: none; padding: 0; margin: 12px 0; }
+.optimization-history li { padding: 14px; margin: 10px 0; border: 1px solid var(--border-subtle, rgba(128,128,128,.3)); border-radius: 8px; }
+.optimization-history header { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; }
+.optimization-history time { color: var(--text-secondary); font-size: 12px; }
+.optimization-history li p { margin: 8px 0; line-height: 1.5; overflow-wrap: anywhere; }
+.optimization-history__value { font-variant-numeric: tabular-nums; }
+.optimization-history__undone { font-weight: 600; }
+.optimization-changes li { padding: 10px 0; }

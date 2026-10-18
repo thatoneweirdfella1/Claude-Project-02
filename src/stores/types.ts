@@ -159,6 +159,8 @@ export interface OptimizationChange {
   reason: string;
   confidence: number;
   evidenceCount: number;
+  /** Kept with the original change so undo survives persistence/reload. */
+  undoneAt?: number;
 }
 
 export type OptimizationRunStatus = "preview" | "applied" | "failed" | "bad" | "rolled-back";
@@ -166,6 +168,8 @@ export type OptimizationRunStatus = "preview" | "applied" | "failed" | "bad" | "
 export interface OptimizationRun {
   id: string;
   timestamp: number;
+  /** Distinguishes an applied run even if it is later marked bad. */
+  appliedAt?: number;
   goals: OptimizationGoalId[];
   status: OptimizationRunStatus;
   scannedSessions: number;

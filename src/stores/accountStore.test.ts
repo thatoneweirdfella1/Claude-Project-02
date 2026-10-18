@@ -1,9 +1,11 @@
 import { beforeEach, describe, expect, it } from "vitest";
+import { runPersonalOptimization } from "../services/optimization/personalOptimizer";
 import {
   ACCOUNT_PERSISTED_KEYS,
   DEFAULT_TEMPLATES,
   DEFAULT_VISIBILITY,
   MAX_LEARNING_AUDIT_ENTRIES,
+  MAX_OPTIMIZATION_RUNS,
   MAX_STATE_CORRECTIONS,
   createInitialAccountState,
   useAccountStore,
@@ -52,6 +54,54 @@ const SESSION_RECORD: SessionRecord = {
   variables: {},
   conversation: [],
 };
+
+describe("per-change optimization rollback", () => {
+  function recordAppliedRun() {
+    const run = runPersonalOptimization({
+      sessions: Array.from({ length: 3 }, (_, index) => ({ ...SESSION_RECORD, id: `synthetic-${index}`,
+        conversation: [{ id: `synthetic-message-${index}`, role: "user" as const, content: "overwhelm", timestamp: index }],
+      })), goals: ["reduce-overwhelm"], currentPreferences: useAccountStore.getState().learnedPreferences, apply: true,
+    });
+    useAccountStore.getState().recordOptimizationRun(run);
+    return run;
+  }
+
+  it("restores one setting without replacing newer unrelated preferences and rejects a repeated undo", () => {
+    const run = recordAppliedRun();
+    const applied = useAccountStore.getState().learnedPreferences;
+    useAccountStore.getState().setLearnedPreferences({ ...applied, routing: { newer: true },
+      technique: { ...applied.technique, examples: { weight: 4, lastAdjustedAt: 2, totalAdjustments: 4 } } });
+    const undo: (id: string, changeIndex: number) => boolean = useAccountStore.getState().rollbackOptimizationRun;
+    expect(undo(run.id, 0)).toBe(true);
+    expect(useAccountStore.getState().learnedPreferences.technique.simplify).toBeUndefined();
+    expect(useAccountStore.getState().learnedPreferences.technique.examples.weight).toBe(4);
+    expect(useAccountStore.getState().learnedPreferences.routing).toEqual({ newer: true });
+    expect(useAccountStore.getState().optimizationRuns[0].status).toBe("applied");
+    expect(useAccountStore.getState().optimizationRuns[0].changes[0]).toHaveProperty("undoneAt");
+    expect(undo(run.id, 0)).toBe(false);
+  });
+
+  it("keeps a fully undone run and all its lines as honest history", () => {
+    const run = recordAppliedRun();
+    expect(useAccountStore.getState().rollbackOptimizationRun(run.id)).toBe(true);
+    const stored = useAccountStore.getState().optimizationRuns[0];
+    expect(stored.status).toBe("rolled-back");
+    expect(stored.changes).toHaveLength(run.changes.length);
+    for (const change of stored.changes) expect(change).toHaveProperty("undoneAt");
+    expect(useAccountStore.getState().learnedPreferences).toEqual(run.beforePreferences);
+  });
+
+  it("never evicts applied history when diagnostic previews reach their cap", () => {
+    const applied = recordAppliedRun();
+    for (let index = 0; index <= MAX_OPTIMIZATION_RUNS; index += 1) {
+      useAccountStore.getState().recordOptimizationRun({ ...applied, id: `preview-${index}`, status: "preview" });
+    }
+    expect(useAccountStore.getState().optimizationRuns.some((run) => run.id === applied.id)).toBe(true);
+    expect(useAccountStore.getState().optimizationRuns.filter((run) => run.status === "preview")).toHaveLength(MAX_OPTIMIZATION_RUNS);
+    const undo: (id: string, changeIndex: number) => boolean = useAccountStore.getState().rollbackOptimizationRun;
+    expect(undo(applied.id, 0)).toBe(true);
+  });
+});
 
 function correction(overrides: Partial<StateCorrection> = {}): StateCorrection {
   return { dimension: "emotion", from: "overwhelmed", to: "calm", timestamp: 1, ...overrides };

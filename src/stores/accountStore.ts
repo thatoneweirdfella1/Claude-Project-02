@@ -72,10 +72,16 @@ export const MAX_LEARNING_AUDIT_ENTRIES = 500;
 /** Cap on stored methodology entries — bounded to prevent unbounded growth. */
 export const MAX_METHODOLOGY_ENTRIES = 200;
 
-/** Billing/optimization audit trails stay bounded just like every other
-    long-lived account log in this store. */
+/** Billing and non-applied optimization diagnostics stay bounded. Applied
+    optimization history must remain available for visible per-change undo. */
 export const MAX_CREDIT_LEDGER_ENTRIES = 1000;
 export const MAX_OPTIMIZATION_RUNS = 200;
+
+function retainOptimizationHistory(runs: OptimizationRun[]): OptimizationRun[] {
+  const applied = (run: OptimizationRun) => run.status === "applied" || run.status === "rolled-back" || run.appliedAt !== undefined;
+  const diagnostics = new Set(runs.filter((run) => !applied(run)).slice(-MAX_OPTIMIZATION_RUNS).map((run) => run.id));
+  return runs.filter((run) => applied(run) || diagnostics.has(run.id));
+}
 
 function roundCredits(value: number): number {
   return Math.round((value + Number.EPSILON) * 1_000_000) / 1_000_000;
@@ -225,7 +231,8 @@ interface AccountActions {
   setOptimizationGoals: (goals: OptimizationGoalId[]) => void;
   recordOptimizationRun: (run: OptimizationRun) => void;
   markOptimizationRunBad: (id: string) => void;
-  rollbackOptimizationRun: (id: string) => boolean;
+  /** Omit the index to undo the remaining lines of a run; pass it to undo one. */
+  rollbackOptimizationRun: (id: string, changeIndex?: number) => boolean;
   archivePair: (pair: ArchivedPair) => void;
   addRating: (rating: Rating) => void;
   /** Step 8.1 — upsert: replaces the existing Rating for this messageId (a
@@ -433,7 +440,9 @@ export const useAccountStore = create<AccountStore>((set, get) => ({
         ...state.optimizationProfile,
         lastRunAt: run.timestamp,
       },
-      optimizationRuns: [...state.optimizationRuns, run].slice(-MAX_OPTIMIZATION_RUNS),
+      optimizationRuns: retainOptimizationHistory([...state.optimizationRuns,
+        run.status === "applied" ? { ...run, appliedAt: run.appliedAt ?? run.timestamp } : run,
+      ]),
       learnedPreferences:
         run.status === "applied" ? run.afterPreferences : state.learnedPreferences,
     })),
@@ -443,14 +452,42 @@ export const useAccountStore = create<AccountStore>((set, get) => ({
         run.id === id ? { ...run, status: "bad" as const } : run,
       ),
     })),
-  rollbackOptimizationRun: (id) => {
+  rollbackOptimizationRun: (id, changeIndex) => {
     const state = get();
     const run = state.optimizationRuns.find((entry) => entry.id === id);
-    if (!run || run.status !== "applied") return false;
+    if (!run || run.status === "rolled-back" || (run.status !== "applied" && run.appliedAt === undefined)) return false;
+    if (changeIndex !== undefined && (!Number.isInteger(changeIndex) || changeIndex < 0 || changeIndex >= run.changes.length)) return false;
+    const indices = run.changes.map((_, index) => index)
+      .filter((index) => (changeIndex === undefined || changeIndex === index) && run.changes[index].undoneAt === undefined)
+      .reverse();
+    if (indices.length === 0 || indices.some((index) => !Number.isFinite(Number(run.changes[index].before)))) return false;
+    const learnedPreferences: LearnedPreferences = {
+      routing: { ...state.learnedPreferences.routing },
+      technique: { ...state.learnedPreferences.technique },
+    };
+    const undoneAt = Date.now();
+    const changes = run.changes.map((change) => ({ ...change }));
+    for (const index of indices) {
+      const change = changes[index];
+      const original = run.beforePreferences.technique[change.target];
+      const earlier = run.changes.slice(0, index).filter((entry) => entry.target === change.target).length;
+      if (!original && earlier === 0 && Number(change.before) === 0) {
+        delete learnedPreferences.technique[change.target];
+      } else {
+        learnedPreferences.technique[change.target] = {
+          weight: Number(change.before),
+          lastAdjustedAt: earlier > 0 ? run.timestamp : original?.lastAdjustedAt ?? 0,
+          totalAdjustments: (original?.totalAdjustments ?? 0) + earlier,
+        };
+      }
+      change.undoneAt = undoneAt;
+    }
     set({
-      learnedPreferences: run.beforePreferences,
+      learnedPreferences,
       optimizationRuns: state.optimizationRuns.map((entry) =>
-        entry.id === id ? { ...entry, status: "rolled-back" as const } : entry,
+        entry.id === id ? { ...entry, changes,
+          status: changes.every((change) => change.undoneAt !== undefined) ? "rolled-back" as const : entry.status,
+        } : entry,
       ),
     });
     return true;

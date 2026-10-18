@@ -5,6 +5,7 @@ import { createInitialAccountState, useAccountStore } from "../../stores/account
 import { useSessionStore } from "../../stores/sessionStore";
 import type { SessionRecord } from "../../stores/types";
 import { InteractivePersonalOptimization } from "./InteractivePersonalOptimization";
+import { loadPersistedState, saveNow } from "../../services/persistence";
 
 let root: Root;
 let host: HTMLDivElement;
@@ -100,5 +101,68 @@ describe("stored-session personal optimization", () => {
     expect(useAccountStore.getState().optimizationRuns).toEqual([]);
     expect(host.textContent).toContain("Review the refreshed preview");
     expect(useAccountStore.getState().learnedPreferences.technique.simplify.weight).toBe(2);
+  });
+});
+
+async function applyRun() {
+  mount();
+  act(() => button("Preview analysis state").click());
+  await act(async () => {
+    button("Apply previewed changes").click();
+    // Wait for the actual serialized persistence queue before the next action.
+    await saveNow({ snapshotActiveSession: false });
+  });
+}
+
+describe("applied optimization history", () => {
+  it("shows the newest applied changes first", async () => {
+    await applyRun();
+    await applyRun();
+    const rows = host.querySelectorAll('[aria-label="Applied optimization changes"] li');
+    expect(rows).toHaveLength(6);
+    expect(rows[0].textContent).toContain("-1 → -2");
+    expect(rows[rows.length - 1].textContent).toContain("0 → 1");
+  });
+
+  it("lists applied changes from the store with reason, evidence and time", async () => {
+    await applyRun();
+    act(() => root.render(<div />));
+    mount();
+    const history = host.querySelector('[aria-label="Applied optimization changes"]');
+    expect(history?.textContent).toContain("Prioritize lower cognitive load.");
+    expect(history?.textContent).toContain("3 examples");
+    expect(history?.textContent).toContain("0 → 1");
+    expect(history?.querySelector("time")?.getAttribute("datetime")).toBeTruthy();
+  });
+
+  it("undoes only the selected setting and preserves unrelated learned values", async () => {
+    await applyRun();
+    const applied = useAccountStore.getState().learnedPreferences;
+    await act(async () => button("Undo simplify").click());
+    const restored = useAccountStore.getState().learnedPreferences;
+    expect(restored.technique.simplify?.weight ?? 0).toBe(0);
+    expect(restored.technique["step-by-step"]).toEqual(applied.technique["step-by-step"]);
+    expect(restored.technique.detailed).toEqual(applied.technique.detailed);
+  });
+
+  it("keeps the undone line with its evidence and marks it undone", async () => {
+    await applyRun();
+    await act(async () => button("Undo simplify").click());
+    const row = host.querySelector('[data-optimization-target="simplify"]');
+    expect(row?.textContent).toContain("Undone");
+    expect(row?.textContent).toContain("Prioritize lower cognitive load.");
+    expect(row?.textContent).toContain("3 examples");
+    expect(useAccountStore.getState().optimizationRuns[0].changes[0]).toHaveProperty("undoneAt");
+  });
+
+  it("restores the value and undone history after a persistence reload", async () => {
+    await applyRun();
+    await act(async () => button("Undo simplify").click());
+    await saveNow({ snapshotActiveSession: false });
+    act(() => useAccountStore.setState(createInitialAccountState()));
+    await act(async () => { await loadPersistedState(); });
+    expect(useAccountStore.getState().learnedPreferences.technique.simplify?.weight ?? 0).toBe(0);
+    expect(host.querySelector('[data-optimization-target="simplify"]')?.textContent).toContain("Undone");
+    expect(useAccountStore.getState().optimizationRuns[0].changes[0]).toHaveProperty("undoneAt");
   });
 });
