@@ -1,5 +1,7 @@
 import { freePoolCandidates, isFreePoolModel } from "../providerPool";
 import type { ModelId, ModelInfo, Provider } from "../modelRegistry";
+import { MODEL_REGISTRY } from "../modelRegistry";
+import { independentInput, revisionInput } from "./prompt";
 
 export interface TeamMember {
   model: ModelId;
@@ -7,6 +9,8 @@ export interface TeamMember {
   label: string;
   status: "answered" | "unreachable";
   roundOne?: string;
+  roundTwo?: string;
+  revision?: "revised" | "unrevised";
 }
 export interface TeamResult {
   status: "ready" | "refused";
@@ -48,7 +52,7 @@ export async function runTeam(question: string, options: TeamOptions): Promise<T
       try {
         // Repeat the registry boundary at dispatch, not a caller-supplied plan.
         if (!isFreePoolModel(model.id) || options.signal?.aborted) throw new Error("Unavailable");
-        const text = await options.execute(model, question.trim(), options.signal);
+        const text = await options.execute(model, independentInput(question), options.signal);
         if (!text.trim() || options.signal?.aborted) throw new Error("Unavailable");
         return { ...member, status: "answered", roundOne: text };
       } catch {
@@ -58,5 +62,21 @@ export async function runTeam(question: string, options: TeamOptions): Promise<T
   }
   if (options.signal?.aborted) return refused("Team mode was cancelled.");
   if (members.filter((m) => m.status === "answered").length < 2) return refused();
+  const answered = members.filter((m) => m.status === "answered");
+  // A single barrier after round one; exactly one revision per answering
+  // member. No retry, convergence loop or third round.
+  await Promise.all(answered.map(async (member, index) => {
+    try {
+      if (!isFreePoolModel(member.model) || options.signal?.aborted) throw new Error("Unavailable");
+      const text = await options.execute(MODEL_REGISTRY[member.model], revisionInput(question, answered, index), options.signal);
+      if (!text.trim() || options.signal?.aborted) throw new Error("Unavailable");
+      member.roundTwo = text;
+      member.revision = "revised";
+    } catch {
+      // Preserve the original verbatim. Never turn provider errors into text.
+      member.revision = "unrevised";
+    }
+  }));
+  if (options.signal?.aborted) return refused("Team mode was cancelled.");
   return { status: "ready", members };
 }
