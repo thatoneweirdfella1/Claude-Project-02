@@ -10,10 +10,12 @@ import type {
   ContextItem,
   DestinationSelection,
   DirectnessLevel,
+  LearnedPreferences,
   ModelSelection,
   TechniqueId,
   TranslatorEngine,
 } from "../stores/types";
+import { applyLearnedTechniqueWeights, type TechniqueLearningAudit } from "./optimization/learnedTechniqueWeights";
 
 export interface TranslateAskSettings {
   model: ModelSelection;
@@ -36,6 +38,8 @@ export interface TranslateAskRequest {
   translatorEngine: TranslatorEngine;
   reviewBeforeSend: boolean;
   context: ContextItem[];
+  /** Local audit carried with an automatically personalized request. */
+  techniqueLearning?: TechniqueLearningAudit;
 }
 
 /** Build the request TRANSLATE & ASK emits. Pure and synchronous — no
@@ -46,8 +50,9 @@ export function buildTranslateAskRequest(
   rawInput: string,
   settings: TranslateAskSettings,
   context: ContextItem[],
+  learnedPreferences?: LearnedPreferences,
 ): TranslateAskRequest {
-  return {
+  const request: TranslateAskRequest = {
     rawInput,
     model: settings.model,
     directness: settings.directness,
@@ -57,4 +62,5 @@ export function buildTranslateAskRequest(
     reviewBeforeSend: settings.reviewBeforeSend ?? true,
     context,
   };
+  return learnedPreferences ? applyLearnedTechniqueWeights(request, learnedPreferences) : request;
 }

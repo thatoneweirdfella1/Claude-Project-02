@@ -50,6 +50,7 @@ import { saveNow } from "../../services/persistence";
 import { CONNECTED_EXECUTION_AVAILABLE } from "../../services/executionAvailability";
 import type { TechniqueId } from "../../stores/types";
 import { recommendModelAndTechniques } from "../../services/learningEngine";
+import { applyLearnedTechniqueWeights } from "../../services/optimization/learnedTechniqueWeights";
 import { isExactRouteReady } from "../../services/routeReadiness";
 import { describeFreePoolResult, isFreePoolConfigured, requestFreePool } from "../../services/providerPool";
 
@@ -246,8 +247,13 @@ export function CenterColumn() {
       setDetection(result);
       useSessionStore.getState().setStatePills(toStatePills(result));
     }
+    const personalized = applyLearnedTechniqueWeights(request, useAccountStore.getState().learnedPreferences, {
+      stateTechniques: recommendationApplied ? recommendation?.techniqueCandidates : undefined,
+    });
+    const learningNote = personalized.techniqueLearning?.note ?? "";
+    const recordedDecision = [decisionNote, learningNote].filter(Boolean).join(" ");
     const packet = compileMeaningPacket({
-      ...request,
+      ...personalized,
       statePills: result ? toStatePills(result) : undefined,
       stateApplied: recommendationApplied,
       stateTechniques: recommendationApplied ? recommendation?.techniqueCandidates : undefined,
@@ -255,10 +261,10 @@ export function CenterColumn() {
     });
     const readyText = buildAiReadyRequest(packet);
     if (request.translatorEngine === "auto-free-first") {
-      void offerFreePool(request, readyText, decisionNote);
+      void offerFreePool(personalized, readyText, recordedDecision);
       return;
     }
-    setPendingReview({ mode: "handoff", request, text: readyText, decisionNote });
+    setPendingReview({ mode: "handoff", request: personalized, text: readyText, decisionNote: recordedDecision });
     setWorkflowMessage(request.reviewBeforeSend
       ? "Review request before handoff."
       : "Copy & Open to complete the handoff.");
@@ -312,7 +318,7 @@ export function CenterColumn() {
         try { await saveNow({ reason: "autosave" }); }
         catch { setWorkflowMessage(status + " Recovery save failed; your answer is still on screen."); }
       } else {
-        setPendingReview({ mode: "handoff", request, text, decisionNote: status });
+        setPendingReview({ mode: "handoff", request, text, decisionNote: [status, decisionNote].filter(Boolean).join(" ") });
         setWorkflowMessage(status);
       }
     } finally {

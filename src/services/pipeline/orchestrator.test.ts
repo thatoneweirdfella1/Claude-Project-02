@@ -44,6 +44,21 @@ const DEFAULT_SETTINGS: TranslateAskSettings = {
   techniques: ["auto-detect"],
 };
 
+describe("learned Auto selection audit", () => {
+  it("records the bounded weight and scoring effect alongside the selected techniques", () => {
+    const routed = route({ prompt: "neutral", confidence: 92, gaps: [], plan: "free" });
+    const selection = resolveTechniqueSelection(["auto-detect"], "neutral", routed, [], { metaphor: 500 });
+    expect(selection.selected).toContain("metaphor");
+    expect(selection.reasoning).toContain("metaphor +5");
+    expect(selection.reasoning).toContain("+1.25");
+    const manual = resolveTechniqueSelection(["examples"], "neutral", routed, [], { examples: -5, metaphor: 5 });
+    expect(manual.selected).toEqual(["examples"]);
+    expect(manual.reasoning).not.toContain("Learned Auto");
+    expect(resolveTechniqueSelection(["auto-detect"], "neutral", routed, [], { metaphor: 0 }))
+      .toEqual(resolveTechniqueSelection(["auto-detect"], "neutral", routed, []));
+  });
+});
+
 function request(rawInput: string, settings: Partial<TranslateAskSettings> = {}) {
   return buildTranslateAskRequest(rawInput, { ...DEFAULT_SETTINGS, ...settings }, []);
 }

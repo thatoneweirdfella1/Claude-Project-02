@@ -54,6 +54,7 @@ import {
   type TechniqueSelection,
 } from "../techniques";
 import { composeFinalPrompt, type ComposedPrompt } from "../composition";
+import { boundedTechniqueWeights, describeLearnedTechniqueInfluence } from "../optimization/learnedTechniqueWeights";
 import { streamAnswer, type PipelineStageName } from "../answerDisplay";
 import { makeResilientClient, type ResilienceOptions } from "./resilience";
 import { categorizeCaughtError } from "../providerErrorCategorization";
@@ -155,14 +156,17 @@ export function resolveTechniqueSelection(
     // persisted array, keeping the ≤4 guarantee unconditional.
     .slice(0, MAX_TECHNIQUE_STACK);
   if (stored.includes("auto-detect") || manual.length === 0) {
-    return autoDetectWithPinned(question, manual, {
+    const weights = boundedTechniqueWeights(learnedTechniqueWeights ?? {}, manual);
+    const selection = autoDetectWithPinned(question, manual, {
       complexity: routeResult.complexity,
       domain: routeResult.dimensions.domain,
       // State-derived candidates may fill open Auto slots. Manually checked
       // techniques were seeded first and cannot be displaced.
       stateTechniques,
-      learnedTechniqueWeights,
+      learnedTechniqueWeights: weights,
     });
+    const note = describeLearnedTechniqueInfluence(weights, selection);
+    return note ? { ...selection, reasoning: `${selection.reasoning} ${note}` } : selection;
   }
   return {
     selected: manual,
