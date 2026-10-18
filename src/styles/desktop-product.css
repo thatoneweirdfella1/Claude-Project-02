@@ -179,3 +179,11 @@
 .optimization-history__value { font-variant-numeric: tabular-nums; }
 .optimization-history__undone { font-weight: 600; }
 .optimization-changes li { padding: 10px 0; }
+
+/* Team uses the existing consensus sections and synthesis action row. */
+.team-panel { padding: 12px; border: 1px solid var(--border-subtle, rgba(128,128,128,.3)); border-radius: 8px; }
+.team-view { gap: 12px; }
+.team-view > section { padding-top: 10px; border-top: 1px solid var(--border-subtle, rgba(128,128,128,.3)); }
+.team-view ul { margin: 0; padding-left: 20px; }
+.team-view__quote { white-space: pre-wrap; overflow-wrap: anywhere; padding-left: 10px; border-left: 2px solid var(--text-secondary); }
+.team-view__source { margin: 0; font-size: var(--font-size-body); color: var(--text-primary); }

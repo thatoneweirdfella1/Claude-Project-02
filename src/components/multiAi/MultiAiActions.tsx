@@ -27,6 +27,7 @@ import { PartnerPicker } from "./PartnerPicker";
 import { AutoSelectButton } from "./AutoSelectButton";
 import { ConsensusView } from "./ConsensusView";
 import { SynthesisView } from "./SynthesisView";
+import { TeamPanel } from "./TeamView";
 import { ProTierSelector } from "./ProTierSelector";
 import { MessageSourceSelector } from "./MessageSourceSelector";
 import {
@@ -292,6 +293,7 @@ function newRunId(): string {
 type Phase = "idle" | "debating" | "consensus" | "synthesis";
 
 export function MultiAiActions() {
+  const teamSessionId = useSessionStore((s) => s.sessionId);
   const conversation = useSessionStore((s) => s.conversation);
   const runs = useSessionStore((s) => s.multiAiRuns);
   const upsertMultiAiRun = useSessionStore((s) => s.upsertMultiAiRun);
@@ -765,6 +767,8 @@ export function MultiAiActions() {
           ) : (
             <>
               <MessageSourceSelector onSelectionChange={setSelection} disabled={busy} />
+
+              <TeamPanel key={`${teamSessionId}:${effectiveQuestion}`} question={effectiveQuestion} disabled={busy} />
 
               <ProTierSelector
                 useAutoSelect={useAutoSelectFeature}
